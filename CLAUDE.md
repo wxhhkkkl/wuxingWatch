@@ -1,8 +1,8 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan:
-`specs/001-bazi-mobile-tool/plan.md`
-(Backend: Python FastAPI · Frontend: Vue 3 · TDD with pytest / Vitest · see research.md, data-model.md, contracts/api.md)
+`specs/002-member-admin/plan.md`
+(Backend: Python FastAPI · Frontend: Vue 3 (mobile) + admin · Tencent MySQL + pwdlib password auth + admin RBAC · TDD with pytest / Vitest)
 <!-- SPECKIT END -->
 
 # CLAUDE.md

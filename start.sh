@@ -13,5 +13,9 @@ echo "=== 启动前端 :5173 ==="
 ./frontend/start.sh &
 FRONT_PID=$!
 
-trap 'echo "正在停止服务..."; kill "$BACK_PID" "$FRONT_PID" 2>/dev/null' INT TERM EXIT
+echo "=== 启动后台管理端 :5174 ==="
+./admin/start.sh &
+ADMIN_PID=$!
+
+trap 'echo "正在停止服务..."; kill "$BACK_PID" "$FRONT_PID" "$ADMIN_PID" 2>/dev/null' INT TERM EXIT
 wait

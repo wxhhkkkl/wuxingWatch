@@ -15,7 +15,13 @@ class Base(DeclarativeBase):
 def _engine_kwargs(url: str) -> dict:
     if url.startswith("sqlite"):
         return {"connect_args": {"check_same_thread": False}}
-    return {}
+    # MySQL：pool_pre_ping 检测失效连接、pool_recycle 低于服务端 wait_timeout 防 "gone away"
+    return {
+        "pool_pre_ping": True,
+        "pool_recycle": 1800,
+        "pool_size": 5,
+        "max_overflow": 5,
+    }
 
 
 _settings = get_settings()

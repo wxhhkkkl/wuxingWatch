@@ -73,9 +73,7 @@ def test_compute_from_pillars_known_chart():
 def test_compute_from_pillars_inverse_da_yun():
     # 癸(阴)+女 → 顺排；乙(阴)+男 → 逆排
     def _pillars(year, month, day, time):
-        return compute_from_pillars(
-            {"year": year, "month": month, "day": day, "time": time}, "M"
-        )
+        return compute_from_pillars({"year": year, "month": month, "day": day, "time": time}, "M")
 
     yang_male = _pillars("庚午", "辛巳", "乙酉", "辛巳")
     yin_female = compute_from_pillars(

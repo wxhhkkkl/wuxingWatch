@@ -50,3 +50,122 @@ def test_logout(client, login_user):
     assert client.post("/api/auth/logout").status_code == 204
     # 刷新令牌已被吊销
     assert client.post("/api/auth/refresh").status_code == 401
+
+
+# ---- US1: 手机号+密码 注册/登录/重置 ----
+
+
+def _send_code(client, sms, phone, intent="login"):
+    client.post("/api/auth/send-code", json={"phone": phone, "intent": intent})
+    return sms.codes[-1][1]
+
+
+def test_register_with_password(client, sms):
+    code = _send_code(client, sms, "13800138000", "register")
+    resp = client.post(
+        "/api/auth/register",
+        json={"phone": "13800138000", "code": code, "password": "CorrectHorse99"},
+    )
+    assert resp.status_code == 201
+    assert resp.json()["access_token"]
+    # 重复手机号 → 409
+    code2 = _send_code(client, sms, "13800138000", "register")
+    resp2 = client.post(
+        "/api/auth/register",
+        json={"phone": "13800138000", "code": code2, "password": "AnotherPass99"},
+    )
+    assert resp2.status_code == 409
+
+
+def test_register_wrong_intent(client, sms):
+    code = _send_code(client, sms, "13800138000", "login")  # login 码不能用于注册
+    resp = client.post(
+        "/api/auth/register",
+        json={"phone": "13800138000", "code": code, "password": "CorrectHorse99"},
+    )
+    assert resp.status_code == 401
+
+
+def test_register_weak_password(client, sms):
+    code = _send_code(client, sms, "13800138000", "register")
+    resp = client.post(
+        "/api/auth/register",
+        json={"phone": "13800138000", "code": code, "password": "123456"},
+    )
+    assert resp.status_code == 422
+
+
+def test_password_login(client, sms):
+    code = _send_code(client, sms, "13800138000", "register")
+    client.post(
+        "/api/auth/register",
+        json={"phone": "13800138000", "code": code, "password": "CorrectHorse99"},
+    )
+    resp = client.post(
+        "/api/auth/login", json={"phone": "13800138000", "password": "CorrectHorse99"}
+    )
+    assert resp.status_code == 200
+    assert resp.json()["access_token"]
+
+
+def test_password_login_wrong(client, sms):
+    code = _send_code(client, sms, "13800138000", "register")
+    client.post(
+        "/api/auth/register",
+        json={"phone": "13800138000", "code": code, "password": "CorrectHorse99"},
+    )
+    assert (
+        client.post(
+            "/api/auth/login", json={"phone": "13800138000", "password": "WrongPass1"}
+        ).status_code
+        == 401
+    )
+
+
+def test_password_login_unknown_phone_same_401(client):
+    assert (
+        client.post(
+            "/api/auth/login", json={"phone": "13800138000", "password": "Whatever99"}
+        ).status_code
+        == 401
+    )
+
+
+def test_password_login_lockout(client, sms):
+    code = _send_code(client, sms, "13800138000", "register")
+    client.post(
+        "/api/auth/register",
+        json={"phone": "13800138000", "code": code, "password": "CorrectHorse99"},
+    )
+    for _ in range(5):
+        client.post("/api/auth/login", json={"phone": "13800138000", "password": "WrongPass1"})
+    resp = client.post(
+        "/api/auth/login", json={"phone": "13800138000", "password": "CorrectHorse99"}
+    )
+    assert resp.status_code == 429  # 已锁定
+
+
+def test_reset_password(client, sms):
+    code = _send_code(client, sms, "13800138000", "register")
+    client.post(
+        "/api/auth/register",
+        json={"phone": "13800138000", "code": code, "password": "CorrectHorse99"},
+    )
+    rcode = _send_code(client, sms, "13800138000", "reset")
+    resp = client.post(
+        "/api/auth/reset-password",
+        json={"phone": "13800138000", "code": rcode, "password": "NewPass88"},
+    )
+    assert resp.status_code == 204
+    assert (
+        client.post(
+            "/api/auth/login", json={"phone": "13800138000", "password": "NewPass88"}
+        ).status_code
+        == 200
+    )
+    assert (
+        client.post(
+            "/api/auth/login", json={"phone": "13800138000", "password": "CorrectHorse99"}
+        ).status_code
+        == 401
+    )

@@ -29,9 +29,7 @@ class BirthInput(BaseModel):
     name: str | None = None
     gender: Gender = Gender.UNKNOWN
     calendar: Calendar = Calendar.SOLAR
-    birth_date: date | None = Field(
-        default=None, description="公历/农历模式必填；四柱模式不需要"
-    )
+    birth_date: date | None = Field(default=None, description="公历/农历模式必填；四柱模式不需要")
     birth_time: str | None = Field(
         default=None, description="HH:MM，或时辰名（如 子/午时）；缺省表示时辰不详"
     )
@@ -59,8 +57,15 @@ class RecordCreate(BirthInput):
     notes: str | None = None
 
 
+class AuthIntent(StrEnum):
+    LOGIN = "login"
+    REGISTER = "register"
+    RESET = "reset"
+
+
 class SendCodeRequest(BaseModel):
     phone: str
+    intent: AuthIntent = AuthIntent.LOGIN
 
 
 class VerifyRequest(BaseModel):
@@ -68,10 +73,28 @@ class VerifyRequest(BaseModel):
     code: str
 
 
+class RegisterIn(BaseModel):
+    phone: str
+    code: str
+    password: str
+
+
+class PasswordLoginIn(BaseModel):
+    phone: str
+    password: str
+
+
+class ResetPasswordIn(BaseModel):
+    phone: str
+    code: str
+    password: str
+
+
 class UserOut(BaseModel):
     id: int
     phone: str
     name: str | None = None
+    role: str = "member"
 
 
 class RecordSummary(BaseModel):

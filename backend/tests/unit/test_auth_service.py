@@ -33,3 +33,10 @@ def test_otp_resend_cooldown():
     store = OtpStore()
     store.create("13800138000")
     assert not store.can_resend("13800138000")
+
+
+def test_otp_intent_isolation():
+    store = OtpStore()
+    code = store.create("13800138000", intent="register")
+    assert not store.verify("13800138000", code, intent="login")  # login 码不能用于 register
+    assert store.verify("13800138000", code, intent="register")

@@ -7,7 +7,9 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from db.session import Base, get_db
+from models.user import User
 from services.otp_store import otp_store
+from services.password_auth import hash_password, login_attempts
 from services.sms_client import SmsClient
 
 
@@ -45,6 +47,13 @@ def _clean_otp_store():
     yield
 
 
+@pytest.fixture(autouse=True)
+def _clean_login_attempts():
+    """Reset the global login-attempt store between tests."""
+    login_attempts._failures.clear()
+    yield
+
+
 @pytest.fixture()
 def client():
     """FastAPI TestClient backed by a fresh in-memory SQLite DB."""
@@ -66,6 +75,11 @@ def client():
             db.close()
 
     app.dependency_overrides[get_db] = override_get_db
+    # 预置管理员（手机号 13800000000，密码登录）
+    s = TestSession()
+    s.add(User(phone="13800000000", role="admin", password_hash=hash_password("AdminPass123")))
+    s.commit()
+    s.close()
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()

@@ -58,3 +58,19 @@ def test_chart_default_relationship_self(db_session):
     db_session.add(chart)
     db_session.commit()
     assert chart.relationship_type == "SELF"
+
+
+def test_user_role_default_member(db_session):
+    u = User(phone="13800138000")
+    db_session.add(u)
+    db_session.commit()
+    assert u.role == "member"
+    assert u.password_hash is None
+
+
+def test_user_admin_role_and_password_hash(db_session):
+    u = User(phone="13800138000", role="admin", password_hash="argon2...")
+    db_session.add(u)
+    db_session.commit()
+    assert u.role == "admin"
+    assert u.password_hash == "argon2..."

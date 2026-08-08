@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     sms_sign_name: str = ""
     sms_template_code: str = ""
 
+    # 管理员种子：通过 seed_admin 脚本提升的初始管理员手机号
+    admin_seed_phone: str = ""
+
     # OTP rules
     otp_ttl: int = 300  # seconds (5 min)
     otp_resend_cooldown: int = 60  # seconds

@@ -34,3 +34,13 @@ def get_current_user(
 
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
+
+
+def require_admin(user: CurrentUser) -> User:
+    """要求当前用户为管理员（基于 DB role，非 JWT 声明）。"""
+    if user.role != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="需要管理员权限")
+    return user
+
+
+AdminUser = Annotated[User, Depends(require_admin)]

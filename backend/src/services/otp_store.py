@@ -20,11 +20,12 @@ class OtpStore:
         self._ip_hits: dict[str, list[float]] = {}
         self._lock = threading.Lock()
 
-    def create(self, phone: str) -> str:
+    def create(self, phone: str, intent: str = "login") -> str:
         code = f"{secrets.randbelow(1000000):06d}"
         with self._lock:
             self._codes[phone] = {
                 "hash": security.hash_verify_code(code),
+                "intent": intent,
                 "expires_at": time.time() + self._settings.otp_ttl,
                 "attempts": 0,
                 "last_sent": time.time(),
@@ -37,11 +38,13 @@ class OtpStore:
             return True
         return time.time() - rec["last_sent"] >= self._settings.otp_resend_cooldown
 
-    def verify(self, phone: str, code: str) -> bool:
+    def verify(self, phone: str, code: str, intent: str = "login") -> bool:
         with self._lock:
             rec = self._codes.get(phone)
             if not rec:
                 return False
+            if rec.get("intent") != intent:
+                return False  # 意图不符：login 码不能用于 register/reset
             if rec["attempts"] >= self._settings.otp_max_attempts:
                 return False
             rec["attempts"] += 1

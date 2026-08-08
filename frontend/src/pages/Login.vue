@@ -7,9 +7,15 @@ import { useAuthStore } from '../stores/auth'
 const auth = useAuthStore()
 const router = useRouter()
 
+const tab = ref<'sms' | 'password'>('sms')
+// 密码登录页内的子模式
+const pwMode = ref<'login' | 'register' | 'reset'>('login')
+
 const phone = ref('')
 const code = ref('')
+const password = ref('')
 const sending = ref(false)
+const loading = ref(false)
 const countdown = ref(0)
 let timer: number | undefined
 
@@ -25,6 +31,11 @@ function startCountdown() {
   }, 1000)
 }
 
+function currentIntent(): 'login' | 'register' | 'reset' {
+  if (tab.value === 'sms') return 'login'
+  return pwMode.value
+}
+
 async function onSend() {
   if (!/^1[3-9]\d{9}$/.test(phone.value)) {
     showToast('请输入有效的手机号')
@@ -32,7 +43,7 @@ async function onSend() {
   }
   sending.value = true
   try {
-    await auth.sendCode(phone.value)
+    await auth.sendCode(phone.value, currentIntent())
     startCountdown()
   } catch (e) {
     showToast((e as Error).message)
@@ -41,19 +52,52 @@ async function onSend() {
   }
 }
 
-async function onLogin() {
+async function onSmsLogin() {
   if (!code.value) {
     showToast('请输入验证码')
     return
   }
+  loading.value = true
   try {
     await auth.login(phone.value, code.value)
     showToast('登录成功')
     router.replace('/')
   } catch (e) {
     showToast((e as Error).message)
+  } finally {
+    loading.value = false
   }
 }
+
+async function onPasswordSubmit() {
+  if (!phone.value || !password.value) {
+    showToast('请输入手机号和密码')
+    return
+  }
+  loading.value = true
+  try {
+    if (pwMode.value === 'login') {
+      await auth.loginPassword(phone.value, password.value)
+      showToast('登录成功')
+      router.replace('/')
+    } else if (pwMode.value === 'register') {
+      await auth.register(phone.value, code.value, password.value)
+      showToast('注册成功')
+      router.replace('/')
+    } else {
+      await auth.resetPassword(phone.value, code.value, password.value)
+      showToast('密码已重置，请登录')
+      pwMode.value = 'login'
+      password.value = ''
+    }
+  } catch (e) {
+    showToast((e as Error).message)
+  } finally {
+    loading.value = false
+  }
+}
+
+const pwTitle = { login: '密码登录', register: '注册（短信设置密码）', reset: '重置密码' } as const
 </script>
 
 <template>
@@ -64,29 +108,89 @@ async function onLogin() {
     </header>
 
     <div class="wx-card">
-      <p class="wx-card-title">登录 / 注册</p>
-      <van-cell-group :border="false">
-        <van-field
-          v-model="phone"
-          type="tel"
-          label="手机号"
-          placeholder="11 位手机号"
-          maxlength="11"
-        />
-        <van-field v-model="code" label="验证码" placeholder="6 位验证码" maxlength="6">
-          <template #button>
-            <van-button size="small" :disabled="countdown > 0" :loading="sending" @click="onSend">
-              {{ countdown > 0 ? `${countdown}s` : '获取验证码' }}
+      <van-tabs v-model:active="tab" color="#a63431" title-active-color="#a63431">
+        <van-tab title="短信登录" name="sms">
+          <van-cell-group :border="false" class="pw-form">
+            <van-field v-model="phone" type="tel" label="手机号" placeholder="11 位手机号" maxlength="11" />
+            <van-field v-model="code" label="验证码" placeholder="6 位验证码" maxlength="6">
+              <template #button>
+                <van-button size="small" :disabled="countdown > 0" :loading="sending" @click="onSend">
+                  {{ countdown > 0 ? `${countdown}s` : '获取验证码' }}
+                </van-button>
+              </template>
+            </van-field>
+          </van-cell-group>
+          <div class="submit">
+            <van-button
+              type="primary"
+              class="wx-btn-primary"
+              block
+              data-testid="sms-login-btn"
+              :loading="loading"
+              @click="onSmsLogin"
+            >
+              登录 / 注册
             </van-button>
-          </template>
-        </van-field>
-      </van-cell-group>
+          </div>
+        </van-tab>
 
-      <div class="submit">
-        <van-button type="primary" class="wx-btn-primary" block @click="onLogin">
-          登录 / 注册
-        </van-button>
-      </div>
+        <van-tab title="密码登录" name="password">
+          <van-cell-group :border="false" class="pw-form">
+            <van-field v-model="phone" type="tel" label="手机号" placeholder="11 位手机号" maxlength="11" />
+            <van-field
+              v-if="pwMode !== 'login'"
+              v-model="code"
+              label="验证码"
+              placeholder="6 位验证码"
+              maxlength="6"
+            >
+              <template #button>
+                <van-button size="small" :disabled="countdown > 0" :loading="sending" @click="onSend">
+                  {{ countdown > 0 ? `${countdown}s` : '获取验证码' }}
+                </van-button>
+              </template>
+            </van-field>
+            <van-field v-model="password" type="password" label="密码" placeholder="至少 8 位" />
+          </van-cell-group>
+
+          <div class="pw-links">
+            <span
+              v-if="pwMode !== 'register'"
+              class="link"
+              @click="pwMode = 'register'; password = ''"
+            >
+              注册
+            </span>
+            <span
+              v-if="pwMode !== 'reset'"
+              class="link"
+              @click="pwMode = 'reset'; password = ''"
+            >
+              忘记密码
+            </span>
+            <span
+              v-if="pwMode !== 'login'"
+              class="link"
+              @click="pwMode = 'login'; password = ''"
+            >
+              返回登录
+            </span>
+          </div>
+
+          <div class="submit">
+            <van-button
+              type="primary"
+              class="wx-btn-primary"
+              block
+              data-testid="pw-login-btn"
+              :loading="loading"
+              @click="onPasswordSubmit"
+            >
+              {{ pwTitle[pwMode] }}
+            </van-button>
+          </div>
+        </van-tab>
+      </van-tabs>
     </div>
   </div>
 </template>
@@ -113,7 +217,20 @@ async function onLogin() {
   font-size: 13px;
   opacity: 0.85;
 }
+.pw-form {
+  margin-top: 8px;
+}
 .submit {
-  margin-top: 18px;
+  margin: 18px 0 4px;
+}
+.pw-links {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  padding: 8px 4px 0;
+}
+.link {
+  color: #a63431;
+  font-size: 13px;
 }
 </style>
