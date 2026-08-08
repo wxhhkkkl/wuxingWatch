@@ -26,7 +26,7 @@ from services.bazi.solar_time import (
     true_solar_time,
     tz_offset_hours,
 )
-from services.bazi.sun import sunrise_sunset
+from services.bazi.sun import solar_noon_midnight, sunrise_sunset
 
 GENDER_LUNAR = {"M": 1, "F": 0}
 
@@ -83,11 +83,18 @@ def compute_chart(
             birth = true_solar_time(solar_birth, longitude, tz_offset=DEFAULT_TZ_OFFSET)
 
     sun = None
-    if longitude is not None and latitude is not None:
-        sr, ss = sunrise_sunset(solar_birth, latitude, longitude, tz_offset=sun_std_off)
+    if longitude is not None:
+        sunrise = sunset = None
+        if latitude is not None:
+            sr, ss = sunrise_sunset(solar_birth, latitude, longitude, tz_offset=sun_std_off)
+            sunrise = sr.isoformat() if sr else None
+            sunset = ss.isoformat() if ss else None
+        noon, midnight = solar_noon_midnight(solar_birth, longitude, tz_offset=sun_std_off)
         sun = {
-            "sunrise": sr.isoformat() if sr else None,
-            "sunset": ss.isoformat() if ss else None,
+            "sunrise": sunrise,
+            "sunset": sunset,
+            "solar_noon": noon.isoformat(),
+            "solar_midnight": midnight.isoformat(),
         }
 
     solar = Solar.fromYmdHms(

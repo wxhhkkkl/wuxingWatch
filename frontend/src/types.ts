@@ -58,7 +58,12 @@ export interface ChartResult {
   birth_place?: string
   timezone?: string
   dst?: { in_dst: boolean; note: string; original_time: string; corrected_time: string } | null
-  sun?: { sunrise: string | null; sunset: string | null } | null
+  sun?: {
+    sunrise: string | null
+    sunset: string | null
+    solar_noon: string
+    solar_midnight: string
+  } | null
 }
 
 export interface User {

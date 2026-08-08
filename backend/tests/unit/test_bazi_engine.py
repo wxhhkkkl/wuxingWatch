@@ -90,6 +90,9 @@ def test_sunrise_sunset_in_result():
     assert sun is not None
     assert sun["sunrise"].startswith("2020-06-21T04:4")
     assert sun["sunset"].startswith("2020-06-21T19:4")
+    # 北京正午 ≈ 12:12；子夜 = 正午 + 12h ≈ 次日 00:12
+    assert sun["solar_noon"].startswith("2020-06-21T12:1")
+    assert sun["solar_midnight"].startswith("2020-06-22T00:1")
 
 
 def test_da_yun_start_age_positive():

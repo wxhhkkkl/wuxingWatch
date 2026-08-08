@@ -74,6 +74,8 @@ function fmtTime(s: string): string {
         <div class="info-row">
           <span>日落</span>{{ result.sun.sunset ? fmtTime(result.sun.sunset) : '极昼' }}
         </div>
+        <div class="info-row"><span>正午</span>{{ fmtTime(result.sun.solar_noon) }}</div>
+        <div class="info-row"><span>子夜</span>{{ fmtTime(result.sun.solar_midnight) }}</div>
       </template>
     </section>
 
