@@ -56,7 +56,7 @@ def list_records(user: CurrentUser, db: DbDep):
             "id": r.id,
             "person_name": r.person_name,
             "relationship": r.relationship_type,
-            "birth_solar": r.birth_solar.isoformat(),
+            "birth_solar": r.birth_solar.isoformat() if r.birth_solar else "",
             "created_at": r.created_at.isoformat(),
             "summary": _summarize(json.loads(r.chart_result)),
         }

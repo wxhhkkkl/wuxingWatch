@@ -4,8 +4,19 @@ import type { ChartResult, Pillar } from '../types'
 
 const props = defineProps<{ result: ChartResult }>()
 
+const WX_COLOR: Record<string, string> = {
+  木: 'var(--wx-mu)',
+  火: 'var(--wx-huo)',
+  土: 'var(--wx-tu)',
+  金: 'var(--wx-jin)',
+  水: 'var(--wx-shui)',
+}
+
+function wxColor(wx: string) {
+  return WX_COLOR[wx] ?? 'inherit'
+}
+
 const pillarNames: Record<string, string> = { year: '年柱', month: '月柱', day: '日柱', time: '时柱' }
-const rowKeys = ['ganzhi', 'gan_wuxing', 'zhi_wuxing', 'shishen'] as const
 const pillarList = computed(() =>
   (['year', 'month', 'day', 'time'] as const).map((key) => ({
     key,
@@ -13,127 +24,254 @@ const pillarList = computed(() =>
     pillar: props.result.pillars[key] as Pillar | null,
   })),
 )
+
+const xi = computed(() => props.result.xi_yong)
 </script>
 
 <template>
   <div class="chart">
-    <section class="card">
-      <h3>出生信息</h3>
-      <p>公历：{{ result.solar_birth.slice(0, 16) }}</p>
-      <p>真太阳时：{{ result.true_solar_time.slice(0, 16) }}</p>
-      <p>农历：{{ result.lunar_birth }}</p>
+    <p v-if="result.note" class="note-banner">{{ result.note }}</p>
+
+    <!-- 出生信息 -->
+    <section class="wx-card">
+      <p class="wx-card-title">出生信息</p>
+      <template v-if="result.solar_birth">
+        <div class="info-row"><span>公历</span>{{ result.solar_birth.slice(0, 16) }}</div>
+        <div class="info-row"><span>农历</span>{{ result.lunar_birth }}</div>
+        <div class="info-row"><span>真太阳时</span>{{ result.true_solar_time.slice(0, 16) }}</div>
+      </template>
+      <template v-else>
+        <div class="info-row"><span>方式</span>四柱输入</div>
+        <div class="info-row">
+          <span>四柱</span>
+          {{ result.pillars.year?.ganzhi }} {{ result.pillars.month?.ganzhi }}
+          {{ result.pillars.day?.ganzhi }} {{ result.pillars.time?.ganzhi }}
+        </div>
+      </template>
     </section>
 
-    <section class="card">
-      <h3>四柱（日主 {{ result.day_master }}）</h3>
-      <table class="pillars">
-        <thead>
-          <tr>
-            <th v-for="item in pillarList" :key="item.key">{{ item.name }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="row in rowKeys" :key="row">
-            <td v-for="item in pillarList" :key="item.key">
-              {{ item.pillar ? item.pillar[row] : '—' }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <p v-if="result.missing_parts.length" class="warn">
-        时辰不详：无法排出时柱、命宫、身宫。
+    <!-- 四柱 -->
+    <section class="wx-card">
+      <p class="wx-card-title">四柱 · 日主 {{ result.day_master }}</p>
+      <div class="pillars">
+        <div v-for="item in pillarList" :key="item.key" class="pillar" :class="{ dim: !item.pillar }">
+          <div class="pillar-label">{{ item.name }}</div>
+          <template v-if="item.pillar">
+            <div class="pillar-char" :style="{ color: wxColor(item.pillar.gan_wuxing) }">
+              {{ item.pillar.gan }}
+            </div>
+            <div class="pillar-char" :style="{ color: wxColor(item.pillar.zhi_wuxing) }">
+              {{ item.pillar.zhi }}
+            </div>
+            <div class="pillar-shishen">{{ item.pillar.shishen }}</div>
+            <div class="pillar-ganzhi">{{ item.pillar.ganzhi }}</div>
+          </template>
+          <template v-else>
+            <div class="pillar-char empty">—</div>
+          </template>
+        </div>
+      </div>
+      <p v-if="result.missing_parts.length" class="warn">时辰不详：无法排出时柱、命宫、身宫。</p>
+    </section>
+
+    <!-- 人元司令与宫位 -->
+    <section class="wx-card">
+      <p class="wx-card-title">人元司令 · 胎元 · 宫位</p>
+      <div class="info-row">
+        <span>人元司令</span>
+        藏干 {{ result.hidden_stems.hidden_stems.join('、') }} · 当令 {{ result.hidden_stems.ruling_stem }}
+      </div>
+      <div class="info-row"><span>胎元</span>{{ result.tai_yuan }}</div>
+      <div class="info-row"><span>命宫</span>{{ result.ming_gong ?? '—' }}</div>
+      <div class="info-row"><span>身宫</span>{{ result.shen_gong ?? '—' }}</div>
+      <p class="muted">{{ result.hidden_stems.source }}</p>
+    </section>
+
+    <!-- 大运 -->
+    <section class="wx-card">
+      <p class="wx-card-title">
+        大运<template v-if="result.da_yun.start_age != null"> · {{ result.da_yun.start_age }} 岁起运</template>
       </p>
-    </section>
-
-    <section class="card">
-      <h3>人元司令（{{ result.hidden_stems.branch }}）</h3>
-      <p>藏干：{{ result.hidden_stems.hidden_stems.join('、') }} · 当令：{{ result.hidden_stems.ruling_stem }}</p>
-      <p class="muted">数据来源：{{ result.hidden_stems.source }}</p>
-      <p>胎元：{{ result.tai_yuan }} · 命宫：{{ result.ming_gong ?? '—' }} · 身宫：{{ result.shen_gong ?? '—' }}</p>
-    </section>
-
-    <section class="card">
-      <h3>大运（{{ result.da_yun.start_age }} 岁起运）</h3>
       <div class="chips">
-        <span v-for="s in result.da_yun.steps.slice(0, 6)" :key="s.start_year" class="chip">
-          {{ s.ganzhi }} <small>{{ s.start_year }}–{{ s.end_year }}</small>
+        <span
+          v-for="s in result.da_yun.steps.slice(0, 6)"
+          :key="s.ganzhi"
+          class="chip"
+        >
+          {{ s.ganzhi }}
+          <small v-if="s.start_year != null">{{ s.start_year }}–{{ s.end_year }}</small>
         </span>
       </div>
     </section>
 
-    <section class="card">
-      <h3>流年</h3>
+    <!-- 流年 -->
+    <section class="wx-card">
+      <p class="wx-card-title">流年</p>
       <div class="chips">
         <span v-for="n in result.liu_nian.slice(0, 6)" :key="n.year" class="chip">
-          {{ n.year }} {{ n.ganzhi }}
+          {{ n.year }} <b>{{ n.ganzhi }}</b>
         </span>
       </div>
     </section>
 
-    <section class="card">
-      <h3>喜忌分析（{{ result.xi_yong.conclusion.summary }}）</h3>
-      <p>
-        用神 <b class="accent">{{ result.xi_yong.conclusion.yong_shen }}</b>
-        · 喜神 {{ result.xi_yong.conclusion.xi_shen.join('、') || '—' }}
-        · 忌神 {{ result.xi_yong.conclusion.ji_shen.join('、') || '—' }}
+    <!-- 喜忌分析 -->
+    <section class="wx-card">
+      <p class="wx-card-title">喜忌分析 · {{ xi.conclusion.summary }}</p>
+      <div class="xi-summary">
+        <div class="xi-item">
+          <span class="xi-label">用神</span>
+          <span class="xi-value" :style="{ color: wxColor(xi.conclusion.yong_shen) }">
+            {{ xi.conclusion.yong_shen }}
+          </span>
+        </div>
+        <div class="xi-item">
+          <span class="xi-label">喜神</span>
+          <span class="xi-value">{{ xi.conclusion.xi_shen.join('、') || '—' }}</span>
+        </div>
+        <div class="xi-item">
+          <span class="xi-label">忌神</span>
+          <span class="xi-value avoid">{{ xi.conclusion.ji_shen.join('、') || '—' }}</span>
+        </div>
+      </div>
+      <p class="xi-line">
+        宜用五行：<b>{{ xi.favorable_elements.join('、') }}</b>
+        <span class="muted"> · 忌用：{{ xi.avoid_elements.join('、') || '—' }}</span>
       </p>
-      <p>宜用五行：{{ result.xi_yong.favorable_elements.join('、') }} · 忌用五行：{{ result.xi_yong.avoid_elements.join('、') || '—' }}</p>
-      <p class="muted">{{ result.xi_yong.reasoning }}</p>
+      <p class="muted">{{ xi.reasoning }}</p>
       <p class="muted">
-        事业：{{ (result.xi_yong.direction.career as string) }}；财运：{{ (result.xi_yong.direction.fortune as string) }}
+        事业：{{ xi.direction.career as string }}；财运：{{ xi.direction.fortune as string }}
       </p>
-      <p class="muted">{{ result.xi_yong.disclaimer }}</p>
+      <p class="disclaimer">{{ xi.disclaimer }}</p>
     </section>
   </div>
 </template>
 
 <style scoped>
 .chart {
-  padding: 12px;
+  padding-bottom: 12px;
 }
-.card {
-  background: #fff;
+.note-banner {
+  background: #fdf3e0;
+  border: 1px solid #ecd9a8;
+  color: #8a6d1a;
   border-radius: 10px;
-  padding: 14px;
-  margin-bottom: 12px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  padding: 10px 12px;
+  margin: 12px 14px;
+  font-size: 13px;
 }
-.card h3 {
-  margin: 0 0 10px;
-  font-size: 16px;
-  color: #8c2f39;
-}
-.pillars {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: center;
-}
-.pillars th,
-.pillars td {
-  border: 1px solid #eee;
-  padding: 6px;
+.info-row {
+  display: flex;
+  gap: 8px;
   font-size: 14px;
+  padding: 3px 0;
 }
+.info-row span {
+  color: var(--wx-muted);
+  flex: 0 0 68px;
+}
+
+/* 四柱 */
+.pillars {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.pillar {
+  background: #faf6ee;
+  border: 1px solid var(--wx-line);
+  border-radius: 10px;
+  text-align: center;
+  padding: 10px 4px 8px;
+}
+.pillar-label {
+  font-size: 12px;
+  color: var(--wx-muted);
+  margin-bottom: 4px;
+}
+.pillar-char {
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.15;
+}
+.pillar-char.empty {
+  color: var(--wx-line);
+}
+.pillar-shishen {
+  font-size: 11px;
+  color: var(--wx-ink);
+  margin-top: 3px;
+}
+.pillar-ganzhi {
+  font-size: 11px;
+  color: var(--wx-muted);
+  margin-top: 1px;
+}
+.pillar.dim {
+  opacity: 0.45;
+}
+
+/* 大运 / 流年 chips */
 .chips {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 .chip {
-  background: #f8f0f0;
+  background: #faf6ee;
+  border: 1px solid var(--wx-line);
   border-radius: 14px;
   padding: 5px 10px;
+  font-size: 13px;
+  color: var(--wx-ink);
+}
+.chip small {
+  color: var(--wx-muted);
+  margin-left: 2px;
+}
+
+/* 喜忌 */
+.xi-summary {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.xi-item {
+  flex: 1;
+  background: #faf6ee;
+  border-radius: 10px;
+  text-align: center;
+  padding: 8px 4px;
+}
+.xi-label {
+  display: block;
+  font-size: 11px;
+  color: var(--wx-muted);
+}
+.xi-value {
+  font-size: 20px;
+  font-weight: 600;
+}
+.xi-value.avoid {
+  color: var(--wx-primary-2);
+}
+.xi-line {
   font-size: 14px;
+  margin: 6px 0;
 }
 .muted {
-  color: #888;
+  color: var(--wx-muted);
   font-size: 13px;
 }
 .warn {
   color: #b8860b;
   font-size: 13px;
+  margin-top: 8px;
 }
-.accent {
-  color: #8c2f39;
+.disclaimer {
+  color: var(--wx-muted);
+  font-size: 12px;
+  margin-top: 8px;
+  border-top: 1px dashed var(--wx-line);
+  padding-top: 8px;
 }
 </style>

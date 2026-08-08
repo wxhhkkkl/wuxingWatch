@@ -9,8 +9,8 @@ export interface Pillar {
 
 export interface DaYunStep {
   ganzhi: string
-  start_year: number
-  end_year: number
+  start_year: number | null
+  end_year: number | null
 }
 
 export interface LiuNian {
@@ -50,10 +50,11 @@ export interface ChartResult {
   tai_yuan: string
   ming_gong: string | null
   shen_gong: string | null
-  da_yun: { start_age: number; start_month: number; steps: DaYunStep[] }
+  da_yun: { start_age: number | null; start_month: number | null; steps: DaYunStep[] }
   liu_nian: LiuNian[]
   xi_yong: XiYong
   missing_parts: string[]
+  note?: string
 }
 
 export interface User {
@@ -88,11 +89,12 @@ export interface RecordDetail {
 export interface BirthInput {
   name?: string
   gender: 'M' | 'F' | 'UNKNOWN'
-  calendar: 'solar' | 'lunar'
-  birth_date: string
+  calendar: 'solar' | 'lunar' | 'sizhu'
+  birth_date?: string
   birth_time?: string
   birth_month_is_leap?: boolean
   birth_place?: string
   longitude?: number
   latitude?: number
+  birth_pillars?: { year: string; month: string; day: string; time: string }
 }

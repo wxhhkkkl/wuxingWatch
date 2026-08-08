@@ -6,6 +6,7 @@ from lunar_python import Lunar
 
 from services import geo
 from services.bazi.engine import compute_chart as engine_chart
+from services.bazi.engine import compute_from_pillars as engine_from_pillars
 
 # 时辰名 → 代表时刻（取该时辰内不跨子夜的参考时刻）
 SHICHEN_TO_TIME = {
@@ -50,8 +51,13 @@ def _to_solar_date(payload) -> datetime:
     return datetime(d.year, d.month, d.day)
 
 
-def resolve_solar(payload) -> datetime:
-    """Resolve the (approximate) solar birth datetime used for storage/排盘."""
+def resolve_solar(payload) -> datetime | None:
+    """Resolve the (approximate) solar birth datetime used for storage/排盘.
+
+    Returns None for 四柱 input mode (no calendar date).
+    """
+    if payload.calendar == "sizhu":
+        return None
     solar_date = _to_solar_date(payload)
     hm = _parse_time(payload.birth_time)
     if hm:
@@ -59,12 +65,19 @@ def resolve_solar(payload) -> datetime:
     return solar_date.replace(hour=12, minute=0)  # 时辰不详：以午时作排盘基准并标记缺失
 
 
-def compute(payload) -> tuple[dict, datetime]:
+def compute(payload) -> tuple[dict, datetime | None]:
     """Compute a ChartResult.
 
     Returns (result_dict, resolved_solar_datetime). When 时辰 is unknown the
     hour-dependent parts are nulled and flagged in `missing_parts`.
     """
+    if payload.calendar == "sizhu":
+        pillars = payload.birth_pillars or {}
+        if not {"year", "month", "day", "time"}.issubset(pillars):
+            raise ValueError("四柱输入需提供 year/month/day/time 四个干支")
+        result = engine_from_pillars(pillars, payload.gender.value)
+        return result, None
+
     solar_birth = resolve_solar(payload)
     hm = _parse_time(payload.birth_time)
     longitude = payload.longitude

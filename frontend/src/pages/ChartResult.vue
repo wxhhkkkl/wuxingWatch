@@ -74,37 +74,45 @@ async function onGenerateImage() {
 </script>
 
 <template>
-  <div>
+  <div class="result-page">
+    <van-nav-bar title="排盘结果" left-text="返回" left-arrow @click-left="router.back()" />
+
     <template v-if="result">
       <ChartDisplay :result="result" />
-      <div class="actions">
-        <van-button type="primary" block @click="onOpenSave">保存记录</van-button>
-        <van-button plain type="primary" block :loading="generating" @click="onGenerateImage">
+
+      <!-- 底部操作栏 -->
+      <div class="action-bar">
+        <van-button class="action-btn" plain type="primary" :loading="generating" @click="onGenerateImage">
           生成长图
         </van-button>
+        <van-button class="action-btn" type="primary" @click="onOpenSave">保存记录</van-button>
       </div>
     </template>
+
     <van-empty v-else description="暂无排盘结果">
       <van-button type="primary" @click="goBack">去排盘</van-button>
     </van-empty>
 
+    <!-- 保存弹窗 -->
     <van-popup v-model:show="showSavePopup" position="bottom" round>
       <div class="save-form">
-        <h3>保存排盘记录</h3>
+        <p class="save-title">保存排盘记录</p>
         <van-field v-model="personName" label="人物" placeholder="如：儿子" />
         <van-field name="relationship" label="关系">
           <template #input>
             <van-radio-group v-model="relationship" direction="horizontal">
-              <van-radio name="SELF">本人</van-radio>
-              <van-radio name="CHILD">子女</van-radio>
-              <van-radio name="PARENT">父母</van-radio>
-              <van-radio name="OTHER">其他</van-radio>
+              <van-radio name="SELF" checked-color="#a63431">本人</van-radio>
+              <van-radio name="CHILD" checked-color="#a63431">子女</van-radio>
+              <van-radio name="PARENT" checked-color="#a63431">父母</van-radio>
+              <van-radio name="OTHER" checked-color="#a63431">其他</van-radio>
             </van-radio-group>
           </template>
         </van-field>
         <van-field v-model="notes" label="备注" placeholder="可选" />
         <div class="save-buttons">
-          <van-button type="primary" block :loading="saving" @click="onSave">确认保存</van-button>
+          <van-button type="primary" class="wx-btn-primary" block :loading="saving" @click="onSave">
+            确认保存
+          </van-button>
         </div>
       </div>
     </van-popup>
@@ -112,17 +120,35 @@ async function onGenerateImage() {
 </template>
 
 <style scoped>
-.actions {
-  padding: 12px 16px 24px;
+.result-page {
+  padding-bottom: 84px;
+}
+.action-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-width: 480px;
+  margin: 0 auto;
   display: flex;
-  flex-direction: column;
   gap: 10px;
+  padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+  background: rgba(255, 255, 255, 0.96);
+  border-top: 1px solid var(--wx-line);
+  backdrop-filter: blur(8px);
+}
+.action-btn {
+  flex: 1;
+  border-radius: 24px;
+  height: 44px;
 }
 .save-form {
-  padding: 16px;
+  padding: 18px 16px calc(18px + env(safe-area-inset-bottom));
 }
-.save-form h3 {
+.save-title {
   text-align: center;
+  font-size: 16px;
+  font-weight: 600;
   margin: 0 0 12px;
 }
 .save-buttons {

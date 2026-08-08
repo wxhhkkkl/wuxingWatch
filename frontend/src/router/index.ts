@@ -28,6 +28,11 @@ const router = createRouter({
       name: 'record-detail',
       component: () => import('../pages/RecordDetail.vue'),
     },
+    {
+      path: '/me',
+      name: 'me',
+      component: () => import('../pages/Me.vue'),
+    },
   ],
 })
 

@@ -11,7 +11,10 @@ router = APIRouter()
 
 @router.post("/predict")
 def predict(payload: BirthInput):
-    result, _ = chart_service.compute(payload)
+    try:
+        result, _ = chart_service.compute(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     return result
 
 

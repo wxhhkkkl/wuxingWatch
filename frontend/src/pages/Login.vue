@@ -58,33 +58,62 @@ async function onLogin() {
 
 <template>
   <div class="login-page">
-    <h1 class="title">手机号登录</h1>
-    <van-cell-group inset>
-      <van-field v-model="phone" type="tel" label="手机号" placeholder="11 位手机号" maxlength="11" />
-      <van-field v-model="code" label="验证码" placeholder="6 位验证码" maxlength="6">
-        <template #button>
-          <van-button size="small" :disabled="countdown > 0" :loading="sending" @click="onSend">
-            {{ countdown > 0 ? `${countdown}s` : '获取验证码' }}
-          </van-button>
-        </template>
-      </van-field>
-    </van-cell-group>
-    <div class="submit">
-      <van-button type="primary" block @click="onLogin">登录 / 注册</van-button>
+    <header class="login-hero">
+      <h1>五行 · 八字排盘</h1>
+      <p>手机号登录，保存你的命盘</p>
+    </header>
+
+    <div class="wx-card">
+      <p class="wx-card-title">登录 / 注册</p>
+      <van-cell-group :border="false">
+        <van-field
+          v-model="phone"
+          type="tel"
+          label="手机号"
+          placeholder="11 位手机号"
+          maxlength="11"
+        />
+        <van-field v-model="code" label="验证码" placeholder="6 位验证码" maxlength="6">
+          <template #button>
+            <van-button size="small" :disabled="countdown > 0" :loading="sending" @click="onSend">
+              {{ countdown > 0 ? `${countdown}s` : '获取验证码' }}
+            </van-button>
+          </template>
+        </van-field>
+      </van-cell-group>
+
+      <div class="submit">
+        <van-button type="primary" class="wx-btn-primary" block @click="onLogin">
+          登录 / 注册
+        </van-button>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
 .login-page {
-  padding: 40px 16px;
+  min-height: 100vh;
 }
-.title {
+.login-hero {
+  background: linear-gradient(160deg, #a63431, #b85043);
+  color: #fff;
   text-align: center;
-  font-size: 20px;
-  margin-bottom: 24px;
+  padding: 40px 20px 30px;
+  border-radius: 0 0 22px 22px;
+}
+.login-hero h1 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: 3px;
+  font-family: Georgia, "Songti SC", "STSong", "SimSun", serif;
+}
+.login-hero p {
+  margin: 8px 0 0;
+  font-size: 13px;
+  opacity: 0.85;
 }
 .submit {
-  margin-top: 24px;
+  margin-top: 18px;
 }
 </style>

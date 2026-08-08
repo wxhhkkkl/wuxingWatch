@@ -29,7 +29,7 @@ class BaziChart(Base):
     relationship_type: Mapped[str] = mapped_column("relationship", String(10), default="SELF")
     name: Mapped[str | None] = mapped_column(String(50), nullable=True)
     gender: Mapped[str | None] = mapped_column(String(10), nullable=True)
-    birth_solar: Mapped[datetime] = mapped_column(DateTime)
+    birth_solar: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     birth_input_is_lunar: Mapped[bool] = mapped_column(Boolean, default=False)
     birth_lunar: Mapped[str | None] = mapped_column(String(20), nullable=True)
     birth_place: Mapped[str | None] = mapped_column(String(100), nullable=True)

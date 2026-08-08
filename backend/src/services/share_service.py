@@ -54,7 +54,14 @@ def render_long_image(result: dict, person_name: str | None = None) -> bytes:
     lines: list[str] = []
     if person_name:
         lines.append(f"命主：{person_name}")
-    lines.append(f"出生：{result['solar_birth'][:16]}（农历 {result['lunar_birth']}）")
+    if result.get("solar_birth"):
+        lines.append(f"出生：{result['solar_birth'][:16]}（农历 {result['lunar_birth']}）")
+    else:
+        p = result["pillars"]
+        lines.append(
+            f"出生：四柱输入 {p['year']['ganzhi']} {p['month']['ganzhi']} "
+            f"{p['day']['ganzhi']} {p['time']['ganzhi']}"
+        )
 
     pillars = result["pillars"]
     p_line = "  ".join(
@@ -77,9 +84,15 @@ def render_long_image(result: dict, person_name: str | None = None) -> bytes:
     )
 
     dayun = result["da_yun"]
-    lines.append(f"大运：{dayun['start_age']} 岁起运")
+    if dayun.get("start_age"):
+        lines.append(f"大运：{dayun['start_age']} 岁起运")
+    else:
+        lines.append("大运：四柱输入，无起运岁数")
     for step in dayun["steps"][:4]:
-        lines.append(f"  {step['ganzhi']}（{step['start_year']}–{step['end_year']}）")
+        if step.get("start_year") is not None:
+            lines.append(f"  {step['ganzhi']}（{step['start_year']}–{step['end_year']}）")
+        else:
+            lines.append(f"  {step['ganzhi']}")
 
     lian = result["liu_nian"][:6]
     lines.append("流年：" + "  ".join(f"{n['year']} {n['ganzhi']}" for n in lian))
