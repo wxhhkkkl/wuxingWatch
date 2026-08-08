@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WuXing Watch BP</title>
+  <meta name="description" content="WuXing Watch business plan presentation" />
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f4ee;
+      --ink: #2f251c;
+      --muted: #8b7c6b;
+      --gold: #c9a46a;
+      --panel: rgba(255, 253, 248, 0.92);
+      --shadow: rgba(63, 48, 36, 0.18);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 14px clamp(16px, 4vw, 56px);
+      background: rgba(247, 244, 238, 0.86);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(201, 164, 106, 0.34);
+    }
+    .brand {
+      min-width: max-content;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+    .hint {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    nav {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 2px 0;
+      scrollbar-width: thin;
+    }
+    nav a {
+      flex: 0 0 auto;
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(201, 164, 106, 0.45);
+      border-radius: 999px;
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 700;
+      background: var(--panel);
+    }
+    nav a:hover { background: #3f3024; color: #fff7ea; }
+    main {
+      width: min(1400px, 100%);
+      margin: 0 auto;
+      padding: clamp(18px, 4vw, 42px) clamp(12px, 3vw, 28px) 64px;
+    }
+    .slide {
+      position: relative;
+      margin: 0 auto clamp(22px, 5vw, 54px);
+      border-radius: 10px;
+      background: #fffdf8;
+      box-shadow: 0 18px 48px var(--shadow);
+      overflow: hidden;
+      border: 1px solid rgba(201, 164, 106, 0.22);
+    }
+    .slide img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    .slide-number {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(63, 48, 36, 0.78);
+      color: #fff7ea;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+    footer {
+      padding: 22px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    @media (max-width: 720px) {
+      header { align-items: flex-start; flex-direction: column; gap: 10px; }
+      .hint { display: none; }
+      nav { width: 100%; }
+      main { padding-left: 8px; padding-right: 8px; }
+      .slide { border-radius: 6px; }
+      .slide-number { font-size: 10px; top: 8px; right: 8px; }
+    }
+    @media print {
+      header, footer { display: none; }
+      main { padding: 0; width: 100%; }
+      .slide { box-shadow: none; border: 0; margin: 0; page-break-after: always; }
+      .slide-number { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">WUXING WATCH BP</div>
+    <div class="hint">共 17 页，支持滚动浏览与页码跳转</div>
+    <nav aria-label="Slide navigation">
+      <a href="#slide-1" aria-label="Go to slide 1">1</a><a href="#slide-2" aria-label="Go to slide 2">2</a><a href="#slide-3" aria-label="Go to slide 3">3</a><a href="#slide-4" aria-label="Go to slide 4">4</a><a href="#slide-5" aria-label="Go to slide 5">5</a><a href="#slide-6" aria-label="Go to slide 6">6</a><a href="#slide-7" aria-label="Go to slide 7">7</a><a href="#slide-8" aria-label="Go to slide 8">8</a><a href="#slide-9" aria-label="Go to slide 9">9</a><a href="#slide-10" aria-label="Go to slide 10">10</a><a href="#slide-11" aria-label="Go to slide 11">11</a><a href="#slide-12" aria-label="Go to slide 12">12</a><a href="#slide-13" aria-label="Go to slide 13">13</a><a href="#slide-14" aria-label="Go to slide 14">14</a><a href="#slide-15" aria-label="Go to slide 15">15</a><a href="#slide-16" aria-label="Go to slide 16">16</a><a href="#slide-17" aria-label="Go to slide 17">17</a>
+    </nav>
+  </header>
+  <main>
+      <section class="slide" id="slide-1" aria-label="Slide 1">
+        <div class="slide-number">01 / 17</div>
+        <img src="slides/slide-1.png" alt="WuXing Watch BP Slide 1" loading="eager" />
+      </section>
+      <section class="slide" id="slide-2" aria-label="Slide 2">
+        <div class="slide-number">02 / 17</div>
+        <img src="slides/slide-2.png" alt="WuXing Watch BP Slide 2" loading="lazy" />
+      </section>
+      <section class="slide" id="slide-3" aria-label="Slide 3">
+        <div class="slide-number">03 / 17</div>
+        <img src="slides/slide-3.png" alt="WuXing Watch BP Slide 3" loading="lazy" />
+      </section>
+      <section class="slide" id="slide-4" aria-label="Slide 4">
+        <div class="slide-number">04 / 17</div>
+        <img src="slides/slide-4.png" alt="WuXing Watch BP Slide 4" loading="lazy" />
+      </section>
+      <section class="slide" id="slide-5" aria-label="Slide 5">
+        <div class="slide-number">05 / 17</div>
+        <img src="slides/slide-5.png" alt="WuXing Watch BP Slide 5" loading="lazy" />
+      </section>
+      <section class="slide" id="slide-6" aria-label="Slide 6">
+        <div class="slide-number">06 / 17</div>
+        <img src="slides/slide-6.png" alt="WuXing Watch BP Slide 6" loading="lazy" />
+      </section>
+      <section class="slide" id="slide-7" aria-label="Slide 7">
+        <div class="slide-number">07 / 17</div>
+        <img src="slides/slide-7.png" alt="WuXing Watch BP Slide 7" loading="lazy" />
+      </section>
+      <section class="slide" id="slide-8" aria-label="Slide 8">
+        <div class="slide-number">08 / 17</div>
+        <img src="slides/slide-8.png" alt="WuXing Watch BP Slide 8" loading="lazy" />
+      </section>
+      <section class="slide" id="slide-9" aria-label="Slide 9">
+        <div class="slide-number">09 / 17</div>
+        <img src="slides/slide-9.png" alt="WuXing Watch BP Slide 9" loading="lazy" />
+      </section>
+      <section class="slide" id="slide-10" aria-label="Slide 10">
+        <div class="slide-number">10 / 17</div>
+        <img src="slides/slide-10.png" alt="WuXing Watch BP Slide 10" loading="lazy" />
+      </section>
+      <section class="slide" id="slide-11" aria-label="Slide 11">
+        <div class="slide-number">11 / 17</div>
+        <img src="slides/slide-11.png" alt="WuXing Watch BP Slide 11" loading="lazy" />
+      </section>
+      <section class="slide" id="slide-12" aria-label="Slide 12">
+        <div class="slide-number">12 / 17</div>
+        <img src="slides/slide-12.png" alt="WuXing Watch BP Slide 12" loading="lazy" />
+      </section>
+      <section class="slide" id="slide-13" aria-label="Slide 13">
+        <div class="slide-number">13 / 17</div>
+        <img src="slides/slide-13.png" alt="WuXing Watch BP Slide 13" loading="lazy" />
+      </section>
+      <section class="slide" id="slide-14" aria-label="Slide 14">
+        <div class="slide-number">14 / 17</div>
+        <img src="slides/slide-14.png" alt="WuXing Watch BP Slide 14" loading="lazy" />
+      </section>
+      <section class="slide" id="slide-15" aria-label="Slide 15">
+        <div class="slide-number">15 / 17</div>
+        <img src="slides/slide-15.png" alt="WuXing Watch BP Slide 15" loading="lazy" />
+      </section>
+      <section class="slide" id="slide-16" aria-label="Slide 16">
+        <div class="slide-number">16 / 17</div>
+        <img src="slides/slide-16.png" alt="WuXing Watch BP Slide 16" loading="lazy" />
+      </section>
+      <section class="slide" id="slide-17" aria-label="Slide 17">
+        <div class="slide-number">17 / 17</div>
+        <img src="slides/slide-17.png" alt="WuXing Watch BP Slide 17" loading="lazy" />
+      </section>
+  </main>
+  <footer>WuXing Watch BP · Static HTML export</footer>
+</body>
+</html>
