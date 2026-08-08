@@ -2,7 +2,11 @@
 
 from datetime import datetime
 
-from services.bazi.solar_time import equation_of_time_minutes, true_solar_time
+from services.bazi.solar_time import (
+    equation_of_time_minutes,
+    true_solar_time,
+    tz_offset_hours,
+)
 
 
 def test_equation_of_time_bounds():
@@ -32,3 +36,17 @@ def test_standard_meridian_no_longitude_term():
     adjusted = true_solar_time(dt, 120.0)
     eot = equation_of_time_minutes(dt.timetuple().tm_yday)
     assert abs((adjusted - dt).total_seconds() / 60 - eot) < 0.01
+
+
+def test_tz_offset_hours_with_dst():
+    assert tz_offset_hours("Asia/Shanghai", datetime(2020, 6, 1)) == 8.0
+    assert tz_offset_hours("Europe/London", datetime(2020, 6, 1)) == 1.0  # 夏令时
+    assert tz_offset_hours("America/New_York", datetime(2020, 1, 1)) == -5.0
+
+
+def test_true_solar_time_timezone_aware():
+    # 伦敦 6月1日 12:00（UTC+1）：经度 -0.13 → 修正 4×(-0.13-15) ≈ -60.5 分 + EoT ≈ +2.3
+    dt = datetime(2020, 6, 1, 12, 0, 0)
+    adjusted = true_solar_time(dt, -0.13, tz_offset=1.0)
+    diff = (adjusted - dt).total_seconds() / 60
+    assert -62 <= diff <= -56

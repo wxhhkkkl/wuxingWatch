@@ -55,6 +55,10 @@ export interface ChartResult {
   xi_yong: XiYong
   missing_parts: string[]
   note?: string
+  birth_place?: string
+  timezone?: string
+  dst?: { in_dst: boolean; note: string; original_time: string; corrected_time: string } | null
+  sun?: { sunrise: string | null; sunset: string | null } | null
 }
 
 export interface User {
@@ -96,5 +100,6 @@ export interface BirthInput {
   birth_place?: string
   longitude?: number
   latitude?: number
+  timezone?: string
   birth_pillars?: { year: string; month: string; day: string; time: string }
 }

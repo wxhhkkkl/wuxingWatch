@@ -44,6 +44,54 @@ def test_true_solar_time_shifts_time():
     assert result["true_solar_time"].startswith("1990-06-01T23:0")
 
 
+def test_true_solar_time_timezone_aware_london():
+    # 伦敦 UTC+1（夏令时）：经度 -0.13 → 真太阳时约 11:01
+    result = compute_chart(
+        datetime(2020, 6, 1, 12, 0, 0), "M", longitude=-0.13, timezone="Europe/London"
+    )
+    assert result["true_solar_time"].startswith("2020-06-01T11:0")
+
+
+def test_dst_correction_china_1988():
+    # 1988-07-01 中国夏令时（UTC+9）：12:00 时钟 → 修正为标准 11:00 再排盘
+    result = compute_chart(
+        datetime(1988, 7, 1, 12, 0, 0), "M", longitude=116.41, timezone="Asia/Shanghai"
+    )
+    assert result["dst"] is not None and result["dst"]["in_dst"] is True
+    assert result["dst"]["corrected_time"].startswith("1988-07-01T11:0")
+    assert result["true_solar_time"].startswith("1988-07-01T10:4")
+    # 修正后进入巳时（若不修正则按午时）
+    assert result["pillars"]["time"]["ganzhi"] == "乙巳"
+
+
+def test_no_dst_when_not_applicable():
+    # 1991 年后中国已取消夏令时
+    result = compute_chart(
+        datetime(1995, 7, 1, 12, 0, 0), "M", longitude=116.41, timezone="Asia/Shanghai"
+    )
+    assert result["dst"] is None
+    assert result["true_solar_time"].startswith("1995-07-01T11:4")
+
+
+def test_no_dst_without_timezone():
+    assert compute_chart(datetime(1988, 7, 1, 12, 0, 0), "M")["dst"] is None
+
+
+def test_sunrise_sunset_in_result():
+    # 北京夏至：日出约 04:45、日落约 19:46
+    result = compute_chart(
+        datetime(2020, 6, 21, 12, 0, 0),
+        "M",
+        longitude=116.41,
+        latitude=39.90,
+        timezone="Asia/Shanghai",
+    )
+    sun = result["sun"]
+    assert sun is not None
+    assert sun["sunrise"].startswith("2020-06-21T04:4")
+    assert sun["sunset"].startswith("2020-06-21T19:4")
+
+
 def test_da_yun_start_age_positive():
     result = compute_chart(datetime(1990, 5, 20, 10, 30, 0), "M")
     assert result["da_yun"]["start_age"] > 0

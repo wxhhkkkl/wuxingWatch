@@ -37,6 +37,7 @@ class BirthInput(BaseModel):
     birth_place: str | None = None
     longitude: float | None = None
     latitude: float | None = None
+    timezone: str | None = Field(default=None, description="出生地 IANA 时区，如 Asia/Shanghai")
     birth_pillars: dict[str, str] | None = Field(
         default=None,
         description="仅 calendar=sizhu：四柱干支，键 year/month/day/time，如 {'year':'庚午',...}",

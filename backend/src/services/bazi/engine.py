@@ -4,7 +4,7 @@ Produces the full ChartResult: 四柱、大运、流年、人元司令、胎元�
 喜忌分析. 真太阳时 is applied before pillar computation when longitude is known.
 """
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from lunar_python import Solar
 from lunar_python.eightchar import Yun
@@ -19,7 +19,14 @@ from services.bazi.constants import (
     liunian_ganzhi,
     shishen,
 )
-from services.bazi.solar_time import true_solar_time
+from services.bazi.solar_time import (
+    DEFAULT_TZ_OFFSET,
+    is_dst,
+    standard_offset_hours,
+    true_solar_time,
+    tz_offset_hours,
+)
+from services.bazi.sun import sunrise_sunset
 
 GENDER_LUNAR = {"M": 1, "F": 0}
 
@@ -39,9 +46,49 @@ def _pillar(gan: str, zhi: str, day_master: str) -> dict:
     }
 
 
-def compute_chart(solar_birth: datetime, gender: str, longitude: float | None = None) -> dict:
-    """Compute the full ChartResult dict for a solar birth time."""
-    birth = true_solar_time(solar_birth, longitude) if longitude is not None else solar_birth
+def compute_chart(
+    solar_birth: datetime,
+    gender: str,
+    longitude: float | None = None,
+    latitude: float | None = None,
+    timezone: str | None = None,
+) -> dict:
+    """Compute the full ChartResult dict for a solar birth time.
+
+    真太阳时按出生地经度与 IANA 时区调整；若出生时刻处于夏令时，
+    将记录时钟（夏令时）修正为标准时间后再排盘，并在结果中注明。
+    同时给出出生地当日的日出/日落时间。
+    """
+    birth = solar_birth
+    dst_info = None
+    sun_std_off = DEFAULT_TZ_OFFSET
+    if longitude is not None:
+        if timezone:
+            std_off = standard_offset_hours(timezone, solar_birth)
+            sun_std_off = std_off
+            if is_dst(timezone, solar_birth):
+                delta_h = tz_offset_hours(timezone, solar_birth) - std_off
+                corrected = solar_birth - timedelta(hours=delta_h)
+                dst_info = {
+                    "in_dst": True,
+                    "note": "出生时间处于夏令时期间，已按标准时间自动修正后排盘",
+                    "original_time": solar_birth.isoformat(),
+                    "corrected_time": corrected.isoformat(),
+                }
+                birth = corrected
+            else:
+                birth = solar_birth
+            birth = true_solar_time(birth, longitude, tz_offset=std_off)
+        else:
+            birth = true_solar_time(solar_birth, longitude, tz_offset=DEFAULT_TZ_OFFSET)
+
+    sun = None
+    if longitude is not None and latitude is not None:
+        sr, ss = sunrise_sunset(solar_birth, latitude, longitude, tz_offset=sun_std_off)
+        sun = {
+            "sunrise": sr.isoformat() if sr else None,
+            "sunset": ss.isoformat() if ss else None,
+        }
 
     solar = Solar.fromYmdHms(
         birth.year, birth.month, birth.day, birth.hour, birth.minute, birth.second
@@ -98,6 +145,8 @@ def compute_chart(solar_birth: datetime, gender: str, longitude: float | None = 
         "da_yun": da_yun,
         "liu_nian": liu_nian,
         "xi_yong": xi,
+        "dst": dst_info,
+        "sun": sun,
     }
 
 
@@ -188,4 +237,6 @@ def compute_from_pillars(pillars: dict[str, str], gender: str) -> dict:
         "xi_yong": xi,
         "missing_parts": ["da_yun_start_age", "absolute_years"],
         "note": "四柱输入模式：无法精确计算起运岁数与各步大运对应年份，大运仅展示干支顺序。",
+        "dst": None,
+        "sun": None,
     }

@@ -26,19 +26,37 @@ const pillarList = computed(() =>
 )
 
 const xi = computed(() => props.result.xi_yong)
+
+function fmtDateTime(s: string): string {
+  const d = new Date(s)
+  if (isNaN(d.getTime())) return s
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 ${p(d.getHours())}:${p(d.getMinutes())}`
+}
+
+function fmtTime(s: string): string {
+  const d = new Date(s)
+  if (isNaN(d.getTime())) return s
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${p(d.getHours())}:${p(d.getMinutes())}`
+}
 </script>
 
 <template>
   <div class="chart">
     <p v-if="result.note" class="note-banner">{{ result.note }}</p>
+    <div v-if="result.dst?.in_dst" class="dst-banner">
+      夏令时提示：{{ result.dst.note }}<br />
+      原时间 {{ fmtDateTime(result.dst.original_time) }} → 修正为 {{ fmtDateTime(result.dst.corrected_time) }}
+    </div>
 
     <!-- 出生信息 -->
     <section class="wx-card">
       <p class="wx-card-title">出生信息</p>
       <template v-if="result.solar_birth">
-        <div class="info-row"><span>公历</span>{{ result.solar_birth.slice(0, 16) }}</div>
+        <div class="info-row"><span>公历</span>{{ fmtDateTime(result.solar_birth) }}</div>
         <div class="info-row"><span>农历</span>{{ result.lunar_birth }}</div>
-        <div class="info-row"><span>真太阳时</span>{{ result.true_solar_time.slice(0, 16) }}</div>
+        <div class="info-row"><span>真太阳时</span>{{ fmtDateTime(result.true_solar_time) }}</div>
       </template>
       <template v-else>
         <div class="info-row"><span>方式</span>四柱输入</div>
@@ -46,6 +64,15 @@ const xi = computed(() => props.result.xi_yong)
           <span>四柱</span>
           {{ result.pillars.year?.ganzhi }} {{ result.pillars.month?.ganzhi }}
           {{ result.pillars.day?.ganzhi }} {{ result.pillars.time?.ganzhi }}
+        </div>
+      </template>
+      <div class="info-row"><span>地区</span>{{ result.birth_place || '—' }}</div>
+      <template v-if="result.sun">
+        <div class="info-row">
+          <span>日出</span>{{ result.sun.sunrise ? fmtTime(result.sun.sunrise) : '极夜' }}
+        </div>
+        <div class="info-row">
+          <span>日落</span>{{ result.sun.sunset ? fmtTime(result.sun.sunset) : '极昼' }}
         </div>
       </template>
     </section>
@@ -158,6 +185,16 @@ const xi = computed(() => props.result.xi_yong)
   padding: 10px 12px;
   margin: 12px 14px;
   font-size: 13px;
+}
+.dst-banner {
+  background: #e8f2fb;
+  border: 1px solid #bcd8ee;
+  color: #2d5f8a;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin: 12px 14px;
+  font-size: 13px;
+  line-height: 1.6;
 }
 .info-row {
   display: flex;

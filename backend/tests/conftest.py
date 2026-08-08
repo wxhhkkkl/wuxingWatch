@@ -7,6 +7,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from db.session import Base, get_db
+from models.city import GeoCity
 from models.user import User
 from services.otp_store import otp_store
 from services.password_auth import hash_password, login_attempts
@@ -75,9 +76,35 @@ def client():
             db.close()
 
     app.dependency_overrides[get_db] = override_get_db
-    # 预置管理员（手机号 13800000000，密码登录）
+    # 预置管理员（手机号 13800000000，密码登录）与测试城市
     s = TestSession()
     s.add(User(phone="13800000000", role="admin", password_hash=hash_password("AdminPass123")))
+    s.add_all(
+        [
+            GeoCity(
+                name="北京市",
+                asciiname="Beijing",
+                alternatenames="北京,Běijīng,Beijing",
+                country_code="CN",
+                latitude=39.90,
+                longitude=116.41,
+                timezone="Asia/Shanghai",
+                population=20000000,
+                name_zh="北京",
+                admin1_zh="北京市",
+            ),
+            GeoCity(
+                name="London",
+                asciiname="London",
+                alternatenames="London,伦敦",
+                country_code="GB",
+                latitude=51.51,
+                longitude=-0.13,
+                timezone="Europe/London",
+                population=9000000,
+            ),
+        ]
+    )
     s.commit()
     s.close()
     with TestClient(app) as c:

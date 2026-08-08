@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { showToast } from 'vant'
 import { predictChart } from '../api/charts'
+import { searchGeo, type GeoCity } from '../api/geo'
 import { useChartStore } from '../stores/chart'
 import type { BirthInput } from '../types'
 
@@ -20,9 +21,19 @@ const name = ref('')
 const birthDate = ref('1990-05-20')
 const birthTime = ref('12:00')
 const unknownTime = ref(false)
-const birthPlace = ref('北京市')
+const birthPlace = ref('')
+const birthLatitude = ref<number>()
+const birthLongitude = ref<number>()
+const birthTimezone = ref<string>()
 const isLeapMonth = ref(false)
 const loading = ref(false)
+
+// 全球地点模糊搜索
+const showGeoSearch = ref(false)
+const geoQuery = ref('')
+const geoResults = ref<GeoCity[]>([])
+const geoSearching = ref(false)
+let geoDebounce: number | undefined
 
 // 四柱输入
 const pillars = ref<Record<PillarKey, string>>({ year: '庚午', month: '辛巳', day: '乙酉', time: '辛巳' })
@@ -73,6 +84,43 @@ function onTimeConfirm() {
   showTimePicker.value = false
 }
 
+function openGeoSearch() {
+  showGeoSearch.value = true
+  geoQuery.value = ''
+  geoResults.value = []
+}
+
+function onGeoQuery() {
+  if (geoDebounce) window.clearTimeout(geoDebounce)
+  if (!geoQuery.value.trim()) {
+    geoResults.value = []
+    return
+  }
+  geoDebounce = window.setTimeout(async () => {
+    geoSearching.value = true
+    try {
+      geoResults.value = (await searchGeo(geoQuery.value.trim())).items
+    } catch {
+      geoResults.value = []
+    } finally {
+      geoSearching.value = false
+    }
+  }, 300)
+}
+
+function geoLabel(city: GeoCity): string {
+  if (city.name_zh) return city.admin1_zh ? `${city.name_zh} · ${city.admin1_zh}` : city.name_zh
+  return city.name
+}
+
+function selectGeo(city: GeoCity) {
+  birthPlace.value = geoLabel(city)
+  birthLatitude.value = city.latitude
+  birthLongitude.value = city.longitude
+  birthTimezone.value = city.timezone ?? undefined
+  showGeoSearch.value = false
+}
+
 async function onSubmit() {
   const base = { name: name.value || undefined, gender: gender.value }
   let input: BirthInput
@@ -86,6 +134,9 @@ async function onSubmit() {
       birth_time: unknownTime.value ? undefined : birthTime.value,
       birth_month_is_leap: isLeapMonth.value,
       birth_place: birthPlace.value || undefined,
+      longitude: birthLongitude.value,
+      latitude: birthLatitude.value,
+      timezone: birthTimezone.value,
     }
   }
   loading.value = true
@@ -161,7 +212,13 @@ async function onSubmit() {
               <van-checkbox v-model="unknownTime" checked-color="#a63431">不知道时辰</van-checkbox>
             </template>
           </van-field>
-          <van-field v-model="birthPlace" label="出生地点" placeholder="如：北京市" />
+          <van-field
+            :model-value="birthPlace || '未选择'"
+            label="出生地点"
+            readonly
+            is-link
+            @click="openGeoSearch"
+          />
         </template>
 
         <van-field name="gender" label="性别">
@@ -211,6 +268,30 @@ async function onSubmit() {
       />
     </van-popup>
 
+    <!-- 全球地点模糊搜索 -->
+    <van-popup v-model:show="showGeoSearch" position="bottom" round>
+      <div class="geo-search">
+        <van-search
+          v-model="geoQuery"
+          placeholder="搜索全球城市，如：北京 / London"
+          @update:model-value="onGeoQuery"
+        />
+        <van-loading v-if="geoSearching" class="geo-loading" />
+        <van-cell
+          v-for="c in geoResults"
+          :key="c.name + c.latitude"
+          :title="geoLabel(c)"
+          :label="c.country_code ?? ''"
+          is-link
+          @click="selectGeo(c)"
+        />
+        <van-empty
+          v-if="!geoSearching && geoQuery && geoResults.length === 0"
+          description="未找到该城市"
+        />
+      </div>
+    </van-popup>
+
     <!-- 四柱干支选择器（天干 + 地支两列） -->
     <van-popup v-model:show="showPillarPicker" position="bottom" round>
       <van-picker
@@ -230,5 +311,8 @@ async function onSubmit() {
 }
 .submit {
   margin: 18px 0 2px;
+}
+.geo-loading {
+  margin: 16px auto;
 }
 </style>

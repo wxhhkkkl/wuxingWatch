@@ -76,6 +76,8 @@ def compute(payload) -> tuple[dict, datetime | None]:
         if not {"year", "month", "day", "time"}.issubset(pillars):
             raise ValueError("四柱输入需提供 year/month/day/time 四个干支")
         result = engine_from_pillars(pillars, payload.gender.value)
+        result["birth_place"] = payload.birth_place
+        result["timezone"] = None
         return result, None
 
     solar_birth = resolve_solar(payload)
@@ -85,7 +87,13 @@ def compute(payload) -> tuple[dict, datetime | None]:
         coords = geo.lookup(payload.birth_place)
         longitude = coords[0] if coords else None
 
-    result = engine_chart(solar_birth, payload.gender.value, longitude=longitude)
+    result = engine_chart(
+        solar_birth,
+        payload.gender.value,
+        longitude=longitude,
+        latitude=payload.latitude,
+        timezone=payload.timezone,
+    )
 
     if hm:
         result["missing_parts"] = []
@@ -94,4 +102,6 @@ def compute(payload) -> tuple[dict, datetime | None]:
         result["ming_gong"] = None
         result["shen_gong"] = None
         result["missing_parts"] = ["hour_pillar", "ming_gong", "shen_gong"]
+    result["birth_place"] = payload.birth_place
+    result["timezone"] = payload.timezone
     return result, solar_birth
