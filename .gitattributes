@@ -1,0 +1,2 @@
+# 保证 .sh 脚本始终以 LF 换行检出，避免 Windows CRLF 导致 Linux 部署失败。
+*.sh text eol=lf

@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { showToast } from 'vant'
 import { predictChart } from '../api/charts'
 import { searchGeo, type GeoCity } from '../api/geo'
 import { useChartStore } from '../stores/chart'
+import { useAuthStore } from '../stores/auth'
 import type { BirthInput } from '../types'
 
 const GAN = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'] as const
@@ -14,6 +15,7 @@ type PillarKey = (typeof PILLAR_KEYS)[number]
 
 const router = useRouter()
 const chartStore = useChartStore()
+const authStore = useAuthStore()
 
 const calendar = ref<'solar' | 'lunar' | 'sizhu'>('solar')
 const gender = ref<'M' | 'F' | 'UNKNOWN'>('M')
@@ -27,6 +29,14 @@ const birthLongitude = ref<number>()
 const birthTimezone = ref<string>()
 const isLeapMonth = ref(false)
 const loading = ref(false)
+
+// 精确时辰（日出日落定位法）：默认关；登录用户偏好持久化（FR-001/FR-012）
+const preciseShichen = ref(
+  authStore.isLoggedIn && localStorage.getItem('precise_shichen') === 'true',
+)
+watch(preciseShichen, (v) => {
+  if (authStore.isLoggedIn) localStorage.setItem('precise_shichen', String(v))
+})
 
 // 全球地点模糊搜索
 const showGeoSearch = ref(false)
@@ -137,6 +147,7 @@ async function onSubmit() {
       longitude: birthLongitude.value,
       latitude: birthLatitude.value,
       timezone: birthTimezone.value,
+      precise_shichen: preciseShichen.value || undefined,
     }
   }
   loading.value = true
@@ -210,6 +221,13 @@ async function onSubmit() {
           <van-field name="time-unknown" label=" ">
             <template #input>
               <van-checkbox v-model="unknownTime" checked-color="#a63431">不知道时辰</van-checkbox>
+            </template>
+          </van-field>
+          <van-field v-if="!unknownTime" name="precise-shichen" label=" ">
+            <template #input>
+              <van-checkbox v-model="preciseShichen" checked-color="#a63431">
+                精确时辰（日出日落定位法）
+              </van-checkbox>
             </template>
           </van-field>
           <van-field

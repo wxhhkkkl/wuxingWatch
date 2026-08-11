@@ -13,6 +13,17 @@ from services.bazi.solar_time import equation_of_time_minutes
 # 官方日出/日落天顶角：90°50'（含大气折射 + 太阳半径）
 ZENITH = 90.833
 
+# 日出/日落对应的"视高度角零点"修正（度）：视高度 0° = 真高度 -0.833°
+HORIZON_DIP = ZENITH - 90.0
+
+
+def solar_declination(date: datetime) -> float:
+    """当日太阳赤纬（度，NOAA 近似，与 _event_ut_hour 同一套公式）。"""
+    t = date.timetuple().tm_yday + 0.5  # 正午近似
+    m = math.radians(0.9856 * t - 3.289)  # 太阳平近点角
+    l_deg = math.degrees(m) + 1.916 * math.sin(m) + 0.020 * math.sin(2 * m) + 282.634
+    return math.degrees(math.asin(0.39782 * math.sin(math.radians(l_deg))))
+
 
 def _event_ut_hour(
     day_of_year: int, latitude: float, longitude: float, is_sunrise: bool

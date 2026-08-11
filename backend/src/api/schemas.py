@@ -42,6 +42,10 @@ class BirthInput(BaseModel):
         default=None,
         description="仅 calendar=sizhu：四柱干支，键 year/month/day/time，如 {'year':'庚午',...}",
     )
+    precise_shichen: bool = Field(
+        default=False,
+        description="精确时辰（日出日落定位法）：按当日日出/正午/日落/子夜划分 24 段确定时辰",
+    )
 
     @model_validator(mode="after")
     def _validate_birth_date(self):

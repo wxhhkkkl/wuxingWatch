@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import type { ChartResult, Pillar } from '../types'
 
 const props = defineProps<{ result: ChartResult }>()
+
+const router = useRouter()
 
 const WX_COLOR: Record<string, string> = {
   木: 'var(--wx-mu)',
@@ -56,7 +59,19 @@ function fmtTime(s: string): string {
       <template v-if="result.solar_birth">
         <div class="info-row"><span>公历</span>{{ fmtDateTime(result.solar_birth) }}</div>
         <div class="info-row"><span>农历</span>{{ result.lunar_birth }}</div>
-        <div class="info-row"><span>真太阳时</span>{{ fmtDateTime(result.true_solar_time) }}</div>
+        <div
+          class="info-row"
+          :class="{ 'is-link': result.shichen }"
+          @click="result.shichen && router.push('/shichen')"
+        >
+          <span>真太阳时</span>{{ fmtDateTime(result.true_solar_time) }}
+          <small v-if="result.shichen" class="muted">查看时辰详解 ›</small>
+        </div>
+        <div v-if="result.shichen?.applied && result.shichen.shichen" class="info-row">
+          <span>精确时辰</span>
+          {{ result.shichen.shichen }}时
+          <small class="muted">传统均分法：{{ result.shichen.traditional_shichen }}时</small>
+        </div>
       </template>
       <template v-else>
         <div class="info-row"><span>方式</span>四柱输入</div>
@@ -207,6 +222,10 @@ function fmtTime(s: string): string {
 .info-row span {
   color: var(--wx-muted);
   flex: 0 0 68px;
+}
+.info-row.is-link {
+  cursor: pointer;
+  color: var(--wx-primary-2, #a63431);
 }
 
 /* 四柱 */

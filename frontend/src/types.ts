@@ -35,6 +35,37 @@ export interface XiYong {
   disclaimer: string
 }
 
+export interface ShichenMoments {
+  sunrise: string | null
+  sunset: string | null
+  solar_noon: string
+  solar_midnight: string
+  prev_sunrise: string | null
+  prev_noon: string
+  prev_sunset: string | null
+  next_sunrise: string | null
+}
+
+export interface ShichenSegment {
+  index: number
+  start: string
+  end: string
+  shichen: string
+  alt_start: number | null
+  alt_end: number | null
+}
+
+export interface ShichenDetail {
+  applied: boolean
+  fallback: boolean
+  shichen: string
+  traditional_shichen: string | null
+  segment_index: number | null
+  day_offset: number
+  moments: ShichenMoments
+  segments: ShichenSegment[]
+}
+
 export interface ChartResult {
   solar_birth: string
   true_solar_time: string
@@ -64,6 +95,7 @@ export interface ChartResult {
     solar_noon: string
     solar_midnight: string
   } | null
+  shichen?: ShichenDetail
 }
 
 export interface User {
@@ -107,4 +139,5 @@ export interface BirthInput {
   latitude?: number
   timezone?: string
   birth_pillars?: { year: string; month: string; day: string; time: string }
+  precise_shichen?: boolean
 }

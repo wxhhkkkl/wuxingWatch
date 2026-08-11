@@ -14,6 +14,11 @@ const router = createRouter({
       component: () => import('../pages/ChartResult.vue'),
     },
     {
+      path: '/shichen',
+      name: 'shichen',
+      component: () => import('../pages/ShichenDetail.vue'),
+    },
+    {
       path: '/login',
       name: 'login',
       component: () => import('../pages/Login.vue'),

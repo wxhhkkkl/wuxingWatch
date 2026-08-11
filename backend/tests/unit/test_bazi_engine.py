@@ -2,6 +2,9 @@
 
 from datetime import datetime
 
+from lunar_python import Lunar
+
+from services.bazi.constants import GAN_LIST, ZHI_LIST
 from services.bazi.engine import compute_chart, compute_from_pillars
 
 
@@ -134,3 +137,68 @@ def test_compute_from_pillars_inverse_da_yun():
     assert yang_male["da_yun"]["steps"][0]["ganzhi"] == "壬午"  # 辛巳顺推
     assert yin_female["da_yun"]["steps"][0]["ganzhi"] == "乙丑"  # 甲子顺推
     assert yin_male["da_yun"]["steps"][0]["ganzhi"] == "戊寅"  # 己卯逆推（己卯前一位戊寅）
+
+
+# ---------- T102: 精确时辰（日出日落定位法）引擎接入 ----------
+
+BJ = {"longitude": 116.41, "latitude": 39.90, "timezone": "Asia/Shanghai"}
+
+
+def test_precise_shichen_overrides_time_pillar():
+    """2020-06-21 06:30 北京：传统均分(真太阳时≈06:14)为卯时；精确法落入辰时段。"""
+    result = compute_chart(datetime(2020, 6, 21, 6, 30, 0), "M", precise_shichen=True, **BJ)
+    sc = result["shichen"]
+    assert sc is not None and sc["applied"] is True and sc["fallback"] is False
+    assert sc["shichen"] == "辰"
+    assert sc["traditional_shichen"] == "卯"
+    assert sc["day_offset"] == 0
+    assert result["pillars"]["time"]["zhi"] == "辰"
+    # 时干按五鼠遁由日干推
+    dm = result["day_master"]
+    expected_gan = GAN_LIST[((GAN_LIST.index(dm) % 5) * 2 + ZHI_LIST.index("辰")) % 10]
+    assert result["pillars"]["time"]["gan"] == expected_gan
+
+
+def test_precise_shichen_block_present_but_not_applied_by_default():
+    result = compute_chart(datetime(2020, 6, 21, 6, 30, 0), "M", **BJ)
+    sc = result["shichen"]
+    assert sc is not None and sc["applied"] is False
+    # 未开启：时柱沿用既有规则（卯时）
+    assert result["pillars"]["time"]["zhi"] == "卯"
+
+
+def test_precise_shichen_night_zi_rolls_day_pillar():
+    """子初至太阳子夜出生（夜子时）：日柱按次日，时柱=次日子时。"""
+    result = compute_chart(datetime(2020, 6, 21, 23, 35, 0), "M", precise_shichen=True, **BJ)
+    sc = result["shichen"]
+    assert sc["shichen"] == "子" and sc["day_offset"] == 1
+    next_day = Lunar.fromYmd(2020, 6, 22)
+    exp_gan, exp_zhi = next_day.getDayGan(), next_day.getDayZhi()
+    assert result["pillars"]["day"]["ganzhi"] == exp_gan + exp_zhi
+    assert result["day_master"] == exp_gan
+    exp_time_gan = GAN_LIST[((GAN_LIST.index(exp_gan) % 5) * 2 + 0) % 10]
+    assert result["pillars"]["time"]["ganzhi"] == exp_time_gan + "子"
+
+
+def test_precise_shichen_moments_use_civil_clock_with_dst():
+    """1988 中国夏令时：分界时刻以民用钟（UTC+9）表示，正午约 13:18。"""
+    result = compute_chart(
+        datetime(1988, 7, 1, 12, 30, 0), "M", precise_shichen=True, **BJ
+    )
+    assert result["shichen"]["moments"]["solar_noon"].startswith("1988-07-01T13:1")
+
+
+def test_shichen_block_absent_without_coordinates():
+    result = compute_chart(datetime(2020, 6, 21, 6, 30, 0), "M", precise_shichen=True)
+    assert result["shichen"] is None
+
+
+def test_shichen_failure_omits_block(monkeypatch):
+    """历算失败时不影响其余排盘（Edge：超出支持范围）。"""
+    monkeypatch.setattr(
+        "services.bazi.engine.shichen.build_detail",
+        lambda *a, **k: (_ for _ in ()).throw(ValueError("out of range")),
+    )
+    result = compute_chart(datetime(2020, 6, 21, 6, 30, 0), "M", precise_shichen=True, **BJ)
+    assert result["shichen"] is None
+    assert result["pillars"]["time"]["zhi"] == "卯"  # 回退既有规则

@@ -60,7 +60,7 @@ def _extract_zh(alternatenames: str | None) -> str | None:
         return None
     for run in runs:
         for suffix in _ADM_SUFFIX:
-            if run.endswith(suffix) and len(run) > len(suffix):
+            if run.endswith(suffix) and len(run) - len(suffix) >= 2:
                 return run[: -len(suffix)]
     return min(runs, key=len)
 

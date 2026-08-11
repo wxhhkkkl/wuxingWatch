@@ -6,10 +6,10 @@ Produces the full ChartResult: 四柱、大运、流年、人元司令、胎元�
 
 from datetime import datetime, timedelta
 
-from lunar_python import Solar
+from lunar_python import Lunar, Solar
 from lunar_python.eightchar import Yun
 
-from services.bazi import hidden_stems, xiyong
+from services.bazi import hidden_stems, shichen, xiyong
 from services.bazi.constants import (
     GAN_LIST,
     GAN_WUXING,
@@ -46,12 +46,23 @@ def _pillar(gan: str, zhi: str, day_master: str) -> dict:
     }
 
 
+def _hour_gan(day_gan: str, zhi: str) -> str:
+    """五鼠遁：甲己还加甲，乙庚丙作初……由日干推时干。"""
+    idx = ((GAN_LIST.index(day_gan) % 5) * 2 + ZHI_LIST.index(zhi)) % 10
+    return GAN_LIST[idx]
+
+
+def _iso(dt) -> str | None:
+    return dt.isoformat() if dt is not None else None
+
+
 def compute_chart(
     solar_birth: datetime,
     gender: str,
     longitude: float | None = None,
     latitude: float | None = None,
     timezone: str | None = None,
+    precise_shichen: bool = False,
 ) -> dict:
     """Compute the full ChartResult dict for a solar birth time.
 
@@ -112,6 +123,59 @@ def compute_chart(
     }
     pillars["day"]["shishen"] = "日主"
 
+    # 精确时辰（日出日落定位法）：划分块始终随经纬度返回（供详情页参考），
+    # 仅在 precise_shichen=True 时覆盖时柱/日柱（applied=True）。
+    shichen_block = None
+    if longitude is not None and latitude is not None:
+        try:
+            # 分界以民用钟表时刻表示（含 DST），与出生时刻同一时钟基准
+            civil_off = (
+                tz_offset_hours(timezone, solar_birth) if timezone else sun_std_off
+            )
+            detail = shichen.build_detail(
+                solar_birth, latitude, longitude, tz_offset=civil_off
+            )
+            shichen_block = {
+                "applied": False,
+                "fallback": detail["fallback"],
+                "shichen": detail["shichen"],
+                "traditional_shichen": eight.getTimeZhi(),
+                "segment_index": detail["segment_index"],
+                "day_offset": detail["day_offset"],
+                "moments": {k: _iso(v) for k, v in detail["moments"].items()},
+                "segments": [
+                    {
+                        "index": s["index"],
+                        "start": _iso(s["start"]),
+                        "end": _iso(s["end"]),
+                        "shichen": s["shichen"],
+                        "alt_start": s["alt_start"],
+                        "alt_end": s["alt_end"],
+                    }
+                    for s in detail["segments"]
+                ],
+            }
+        except ValueError:
+            shichen_block = None  # 超出历算范围等：不影响其余排盘
+
+    if precise_shichen and shichen_block is not None:
+        shichen_block["applied"] = True
+        new_zhi = detail["shichen"]
+        if detail["day_offset"] == 1:  # 夜子时：子初换日，日柱取次日
+            nxt = solar_birth + timedelta(days=1)
+            next_lunar = Lunar.fromYmd(nxt.year, nxt.month, nxt.day)
+            day_gan, day_zhi = next_lunar.getDayGan(), next_lunar.getDayZhi()
+        else:
+            day_gan, day_zhi = eight.getDayGan(), eight.getDayZhi()
+        day_master = day_gan
+        pillars = {
+            "year": _pillar(eight.getYearGan(), eight.getYearZhi(), day_master),
+            "month": _pillar(eight.getMonthGan(), eight.getMonthZhi(), day_master),
+            "day": _pillar(day_gan, day_zhi, day_master),
+            "time": _pillar(_hour_gan(day_gan, new_zhi), new_zhi, day_master),
+        }
+        pillars["day"]["shishen"] = "日主"
+
     # 大运（起运按子平惯例，实岁展示）
     yun = Yun(eight, GENDER_LUNAR.get(gender, 0))
     da_yun = {
@@ -154,6 +218,7 @@ def compute_chart(
         "xi_yong": xi,
         "dst": dst_info,
         "sun": sun,
+        "shichen": shichen_block,
     }
 
 
@@ -246,4 +311,5 @@ def compute_from_pillars(pillars: dict[str, str], gender: str) -> dict:
         "note": "四柱输入模式：无法精确计算起运岁数与各步大运对应年份，大运仅展示干支顺序。",
         "dst": None,
         "sun": None,
+        "shichen": None,
     }

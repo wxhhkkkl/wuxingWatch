@@ -93,6 +93,7 @@ def compute(payload) -> tuple[dict, datetime | None]:
         longitude=longitude,
         latitude=payload.latitude,
         timezone=payload.timezone,
+        precise_shichen=bool(getattr(payload, "precise_shichen", False)) and hm is not None,
     )
 
     if hm:
@@ -102,6 +103,12 @@ def compute(payload) -> tuple[dict, datetime | None]:
         result["ming_gong"] = None
         result["shen_gong"] = None
         result["missing_parts"] = ["hour_pillar", "ming_gong", "shen_gong"]
+        if result.get("shichen"):
+            # 时辰不详：划分块仍可参考，但归属与对比无意义
+            result["shichen"]["shichen"] = None
+            result["shichen"]["traditional_shichen"] = None
+            result["shichen"]["segment_index"] = None
+            result["shichen"]["day_offset"] = 0
     result["birth_place"] = payload.birth_place
     result["timezone"] = payload.timezone
     return result, solar_birth
