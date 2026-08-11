@@ -5,12 +5,46 @@ export interface Pillar {
   gan_wuxing: string
   zhi_wuxing: string
   shishen: string
+  detail?: PillarDetail
+}
+
+export interface CangGan {
+  gan: string
+  shishen: string
+}
+
+export interface PillarDetail {
+  gan_shishen: string
+  zhi_shishen: string
+  cang_gan: CangGan[]
+  xing_yun: string
+  zi_zuo: string
+  xun_kong: string
+  na_yin: string
+  shen_sha: string[]
+}
+
+export interface LiuNianStep {
+  year: number
+  gan: string
+  zhi: string
+  ganzhi: string
+  gan_shishen: string
+  zhi_shishen: string
+  detail?: PillarDetail
 }
 
 export interface DaYunStep {
   ganzhi: string
   start_year: number | null
   end_year: number | null
+  gan?: string
+  zhi?: string
+  gan_shishen?: string
+  zhi_shishen?: string
+  start_age_xu?: number | null
+  detail?: PillarDetail
+  liu_nian?: LiuNianStep[] | null
 }
 
 export interface LiuNian {
@@ -96,6 +130,12 @@ export interface ChartResult {
     solar_midnight: string
   } | null
   shichen?: ShichenDetail
+  jieqi?: {
+    prev: { name: string; time: string; days: number; hours: number }
+    next: { name: string; time: string; days: number; hours: number }
+  } | null
+  xing_zuo?: string | null
+  xing_xiu?: string | null
 }
 
 export interface User {

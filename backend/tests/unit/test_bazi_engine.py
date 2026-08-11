@@ -195,6 +195,98 @@ def test_default_chart_rolls_day_pillar_after_23():
     assert late["pillars"]["month"]["ganzhi"] == day["pillars"]["month"]["ganzhi"]
 
 
+# ---------- 柱明细（004：PillarDetail 附加到四柱） ----------
+
+
+def test_pillars_carry_detail():
+    """参考命例 1987-05-31 12:00 = 丁卯/乙巳/庚辰/壬午：年柱 detail 与参考图一致。"""
+    result = compute_chart(datetime(1987, 5, 31, 12, 0, 0), "M")
+    d = result["pillars"]["year"]["detail"]
+    assert d["gan_shishen"] == "正官"
+    assert d["cang_gan"] == [{"gan": "乙", "shishen": "正财"}]
+    assert d["xing_yun"] == "胎" and d["zi_zuo"] == "病"
+    assert d["xun_kong"] == "戌亥" and d["na_yin"] == "炉中火"
+    assert isinstance(d["shen_sha"], list)
+    # 日柱主星按性别显示元男
+    assert result["pillars"]["day"]["detail"]["gan_shishen"] == "元男"
+    for key in ("year", "month", "day", "time"):
+        assert result["pillars"][key]["detail"] is not None
+
+
+def test_pillars_detail_day_label_by_gender():
+    assert compute_chart(datetime(1987, 5, 31, 12, 0, 0), "F")["pillars"]["day"]["detail"]["gan_shishen"] == "元女"
+    assert compute_chart(datetime(1987, 5, 31, 12, 0, 0), "UNKNOWN")["pillars"]["day"]["detail"]["gan_shishen"] == "日主"
+
+
+# ---------- 大运扩展（004：联动数据） ----------
+
+
+def test_da_yun_steps_enriched():
+    result = compute_chart(datetime(1987, 5, 31, 12, 0, 0), "M")
+    steps = result["da_yun"]["steps"]
+    assert len(steps) >= 2
+    for s in steps:
+        assert s["gan"] == s["ganzhi"][0] and s["zhi"] == s["ganzhi"][1]
+        assert s["gan_shishen"] and s["zhi_shishen"]
+        assert s["start_age_xu"] == s["start_year"] - 1987 + 1
+        assert s["detail"]["na_yin"]
+        years = [n["year"] for n in s["liu_nian"]]
+        assert years == list(range(s["start_year"], s["end_year"] + 1))  # 含端点，连续不重不漏
+        for n in s["liu_nian"]:
+            assert n["ganzhi"] == n["gan"] + n["zhi"]
+            assert n["gan_shishen"] and n["detail"]["xing_yun"]
+    # 流年十神正确性抽查：庚日主，乙年 → 乙=正财
+    from services.bazi.constants import liunian_ganzhi
+
+    n = steps[0]["liu_nian"][0]
+    assert n["ganzhi"] == liunian_ganzhi(n["year"])
+    if n["gan"] == "乙":
+        assert n["gan_shishen"] == "正财"
+
+
+def test_da_yun_steps_sizhu_mode_without_years():
+    """四柱输入模式：steps 无年份/流年联动数据，但仍带十神与 detail。"""
+    result = compute_from_pillars(
+        {"year": "丁卯", "month": "乙巳", "day": "庚辰", "time": "壬午"}, "M"
+    )
+    for s in result["da_yun"]["steps"]:
+        assert s["start_year"] is None and s["start_age_xu"] is None
+        assert "liu_nian" not in s or s["liu_nian"] is None
+        assert s["gan_shishen"] and s["detail"]["na_yin"]
+    # 四柱模式四柱 detail 仍可用
+    assert result["pillars"]["year"]["detail"]["na_yin"] == "炉中火"
+
+
+# ---------- 出生节气 / 星座 / 星宿 ----------
+
+
+def test_jieqi_block_around_birth():
+    """1990-04-01 00:00：惊蛰后25天19小时，清明前4天9小时（与参考产品一致）。"""
+    result = compute_chart(datetime(1990, 4, 1, 0, 0, 0), "M")
+    jq = result["jieqi"]
+    assert jq["prev"]["name"] == "惊蛰"
+    assert jq["prev"]["time"].startswith("1990-03-06T04:19")
+    assert (jq["prev"]["days"], jq["prev"]["hours"]) == (25, 19)
+    assert jq["next"]["name"] == "清明"
+    assert jq["next"]["time"].startswith("1990-04-05T09:12")
+    assert (jq["next"]["days"], jq["next"]["hours"]) == (4, 9)
+
+
+def test_xingzuo_xingxiu():
+    result = compute_chart(datetime(1990, 4, 1, 0, 0, 0), "M")
+    assert result["xing_zuo"] == "白羊座"
+    assert result["xing_xiu"].endswith("玄武") and "宿" in result["xing_xiu"]
+
+
+def test_jieqi_xingzuo_absent_in_sizhu_mode():
+    result = compute_from_pillars(
+        {"year": "丁卯", "month": "乙巳", "day": "庚辰", "time": "壬午"}, "M"
+    )
+    assert result["jieqi"] is None
+    assert result["xing_zuo"] is None
+    assert result["xing_xiu"] is None
+
+
 def test_precise_shichen_moments_use_civil_clock_with_dst():
     """1988 中国夏令时：分界时刻以民用钟（UTC+9）表示，正午约 13:18。"""
     result = compute_chart(

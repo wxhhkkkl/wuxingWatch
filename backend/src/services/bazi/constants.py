@@ -53,8 +53,8 @@ def shishen(day_master: str, other_gan: str) -> str:
     o_yy = GAN_YIN_YANG[other_gan]
     same_yinyang = dm_yy == o_yy
 
-    if other_gan == day_master:
-        return "比肩"
+    if o_wx == dm_wx:  # 同我
+        return "比肩" if other_gan == day_master else "劫财"
     if SHENG[dm_wx] == o_wx:  # 我生
         return "食神" if same_yinyang else "伤官"
     if KE[dm_wx] == o_wx:  # 我克

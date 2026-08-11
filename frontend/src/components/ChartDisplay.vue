@@ -1,47 +1,48 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import type { ChartResult, Pillar } from '../types'
+import type { ChartResult } from '../types'
+import { wxColor } from '../utils/wuxing'
+import { defaultDayunIndex, defaultLiunianYear } from '../utils/selection'
+import PillarTable from './PillarTable.vue'
+import FortuneStrip from './FortuneStrip.vue'
 
 const props = defineProps<{ result: ChartResult }>()
 
 const router = useRouter()
 
-const WX_COLOR: Record<string, string> = {
-  木: 'var(--wx-mu)',
-  火: 'var(--wx-huo)',
-  土: 'var(--wx-tu)',
-  金: 'var(--wx-jin)',
-  水: 'var(--wx-shui)',
-}
+const xi = computed(() => props.result.xi_yong)
 
-function wxColor(wx: string) {
-  return WX_COLOR[wx] ?? 'inherit'
-}
+// 大运/流年联动选中态（默认跟随当前日期）
+const currentYear = new Date().getFullYear()
+const steps = computed(() => props.result.da_yun.steps)
+const hasYears = computed(() => steps.value.some((s) => s.start_year != null))
+const selectedDayunIndex = ref(defaultDayunIndex(props.result.da_yun.steps, currentYear))
+const selectedLiunianYear = ref<number | null>(null)
 
-const pillarNames: Record<string, string> = { year: '年柱', month: '月柱', day: '日柱', time: '时柱' }
-const pillarList = computed(() =>
-  (['year', 'month', 'day', 'time'] as const).map((key) => ({
-    key,
-    name: pillarNames[key],
-    pillar: props.result.pillars[key] as Pillar | null,
-  })),
+const selectedStep = computed(() => steps.value[selectedDayunIndex.value] ?? null)
+const selectedLiunian = computed(
+  () => selectedStep.value?.liu_nian?.find((n) => n.year === selectedLiunianYear.value) ?? null,
 )
 
-const xi = computed(() => props.result.xi_yong)
+watch(
+  selectedDayunIndex,
+  (i) => {
+    const s = steps.value[i]
+    selectedLiunianYear.value = s ? defaultLiunianYear(s, currentYear) : null
+  },
+  { immediate: true },
+)
+
+const birthYear = computed(() =>
+  props.result.solar_birth ? new Date(props.result.solar_birth).getFullYear() : null,
+)
 
 function fmtDateTime(s: string): string {
   const d = new Date(s)
   if (isNaN(d.getTime())) return s
   const p = (n: number) => String(n).padStart(2, '0')
   return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 ${p(d.getHours())}:${p(d.getMinutes())}`
-}
-
-function fmtTime(s: string): string {
-  const d = new Date(s)
-  if (isNaN(d.getTime())) return s
-  const p = (n: number) => String(n).padStart(2, '0')
-  return `${p(d.getHours())}:${p(d.getMinutes())}`
 }
 </script>
 
@@ -61,16 +62,29 @@ function fmtTime(s: string): string {
         <div class="info-row"><span>农历</span>{{ result.lunar_birth }}</div>
         <div
           class="info-row"
-          :class="{ 'is-link': result.shichen }"
-          @click="result.shichen && router.push('/shichen')"
+          data-testid="row-true-solar"
+          :class="{ 'is-link': result.shichen?.applied }"
+          @click="result.shichen?.applied && router.push('/shichen')"
         >
           <span>真太阳时</span>{{ fmtDateTime(result.true_solar_time) }}
-          <small v-if="result.shichen" class="muted">查看时辰详解 ›</small>
+          <small v-if="result.shichen?.applied" class="muted">查看时辰详解 ›</small>
         </div>
+        <div class="info-row"><span>地区</span>{{ result.birth_place || '—' }}</div>
         <div v-if="result.shichen?.applied && result.shichen.shichen" class="info-row">
           <span>精确时辰</span>
           {{ result.shichen.shichen }}时
           <small class="muted">传统均分法：{{ result.shichen.traditional_shichen }}时</small>
+        </div>
+        <div v-if="result.jieqi" class="info-line">
+          <span>出生节气</span>出生于{{ result.jieqi.prev.name }}后<b>{{ result.jieqi.prev.days }}</b>天<b>{{ result.jieqi.prev.hours }}</b>小时，{{ result.jieqi.next.name }}前<b>{{ result.jieqi.next.days }}</b>天<b>{{ result.jieqi.next.hours }}</b>小时
+        </div>
+        <div v-if="result.jieqi" class="two-col">
+          <div><span>{{ result.jieqi.prev.name }}</span>{{ fmtDateTime(result.jieqi.prev.time) }}</div>
+          <div><span>{{ result.jieqi.next.name }}</span>{{ fmtDateTime(result.jieqi.next.time) }}</div>
+        </div>
+        <div v-if="result.xing_zuo" class="two-col">
+          <div><span>星座</span>{{ result.xing_zuo }}</div>
+          <div v-if="result.xing_xiu"><span>星宿</span>{{ result.xing_xiu }}</div>
         </div>
       </template>
       <template v-else>
@@ -80,42 +94,34 @@ function fmtTime(s: string): string {
           {{ result.pillars.year?.ganzhi }} {{ result.pillars.month?.ganzhi }}
           {{ result.pillars.day?.ganzhi }} {{ result.pillars.time?.ganzhi }}
         </div>
-      </template>
-      <div class="info-row"><span>地区</span>{{ result.birth_place || '—' }}</div>
-      <template v-if="result.sun">
-        <div class="info-row">
-          <span>日出</span>{{ result.sun.sunrise ? fmtTime(result.sun.sunrise) : '极夜' }}
-        </div>
-        <div class="info-row">
-          <span>日落</span>{{ result.sun.sunset ? fmtTime(result.sun.sunset) : '极昼' }}
-        </div>
-        <div class="info-row"><span>正午</span>{{ fmtTime(result.sun.solar_noon) }}</div>
-        <div class="info-row"><span>子夜</span>{{ fmtTime(result.sun.solar_midnight) }}</div>
+        <div class="info-row"><span>地区</span>{{ result.birth_place || '—' }}</div>
       </template>
     </section>
 
-    <!-- 四柱 -->
+    <!-- 四柱明细（流年/大运列随横条选中联动） -->
     <section class="wx-card">
       <p class="wx-card-title">四柱 · 日主 {{ result.day_master }}</p>
-      <div class="pillars">
-        <div v-for="item in pillarList" :key="item.key" class="pillar" :class="{ dim: !item.pillar }">
-          <div class="pillar-label">{{ item.name }}</div>
-          <template v-if="item.pillar">
-            <div class="pillar-char" :style="{ color: wxColor(item.pillar.gan_wuxing) }">
-              {{ item.pillar.gan }}
-            </div>
-            <div class="pillar-char" :style="{ color: wxColor(item.pillar.zhi_wuxing) }">
-              {{ item.pillar.zhi }}
-            </div>
-            <div class="pillar-shishen">{{ item.pillar.shishen }}</div>
-            <div class="pillar-ganzhi">{{ item.pillar.ganzhi }}</div>
-          </template>
-          <template v-else>
-            <div class="pillar-char empty">—</div>
-          </template>
-        </div>
-      </div>
+      <PillarTable
+        :pillars="result.pillars"
+        :selected-dayun="hasYears ? selectedStep : null"
+        :selected-liunian="hasYears ? selectedLiunian : null"
+      />
       <p v-if="result.missing_parts.length" class="warn">时辰不详：无法排出时柱、命宫、身宫。</p>
+    </section>
+
+    <!-- 大运 · 流年联动 -->
+    <section class="wx-card">
+      <p class="wx-card-title">大运 · 流年</p>
+      <FortuneStrip
+        :steps="steps"
+        :selected-dayun-index="selectedDayunIndex"
+        :selected-liunian-year="selectedLiunianYear"
+        :start-age="result.da_yun.start_age"
+        :start-month="result.da_yun.start_month"
+        :birth-year="birthYear"
+        @select-dayun="selectedDayunIndex = $event"
+        @select-liunian="selectedLiunianYear = $event"
+      />
     </section>
 
     <!-- 人元司令与宫位 -->
@@ -129,33 +135,6 @@ function fmtTime(s: string): string {
       <div class="info-row"><span>命宫</span>{{ result.ming_gong ?? '—' }}</div>
       <div class="info-row"><span>身宫</span>{{ result.shen_gong ?? '—' }}</div>
       <p class="muted">{{ result.hidden_stems.source }}</p>
-    </section>
-
-    <!-- 大运 -->
-    <section class="wx-card">
-      <p class="wx-card-title">
-        大运<template v-if="result.da_yun.start_age != null"> · {{ result.da_yun.start_age }} 岁起运</template>
-      </p>
-      <div class="chips">
-        <span
-          v-for="s in result.da_yun.steps.slice(0, 6)"
-          :key="s.ganzhi"
-          class="chip"
-        >
-          {{ s.ganzhi }}
-          <small v-if="s.start_year != null">{{ s.start_year }}–{{ s.end_year }}</small>
-        </span>
-      </div>
-    </section>
-
-    <!-- 流年 -->
-    <section class="wx-card">
-      <p class="wx-card-title">流年</p>
-      <div class="chips">
-        <span v-for="n in result.liu_nian.slice(0, 6)" :key="n.year" class="chip">
-          {{ n.year }} <b>{{ n.ganzhi }}</b>
-        </span>
-      </div>
     </section>
 
     <!-- 喜忌分析 -->
@@ -227,64 +206,26 @@ function fmtTime(s: string): string {
   cursor: pointer;
   color: var(--wx-primary-2, #a63431);
 }
-
-/* 四柱 */
-.pillars {
+/* 出生节气整行句式 + 两列对齐行 */
+.info-line {
+  font-size: 14px;
+  padding: 3px 0;
+  line-height: 1.6;
+}
+.info-line span {
+  color: var(--wx-muted);
+  margin-right: 8px;
+}
+.two-col {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
+  font-size: 14px;
+  padding: 3px 0;
 }
-.pillar {
-  background: #faf6ee;
-  border: 1px solid var(--wx-line);
-  border-radius: 10px;
-  text-align: center;
-  padding: 10px 4px 8px;
-}
-.pillar-label {
-  font-size: 12px;
+.two-col span {
   color: var(--wx-muted);
-  margin-bottom: 4px;
-}
-.pillar-char {
-  font-size: 28px;
-  font-weight: 600;
-  line-height: 1.15;
-}
-.pillar-char.empty {
-  color: var(--wx-line);
-}
-.pillar-shishen {
-  font-size: 11px;
-  color: var(--wx-ink);
-  margin-top: 3px;
-}
-.pillar-ganzhi {
-  font-size: 11px;
-  color: var(--wx-muted);
-  margin-top: 1px;
-}
-.pillar.dim {
-  opacity: 0.45;
-}
-
-/* 大运 / 流年 chips */
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.chip {
-  background: #faf6ee;
-  border: 1px solid var(--wx-line);
-  border-radius: 14px;
-  padding: 5px 10px;
-  font-size: 13px;
-  color: var(--wx-ink);
-}
-.chip small {
-  color: var(--wx-muted);
-  margin-left: 2px;
+  margin-right: 6px;
 }
 
 /* 喜忌 */

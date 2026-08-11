@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from lunar_python import Solar
 from lunar_python.eightchar import Yun
 
-from services.bazi import hidden_stems, shichen, xiyong
+from services.bazi import hidden_stems, pillar_detail, shichen, xiyong
 from services.bazi.constants import (
     GAN_LIST,
     GAN_WUXING,
@@ -59,8 +59,83 @@ def _next_day_ganzhi(dt: datetime) -> tuple[str, str]:
     return nl.getDayGan(), nl.getDayZhi()
 
 
+def _day_label(gender: str) -> str:
+    return {"M": "元男", "F": "元女"}.get(gender, "日主")
+
+
+def _attach_pillar_details(pillars: dict, gender: str) -> None:
+    """为四柱附加 PillarDetail（主星/藏干/星运/自坐/空亡/纳音/神煞）。"""
+    ctx = {
+        "day_ganzhi": pillars["day"]["ganzhi"],
+        "year_ganzhi": pillars["year"]["ganzhi"],
+        "month_zhi": pillars["month"]["zhi"],
+    }
+    for key in ("year", "month", "day", "time"):
+        pillars[key]["detail"] = pillar_detail.build_pillar_detail(
+            pillars[key]["ganzhi"], **ctx
+        )
+    pillars["day"]["detail"]["gan_shishen"] = _day_label(gender)
+
+
+def _luck_step(ganzhi: str, start_year, end_year, birth_year: int | None, ctx: dict) -> dict:
+    """一步大运的完整数据：干支拆字、十神、虚岁、柱明细、逐年流年。"""
+    detail = pillar_detail.build_pillar_detail(ganzhi, **ctx)
+    step = {
+        "ganzhi": ganzhi,
+        "start_year": start_year,
+        "end_year": end_year,
+        "gan": ganzhi[0],
+        "zhi": ganzhi[1],
+        "gan_shishen": detail["gan_shishen"],
+        "zhi_shishen": detail["zhi_shishen"],
+        "start_age_xu": (start_year - birth_year + 1) if (start_year and birth_year) else None,
+        "detail": detail,
+        "liu_nian": None,
+    }
+    if start_year is not None and end_year is not None:
+        step["liu_nian"] = [
+            {
+                "year": y,
+                "gan": (gz := liunian_ganzhi(y))[0],
+                "zhi": gz[1],
+                "ganzhi": gz,
+                "gan_shishen": (d := pillar_detail.build_pillar_detail(gz, **ctx))["gan_shishen"],
+                "zhi_shishen": d["zhi_shishen"],
+                "detail": d,
+            }
+            for y in range(start_year, end_year + 1)  # end_year 为含端点（lunar-python 口径）
+        ]
+    return step
+
+
 def _iso(dt) -> str | None:
     return dt.isoformat() if dt is not None else None
+
+
+# 12 节（非中气），用于"出生节气"前后定位
+JIE_NAMES = [
+    "立春", "惊蛰", "清明", "立夏", "芒种", "小暑",
+    "立秋", "白露", "寒露", "立冬", "大雪", "小寒",
+]
+
+
+def _jieqi_block(solar_birth: datetime, jieqi_table: dict) -> dict | None:
+    """出生前后的"节"：出生于 X 后 N 天 M 小时，Y 前 N 天 M 小时。"""
+    points = sorted(
+        (datetime.strptime(s.toYmdHms(), "%Y-%m-%d %H:%M:%S"), name)
+        for name, s in jieqi_table.items()
+        if name in JIE_NAMES
+    )
+    prev = next(((t, n) for t, n in reversed(points) if t <= solar_birth), None)
+    nxt = next(((t, n) for t, n in points if t > solar_birth), None)
+    if not prev or not nxt:
+        return None
+
+    def _entry(t: datetime, name: str, sign: int) -> dict:
+        hours = int((solar_birth - t).total_seconds() * sign // 3600)
+        return {"name": name, "time": t.isoformat(), "days": hours // 24, "hours": hours % 24}
+
+    return {"prev": _entry(prev[0], prev[1], 1), "next": _entry(nxt[0], nxt[1], -1)}
 
 
 def compute_chart(
@@ -185,17 +260,20 @@ def compute_chart(
         }
         pillars["day"]["shishen"] = "日主"
 
+    _attach_pillar_details(pillars, gender)
+
     # 大运（起运按子平惯例，实岁展示）
     yun = Yun(eight, GENDER_LUNAR.get(gender, 0))
+    luck_ctx = {
+        "day_ganzhi": pillars["day"]["ganzhi"],
+        "year_ganzhi": pillars["year"]["ganzhi"],
+        "month_zhi": pillars["month"]["zhi"],
+    }
     da_yun = {
         "start_age": yun.getStartYear(),
         "start_month": yun.getStartMonth(),
         "steps": [
-            {
-                "ganzhi": d.getGanZhi(),
-                "start_year": d.getStartYear(),
-                "end_year": d.getEndYear(),
-            }
+            _luck_step(d.getGanZhi(), d.getStartYear(), d.getEndYear(), solar_birth.year, luck_ctx)
             for d in yun.getDaYun()
             if d.getGanZhi()  # 跳过起运前的空档
         ],
@@ -210,6 +288,11 @@ def compute_chart(
     month_zhi = eight.getMonthZhi()
     hidden = hidden_stems.ruling_info(month_zhi, birth, lunar.getJieQiTable())
     xi = xiyong.xiyong_analysis(day_master, pillars)
+
+    solar_civil = Solar.fromYmdHms(
+        solar_birth.year, solar_birth.month, solar_birth.day,
+        solar_birth.hour, solar_birth.minute, solar_birth.second,
+    )
 
     return {
         "solar_birth": solar_birth.isoformat(),
@@ -228,6 +311,9 @@ def compute_chart(
         "dst": dst_info,
         "sun": sun,
         "shichen": shichen_block,
+        "jieqi": _jieqi_block(solar_birth, lunar.getJieQiTable()),
+        "xing_zuo": f"{solar_civil.getXingZuo()}座",
+        "xing_xiu": f"{lunar.getXiu()}宿{lunar.getGong()}方{lunar.getShou()}",
     }
 
 
@@ -253,6 +339,7 @@ def compute_from_pillars(pillars: dict[str, str], gender: str) -> dict:
         ganzhi = pillars[key]
         pillar_dicts[key] = _pillar(ganzhi[0], ganzhi[1], day_master)
     pillar_dicts["day"]["shishen"] = "日主"
+    _attach_pillar_details(pillar_dicts, gender)
 
     # 大运：阳男阴女顺排，阴男阳女逆排；自月柱顺/逆推
     year_gan = pillars["year"][0]
@@ -260,12 +347,19 @@ def compute_from_pillars(pillars: dict[str, str], gender: str) -> dict:
         GAN_YIN_YANG[year_gan] == "阴" and gender == "F"
     )
     month_idx = _ganzhi_index(pillars["month"][0], pillars["month"][1])
+    luck_ctx = {
+        "day_ganzhi": pillars["day"],
+        "year_ganzhi": pillars["year"],
+        "month_zhi": pillars["month"][1],
+    }
     steps = [
-        {
-            "ganzhi": _ganzhi_from_index((month_idx + i) % 60 if forward else (month_idx - i) % 60),
-            "start_year": None,
-            "end_year": None,
-        }
+        _luck_step(
+            _ganzhi_from_index((month_idx + i) % 60 if forward else (month_idx - i) % 60),
+            None,
+            None,
+            None,
+            luck_ctx,
+        )
         for i in range(1, DA_YUN_STEPS + 1)
     ]
 
@@ -321,4 +415,7 @@ def compute_from_pillars(pillars: dict[str, str], gender: str) -> dict:
         "dst": None,
         "sun": None,
         "shichen": None,
+        "jieqi": None,
+        "xing_zuo": None,
+        "xing_xiu": None,
     }
