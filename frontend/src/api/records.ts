@@ -29,6 +29,10 @@ export function getRecord(id: number): Promise<RecordDetail> {
   return request<RecordDetail>(`/api/records/${id}`)
 }
 
+export function updateRecord(id: number, input: SaveRecordInput): Promise<RecordDetail> {
+  return request<RecordDetail>(`/api/records/${id}`, { method: 'PUT', body: JSON.stringify(input) })
+}
+
 export function deleteRecord(id: number): Promise<void> {
   return request<void>(`/api/records/${id}`, { method: 'DELETE' })
 }

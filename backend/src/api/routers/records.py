@@ -84,13 +84,71 @@ def _get_owned(db: Session, record_id: int, user_id: int) -> BaziChart:
 @router.get("/{record_id}")
 def get_record(record_id: int, user: CurrentUser, db: DbDep):
     record = _get_owned(db, record_id, user.id)
+    result = json.loads(record.chart_result)
     return {
         "id": record.id,
         "person_name": record.person_name,
         "relationship": record.relationship_type,
         "notes": record.notes,
         "created_at": record.created_at.isoformat(),
-        "chart_result": json.loads(record.chart_result),
+        "chart_result": result,
+        "birth_input": _birth_input_of(record, result),
+    }
+
+
+def _birth_input_of(record: BaziChart, result: dict) -> dict:
+    """从已存列重建 BirthInput（供前端"修改内容"回填表单）。
+
+    农历输入已换算为等价阳历，统一回填 solar；timezone 未落库不返回。
+    """
+    base = {
+        "name": record.name,
+        "gender": record.gender or "UNKNOWN",
+        "birth_place": record.birth_place,
+        "longitude": record.longitude,
+        "latitude": record.latitude,
+    }
+    if record.birth_solar is None:  # 四柱模式
+        pillars = {
+            k: (result.get("pillars", {}).get(k) or {}).get("ganzhi")
+            for k in ("year", "month", "day", "time")
+        }
+        return {**base, "calendar": "sizhu", "birth_pillars": pillars}
+    unknown_time = "hour_pillar" in (result.get("missing_parts") or [])
+    return {
+        **base,
+        "calendar": "solar",
+        "birth_date": record.birth_solar.date().isoformat(),
+        "birth_time": None if unknown_time else record.birth_solar.strftime("%H:%M"),
+        "precise_shichen": bool((result.get("shichen") or {}).get("applied")),
+    }
+
+
+@router.put("/{record_id}")
+def update_record(record_id: int, payload: RecordCreate, user: CurrentUser, db: DbDep):
+    record = _get_owned(db, record_id, user.id)
+    result, solar_birth = chart_service.compute(payload)
+    record.person_name = payload.person_name
+    record.relationship_type = payload.relationship.value
+    record.name = payload.name
+    record.gender = payload.gender.value
+    record.birth_solar = solar_birth
+    record.birth_input_is_lunar = payload.calendar == "lunar"
+    record.birth_lunar = result.get("lunar_birth")
+    record.birth_place = payload.birth_place
+    record.longitude = payload.longitude
+    record.latitude = payload.latitude
+    record.notes = payload.notes
+    record.chart_result = json.dumps(result, ensure_ascii=False)
+    db.commit()
+    return {
+        "id": record.id,
+        "person_name": record.person_name,
+        "relationship": record.relationship_type,
+        "notes": record.notes,
+        "created_at": record.created_at.isoformat(),
+        "chart_result": result,
+        "birth_input": _birth_input_of(record, result),
     }
 
 

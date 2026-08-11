@@ -6,7 +6,7 @@ Produces the full ChartResult: 四柱、大运、流年、人元司令、胎元�
 
 from datetime import datetime, timedelta
 
-from lunar_python import Lunar, Solar
+from lunar_python import Solar
 from lunar_python.eightchar import Yun
 
 from services.bazi import hidden_stems, shichen, xiyong
@@ -50,6 +50,13 @@ def _hour_gan(day_gan: str, zhi: str) -> str:
     """五鼠遁：甲己还加甲，乙庚丙作初……由日干推时干。"""
     idx = ((GAN_LIST.index(day_gan) % 5) * 2 + ZHI_LIST.index(zhi)) % 10
     return GAN_LIST[idx]
+
+
+def _next_day_ganzhi(dt: datetime) -> tuple[str, str]:
+    """次日日柱干支（子初换日用）。"""
+    nxt = dt + timedelta(days=1)
+    nl = Solar.fromYmd(nxt.year, nxt.month, nxt.day).getLunar()
+    return nl.getDayGan(), nl.getDayZhi()
 
 
 def _iso(dt) -> str | None:
@@ -113,12 +120,17 @@ def compute_chart(
     )
     lunar = solar.getLunar()
     eight = lunar.getEightChar()
-    day_master = eight.getDayGan()
+
+    # 子初换日：晚子时（23:00 后）日柱进次日
+    day_gan, day_zhi = eight.getDayGan(), eight.getDayZhi()
+    if birth.hour == 23:
+        day_gan, day_zhi = _next_day_ganzhi(birth)
+    day_master = day_gan
 
     pillars = {
         "year": _pillar(eight.getYearGan(), eight.getYearZhi(), day_master),
         "month": _pillar(eight.getMonthGan(), eight.getMonthZhi(), day_master),
-        "day": _pillar(eight.getDayGan(), eight.getDayZhi(), day_master),
+        "day": _pillar(day_gan, day_zhi, day_master),
         "time": _pillar(eight.getTimeGan(), eight.getTimeZhi(), day_master),
     }
     pillars["day"]["shishen"] = "日主"
@@ -161,12 +173,9 @@ def compute_chart(
     if precise_shichen and shichen_block is not None:
         shichen_block["applied"] = True
         new_zhi = detail["shichen"]
-        if detail["day_offset"] == 1:  # 夜子时：子初换日，日柱取次日
-            nxt = solar_birth + timedelta(days=1)
-            next_lunar = Lunar.fromYmd(nxt.year, nxt.month, nxt.day)
-            day_gan, day_zhi = next_lunar.getDayGan(), next_lunar.getDayZhi()
-        else:
-            day_gan, day_zhi = eight.getDayGan(), eight.getDayZhi()
+        if detail["day_offset"] == 1 and birth.hour != 23:
+            # 夜子时（子初换日）；23 点时默认排盘已进次日，不重复
+            day_gan, day_zhi = _next_day_ganzhi(birth)
         day_master = day_gan
         pillars = {
             "year": _pillar(eight.getYearGan(), eight.getYearZhi(), day_master),

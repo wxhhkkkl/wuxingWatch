@@ -125,6 +125,7 @@ export interface RecordDetail {
   notes: string | null
   created_at: string
   chart_result: ChartResult
+  birth_input?: BirthInput
 }
 
 export interface BirthInput {

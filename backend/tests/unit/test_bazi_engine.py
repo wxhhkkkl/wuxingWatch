@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from lunar_python import Lunar
+from lunar_python import Solar
 
 from services.bazi.constants import GAN_LIST, ZHI_LIST
 from services.bazi.engine import compute_chart, compute_from_pillars
@@ -172,12 +172,27 @@ def test_precise_shichen_night_zi_rolls_day_pillar():
     result = compute_chart(datetime(2020, 6, 21, 23, 35, 0), "M", precise_shichen=True, **BJ)
     sc = result["shichen"]
     assert sc["shichen"] == "子" and sc["day_offset"] == 1
-    next_day = Lunar.fromYmd(2020, 6, 22)
+    next_day = Solar.fromYmd(2020, 6, 22).getLunar()
     exp_gan, exp_zhi = next_day.getDayGan(), next_day.getDayZhi()
     assert result["pillars"]["day"]["ganzhi"] == exp_gan + exp_zhi
     assert result["day_master"] == exp_gan
     exp_time_gan = GAN_LIST[((GAN_LIST.index(exp_gan) % 5) * 2 + 0) % 10]
     assert result["pillars"]["time"]["ganzhi"] == exp_time_gan + "子"
+
+
+def test_default_chart_rolls_day_pillar_after_23():
+    """子初换日：默认排盘 23:00 后日柱进次日（2022-04-28 23:49 → 壬子）。"""
+    day = compute_chart(datetime(2022, 4, 28, 15, 0, 0), "M")
+    assert day["pillars"]["day"]["ganzhi"] == "辛亥"
+    assert day["day_master"] == "辛"
+
+    late = compute_chart(datetime(2022, 4, 28, 23, 49, 0), "M")
+    assert late["pillars"]["day"]["ganzhi"] == "壬子"
+    assert late["day_master"] == "壬"
+    # 时柱为次日子时（庚子），年月柱不变
+    assert late["pillars"]["time"]["ganzhi"] == "庚子"
+    assert late["pillars"]["year"]["ganzhi"] == day["pillars"]["year"]["ganzhi"]
+    assert late["pillars"]["month"]["ganzhi"] == day["pillars"]["month"]["ganzhi"]
 
 
 def test_precise_shichen_moments_use_civil_clock_with_dst():

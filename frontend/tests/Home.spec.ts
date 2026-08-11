@@ -3,17 +3,24 @@ import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 
 const push = vi.fn()
+const replace = vi.fn()
 
 vi.mock('vue-router', () => ({
-  useRouter: () => ({ push, replace: vi.fn() }),
+  useRouter: () => ({ push, replace }),
 }))
 
 vi.mock('../src/api/charts', () => ({
   predictChart: vi.fn(),
 }))
 
+vi.mock('../src/api/records', () => ({
+  updateRecord: vi.fn(),
+}))
+
 import Home from '../src/pages/Home.vue'
 import { predictChart } from '../src/api/charts'
+import { updateRecord } from '../src/api/records'
+import { useChartStore } from '../src/stores/chart'
 
 const flush = () => new Promise((r) => setTimeout(r))
 
@@ -21,7 +28,9 @@ describe('Home', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     push.mockClear()
+    replace.mockClear()
     vi.mocked(predictChart).mockReset()
+    vi.mocked(updateRecord).mockReset()
   })
 
   it('renders the title and input form', () => {
@@ -112,5 +121,84 @@ describe('Home', () => {
     ;(wrapper.vm as unknown as { preciseShichen: boolean }).preciseShichen = true
     await flush()
     expect(localStorage.getItem('precise_shichen')).toBeNull()
+  })
+
+  // ---------- 修改内容（editDraft） ----------
+
+  it('prefills the form from an edit draft', async () => {
+    useChartStore().setEditDraft({
+      recordId: 7,
+      input: {
+        gender: 'F',
+        calendar: 'solar',
+        name: '小明',
+        birth_date: '2022-04-28',
+        birth_time: '23:49',
+        birth_place: '北京市',
+        longitude: 116.41,
+        latitude: 39.9,
+      },
+      meta: { person_name: '儿子', relationship: 'CHILD' },
+    })
+    const wrapper = mount(Home)
+    await flush()
+    const vm = wrapper.vm as unknown as {
+      name: string
+      gender: string
+      birthDate: string
+      birthTime: string
+      birthPlace: string
+    }
+    expect(vm.name).toBe('小明')
+    expect(vm.gender).toBe('F')
+    expect(vm.birthDate).toBe('2022-04-28')
+    expect(vm.birthTime).toBe('23:49')
+    expect(vm.birthPlace).toBe('北京市')
+    expect(wrapper.text()).toContain('重新排盘')
+  })
+
+  it('updates the existing record when submitting an edit draft', async () => {
+    vi.mocked(updateRecord).mockResolvedValue({ id: 7 } as never)
+    useChartStore().setEditDraft({
+      recordId: 7,
+      input: {
+        gender: 'M',
+        calendar: 'solar',
+        birth_date: '1990-05-20',
+        birth_time: '10:30',
+      },
+      meta: { person_name: '儿子', relationship: 'CHILD', notes: '备注' },
+    })
+    const wrapper = mount(Home)
+    await wrapper.find('button').trigger('click')
+    await flush()
+    expect(predictChart).not.toHaveBeenCalled()
+    expect(updateRecord).toHaveBeenCalledTimes(1)
+    const [id, payload] = vi.mocked(updateRecord).mock.calls[0] as [
+      number,
+      { person_name?: string; relationship?: string; notes?: string; birth_date?: string },
+    ]
+    expect(id).toBe(7)
+    expect(payload.birth_date).toBe('1990-05-20')
+    expect(payload.person_name).toBe('儿子')
+    expect(payload.relationship).toBe('CHILD')
+    expect(payload.notes).toBe('备注')
+    expect(replace).toHaveBeenCalledWith('/records/7')
+    expect(useChartStore().editDraft).toBeNull()
+  })
+
+  it('treats a draft without recordId as a fresh chart', async () => {
+    vi.mocked(predictChart).mockResolvedValue({ day_master: '乙' } as never)
+    useChartStore().setEditDraft({
+      recordId: null,
+      input: { gender: 'M', calendar: 'solar', birth_date: '1990-05-20', birth_time: '10:30' },
+    })
+    const wrapper = mount(Home)
+    await wrapper.find('button').trigger('click')
+    await flush()
+    expect(updateRecord).not.toHaveBeenCalled()
+    expect(predictChart).toHaveBeenCalledTimes(1)
+    expect(push).toHaveBeenCalledWith('/result')
+    expect(useChartStore().editDraft).toBeNull()
   })
 })

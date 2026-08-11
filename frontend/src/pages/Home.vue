@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { showToast } from 'vant'
+import { showSuccessToast, showToast } from 'vant'
 import { predictChart } from '../api/charts'
 import { searchGeo, type GeoCity } from '../api/geo'
+import { updateRecord } from '../api/records'
 import { useChartStore } from '../stores/chart'
 import { useAuthStore } from '../stores/auth'
 import type { BirthInput } from '../types'
@@ -68,6 +69,39 @@ const maxDate = new Date(new Date().getFullYear(), 11, 31)
 const pillarLabels: Record<string, string> = { year: '年柱', month: '月柱', day: '日柱', time: '时柱' }
 const isSizhu = computed(() => calendar.value === 'sizhu')
 const isCalendarMode = computed(() => !isSizhu.value)
+
+// 「修改内容」草稿：回填表单，提交时更新原记录
+const editing = computed(() => chartStore.editDraft !== null)
+
+onMounted(() => {
+  const draft = chartStore.editDraft
+  if (!draft) return
+  const input = draft.input
+  calendar.value = input.calendar
+  gender.value = input.gender
+  name.value = input.name ?? ''
+  if (input.calendar === 'sizhu' && input.birth_pillars) {
+    pillars.value = { ...input.birth_pillars }
+  } else {
+    if (input.birth_date) {
+      birthDate.value = input.birth_date
+      dateModel.value = input.birth_date.split('-')
+    }
+    if (input.birth_time) {
+      birthTime.value = input.birth_time
+      timeModel.value = input.birth_time.split(':')
+      unknownTime.value = false
+    } else {
+      unknownTime.value = true
+    }
+    isLeapMonth.value = input.birth_month_is_leap ?? false
+    birthPlace.value = input.birth_place ?? ''
+    birthLatitude.value = input.latitude
+    birthLongitude.value = input.longitude
+    birthTimezone.value = input.timezone
+    preciseShichen.value = input.precise_shichen ?? false
+  }
+})
 
 function openPillar(key: PillarKey) {
   pillarPickerKey.value = key
@@ -152,8 +186,23 @@ async function onSubmit() {
   }
   loading.value = true
   try {
+    const draft = chartStore.editDraft
+    if (draft?.recordId) {
+      // 修改已有记录：更新后回到记录详情
+      await updateRecord(draft.recordId, {
+        ...input,
+        person_name: draft.meta?.person_name ?? undefined,
+        relationship: draft.meta?.relationship,
+        notes: draft.meta?.notes ?? undefined,
+      })
+      chartStore.clearEditDraft()
+      showSuccessToast('已更新记录')
+      router.replace(`/records/${draft.recordId}`)
+      return
+    }
     const result = await predictChart(input)
     chartStore.set(result, input)
+    chartStore.clearEditDraft()
     router.push('/result')
   } catch (e) {
     showToast((e as Error).message)
@@ -258,7 +307,7 @@ async function onSubmit() {
           :loading="loading"
           @click="onSubmit"
         >
-          开始排盘
+          {{ editing ? '重新排盘' : '开始排盘' }}
         </van-button>
       </div>
     </div>

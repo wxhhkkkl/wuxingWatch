@@ -21,9 +21,18 @@ const relationship = ref<'SELF' | 'CHILD' | 'PARENT' | 'OTHER'>('SELF')
 const notes = ref('')
 const saving = ref(false)
 const generating = ref(false)
+const showMenu = ref(false)
+const menuActions = [{ name: '修改内容' }]
 
 function goBack() {
   if (!result) router.replace('/')
+}
+
+function onEdit() {
+  showMenu.value = false
+  if (!inputs) return
+  chartStore.setEditDraft({ recordId: null, input: { ...inputs } })
+  router.push('/')
 }
 
 async function onOpenSave() {
@@ -75,7 +84,13 @@ async function onGenerateImage() {
 
 <template>
   <div class="result-page">
-    <van-nav-bar title="排盘结果" left-text="返回" left-arrow @click-left="router.back()" />
+    <van-nav-bar title="排盘结果" left-text="返回" left-arrow @click-left="router.back()">
+      <template #right>
+        <van-icon v-if="result" name="ellipsis" size="20" @click="showMenu = true" />
+      </template>
+    </van-nav-bar>
+
+    <van-action-sheet v-model:show="showMenu" :actions="menuActions" @select="onEdit" />
 
     <template v-if="result">
       <ChartDisplay :result="result" />
