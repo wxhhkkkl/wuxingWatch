@@ -11,6 +11,9 @@ const props = defineProps<{
   selectedLiunianYear: number | null
   startAge?: number | null
   startMonth?: number | null
+  startDay?: number | null
+  startHour?: number | null
+  jiaoYun?: { year_gan: string; jie: string; days: number; hours: number; first_year: number } | null
   birthYear?: number | null
 }>()
 
@@ -31,8 +34,15 @@ const currentAgeXu = computed(() =>
 <template>
   <div class="fs">
     <div v-if="startAge != null && birthYear" class="fs-qiyun">
-      <span>出生后 {{ startAge }} 年 {{ startMonth ?? 0 }} 月起运</span>
+      <span>
+        出生后 {{ startAge }} 年 {{ startMonth ?? 0 }} 月<template v-if="startDay != null"> {{ startDay }} 天 {{ startHour ?? 0 }} 时</template>起运
+      </span>
       <span v-if="currentAgeXu" class="fs-age">{{ currentAgeXu }}岁</span>
+    </div>
+    <div v-if="jiaoYun" class="fs-qiyun fs-jiaoyun">
+      <span>
+        交运：逢{{ jiaoYun.year_gan }}年 {{ jiaoYun.jie }}后{{ jiaoYun.days }}天{{ jiaoYun.hours }}小时交大运
+      </span>
     </div>
 
     <!-- 大运横条 -->
@@ -84,6 +94,11 @@ const currentAgeXu = computed(() =>
 }
 .fs-age {
   color: var(--wx-muted);
+}
+.fs-jiaoyun {
+  color: var(--wx-muted);
+  font-size: 12px;
+  margin-top: -4px;
 }
 .fs-strip {
   display: flex;

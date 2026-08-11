@@ -257,7 +257,27 @@ def test_da_yun_steps_sizhu_mode_without_years():
     assert result["pillars"]["year"]["detail"]["na_yin"] == "炉中火"
 
 
-# ---------- 出生节气 / 星座 / 星宿 ----------
+# ---------- 起运精确到时 + 交运 ----------
+
+
+def test_qiyun_precise_to_hour_and_jiaoyun():
+    """1987-05-31 12:00 男：起运 8年4月10天0时；交运=起运+10年=2005-10-10（乙酉年，寒露后1天23时）。"""
+    result = compute_chart(datetime(1987, 5, 31, 12, 0, 0), "M")
+    dy = result["da_yun"]
+    assert (dy["start_age"], dy["start_month"], dy["start_day"], dy["start_hour"]) == (8, 4, 10, 0)
+    jy = dy["jiao_yun"]
+    assert jy["year_gan"] == "乙"  # 交运年份 2005/2015/… 天干恒为乙
+    assert jy["jie"] == "寒露"
+    assert (jy["days"], jy["hours"]) == (1, 23)
+    assert jy["first_year"] == 2005
+
+
+def test_jiaoyun_absent_in_sizhu_mode():
+    result = compute_from_pillars(
+        {"year": "丁卯", "month": "乙巳", "day": "庚辰", "time": "壬午"}, "M"
+    )
+    assert result["da_yun"]["start_day"] is None
+    assert result["da_yun"]["jiao_yun"] is None
 
 
 def test_jieqi_block_around_birth():

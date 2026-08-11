@@ -115,7 +115,20 @@ export interface ChartResult {
   tai_yuan: string
   ming_gong: string | null
   shen_gong: string | null
-  da_yun: { start_age: number | null; start_month: number | null; steps: DaYunStep[] }
+  da_yun: {
+    start_age: number | null
+    start_month: number | null
+    start_day?: number | null
+    start_hour?: number | null
+    jiao_yun?: {
+      year_gan: string
+      jie: string
+      days: number
+      hours: number
+      first_year: number
+    } | null
+    steps: DaYunStep[]
+  }
   liu_nian: LiuNian[]
   xi_yong: XiYong
   missing_parts: string[]

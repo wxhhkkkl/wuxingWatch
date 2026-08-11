@@ -90,19 +90,23 @@ describe('FortuneStrip', () => {
 
   // ---------- US3: 起运描述与当前虚岁 ----------
 
-  it('shows 起运描述 and current 虚岁', () => {
+  it('shows 起运描述 precise to hour and 交运信息', () => {
     const wrapper = mount(FortuneStrip, {
       props: {
         steps,
         selectedDayunIndex: 0,
         selectedLiunianYear: 1995,
         startAge: 8,
-        startMonth: 6,
+        startMonth: 4,
+        startDay: 10,
+        startHour: 0,
         birthYear: 1987,
+        jiaoYun: { year_gan: '乙', jie: '寒露', days: 1, hours: 23, first_year: 2005 },
       },
     })
-    expect(wrapper.text()).toContain('出生后 8 年 6 月起运')
+    expect(wrapper.text()).toMatch(/出生后 8 年 4 月\s*10 天 0 时起运/)
     expect(wrapper.text()).toContain(`${currentYear - 1987 + 1}岁`)
+    expect(wrapper.text()).toContain('交运：逢乙年 寒露后1天23小时交大运')
   })
 
   it('hides 起运行 when birth year unknown (四柱输入)', () => {

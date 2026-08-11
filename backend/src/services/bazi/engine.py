@@ -121,11 +121,7 @@ JIE_NAMES = [
 
 def _jieqi_block(solar_birth: datetime, jieqi_table: dict) -> dict | None:
     """出生前后的"节"：出生于 X 后 N 天 M 小时，Y 前 N 天 M 小时。"""
-    points = sorted(
-        (datetime.strptime(s.toYmdHms(), "%Y-%m-%d %H:%M:%S"), name)
-        for name, s in jieqi_table.items()
-        if name in JIE_NAMES
-    )
+    points = _jie_points(jieqi_table)
     prev = next(((t, n) for t, n in reversed(points) if t <= solar_birth), None)
     nxt = next(((t, n) for t, n in points if t > solar_birth), None)
     if not prev or not nxt:
@@ -136,6 +132,38 @@ def _jieqi_block(solar_birth: datetime, jieqi_table: dict) -> dict | None:
         return {"name": name, "time": t.isoformat(), "days": hours // 24, "hours": hours % 24}
 
     return {"prev": _entry(prev[0], prev[1], 1), "next": _entry(nxt[0], nxt[1], -1)}
+
+
+def _jie_points(jieqi_table: dict) -> list[tuple[datetime, str]]:
+    return sorted(
+        (datetime.strptime(s.toYmdHms(), "%Y-%m-%d %H:%M:%S"), name)
+        for name, s in jieqi_table.items()
+        if name in JIE_NAMES
+    )
+
+
+def _jiao_yun(yun) -> dict | None:
+    """交运：起运时刻 + 10 年（每逢该天干年，前一个"节"后 N 天 M 小时）。"""
+    try:
+        start = datetime.strptime(yun.getStartSolar().toYmdHms(), "%Y-%m-%d %H:%M:%S")
+        hand = start.replace(year=start.year + 10)
+    except (TypeError, ValueError):
+        return None
+    lunar_h = Solar.fromYmd(
+        hand.year, hand.month, hand.day
+    ).getLunar()
+    points = _jie_points(lunar_h.getJieQiTable())
+    prev = next(((t, n) for t, n in reversed(points) if t <= hand), None)
+    if prev is None:
+        return None
+    hours = int((hand - prev[0]).total_seconds() // 3600)
+    return {
+        "year_gan": lunar_h.getYearInGanZhi()[0],
+        "jie": prev[1],
+        "days": hours // 24,
+        "hours": hours % 24,
+        "first_year": hand.year,
+    }
 
 
 def compute_chart(
@@ -272,6 +300,9 @@ def compute_chart(
     da_yun = {
         "start_age": yun.getStartYear(),
         "start_month": yun.getStartMonth(),
+        "start_day": yun.getStartDay(),
+        "start_hour": yun.getStartHour(),
+        "jiao_yun": _jiao_yun(yun),
         "steps": [
             _luck_step(d.getGanZhi(), d.getStartYear(), d.getEndYear(), solar_birth.year, luck_ctx)
             for d in yun.getDaYun()
@@ -407,7 +438,14 @@ def compute_from_pillars(pillars: dict[str, str], gender: str) -> dict:
         "tai_yuan": tai_yuan,
         "ming_gong": ming_gong,
         "shen_gong": shen_gong,
-        "da_yun": {"start_age": None, "start_month": None, "steps": steps},
+        "da_yun": {
+            "start_age": None,
+            "start_month": None,
+            "start_day": None,
+            "start_hour": None,
+            "jiao_yun": None,
+            "steps": steps,
+        },
         "liu_nian": liu_nian,
         "xi_yong": xi,
         "missing_parts": ["da_yun_start_age", "absolute_years"],
