@@ -1,9 +1,16 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import type { ChartResult } from '../types'
+import type { ChartResult, LiuRiItem, LiuShiContext, LiuShiItem, LiuYueItem } from '../types'
+import { fetchLiuShi } from '../api/charts'
 import { wxColor } from '../utils/wuxing'
-import { defaultDayunIndex, defaultLiunianYear } from '../utils/selection'
+import {
+  defaultDayunIndex,
+  defaultLiunianYear,
+  defaultLiuriDate,
+  defaultLiuyueBranch,
+  shichenZhiOf,
+} from '../utils/selection'
 import PillarTable from './PillarTable.vue'
 import FortuneStrip from './FortuneStrip.vue'
 
@@ -15,6 +22,9 @@ const xi = computed(() => props.result.xi_yong)
 
 // 大运/流年联动选中态（默认跟随当前日期）
 const currentYear = new Date().getFullYear()
+const now = new Date()
+const p2 = (n: number) => String(n).padStart(2, '0')
+const todayStr = `${now.getFullYear()}-${p2(now.getMonth() + 1)}-${p2(now.getDate())}`
 const steps = computed(() => props.result.da_yun.steps)
 const hasYears = computed(() => steps.value.some((s) => s.start_year != null))
 const selectedDayunIndex = ref(defaultDayunIndex(props.result.da_yun.steps, currentYear))
@@ -24,6 +34,111 @@ const selectedStep = computed(() => steps.value[selectedDayunIndex.value] ?? nul
 const selectedLiunian = computed(
   () => selectedStep.value?.liu_nian?.find((n) => n.year === selectedLiunianYear.value) ?? null,
 )
+
+// 流月/流日/流时下钻：按需请求，逐级联动
+const liuyueList = ref<LiuYueItem[]>([])
+const selectedLiuyueBranch = ref<string | null>(null)
+const liuriList = ref<LiuRiItem[]>([])
+const selectedLiuriDate = ref<string | null>(null)
+const liushiList = ref<LiuShiItem[]>([])
+const selectedLiushiZhi = ref<string | null>(null)
+const liuLoading = ref<'month' | 'day' | 'hour' | null>(null)
+
+const liuContext = computed<LiuShiContext>(() => ({
+  day_ganzhi: props.result.pillars.day?.ganzhi ?? '',
+  year_ganzhi: props.result.pillars.year?.ganzhi ?? '',
+  month_zhi: props.result.pillars.month?.zhi ?? '',
+}))
+
+const selectedLiuyue = computed(
+  () => liuyueList.value.find((m) => m.branch === selectedLiuyueBranch.value) ?? null,
+)
+const selectedLiuri = computed(
+  () => liuriList.value.find((d) => d.date === selectedLiuriDate.value) ?? null,
+)
+const selectedLiushi = computed(
+  () => liushiList.value.find((h) => h.zhi === selectedLiushiZhi.value) ?? null,
+)
+
+// 四柱表下钻列（流月/流日/流时）显隐开关：默认显示，隐藏不影响横条联动
+const showLiuCols = ref(true)
+const hasLiuCols = computed(() => selectedLiuyue.value != null)
+
+function resetCascade(level: 'month' | 'day' | 'hour') {
+  if (level === 'month') {
+    liuyueList.value = []
+    selectedLiuyueBranch.value = null
+  }
+  if (level !== 'hour') {
+    liuriList.value = []
+    selectedLiuriDate.value = null
+  }
+  liushiList.value = []
+  selectedLiushiZhi.value = null
+}
+
+// 各级自增 token：丢弃过期响应（快速连点时的竞态防护）
+let monthToken = 0
+let dayToken = 0
+let hourToken = 0
+
+watch(selectedLiunianYear, async (year) => {
+  resetCascade('month')
+  if (year == null || !hasYears.value) return
+  const token = ++monthToken
+  liuLoading.value = 'month'
+  try {
+    const res = await fetchLiuShi({ level: 'month', year, context: liuContext.value })
+    if (token !== monthToken) return
+    liuyueList.value = res.months
+    if (year === currentYear) {
+      const b = defaultLiuyueBranch(res.months, now)
+      if (b) selectedLiuyueBranch.value = b
+    }
+  } catch {
+    if (token === monthToken) liuyueList.value = []
+  } finally {
+    if (token === monthToken && liuLoading.value === 'month') liuLoading.value = null
+  }
+})
+
+watch(selectedLiuyueBranch, async (branch) => {
+  resetCascade('day')
+  const year = selectedLiunianYear.value
+  if (!branch || year == null) return
+  const token = ++dayToken
+  liuLoading.value = 'day'
+  try {
+    const res = await fetchLiuShi({ level: 'day', year, month_branch: branch, context: liuContext.value })
+    if (token !== dayToken) return
+    liuriList.value = res.days
+    const t = defaultLiuriDate(res.days, now)
+    if (t) selectedLiuriDate.value = t
+  } catch {
+    if (token === dayToken) liuriList.value = []
+  } finally {
+    if (token === dayToken && liuLoading.value === 'day') liuLoading.value = null
+  }
+})
+
+watch(selectedLiuriDate, async (d) => {
+  resetCascade('hour')
+  const year = selectedLiunianYear.value
+  const branch = selectedLiuyueBranch.value
+  if (!d || year == null || !branch) return
+  const token = ++hourToken
+  liuLoading.value = 'hour'
+  try {
+    const res = await fetchLiuShi({ level: 'hour', year, month_branch: branch, date: d, context: liuContext.value })
+    if (token !== hourToken) return
+    liushiList.value = res.hours
+    if (d === todayStr) selectedLiushiZhi.value = shichenZhiOf(now.getHours())
+  } catch {
+    if (token === hourToken) liushiList.value = []
+  } finally {
+    if (token === hourToken && liuLoading.value === 'hour') liuLoading.value = null
+  }
+})
 
 watch(
   selectedDayunIndex,
@@ -100,11 +215,20 @@ function fmtDateTime(s: string): string {
 
     <!-- 四柱明细（流年/大运列随横条选中联动） -->
     <section class="wx-card">
-      <p class="wx-card-title">四柱 · 日主 {{ result.day_master }}</p>
+      <p class="wx-card-title">
+        四柱 · 日主 {{ result.day_master }}
+        <label v-if="hasLiuCols" class="liu-toggle" data-testid="toggle-liu-cols">
+          <input v-model="showLiuCols" type="checkbox" />
+          流月/流日/流时
+        </label>
+      </p>
       <PillarTable
         :pillars="result.pillars"
         :selected-dayun="hasYears ? selectedStep : null"
         :selected-liunian="hasYears ? selectedLiunian : null"
+        :selected-liuyue="showLiuCols ? selectedLiuyue : null"
+        :selected-liuri="showLiuCols ? selectedLiuri : null"
+        :selected-liushi="showLiuCols ? selectedLiushi : null"
       />
       <p v-if="result.missing_parts.length" class="warn">时辰不详：无法排出时柱、命宫、身宫。</p>
     </section>
@@ -122,8 +246,18 @@ function fmtDateTime(s: string): string {
         :start-hour="result.da_yun.start_hour"
         :jiao-yun="result.da_yun.jiao_yun"
         :birth-year="birthYear"
+        :liuyue="liuyueList"
+        :selected-liuyue-branch="selectedLiuyueBranch"
+        :liuri="liuriList"
+        :selected-liuri-date="selectedLiuriDate"
+        :liushi="liushiList"
+        :selected-liushi-zhi="selectedLiushiZhi"
+        :loading-level="liuLoading"
         @select-dayun="selectedDayunIndex = $event"
         @select-liunian="selectedLiunianYear = $event"
+        @select-liuyue="selectedLiuyueBranch = $event"
+        @select-liuri="selectedLiuriDate = $event"
+        @select-liushi="selectedLiushiZhi = $event"
       />
     </section>
 
@@ -133,6 +267,14 @@ function fmtDateTime(s: string): string {
       <div class="info-row">
         <span>人元司令</span>
         藏干 {{ result.hidden_stems.hidden_stems.join('、') }} · 当令 {{ result.hidden_stems.ruling_stem }}
+      </div>
+      <div v-if="result.hidden_stems.wang_xiang" class="info-row" data-testid="row-wang-xiang">
+        <span>旺相休囚死</span>
+        <template v-for="s in ['旺', '相', '休', '囚', '死'] as const" :key="s">
+          {{ s }}<b :style="{ color: wxColor(result.hidden_stems.wang_xiang![s]) }">{{
+            result.hidden_stems.wang_xiang![s]
+          }}</b>&nbsp;
+        </template>
       </div>
       <div class="info-row"><span>胎元</span>{{ result.tai_yuan }}</div>
       <div class="info-row"><span>命宫</span>{{ result.ming_gong ?? '—' }}</div>
@@ -200,6 +342,22 @@ function fmtDateTime(s: string): string {
   gap: 8px;
   font-size: 14px;
   padding: 3px 0;
+}
+/* 四柱卡片标题右侧的下钻列显隐开关 */
+.wx-card-title {
+  position: relative;
+}
+.liu-toggle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--wx-muted);
+  cursor: pointer;
 }
 .info-row span {
   color: var(--wx-muted);

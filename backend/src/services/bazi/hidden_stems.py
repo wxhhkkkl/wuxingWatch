@@ -6,6 +6,8 @@ month are taken from the classical 分野; the output notes the data source.
 
 from datetime import datetime
 
+from services.bazi.constants import KE, SHENG, ZHI_WUXING
+
 # 地支藏干（本气 / 中气 / 余气）
 HIDDEN_STEMS = {
     "子": ["癸"],
@@ -56,6 +58,15 @@ JIEQI_BY_MONTH = {
 
 DATA_SOURCE = "《子平真诠》司权天数表"
 
+_SHENG_INV = {v: k for k, v in SHENG.items()}
+_KE_INV = {v: k for k, v in KE.items()}
+
+
+def wang_xiang(month_zhi: str) -> dict[str, str]:
+    """月令五行旺衰：旺=同行，相=我生，休=生我，囚=克我，死=我克。"""
+    wx = ZHI_WUXING[month_zhi]
+    return {"旺": wx, "相": SHENG[wx], "休": _SHENG_INV[wx], "囚": _KE_INV[wx], "死": KE[wx]}
+
 
 def hidden_stems_of(zhi: str) -> list[str]:
     """Hidden stems (藏干) of a branch."""
@@ -87,5 +98,6 @@ def ruling_info(month_zhi: str, birth_solar: datetime, jieqi_by_name) -> dict:
         "branch": month_zhi,
         "hidden_stems": hidden_stems_of(month_zhi),
         "ruling_stem": ruling_stem(month_zhi, birth_solar, jieqi_by_name),
+        "wang_xiang": wang_xiang(month_zhi),
         "source": DATA_SOURCE,
     }

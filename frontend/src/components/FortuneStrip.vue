@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { DaYunStep } from '../types'
+import { computed, nextTick, ref, watch } from 'vue'
+import type { DaYunStep, LiuRiItem, LiuShiItem, LiuYueItem } from '../types'
 import { ganZhiColor } from '../utils/wuxing'
 
-/** 大运/流年联动横条：点击大运切换流年列表，点击流年选中。 */
+/** 大运/流年/流月/流日/流时联动横条：逐级点击下钻，下级列表由父组件按需加载。 */
 
 const props = defineProps<{
   steps: DaYunStep[]
@@ -15,11 +15,21 @@ const props = defineProps<{
   startHour?: number | null
   jiaoYun?: { year_gan: string; jie: string; days: number; hours: number; first_year: number } | null
   birthYear?: number | null
+  liuyue?: LiuYueItem[]
+  selectedLiuyueBranch?: string | null
+  liuri?: LiuRiItem[]
+  selectedLiuriDate?: string | null
+  liushi?: LiuShiItem[]
+  selectedLiushiZhi?: string | null
+  loadingLevel?: 'month' | 'day' | 'hour' | null
 }>()
 
 const emit = defineEmits<{
   'select-dayun': [index: number]
   'select-liunian': [year: number]
+  'select-liuyue': [branch: string]
+  'select-liuri': [date: string]
+  'select-liushi': [zhi: string]
 }>()
 
 const selectedStep = computed(() => props.steps[props.selectedDayunIndex] ?? null)
@@ -29,10 +39,29 @@ const currentYear = new Date().getFullYear()
 const currentAgeXu = computed(() =>
   props.birthYear ? currentYear - props.birthYear + 1 : null,
 )
+
+const todayStr = (() => {
+  const d = new Date()
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
+})()
+
+const root = ref<HTMLElement | null>(null)
+
+// 自动选中的下钻项可能溢出可视区（流日约 30 项），滚动到选中处
+watch(
+  () => [props.liuyue, props.liuri, props.liushi],
+  async () => {
+    await nextTick()
+    root.value
+      ?.querySelector('.fs-liuyue-item.active, .fs-liuri-item.active, .fs-liushi-item.active')
+      ?.scrollIntoView?.({ inline: 'center', block: 'nearest' })
+  },
+)
 </script>
 
 <template>
-  <div class="fs">
+  <div ref="root" class="fs">
     <div v-if="startAge != null && birthYear" class="fs-qiyun">
       <span>
         出生后 {{ startAge }} 年 {{ startMonth ?? 0 }} 月<template v-if="startDay != null"> {{ startDay }} 天 {{ startHour ?? 0 }} 时</template>起运
@@ -79,6 +108,63 @@ const currentAgeXu = computed(() =>
           <b :style="{ color: ganZhiColor(n.zhi) }">{{ n.zhi }}</b>
         </span>
         <small class="fs-ss">{{ n.gan_shishen }}</small>
+      </div>
+    </div>
+
+    <!-- 流月横条 -->
+    <div v-if="loadingLevel === 'month'" class="fs-loading">流月加载中…</div>
+    <div v-else-if="liuyue?.length" class="fs-strip liunian">
+      <div
+        v-for="m in liuyue"
+        :key="m.branch"
+        class="fs-liunian-item fs-liuyue-item"
+        :class="{ active: m.branch === selectedLiuyueBranch }"
+        @click="emit('select-liuyue', m.branch)"
+      >
+        <small class="fs-year">{{ m.label }}</small>
+        <span class="fs-gz">
+          <b :style="{ color: ganZhiColor(m.gan) }">{{ m.gan }}</b>
+          <b :style="{ color: ganZhiColor(m.zhi) }">{{ m.zhi }}</b>
+        </span>
+        <small class="fs-ss">{{ m.gan_shishen }}</small>
+      </div>
+    </div>
+
+    <!-- 流日横条 -->
+    <div v-if="loadingLevel === 'day'" class="fs-loading">流日加载中…</div>
+    <div v-else-if="liuri?.length" class="fs-strip liunian">
+      <div
+        v-for="d in liuri"
+        :key="d.date"
+        class="fs-liunian-item fs-liuri-item"
+        :class="{ active: d.date === selectedLiuriDate, current: d.date === todayStr }"
+        @click="emit('select-liuri', d.date)"
+      >
+        <small class="fs-year">{{ d.date.slice(5).replace('-', '.') }}</small>
+        <span class="fs-gz">
+          <b :style="{ color: ganZhiColor(d.gan) }">{{ d.gan }}</b>
+          <b :style="{ color: ganZhiColor(d.zhi) }">{{ d.zhi }}</b>
+        </span>
+        <small class="fs-ss">{{ d.gan_shishen }}</small>
+      </div>
+    </div>
+
+    <!-- 流时横条 -->
+    <div v-if="loadingLevel === 'hour'" class="fs-loading">流时加载中…</div>
+    <div v-else-if="liushi?.length" class="fs-strip liunian">
+      <div
+        v-for="h in liushi"
+        :key="h.zhi"
+        class="fs-liunian-item fs-liushi-item"
+        :class="{ active: h.zhi === selectedLiushiZhi }"
+        @click="emit('select-liushi', h.zhi)"
+      >
+        <small class="fs-year">{{ h.zhi }}时</small>
+        <span class="fs-gz">
+          <b :style="{ color: ganZhiColor(h.ganzhi[0]) }">{{ h.ganzhi[0] }}</b>
+          <b :style="{ color: ganZhiColor(h.ganzhi[1]) }">{{ h.ganzhi[1] }}</b>
+        </span>
+        <small class="fs-ss">{{ h.gan_shishen }}</small>
       </div>
     </div>
   </div>
@@ -136,6 +222,13 @@ const currentAgeXu = computed(() =>
 }
 .fs-year {
   font-size: 10px;
+  color: var(--wx-muted);
+}
+.fs-loading {
+  margin-top: 8px;
+  border-top: 1px dashed var(--wx-line);
+  padding: 10px 4px 6px;
+  font-size: 12px;
   color: var(--wx-muted);
 }
 .fs-age-xu {

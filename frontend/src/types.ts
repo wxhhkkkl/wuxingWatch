@@ -52,6 +52,75 @@ export interface LiuNian {
   ganzhi: string
 }
 
+/** 流月（节气月）条目 — POST /api/charts/liushi level=month */
+export interface LiuYueItem {
+  branch: string
+  label: string
+  ganzhi: string
+  gan: string
+  zhi: string
+  gan_shishen: string
+  zhi_shishen: string
+  detail?: PillarDetail
+  start: string
+  end: string
+}
+
+/** 流时轻量条目（流日内嵌，无 detail） */
+export interface LiuShiLight {
+  zhi: string
+  ganzhi: string
+  gan_shishen: string
+}
+
+/** 流日条目 — level=day */
+export interface LiuRiItem {
+  date: string
+  ganzhi: string
+  gan: string
+  zhi: string
+  gan_shishen: string
+  detail?: PillarDetail
+  hours: LiuShiLight[]
+}
+
+/** 流时条目（含 detail） — level=hour */
+export interface LiuShiItem extends LiuShiLight {
+  detail?: PillarDetail
+}
+
+export interface LiuShiContext {
+  day_ganzhi: string
+  year_ganzhi: string
+  month_zhi: string
+}
+
+export interface LiuShiRequest {
+  level: 'month' | 'day' | 'hour'
+  year: number
+  month_branch?: string
+  date?: string
+  context: LiuShiContext
+}
+
+export interface LiuYueResponse {
+  year: number
+  year_ganzhi: string
+  months: LiuYueItem[]
+}
+
+export interface LiuRiResponse {
+  month_branch: string
+  month_ganzhi: string
+  days: LiuRiItem[]
+}
+
+export interface LiuShiResponse {
+  date: string
+  day_ganzhi: string
+  hours: LiuShiItem[]
+}
+
 export interface XiYongConclusion {
   yong_shen: string
   xi_shen: string[]
@@ -111,7 +180,13 @@ export interface ChartResult {
     time: Pillar | null
   }
   day_master: string
-  hidden_stems: { branch: string; hidden_stems: string[]; ruling_stem: string; source: string }
+  hidden_stems: {
+    branch: string
+    hidden_stems: string[]
+    ruling_stem: string
+    wang_xiang?: Record<'旺' | '相' | '休' | '囚' | '死', string>
+    source: string
+  }
   tai_yuan: string
   ming_gong: string | null
   shen_gong: string | null

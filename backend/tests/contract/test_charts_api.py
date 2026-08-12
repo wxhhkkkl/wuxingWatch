@@ -91,3 +91,91 @@ def test_image_privacy_header_when_name(client):
         },
     )
     assert resp.headers.get("x-privacy-notice") == "image-contains-personal-info"
+
+
+CTX = {"day_ganzhi": "庚辰", "year_ganzhi": "丁卯", "month_zhi": "巳"}
+
+
+def test_liushi_month_level(client):
+    resp = client.post(
+        "/api/charts/liushi",
+        json={"level": "month", "year": 2026, "context": CTX},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["year_ganzhi"] == "丙午"
+    assert len(data["months"]) == 12
+    assert data["months"][0]["ganzhi"] == "庚寅"
+    assert data["months"][0]["start"] == "2026-02-04T04:02:08"
+    assert data["months"][11]["ganzhi"] == "辛丑"
+
+
+def test_liushi_day_level(client):
+    resp = client.post(
+        "/api/charts/liushi",
+        json={"level": "day", "year": 2026, "month_branch": "寅", "context": CTX},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["month_ganzhi"] == "庚寅"
+    assert len(data["days"]) == 29
+    assert data["days"][0]["date"] == "2026-02-04"
+    assert data["days"][0]["ganzhi"] == "己酉"
+    assert len(data["days"][0]["hours"]) == 12
+
+
+def test_liushi_hour_level(client):
+    resp = client.post(
+        "/api/charts/liushi",
+        json={
+            "level": "hour",
+            "year": 2026,
+            "month_branch": "寅",
+            "date": "2026-02-04",
+            "context": CTX,
+        },
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["day_ganzhi"] == "己酉"
+    assert len(data["hours"]) == 12
+    assert data["hours"][0]["ganzhi"] == "甲子"
+    assert "na_yin" in data["hours"][0]["detail"]
+
+
+def test_liushi_day_requires_month_branch(client):
+    resp = client.post(
+        "/api/charts/liushi",
+        json={"level": "day", "year": 2026, "context": CTX},
+    )
+    assert resp.status_code == 422
+
+
+def test_liushi_hour_requires_date(client):
+    resp = client.post(
+        "/api/charts/liushi",
+        json={"level": "hour", "year": 2026, "month_branch": "寅", "context": CTX},
+    )
+    assert resp.status_code == 422
+
+
+def test_liushi_invalid_branch(client):
+    resp = client.post(
+        "/api/charts/liushi",
+        json={"level": "day", "year": 2026, "month_branch": "猫", "context": CTX},
+    )
+    assert resp.status_code == 422
+
+
+def test_liushi_hour_date_out_of_month(client):
+    resp = client.post(
+        "/api/charts/liushi",
+        json={
+            "level": "hour",
+            "year": 2026,
+            "month_branch": "寅",
+            "date": "2026-03-10",
+            "context": CTX,
+        },
+    )
+    assert resp.status_code == 422

@@ -3,8 +3,9 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response
 
-from api.schemas import BirthInput
+from api.schemas import BirthInput, LiuShiLevel, LiuShiRequest
 from services import chart_service, share_service
+from services.bazi import liushi
 
 router = APIRouter()
 
@@ -16,6 +17,22 @@ def predict(payload: BirthInput):
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     return result
+
+
+@router.post("/liushi")
+def liushi_detail(payload: LiuShiRequest):
+    """流月/流日/流时下钻：按 level 返回所选流年的月/日/时数据。"""
+    ctx = payload.context.model_dump()
+    try:
+        if payload.level == LiuShiLevel.MONTH:
+            return liushi.liu_yue_list(payload.year, ctx)
+        if payload.level == LiuShiLevel.DAY:
+            return liushi.liu_ri_list(payload.year, payload.month_branch, ctx)
+        return liushi.liu_shi_list(
+            payload.year, payload.month_branch, payload.date, ctx
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 @router.post("/image")

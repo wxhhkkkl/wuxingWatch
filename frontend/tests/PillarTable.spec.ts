@@ -1,7 +1,15 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import PillarTable from '../src/components/PillarTable.vue'
-import type { DaYunStep, LiuNianStep, Pillar, PillarDetail } from '../src/types'
+import type {
+  DaYunStep,
+  LiuNianStep,
+  LiuRiItem,
+  LiuShiItem,
+  LiuYueItem,
+  Pillar,
+  PillarDetail,
+} from '../src/types'
 
 const detail = (over: Partial<PillarDetail> = {}): PillarDetail => ({
   gan_shishen: '正官',
@@ -112,5 +120,67 @@ describe('PillarTable', () => {
   it('stays 4 columns when no selection provided (四柱输入模式)', () => {
     const wrapper = mount(PillarTable, { props: { pillars } })
     expect(wrapper.findAll('.pt-col-header').length).toBe(4)
+  })
+
+  // ---------- 流月/流日/流时下钻列 ----------
+
+  const liuyue: LiuYueItem = {
+    branch: '寅',
+    label: '寅月',
+    ganzhi: '庚寅',
+    gan: '庚',
+    zhi: '寅',
+    gan_shishen: '比肩',
+    zhi_shishen: '偏财',
+    detail: detail({ gan_shishen: '比肩', na_yin: '松柏木' }),
+    start: '2026-02-04T04:02:08',
+    end: '2026-03-05T21:59:00',
+  }
+  const liuri: LiuRiItem = {
+    date: '2026-02-04',
+    ganzhi: '己酉',
+    gan: '己',
+    zhi: '酉',
+    gan_shishen: '正印',
+    detail: detail({ gan_shishen: '正印' }),
+    hours: [],
+  }
+  const liushi: LiuShiItem = {
+    zhi: '子',
+    ganzhi: '甲子',
+    gan_shishen: '偏财',
+    detail: detail({ gan_shishen: '偏财' }),
+  }
+
+  it('appends 流月/流日/流时 columns ahead of 流年 as cascade deepens', () => {
+    const wrapper = mount(PillarTable, {
+      props: {
+        pillars,
+        selectedDayun: dayun,
+        selectedLiunian: liunian,
+        selectedLiuyue: liuyue,
+        selectedLiuri: liuri,
+        selectedLiushi: liushi,
+      },
+    })
+    const headers = wrapper.findAll('.pt-col-header')
+    expect(headers.map((h) => h.text())).toEqual([
+      '流时', '流日', '流月', '流年', '大运', '年柱', '月柱', '日柱', '时柱',
+    ])
+    expect(wrapper.find('[data-testid="gan-liushi"]').text()).toBe('甲')
+    expect(wrapper.find('[data-testid="gan-liuri"]').text()).toBe('己')
+    expect(wrapper.find('[data-testid="main-liuyue-nayin"]').text()).toBe('松柏木')
+    expect(wrapper.find('.pt-table').classes()).toContain('dense')
+  })
+
+  it('adds only 流月 column when cascade stops at month level', () => {
+    const wrapper = mount(PillarTable, {
+      props: { pillars, selectedDayun: dayun, selectedLiunian: liunian, selectedLiuyue: liuyue },
+    })
+    const headers = wrapper.findAll('.pt-col-header')
+    expect(headers.map((h) => h.text())).toEqual([
+      '流月', '流年', '大运', '年柱', '月柱', '日柱', '时柱',
+    ])
+    expect(wrapper.find('.pt-table').classes()).not.toContain('dense')
   })
 })

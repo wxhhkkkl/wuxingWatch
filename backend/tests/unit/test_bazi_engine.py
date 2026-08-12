@@ -41,6 +41,23 @@ def test_chart_contains_required_sections():
     assert result["xi_yong"]["disclaimer"]
 
 
+def test_wang_xiang_in_chart_solar_mode():
+    # 1990-05-20 → 巳月：火旺·土相·木休·水囚·金死
+    result = compute_chart(datetime(1990, 5, 20, 10, 30, 0), "M")
+    assert result["hidden_stems"]["wang_xiang"] == {
+        "旺": "火", "相": "土", "休": "木", "囚": "水", "死": "金",
+    }
+
+
+def test_wang_xiang_in_chart_sizhu_mode():
+    result = compute_from_pillars(
+        {"year": "庚午", "month": "辛巳", "day": "乙酉", "time": "辛巳"}, "M"
+    )
+    assert result["hidden_stems"]["wang_xiang"] == {
+        "旺": "火", "相": "土", "休": "木", "囚": "水", "死": "金",
+    }
+
+
 def test_true_solar_time_shifts_time():
     result = compute_chart(datetime(1990, 6, 1, 23, 20, 0), "M", longitude=116.41)
     # 北京经度修正约 -14 分钟

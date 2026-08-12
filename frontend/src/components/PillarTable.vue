@@ -1,14 +1,25 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { DaYunStep, LiuNianStep, Pillar, PillarDetail } from '../types'
+import type {
+  DaYunStep,
+  LiuNianStep,
+  LiuRiItem,
+  LiuShiItem,
+  LiuYueItem,
+  Pillar,
+  PillarDetail,
+} from '../types'
 import { ganZhiColor } from '../utils/wuxing'
 
-/** 参考"问真八字"布局的 6 列明细表格：流年/大运/年/月/日/时 × 9 个维度行。 */
+/** 参考"问真八字"布局的明细表格：流时/流日/流月/流年/大运/年/月/日/时 × 9 个维度行。 */
 
 const props = defineProps<{
   pillars: { year: Pillar | null; month: Pillar | null; day: Pillar | null; time: Pillar | null }
   selectedDayun?: DaYunStep | null
   selectedLiunian?: LiuNianStep | null
+  selectedLiuyue?: LiuYueItem | null
+  selectedLiuri?: LiuRiItem | null
+  selectedLiushi?: LiuShiItem | null
 }>()
 
 interface Col {
@@ -21,6 +32,21 @@ interface Col {
 
 const columns = computed<Col[]>(() => {
   const cols: Col[] = []
+  const cascade: [
+    string,
+    string,
+    { ganzhi: string; gan?: string; zhi?: string; detail?: PillarDetail } | null | undefined,
+  ][] = [
+    ['liushi', '流时', props.selectedLiushi],
+    ['liuri', '流日', props.selectedLiuri],
+    ['liuyue', '流月', props.selectedLiuyue],
+  ]
+  for (const [id, label, sel] of cascade) {
+    if (sel?.ganzhi) {
+      // 流时条目无独立 gan/zhi 字段，从 ganzhi 取字
+      cols.push({ id, label, gan: sel.gan ?? sel.ganzhi[0], zhi: sel.zhi ?? sel.ganzhi[1], detail: sel.detail })
+    }
+  }
   if (props.selectedLiunian?.ganzhi) {
     cols.push({
       id: 'liunian',
@@ -49,7 +75,7 @@ const columns = computed<Col[]>(() => {
 </script>
 
 <template>
-  <div class="pt-table" :style="{ '--pt-cols': columns.length }">
+  <div class="pt-table" :class="{ dense: columns.length > 7 }" :style="{ '--pt-cols': columns.length }">
       <!-- 列表头 -->
       <div class="pt-row pt-head">
         <span class="pt-rowlabel" />
@@ -172,6 +198,22 @@ const columns = computed<Col[]>(() => {
   font-size: 22px;
   font-weight: 600;
   line-height: 1.2;
+}
+/* 列数多（下钻流月/流日/流时）时收紧字号与行标签宽度 */
+.pt-table.dense .pt-row {
+  grid-template-columns: 26px repeat(var(--pt-cols), 1fr);
+}
+.pt-table.dense .pt-rowlabel {
+  font-size: 10px;
+}
+.pt-table.dense .pt-col-header {
+  font-size: 11px;
+}
+.pt-table.dense .pt-cell.char {
+  font-size: 16px;
+}
+.pt-table.dense .pt-cell.small {
+  font-size: 10px;
 }
 .pt-cell.small {
   font-size: 12px;

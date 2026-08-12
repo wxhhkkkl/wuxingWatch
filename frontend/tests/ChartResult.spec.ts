@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { mockResult, mockInputs } from './fixtures'
 
@@ -10,10 +10,11 @@ vi.mock('vue-router', () => ({
 }))
 
 vi.mock('../src/api/records', () => ({ saveRecord: vi.fn() }))
-vi.mock('../src/api/charts', () => ({ fetchChartImage: vi.fn() }))
+vi.mock('../src/api/charts', () => ({ fetchChartImage: vi.fn(), fetchLiuShi: vi.fn() }))
 
 import { useChartStore } from '../src/stores/chart'
 import { useAuthStore } from '../src/stores/auth'
+import { fetchLiuShi } from '../src/api/charts'
 import ChartResult from '../src/pages/ChartResult.vue'
 
 describe('ChartResult', () => {
@@ -89,5 +90,109 @@ describe('ChartResult', () => {
     expect(wrapper2.text()).toContain('虚宿北方玄武')
     // 日出日落行已移除
     expect(wrapper2.text()).not.toContain('日出')
+  })
+
+  it('shows 旺相休囚死 row only when wang_xiang present', () => {
+    // 旧记录无 wang_xiang：行不渲染
+    useChartStore().set(mockResult, mockInputs)
+    const wrapper = mount(ChartResult)
+    expect(wrapper.find('[data-testid="row-wang-xiang"]').exists()).toBe(false)
+
+    const withWx = {
+      ...mockResult,
+      hidden_stems: {
+        ...mockResult.hidden_stems,
+        wang_xiang: { 旺: '火', 相: '土', 休: '木', 囚: '水', 死: '金' },
+      },
+    } as never
+    useChartStore().set(withWx, mockInputs)
+    const wrapper2 = mount(ChartResult)
+    const row = wrapper2.find('[data-testid="row-wang-xiang"]')
+    expect(row.exists()).toBe(true)
+    expect(row.text()).toContain('旺火')
+    expect(row.text()).toContain('死金')
+  })
+
+  it('cascades 流年→流月→流日→流时 with on-demand fetches and table columns', async () => {
+    const curYear = new Date().getFullYear()
+    const now = new Date()
+    const p = (n: number) => String(n).padStart(2, '0')
+    const today = `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}`
+    const mkLn = (y: number) => ({
+      year: y, gan: '丙', zhi: '午', ganzhi: '丙午', gan_shishen: '七杀', zhi_shishen: '正官',
+    })
+    const cascadeResult = {
+      ...mockResult,
+      da_yun: {
+        start_age: 5,
+        start_month: 7,
+        steps: [{
+          ganzhi: '甲辰', start_year: curYear, end_year: curYear + 9,
+          gan: '甲', zhi: '辰', gan_shishen: '偏财', zhi_shishen: '偏印',
+          liu_nian: Array.from({ length: 10 }, (_, i) => mkLn(curYear + i)),
+        }],
+      },
+    } as never
+
+    const ZHI = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥']
+    vi.mocked(fetchLiuShi).mockImplementation(((input: { level: string }) => {
+      if (input.level === 'month') {
+        return Promise.resolve({
+          year: curYear,
+          year_ganzhi: '丙午',
+          months: [{
+            branch: '寅', label: '寅月', ganzhi: '庚寅', gan: '庚', zhi: '寅',
+            gan_shishen: '比肩', zhi_shishen: '偏财',
+            start: '2000-01-01T00:00:00', end: '2099-12-31T00:00:00', // 覆盖今天 → 自动选中
+          }],
+        })
+      }
+      if (input.level === 'day') {
+        return Promise.resolve({
+          month_branch: '寅',
+          month_ganzhi: '庚寅',
+          days: [{ date: today, ganzhi: '己酉', gan: '己', zhi: '酉', gan_shishen: '正印', hours: [] }],
+        })
+      }
+      return Promise.resolve({
+        date: today,
+        day_ganzhi: '己酉',
+        hours: ZHI.map((z) => ({ zhi: z, ganzhi: `甲${z}`, gan_shishen: '偏财' })),
+      })
+    }) as never)
+
+    useChartStore().set(cascadeResult, mockInputs)
+    const wrapper = mount(ChartResult)
+    // 级联三级各一次 fetch，逐轮 flush
+    await flushPromises()
+    await flushPromises()
+    await flushPromises()
+    await flushPromises()
+
+    const calls = vi.mocked(fetchLiuShi).mock.calls.map((c) => c[0]) as {
+      level: string; year: number; month_branch?: string; date?: string
+      context: { day_ganzhi: string; year_ganzhi: string; month_zhi: string }
+    }[]
+    expect(calls[0]).toEqual({
+      level: 'month', year: curYear,
+      context: { day_ganzhi: '乙酉', year_ganzhi: '庚午', month_zhi: '巳' },
+    })
+    expect(calls[1]).toMatchObject({ level: 'day', year: curYear, month_branch: '寅' })
+    expect(calls[2]).toMatchObject({ level: 'hour', year: curYear, month_branch: '寅', date: today })
+
+    // 明细表 9 列：流时/流日/流月/流年/大运 + 四柱
+    const headers = wrapper.findAll('.pt-col-header').map((h) => h.text())
+    expect(headers).toEqual(['流时', '流日', '流月', '流年', '大运', '年柱', '月柱', '日柱', '时柱'])
+    expect(wrapper.find('[data-testid="gan-liuyue"]').text()).toBe('庚')
+
+    // 显隐开关：取消勾选后隐藏流月/流日/流时三列（横条联动不受影响）
+    const toggle = wrapper.find('[data-testid="toggle-liu-cols"] input')
+    expect(toggle.exists()).toBe(true)
+    await toggle.setValue(false)
+    const headers2 = wrapper.findAll('.pt-col-header').map((h) => h.text())
+    expect(headers2).toEqual(['流年', '大运', '年柱', '月柱', '日柱', '时柱'])
+    expect(wrapper.findAll('.fs-liuyue-item').length).toBe(1) // 横条仍在
+    await toggle.setValue(true)
+    expect(wrapper.findAll('.pt-col-header').length).toBe(9) // 再勾选恢复
   })
 })

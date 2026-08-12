@@ -16,6 +16,7 @@ from services.bazi.constants import (
     GAN_YIN_YANG,
     ZHI_LIST,
     ZHI_WUXING,
+    hour_gan,
     liunian_ganzhi,
     shishen,
 )
@@ -44,12 +45,6 @@ def _pillar(gan: str, zhi: str, day_master: str) -> dict:
         "zhi_wuxing": ZHI_WUXING[zhi],
         "shishen": shishen(day_master, gan),
     }
-
-
-def _hour_gan(day_gan: str, zhi: str) -> str:
-    """五鼠遁：甲己还加甲，乙庚丙作初……由日干推时干。"""
-    idx = ((GAN_LIST.index(day_gan) % 5) * 2 + ZHI_LIST.index(zhi)) % 10
-    return GAN_LIST[idx]
 
 
 def _next_day_ganzhi(dt: datetime) -> tuple[str, str]:
@@ -284,7 +279,7 @@ def compute_chart(
             "year": _pillar(eight.getYearGan(), eight.getYearZhi(), day_master),
             "month": _pillar(eight.getMonthGan(), eight.getMonthZhi(), day_master),
             "day": _pillar(day_gan, day_zhi, day_master),
-            "time": _pillar(_hour_gan(day_gan, new_zhi), new_zhi, day_master),
+            "time": _pillar(hour_gan(day_gan, new_zhi), new_zhi, day_master),
         }
         pillars["day"]["shishen"] = "日主"
 
@@ -417,6 +412,7 @@ def compute_from_pillars(pillars: dict[str, str], gender: str) -> dict:
         "branch": month_branch,
         "hidden_stems": hidden_stems.hidden_stems_of(month_branch),
         "ruling_stem": hidden_stems.hidden_stems_of(month_branch)[0],
+        "wang_xiang": hidden_stems.wang_xiang(month_branch),
         "source": "四柱输入模式：无具体日期，当令按本气示意",
     }
 

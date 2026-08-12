@@ -69,3 +69,9 @@ def shishen(day_master: str, other_gan: str) -> str:
 def liunian_ganzhi(year: int) -> str:
     """Sexagenary ganzhi of a Gregorian year (流年干支)."""
     return GAN_LIST[(year - 4) % 10] + ZHI_LIST[(year - 4) % 12]
+
+
+def hour_gan(day_gan: str, zhi: str) -> str:
+    """五鼠遁：甲己还加甲，乙庚丙作初……由日干推时干。"""
+    idx = ((GAN_LIST.index(day_gan) % 5) * 2 + ZHI_LIST.index(zhi)) % 10
+    return GAN_LIST[idx]

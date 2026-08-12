@@ -1,6 +1,7 @@
 """Pydantic request/response models."""
 
 from datetime import date
+from datetime import date as date_t
 from enum import StrEnum
 
 from pydantic import BaseModel, Field, model_validator
@@ -60,6 +61,36 @@ class RecordCreate(BirthInput):
     person_name: str | None = None
     relationship: Relationship = Relationship.SELF
     notes: str | None = None
+
+
+class LiuShiLevel(StrEnum):
+    MONTH = "month"
+    DAY = "day"
+    HOUR = "hour"
+
+
+class LiuShiContext(BaseModel):
+    day_ganzhi: str = Field(min_length=2, max_length=2)
+    year_ganzhi: str = Field(min_length=2, max_length=2)
+    month_zhi: str = Field(min_length=1, max_length=1)
+
+
+class LiuShiRequest(BaseModel):
+    """流月/流日/流时下钻查询；context 为本命盘干支上下文。"""
+
+    level: LiuShiLevel
+    year: int = Field(ge=1900, le=2100)
+    month_branch: str | None = Field(default=None, description="level=day/hour 必填：节气月支（寅…丑）")
+    date: date_t | None = Field(default=None, description="level=hour 必填：公历日期")
+    context: LiuShiContext
+
+    @model_validator(mode="after")
+    def _validate_level_params(self):
+        if self.level in (LiuShiLevel.DAY, LiuShiLevel.HOUR) and not self.month_branch:
+            raise ValueError("level=day/hour 需提供 month_branch")
+        if self.level == LiuShiLevel.HOUR and self.date is None:
+            raise ValueError("level=hour 需提供 date")
+        return self
 
 
 class AuthIntent(StrEnum):

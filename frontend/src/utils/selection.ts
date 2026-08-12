@@ -16,3 +16,27 @@ export function defaultLiunianYear(step: DaYunStep, currentYear: number): number
   if (!years.length) return null
   return years.some((n) => n.year === currentYear) ? currentYear : years[0].year
 }
+
+/** 当前时刻所在节气月的月支（start ≤ now < end）；不在任何月内返回 null。 */
+export function defaultLiuyueBranch(
+  months: { branch: string; start: string; end: string }[],
+  now: Date,
+): string | null {
+  const t = now.getTime()
+  const hit = months.find((m) => new Date(m.start).getTime() <= t && t < new Date(m.end).getTime())
+  return hit ? hit.branch : null
+}
+
+/** 流日列表中默认选中的日期：今日在列则今日，否则 null（调用方回落）。 */
+export function defaultLiuriDate(days: { date: string }[], now: Date): string | null {
+  const p = (n: number) => String(n).padStart(2, '0')
+  const today = `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}`
+  return days.some((d) => d.date === today) ? today : null
+}
+
+const ZHI_LIST = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥']
+
+/** 小时（0-23）→ 时支：23/0 点子时，1-2 丑时……21-22 亥时。 */
+export function shichenZhiOf(hour: number): string {
+  return ZHI_LIST[Math.floor(((hour + 1) % 24) / 2)]
+}

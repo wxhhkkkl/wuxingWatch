@@ -1,7 +1,13 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import FortuneStrip from '../src/components/FortuneStrip.vue'
-import { defaultDayunIndex, defaultLiunianYear } from '../src/utils/selection'
+import {
+  defaultDayunIndex,
+  defaultLiunianYear,
+  defaultLiuriDate,
+  defaultLiuyueBranch,
+  shichenZhiOf,
+} from '../src/utils/selection'
 import type { DaYunStep } from '../src/types'
 
 const mkLn = (year: number) => ({
@@ -115,6 +121,82 @@ describe('FortuneStrip', () => {
     })
     expect(wrapper.text()).not.toContain('起运')
   })
+
+  // ---------- 流月/流日/流时下钻横条 ----------
+
+  const liuyue = [
+    {
+      branch: '寅', label: '寅月', ganzhi: '庚寅', gan: '庚', zhi: '寅',
+      gan_shishen: '比肩', zhi_shishen: '偏财',
+      start: '2026-02-04T04:02:08', end: '2026-03-05T21:59:00',
+    },
+    {
+      branch: '卯', label: '卯月', ganzhi: '辛卯', gan: '辛', zhi: '卯',
+      gan_shishen: '劫财', zhi_shishen: '正财',
+      start: '2026-03-05T21:59:00', end: '2026-04-05T02:40:00',
+    },
+  ]
+  const p2 = (n: number) => String(n).padStart(2, '0')
+  const now = new Date()
+  const todayStr = `${now.getFullYear()}-${p2(now.getMonth() + 1)}-${p2(now.getDate())}`
+  const liuri = [
+    { date: '2026-02-04', ganzhi: '己酉', gan: '己', zhi: '酉', gan_shishen: '正印', hours: [] },
+    { date: todayStr, ganzhi: '庚戌', gan: '庚', zhi: '戌', gan_shishen: '比肩', hours: [] },
+  ]
+  const liushi = [
+    { zhi: '子', ganzhi: '甲子', gan_shishen: '偏财' },
+    { zhi: '丑', ganzhi: '乙丑', gan_shishen: '正财' },
+  ]
+  const baseProps = { steps, selectedDayunIndex: 0, selectedLiunianYear: 1995 }
+
+  it('renders 流月 strip and emits select-liuyue', async () => {
+    const wrapper = mount(FortuneStrip, {
+      props: { ...baseProps, liuyue, selectedLiuyueBranch: '寅' },
+    })
+    const items = wrapper.findAll('.fs-liuyue-item')
+    expect(items.length).toBe(2)
+    expect(items[0].text()).toContain('寅月')
+    expect(items[0].classes()).toContain('active')
+    await items[1].trigger('click')
+    expect(wrapper.emitted('select-liuyue')![0]).toEqual(['卯'])
+  })
+
+  it('renders 流日 strip with today highlighted and emits select-liuri', async () => {
+    const wrapper = mount(FortuneStrip, {
+      props: { ...baseProps, liuri, selectedLiuriDate: '2026-02-04' },
+    })
+    const items = wrapper.findAll('.fs-liuri-item')
+    expect(items.length).toBe(2)
+    expect(items[0].classes()).toContain('active')
+    expect(items[1].classes()).toContain('current')
+    await items[1].trigger('click')
+    expect(wrapper.emitted('select-liuri')![0]).toEqual([todayStr])
+  })
+
+  it('renders 流时 strip and emits select-liushi', async () => {
+    const wrapper = mount(FortuneStrip, {
+      props: { ...baseProps, liushi, selectedLiushiZhi: '子' },
+    })
+    const items = wrapper.findAll('.fs-liushi-item')
+    expect(items.length).toBe(2)
+    expect(items[0].text()).toContain('子时')
+    expect(items[0].text()).toContain('甲子')
+    await items[1].trigger('click')
+    expect(wrapper.emitted('select-liushi')![0]).toEqual(['丑'])
+  })
+
+  it('shows loading hint instead of the strip being fetched', () => {
+    const wrapper = mount(FortuneStrip, {
+      props: { ...baseProps, loadingLevel: 'month', liuyue },
+    })
+    expect(wrapper.text()).toContain('流月加载中')
+    expect(wrapper.findAll('.fs-liuyue-item').length).toBe(0)
+  })
+
+  it('renders no cascade strips when lists are absent', () => {
+    const wrapper = mount(FortuneStrip, { props: baseProps })
+    expect(wrapper.findAll('.fs-liuyue-item, .fs-liuri-item, .fs-liushi-item').length).toBe(0)
+  })
 })
 
 describe('default selection (utils/selection)', () => {
@@ -130,5 +212,31 @@ describe('default selection (utils/selection)', () => {
   it('defaults liunian year to current year within the step, else first year', () => {
     expect(defaultLiunianYear(stepsWithCurrent[2], currentYear)).toBe(currentYear)
     expect(defaultLiunianYear(steps[0], currentYear)).toBe(1995)
+  })
+
+  it('defaultLiuyueBranch picks the 节气月 containing now', () => {
+    const months = [
+      { branch: '寅', start: '2026-02-04T04:02:08', end: '2026-03-05T21:59:00' },
+      { branch: '卯', start: '2026-03-05T21:59:00', end: '2026-04-05T02:40:00' },
+    ]
+    expect(defaultLiuyueBranch(months, new Date('2026-02-04T04:02:08'))).toBe('寅')
+    expect(defaultLiuyueBranch(months, new Date('2026-03-05T21:59:00'))).toBe('卯')
+    expect(defaultLiuyueBranch(months, new Date('2026-05-01T00:00:00'))).toBeNull()
+  })
+
+  it('defaultLiuriDate picks today when listed, else null', () => {
+    const p = (n: number) => String(n).padStart(2, '0')
+    const now = new Date()
+    const today = `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}`
+    expect(defaultLiuriDate([{ date: '1990-01-01' }, { date: today }], now)).toBe(today)
+    expect(defaultLiuriDate([{ date: '1990-01-01' }], now)).toBeNull()
+  })
+
+  it('shichenZhiOf maps hours to 时支', () => {
+    expect(shichenZhiOf(0)).toBe('子')
+    expect(shichenZhiOf(23)).toBe('子')
+    expect(shichenZhiOf(1)).toBe('丑')
+    expect(shichenZhiOf(13)).toBe('未')
+    expect(shichenZhiOf(22)).toBe('亥')
   })
 })
