@@ -13,7 +13,7 @@ const redirect = computed(() =>
   typeof route.query.redirect === 'string' ? route.query.redirect : '/',
 )
 
-const tab = ref<'sms' | 'password'>('sms')
+const tab = ref<'sms' | 'password'>('password')
 // 密码登录页内的子模式
 const pwMode = ref<'login' | 'register' | 'reset'>('login')
 

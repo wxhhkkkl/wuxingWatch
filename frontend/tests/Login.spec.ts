@@ -50,10 +50,17 @@ describe('Login', () => {
     login.mockResolvedValue(undefined)
     const wrapper = mount(Login)
     await flush()
+    ;(wrapper.vm as unknown as { tab: string }).tab = 'sms'
+    await flush()
     ;(wrapper.vm as unknown as { phone: string; code: string }).phone = '13800138000'
     ;(wrapper.vm as unknown as { code: string }).code = '123456'
     await wrapper.find('[data-testid="sms-login-btn"]').trigger('click')
     expect(login).toHaveBeenCalledWith('13800138000', '123456')
+  })
+
+  it('defaults to password login tab', () => {
+    const wrapper = mount(Login)
+    expect((wrapper.vm as unknown as { tab: string }).tab).toBe('password')
   })
 
   it('calls password login when switching to password tab', async () => {
@@ -72,6 +79,8 @@ describe('Login', () => {
     login.mockResolvedValue(undefined)
     const wrapper = mount(Login)
     await flush()
+    ;(wrapper.vm as unknown as { tab: string }).tab = 'sms'
+    await flush()
     ;(wrapper.vm as unknown as { phone: string; code: string }).phone = '13800138000'
     ;(wrapper.vm as unknown as { code: string }).code = '123456'
     await wrapper.find('[data-testid="sms-login-btn"]').trigger('click')
@@ -81,6 +90,8 @@ describe('Login', () => {
   it('redirects to home when no redirect query is present', async () => {
     login.mockResolvedValue(undefined)
     const wrapper = mount(Login)
+    await flush()
+    ;(wrapper.vm as unknown as { tab: string }).tab = 'sms'
     await flush()
     ;(wrapper.vm as unknown as { phone: string; code: string }).phone = '13800138000'
     ;(wrapper.vm as unknown as { code: string }).code = '123456'

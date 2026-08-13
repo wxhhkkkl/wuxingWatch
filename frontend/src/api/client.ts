@@ -26,6 +26,21 @@ async function tryRefresh(): Promise<boolean> {
   return true
 }
 
+/** 鉴权失败：清除登录态并跳转登录页（已在登录页则不重复跳转）。 */
+function handleAuthFailure() {
+  setAccessToken(null)
+  try {
+    // pinia-plugin-persistedstate 默认以 store id('auth') 为 localStorage key
+    localStorage.removeItem('auth')
+  } catch {
+    /* ignore */
+  }
+  if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+    const redirect = encodeURIComponent(window.location.pathname + window.location.search)
+    window.location.replace(`/login?redirect=${redirect}`)
+  }
+}
+
 export async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers = new Headers(options.headers)
   headers.set('Content-Type', 'application/json')
@@ -40,6 +55,11 @@ export async function request<T>(path: string, options: RequestInit = {}): Promi
       if (accessToken) headers2.set('Authorization', `Bearer ${accessToken}`)
       resp = await fetch(path, { ...options, headers: headers2, credentials: 'same-origin' })
     }
+  }
+
+  // 鉴权失败（refresh 也失败，或重试后仍 401）：跳转登录页；登录类接口（如密码错误）不跳
+  if (resp.status === 401 && !path.startsWith('/api/auth/')) {
+    handleAuthFailure()
   }
 
   if (resp.status === 204) return undefined as T
