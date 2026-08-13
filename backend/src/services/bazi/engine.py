@@ -1,7 +1,8 @@
 """BaZi chart computation orchestration using lunar-python.
 
 Produces the full ChartResult: 四柱、大运、流年、人元司令、胎元、命宫、身宫、
-喜忌分析. 真太阳时 is applied before pillar computation when longitude is known.
+喜忌分析. 时制口径：年月柱按钟表时间（solar_birth）；日时柱按真太阳时
+（birth，经出生地经度修正）。当未提供经度时两者相同。
 """
 
 from datetime import datetime, timedelta
@@ -34,6 +35,36 @@ GENDER_LUNAR = {"M": 1, "F": 0}
 LIU_NIAN_SPAN = 10  # 当前年 + 未来 10 年（FR-004）
 
 DA_YUN_STEPS = 8  # 大运步数
+
+# 命宫/身宫地支序号（复刻 lunar-python：命宫月与时均按寅=1；身宫时按子=1）
+_MONTH_ZHI_IDX = {
+    "寅": 1, "卯": 2, "辰": 3, "巳": 4, "午": 5, "未": 6,
+    "申": 7, "酉": 8, "戌": 9, "亥": 10, "子": 11, "丑": 12,
+}
+_ZHI_IDX = {z: i + 1 for i, z in enumerate(ZHI_LIST)}  # 子=1
+
+
+def _ming_gong(year_gan: str, month_zhi: str, time_zhi: str) -> str:
+    """命宫：月支+时支（寅=1）定宫位，年干起干。与 lunar-python EightChar 口径一致。"""
+    offset = _MONTH_ZHI_IDX[month_zhi] + _MONTH_ZHI_IDX[time_zhi]
+    offset = 26 - offset if offset >= 14 else 14 - offset
+    gan_index = (GAN_LIST.index(year_gan) + 1) * 2 + offset
+    while gan_index > 10:
+        gan_index -= 10
+    zhi = next(k for k, v in _MONTH_ZHI_IDX.items() if v == offset)
+    return GAN_LIST[gan_index - 1] + zhi
+
+
+def _shen_gong(year_gan: str, month_zhi: str, time_zhi: str) -> str:
+    """身宫：月支（寅=1）+时支（子=1）定宫位，年干起干。与 lunar-python 口径一致。"""
+    offset = _MONTH_ZHI_IDX[month_zhi] + _ZHI_IDX[time_zhi]
+    if offset > 12:
+        offset -= 12
+    gan_index = (GAN_LIST.index(year_gan) + 1) * 2 + offset
+    while gan_index > 10:
+        gan_index -= 10
+    zhi = next(k for k, v in _MONTH_ZHI_IDX.items() if v == offset)
+    return GAN_LIST[gan_index - 1] + zhi
 
 
 def _pillar(gan: str, zhi: str, day_master: str) -> dict:
@@ -213,23 +244,34 @@ def compute_chart(
             "solar_midnight": midnight.isoformat(),
         }
 
-    solar = Solar.fromYmdHms(
+    # 年月柱：按钟表时间（solar_birth，不修真太阳时）；日时柱：按真太阳时（birth）
+    solar_c = Solar.fromYmdHms(
+        solar_birth.year, solar_birth.month, solar_birth.day,
+        solar_birth.hour, solar_birth.minute, solar_birth.second,
+    )
+    lunar_c = solar_c.getLunar()
+    eight_c = lunar_c.getEightChar()
+    year_gan, year_zhi = eight_c.getYearGan(), eight_c.getYearZhi()
+    month_gan, month_zhi = eight_c.getMonthGan(), eight_c.getMonthZhi()
+
+    solar_t = Solar.fromYmdHms(
         birth.year, birth.month, birth.day, birth.hour, birth.minute, birth.second
     )
-    lunar = solar.getLunar()
-    eight = lunar.getEightChar()
+    lunar_t = solar_t.getLunar()
+    eight_t = lunar_t.getEightChar()
 
-    # 子初换日：晚子时（23:00 后）日柱进次日
-    day_gan, day_zhi = eight.getDayGan(), eight.getDayZhi()
+    # 子初换日：晚子时（23:00 后）日柱进次日（按真太阳时）
+    day_gan, day_zhi = eight_t.getDayGan(), eight_t.getDayZhi()
     if birth.hour == 23:
         day_gan, day_zhi = _next_day_ganzhi(birth)
     day_master = day_gan
+    time_gan, time_zhi = eight_t.getTimeGan(), eight_t.getTimeZhi()
 
     pillars = {
-        "year": _pillar(eight.getYearGan(), eight.getYearZhi(), day_master),
-        "month": _pillar(eight.getMonthGan(), eight.getMonthZhi(), day_master),
+        "year": _pillar(year_gan, year_zhi, day_master),
+        "month": _pillar(month_gan, month_zhi, day_master),
         "day": _pillar(day_gan, day_zhi, day_master),
-        "time": _pillar(eight.getTimeGan(), eight.getTimeZhi(), day_master),
+        "time": _pillar(time_gan, time_zhi, day_master),
     }
     pillars["day"]["shishen"] = "日主"
 
@@ -249,7 +291,7 @@ def compute_chart(
                 "applied": False,
                 "fallback": detail["fallback"],
                 "shichen": detail["shichen"],
-                "traditional_shichen": eight.getTimeZhi(),
+                "traditional_shichen": time_zhi,
                 "segment_index": detail["segment_index"],
                 "day_offset": detail["day_offset"],
                 "moments": {k: _iso(v) for k, v in detail["moments"].items()},
@@ -276,8 +318,8 @@ def compute_chart(
             day_gan, day_zhi = _next_day_ganzhi(birth)
         day_master = day_gan
         pillars = {
-            "year": _pillar(eight.getYearGan(), eight.getYearZhi(), day_master),
-            "month": _pillar(eight.getMonthGan(), eight.getMonthZhi(), day_master),
+            "year": _pillar(year_gan, year_zhi, day_master),
+            "month": _pillar(month_gan, month_zhi, day_master),
             "day": _pillar(day_gan, day_zhi, day_master),
             "time": _pillar(hour_gan(day_gan, new_zhi), new_zhi, day_master),
         }
@@ -285,8 +327,8 @@ def compute_chart(
 
     _attach_pillar_details(pillars, gender)
 
-    # 大运（起运按子平惯例，实岁展示）
-    yun = Yun(eight, GENDER_LUNAR.get(gender, 0))
+    # 大运：方向（年干阴阳）与起运（距节天数）均按钟表时间的年柱/月柱
+    yun = Yun(eight_c, GENDER_LUNAR.get(gender, 0))
     luck_ctx = {
         "day_ganzhi": pillars["day"]["ganzhi"],
         "year_ganzhi": pillars["year"]["ganzhi"],
@@ -311,35 +353,29 @@ def compute_chart(
         for y in range(current_year, current_year + LIU_NIAN_SPAN + 1)
     ]
 
-    month_zhi = eight.getMonthZhi()
-    hidden = hidden_stems.ruling_info(month_zhi, birth, lunar.getJieQiTable())
+    hidden = hidden_stems.ruling_info(month_zhi, solar_birth, lunar_c.getJieQiTable())
     xi = xiyong.xiyong_analysis(day_master, pillars)
-
-    solar_civil = Solar.fromYmdHms(
-        solar_birth.year, solar_birth.month, solar_birth.day,
-        solar_birth.hour, solar_birth.minute, solar_birth.second,
-    )
 
     return {
         "solar_birth": solar_birth.isoformat(),
         "true_solar_time": birth.isoformat(),
-        "lunar_birth": lunar.toString(),
+        "lunar_birth": lunar_c.toString(),
         "input_mode": "solar",
         "pillars": pillars,
         "day_master": day_master,
         "hidden_stems": hidden,
-        "tai_yuan": eight.getTaiYuan(),
-        "ming_gong": eight.getMingGong(),
-        "shen_gong": eight.getShenGong(),
+        "tai_yuan": eight_c.getTaiYuan(),
+        "ming_gong": _ming_gong(year_gan, month_zhi, time_zhi),
+        "shen_gong": _shen_gong(year_gan, month_zhi, time_zhi),
         "da_yun": da_yun,
         "liu_nian": liu_nian,
         "xi_yong": xi,
         "dst": dst_info,
         "sun": sun,
         "shichen": shichen_block,
-        "jieqi": _jieqi_block(solar_birth, lunar.getJieQiTable()),
-        "xing_zuo": f"{solar_civil.getXingZuo()}座",
-        "xing_xiu": f"{lunar.getXiu()}宿{lunar.getGong()}方{lunar.getShou()}",
+        "jieqi": _jieqi_block(solar_birth, lunar_c.getJieQiTable()),
+        "xing_zuo": f"{solar_c.getXingZuo()}座",
+        "xing_xiu": f"{lunar_t.getXiu()}宿{lunar_t.getGong()}方{lunar_t.getShou()}",
     }
 
 

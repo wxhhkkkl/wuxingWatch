@@ -346,3 +346,54 @@ def test_shichen_failure_omits_block(monkeypatch):
     result = compute_chart(datetime(2020, 6, 21, 6, 30, 0), "M", precise_shichen=True, **BJ)
     assert result["shichen"] is None
     assert result["pillars"]["time"]["zhi"] == "卯"  # 回退既有规则
+
+
+# ---------- 年月用钟表时间、日时用真太阳时 ----------
+
+
+def test_month_pillar_uses_clock_time_near_qingming():
+    """2026 清明交接 02:40:00（钟表）。北京出生 02:41：钟表 02:41>02:40 → 辰月；
+    真太阳 02:23:33<02:40 → 若按真太阳定月则卯月。"""
+    result = compute_chart(
+        datetime(2026, 4, 5, 2, 41, 0), "M", longitude=116.41, timezone="Asia/Shanghai"
+    )
+    assert result["true_solar_time"].startswith("2026-04-05T02:23")
+    # 月柱按钟表时间 → 辰月（壬辰）
+    assert result["pillars"]["month"]["zhi"] == "辰"
+    assert result["pillars"]["month"]["ganzhi"] == "壬辰"
+    # 大运跟随钟表月柱：丙(阳)+男 → 顺排，自壬辰顺推 → 癸巳
+    assert result["da_yun"]["steps"][0]["ganzhi"] == "癸巳"
+    # 日/时柱仍按真太阳时（真太阳 02:23 → 丑时）
+    assert result["pillars"]["day"]["ganzhi"] == "己酉"
+    assert result["pillars"]["time"]["zhi"] == "丑"
+
+
+def test_year_pillar_uses_clock_lichun():
+    """2026 立春交接 04:02:08（钟表）。北京 04:05：钟表在立春后 → 年柱丙午、月柱庚寅；
+    真太阳 03:36 在立春前 → 若按真太阳定年则乙巳/己丑。"""
+    result = compute_chart(
+        datetime(2026, 2, 4, 4, 5, 0), "M", longitude=116.41, timezone="Asia/Shanghai"
+    )
+    assert result["true_solar_time"].startswith("2026-02-04T03:36")
+    assert result["pillars"]["year"]["ganzhi"] == "丙午"
+    assert result["pillars"]["month"]["ganzhi"] == "庚寅"
+
+
+def test_day_time_pillars_still_use_true_solar_time():
+    """北京 2026-04-05 09:10：钟表 09:10 属巳时，真太阳 08:52 属辰时 → 时柱辰。"""
+    result = compute_chart(
+        datetime(2026, 4, 5, 9, 10, 0), "M", longitude=116.41, timezone="Asia/Shanghai"
+    )
+    assert result["true_solar_time"].startswith("2026-04-05T08:52")
+    assert result["pillars"]["time"]["zhi"] == "辰"
+    # 日柱也随真太阳日（2026-04-05 当天）
+    assert result["pillars"]["day"]["ganzhi"] == "己酉"
+
+
+def test_no_longitude_unchanged_clock_equals_true_solar():
+    """未提供出生地（无经度）时：钟表=真太阳，行为与旧口径一致。"""
+    old = compute_chart(datetime(1990, 5, 20, 10, 30, 0), "M")
+    assert old["pillars"]["year"]["ganzhi"] == "庚午"
+    assert old["pillars"]["month"]["ganzhi"] == "辛巳"
+    assert old["pillars"]["day"]["ganzhi"] == "乙酉"
+    assert old["pillars"]["time"]["ganzhi"] == "辛巳"
