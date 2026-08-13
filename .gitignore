@@ -27,3 +27,6 @@ coverage/
 Thumbs.db
 *.log
 *.tmp
+
+# 阅读模块导入源数据（大体积 JSON，不入库）
+doc/book_data/
