@@ -11,6 +11,8 @@
     "test:unit": "vitest run"
   },
   "dependencies": {
+    "dompurify": "^3.4.13",
+    "marked": "^18.0.9",
     "pinia": "^3.0.1",
     "pinia-plugin-persistedstate": "^4.1.3",
     "vant": "^4.9.14",

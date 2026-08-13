@@ -249,6 +249,60 @@ export interface User {
   id: number
   phone: string
   name?: string | null
+  role?: string
+}
+
+// ---------- 阅读模块（006-reading-module） ----------
+
+export interface Chapter {
+  id: number
+  book_id: number
+  title: string
+  content: string | null
+  sort_order: number
+}
+
+export interface ReadingBook {
+  id: number
+  title: string
+  author: string | null
+  description: string | null
+  cover_url: string | null
+  category_id: number | null
+  current_chapter_id: number | null
+  chapters: Chapter[]
+}
+
+export interface ReadingChapterDetail {
+  id: number
+  book_id: number
+  title: string
+  content: string | null
+  prev_chapter_id: number | null
+  next_chapter_id: number | null
+}
+
+export interface ReadingCategory {
+  id: number
+  name: string
+  book_count: number
+}
+
+export interface ReadingBookSummary {
+  id: number
+  title: string
+  author: string | null
+  description: string | null
+  cover_url: string | null
+  category_id: number | null
+  chapter_count: number
+}
+
+export interface ReadingBookList {
+  items: ReadingBookSummary[]
+  total: number
+  page: number
+  page_size: number
 }
 
 export interface RecordSummary {

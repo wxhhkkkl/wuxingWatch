@@ -44,6 +44,22 @@ const router = createRouter({
       name: 'me',
       component: () => import('../pages/Me.vue'),
     },
+    // ---------- 阅读模块（006-reading-module） ----------
+    {
+      path: '/reading/books',
+      name: 'reading-books',
+      component: () => import('../pages/ReadingBooks.vue'),
+    },
+    {
+      path: '/reading/books/:id',
+      name: 'reading-book',
+      component: () => import('../pages/ReadingBook.vue'),
+    },
+    {
+      path: '/reading/books/:bookId/chapters/:chapterId',
+      name: 'reading-chapter',
+      component: () => import('../pages/ReadingChapter.vue'),
+    },
   ],
 })
 
