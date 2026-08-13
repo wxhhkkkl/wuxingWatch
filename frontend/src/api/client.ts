@@ -46,14 +46,15 @@ export async function request<T>(path: string, options: RequestInit = {}): Promi
   headers.set('Content-Type', 'application/json')
   if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`)
 
-  let resp = await fetch(path, { ...options, headers, credentials: 'same-origin' })
+  // cache: 'no-store' 防止浏览器复用旧账号/旧会话的 API 响应（如记录列表串号）
+  let resp = await fetch(path, { ...options, headers, credentials: 'same-origin', cache: 'no-store' })
 
   if (resp.status === 401 && path !== '/api/auth/refresh') {
     const refreshed = await tryRefresh()
     if (refreshed) {
       const headers2 = new Headers(headers)
       if (accessToken) headers2.set('Authorization', `Bearer ${accessToken}`)
-      resp = await fetch(path, { ...options, headers: headers2, credentials: 'same-origin' })
+      resp = await fetch(path, { ...options, headers: headers2, credentials: 'same-origin', cache: 'no-store' })
     }
   }
 
