@@ -54,7 +54,7 @@ describe('ReadingChapter', () => {
     expect(wrapper.text()).toContain('第二章')
     expect(wrapper.text()).toContain('正文内容')
     expect(updateReadingProgress).toHaveBeenCalledWith(1, 2)
-    expect(wrapper.find('button').text()).toBe('上一章')
+    expect(wrapper.findAll('button').some((b) => b.text() === '上一章')).toBe(true)
   })
 
   it('navigates to next chapter via replace', async () => {
@@ -72,5 +72,22 @@ describe('ReadingChapter', () => {
     const nextBtn = buttons.find((b) => b.text() === '下一章')
     await nextBtn!.trigger('click')
     expect(replace).toHaveBeenCalledWith('/reading/books/1/chapters/3')
+  })
+
+  it('persists font size selection to localStorage', async () => {
+    localStorage.removeItem('reading_font')
+    vi.mocked(getReadingChapter).mockResolvedValue({
+      id: 2,
+      book_id: 1,
+      title: '第二章',
+      content: '正文',
+      prev_chapter_id: 1,
+      next_chapter_id: 3,
+    } as never)
+    const wrapper = mount(ReadingChapter)
+    await flush()
+    const bigBtn = wrapper.findAll('button').find((b) => b.text() === '大')
+    await bigBtn!.trigger('click')
+    expect(localStorage.getItem('reading_font')).toBe('大')
   })
 })
