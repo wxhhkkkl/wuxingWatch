@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from core import security
 from db.session import get_db
+from models.session import RefreshSession
 from models.user import User
 
 bearer = HTTPBearer(auto_error=False)
@@ -30,6 +31,15 @@ def get_current_user(
     user = db.get(User, int(payload["sub"]))
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+    # 单活跃会话：access token 携带会话 sid，若该会话已被（他人重新登录）清除则立即失效
+    sid = payload.get("sid")
+    if sid is not None:
+        sess = db.get(RefreshSession, sid)
+        if sess is None or sess.user_id != user.id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="登录已失效，请重新登录",
+            )
     return user
 
 

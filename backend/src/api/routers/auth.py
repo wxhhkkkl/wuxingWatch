@@ -55,8 +55,7 @@ def send_code(payload: SendCodeRequest, request: Request):
 @router.post("/verify")
 def verify(payload: VerifyRequest, response: Response, db: DbDep):
     _validate_phone(payload.phone)
-    access, user = auth_service.verify_and_login(db, payload.phone, payload.code, intent="login")
-    refresh = auth_service.create_refresh_session(db, user.id)
+    access, refresh, user = auth_service.verify_and_login(db, payload.phone, payload.code, intent="login")
     _set_refresh_cookie(response, refresh)
     return {
         "access_token": access,
@@ -68,10 +67,9 @@ def verify(payload: VerifyRequest, response: Response, db: DbDep):
 @router.post("/register", status_code=201)
 def register(payload: RegisterIn, response: Response, db: DbDep):
     _validate_phone(payload.phone)
-    access, user = auth_service.register_with_password(
+    access, refresh, user = auth_service.register_with_password(
         db, payload.phone, payload.code, payload.password
     )
-    refresh = auth_service.create_refresh_session(db, user.id)
     _set_refresh_cookie(response, refresh)
     return {
         "access_token": access,
@@ -83,8 +81,7 @@ def register(payload: RegisterIn, response: Response, db: DbDep):
 @router.post("/login")
 def login(payload: PasswordLoginIn, response: Response, db: DbDep):
     _validate_phone(payload.phone)
-    access, user = auth_service.login_with_password(db, payload.phone, payload.password)
-    refresh = auth_service.create_refresh_session(db, user.id)
+    access, refresh, user = auth_service.login_with_password(db, payload.phone, payload.password)
     _set_refresh_cookie(response, refresh)
     return {
         "access_token": access,

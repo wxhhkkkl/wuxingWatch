@@ -40,7 +40,9 @@ def send_code(phone: str, ip: str, intent: str = "login") -> None:
     get_sms_client().send_code(phone, code)
 
 
-def verify_and_login(db: Session, phone: str, code: str, intent: str = "login") -> tuple[str, User]:
+def verify_and_login(
+    db: Session, phone: str, code: str, intent: str = "login"
+) -> tuple[str, str, User]:
     if not otp_store.verify(phone, code, intent=intent):
         raise HTTPException(status_code=401, detail="验证码错误或已失效")
     user = db.query(User).filter(User.phone == phone).first()
@@ -49,11 +51,13 @@ def verify_and_login(db: Session, phone: str, code: str, intent: str = "login") 
         db.add(user)
         db.commit()
         db.refresh(user)
-    access = security.create_access_token(user.id, user.phone)
-    return access, user
+    access, refresh = _issue_tokens(db, user)
+    return access, refresh, user
 
 
-def register_with_password(db: Session, phone: str, code: str, password: str) -> tuple[str, User]:
+def register_with_password(
+    db: Session, phone: str, code: str, password: str
+) -> tuple[str, str, User]:
     """短信验证后以手机号+密码注册（注册即登录）。"""
     if not otp_store.verify(phone, code, intent="register"):
         raise HTTPException(status_code=401, detail="验证码错误或已失效")
@@ -66,11 +70,13 @@ def register_with_password(db: Session, phone: str, code: str, password: str) ->
     db.add(user)
     db.commit()
     db.refresh(user)
-    access = security.create_access_token(user.id, user.phone)
-    return access, user
+    access, refresh = _issue_tokens(db, user)
+    return access, refresh, user
 
 
-def login_with_password(db: Session, phone: str, password: str) -> tuple[str, User]:
+def login_with_password(
+    db: Session, phone: str, password: str
+) -> tuple[str, str, User]:
     """手机号+密码登录，带暴力破解锁定与等时防枚举。"""
     if login_attempts.check_locked(phone):
         raise HTTPException(status_code=429, detail="尝试次数过多，请稍后再试")
@@ -84,8 +90,8 @@ def login_with_password(db: Session, phone: str, password: str) -> tuple[str, Us
     if new_hash:
         user.password_hash = new_hash  # 登录时重哈希升级
         db.commit()
-    access = security.create_access_token(user.id, user.phone)
-    return access, user
+    access, refresh = _issue_tokens(db, user)
+    return access, refresh, user
 
 
 def reset_password(db: Session, phone: str, code: str, password: str) -> None:
@@ -107,18 +113,31 @@ def _utcnow_naive() -> datetime.datetime:
     return datetime.datetime.now(datetime.UTC).replace(tzinfo=None)
 
 
-def create_refresh_session(db: Session, user_id: int) -> str:
+def create_refresh_session(db: Session, user_id: int) -> tuple[str, int]:
+    """创建新会话（单活跃会话：先清除该用户所有旧会话，旧 token 随之失效）。
+
+    Returns (refresh_token, session_id). session_id 用于 access token 的 sid 校验。
+    """
     settings = get_settings()
+    # 新登录/刷新会使该账号的其它会话全部失效
+    db.query(RefreshSession).filter_by(user_id=user_id).delete()
     token = security.new_refresh_token()
-    db.add(
-        RefreshSession(
-            user_id=user_id,
-            refresh_token_hash=security.hash_token(token),
-            expires_at=_utcnow_naive() + datetime.timedelta(seconds=settings.refresh_token_ttl),
-        )
+    sess = RefreshSession(
+        user_id=user_id,
+        refresh_token_hash=security.hash_token(token),
+        expires_at=_utcnow_naive() + datetime.timedelta(seconds=settings.refresh_token_ttl),
     )
+    db.add(sess)
     db.commit()
-    return token
+    db.refresh(sess)
+    return token, sess.id
+
+
+def _issue_tokens(db: Session, user: User) -> tuple[str, str]:
+    """签发 access(带会话 sid) + refresh，单活跃会话。"""
+    refresh, sid = create_refresh_session(db, user.id)
+    access = security.create_access_token(user.id, user.phone, sid)
+    return access, refresh
 
 
 def rotate_refresh(db: Session, raw_refresh: str) -> tuple[str, str]:
@@ -144,9 +163,7 @@ def rotate_refresh(db: Session, raw_refresh: str) -> tuple[str, str]:
     db.commit()
     if user is None:
         raise HTTPException(status_code=401, detail="用户不存在")
-    new_refresh = create_refresh_session(db, user.id)
-    access = security.create_access_token(user.id, user.phone)
-    return access, new_refresh
+    return _issue_tokens(db, user)
 
 
 def revoke_session(db: Session, raw_refresh: str) -> None:

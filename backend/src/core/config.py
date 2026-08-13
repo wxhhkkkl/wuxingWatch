@@ -15,8 +15,9 @@ class Settings(BaseSettings):
 
     # Security
     jwt_secret: str = "dev-only-change-me"
-    access_token_ttl: int = 900  # seconds (15 min)
-    refresh_token_ttl: int = 86400 * 30  # seconds (30 days)
+    # 单活跃会话 + 长期有效：token 实际不过期；他人重新登录后旧会话被清除而失效
+    access_token_ttl: int = 315360000  # 10 年（seconds）
+    refresh_token_ttl: int = 315360000  # 10 年（seconds）
     cookie_secure: bool = False  # 生产部署于 HTTPS 时设为 true
 
     # Database

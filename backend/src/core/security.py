@@ -20,7 +20,7 @@ def utcnow() -> datetime:
     return datetime.now(UTC)
 
 
-def create_access_token(user_id: int, phone: str) -> str:
+def create_access_token(user_id: int, phone: str, session_id: int | None = None) -> str:
     settings = get_settings()
     now = utcnow()
     payload: dict[str, Any] = {
@@ -29,6 +29,8 @@ def create_access_token(user_id: int, phone: str) -> str:
         "iat": now,
         "exp": now + timedelta(seconds=settings.access_token_ttl),
     }
+    if session_id is not None:
+        payload["sid"] = session_id
     return jwt.encode(payload, settings.jwt_secret, algorithm="HS256")
 
 

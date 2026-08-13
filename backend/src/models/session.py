@@ -14,6 +14,9 @@ if TYPE_CHECKING:
 
 class RefreshSession(Base):
     __tablename__ = "refresh_sessions"
+    # SQLite 默认删除后复用自增 id（与 MySQL AUTO_INCREMENT 不同），会导致旧会话 sid 撞上新会话。
+    # 显式 AUTOINCREMENT 使测试库与生产行为一致：新会话必获新 id。
+    __table_args__ = {"sqlite_autoincrement": True}
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
