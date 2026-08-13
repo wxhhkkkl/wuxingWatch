@@ -128,6 +128,24 @@ export interface XiYongConclusion {
   summary: string
 }
 
+export interface StrengthScoreStep {
+  title: string
+  description: string
+  values?: Record<string, number>
+}
+
+export interface StrengthVerdict {
+  level: string
+  classification: '身强' | '身弱' | '中和' | '从格'
+  cong_ge: boolean
+  day_master: string
+  day_master_wuxing: string
+  day_master_score: number
+  balance_line: number
+  scores: Record<string, number>
+  steps: StrengthScoreStep[]
+}
+
 export interface XiYong {
   conclusion: XiYongConclusion
   favorable_elements: string[]
@@ -136,6 +154,7 @@ export interface XiYong {
   ten_gods: Record<string, string>
   direction: Record<string, unknown>
   disclaimer: string
+  strength?: StrengthVerdict
 }
 
 export interface ShichenMoments {

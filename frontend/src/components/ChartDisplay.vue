@@ -284,7 +284,18 @@ function fmtDateTime(s: string): string {
 
     <!-- 喜忌分析 -->
     <section class="wx-card">
-      <p class="wx-card-title">喜忌分析 · {{ xi.conclusion.summary }}</p>
+      <p class="wx-card-title">
+        喜忌分析
+        <span
+          v-if="xi.strength"
+          class="strength-link"
+          data-testid="strength-link"
+          @click="router.push('/strength')"
+        >
+          {{ xi.strength.level }}<van-icon name="arrow" size="12" />
+        </span>
+        <span v-else class="strength-fallback"> · {{ xi.conclusion.summary }}</span>
+      </p>
       <div class="xi-summary">
         <div class="xi-item">
           <span class="xi-label">用神</span>
@@ -390,6 +401,25 @@ function fmtDateTime(s: string): string {
 }
 
 /* 喜忌 */
+/* 喜忌区强弱标签（可点击进详情） */
+.strength-link {
+  margin-left: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--wx-primary-2, #a63431);
+  border-radius: 10px;
+  padding: 1px 8px;
+  cursor: pointer;
+  vertical-align: middle;
+}
+.strength-fallback {
+  font-size: 14px;
+  font-weight: 600;
+}
 .xi-summary {
   display: flex;
   gap: 10px;

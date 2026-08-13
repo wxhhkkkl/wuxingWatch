@@ -9,18 +9,21 @@ vi.mock('vue-router', () => ({
   useRouter: () => ({ push, replace: vi.fn() }),
 }))
 
-vi.mock('../src/api/records', () => ({ saveRecord: vi.fn() }))
+vi.mock('../src/api/records', () => ({ saveRecord: vi.fn(), updateRecord: vi.fn() }))
 vi.mock('../src/api/charts', () => ({ fetchChartImage: vi.fn(), fetchLiuShi: vi.fn() }))
 
 import { useChartStore } from '../src/stores/chart'
 import { useAuthStore } from '../src/stores/auth'
 import { fetchLiuShi } from '../src/api/charts'
+import { saveRecord, updateRecord } from '../src/api/records'
 import ChartResult from '../src/pages/ChartResult.vue'
 
 describe('ChartResult', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     push.mockClear()
+    vi.mocked(saveRecord).mockReset()
+    vi.mocked(updateRecord).mockReset()
   })
 
   it('renders chart sections when a result exists', () => {
@@ -194,5 +197,73 @@ describe('ChartResult', () => {
     expect(wrapper.findAll('.fs-liuyue-item').length).toBe(1) // 横条仍在
     await toggle.setValue(true)
     expect(wrapper.findAll('.pt-col-header').length).toBe(9) // 再勾选恢复
+  })
+
+  it('edits an auto-saved record (PUT) with pre-filled info', async () => {
+    useAuthStore().user = { id: 1, phone: '13800000000' }
+    useChartStore().set(mockResult, mockInputs)
+    useChartStore().setSavedRecord({ id: 5, person_name: '儿子', relationship: 'CHILD', notes: '备注' })
+    vi.mocked(updateRecord).mockResolvedValue({ id: 5 } as never)
+    const wrapper = mount(ChartResult)
+
+    const editBtn = wrapper.findAll('button').find((b) => b.text().includes('编辑信息'))
+    expect(editBtn).toBeDefined()
+    await editBtn!.trigger('click')
+
+    // 弹窗预填人物/关系/备注（van-field 值在 input.value 中，非文本）
+    expect(wrapper.text()).toContain('编辑排盘信息')
+    const fieldValues = wrapper.findAll('input').map((i) => (i.element as HTMLInputElement).value)
+    expect(fieldValues).toContain('儿子')
+    expect(fieldValues).toContain('备注')
+
+    await wrapper.findAll('button').find((b) => b.text().includes('确认保存'))!.trigger('click')
+    await flushPromises()
+
+    expect(updateRecord).toHaveBeenCalledTimes(1)
+    const [id, payload] = vi.mocked(updateRecord).mock.calls[0] as [
+      number,
+      { person_name?: string; relationship?: string; notes?: string },
+    ]
+    expect(id).toBe(5)
+    expect(payload.person_name).toBe('儿子')
+    expect(payload.relationship).toBe('CHILD')
+    expect(payload.notes).toBe('备注')
+    // store 元信息回写
+    expect(useChartStore().savedRecord).toEqual({
+      id: 5,
+      person_name: '儿子',
+      relationship: 'CHILD',
+      notes: '备注',
+    })
+  })
+
+  it('shows a clickable strength badge when strength data present', async () => {
+    const withStrength = {
+      ...mockResult,
+      xi_yong: {
+        ...mockResult.xi_yong,
+        strength: {
+          level: '偏旺', classification: '身强', cong_ge: false,
+          day_master: '乙', day_master_wuxing: '木', day_master_score: 132.4, balance_line: 109,
+          scores: { 木: 132.4, 火: 98.2, 土: 120.1, 金: 95.3, 水: 98.0 },
+          steps: [{ title: '天干基础分', description: 'd', values: { 木: 72 } }],
+        },
+      },
+    } as never
+    useChartStore().set(withStrength, mockInputs)
+    const wrapper = mount(ChartResult)
+    const link = wrapper.find('[data-testid="strength-link"]')
+    expect(link.exists()).toBe(true)
+    expect(link.text()).toContain('偏旺')
+    await link.trigger('click')
+    expect(push).toHaveBeenCalledWith('/strength')
+  })
+
+  it('falls back to summary and hides strength link for old records', () => {
+    useChartStore().set(mockResult, mockInputs) // mockResult 无 strength
+    const wrapper = mount(ChartResult)
+    expect(wrapper.find('[data-testid="strength-link"]').exists()).toBe(false)
+    expect(wrapper.text()).toContain('喜忌分析')
+    expect(wrapper.text()).toContain('身强') // conclusion.summary 回退
   })
 })

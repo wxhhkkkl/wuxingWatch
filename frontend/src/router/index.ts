@@ -19,6 +19,11 @@ const router = createRouter({
       component: () => import('../pages/ShichenDetail.vue'),
     },
     {
+      path: '/strength',
+      name: 'strength',
+      component: () => import('../pages/StrengthDetail.vue'),
+    },
+    {
       path: '/login',
       name: 'login',
       component: () => import('../pages/Login.vue'),

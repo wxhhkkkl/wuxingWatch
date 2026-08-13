@@ -14,12 +14,13 @@ vi.mock('../src/api/charts', () => ({
 }))
 
 vi.mock('../src/api/records', () => ({
+  saveRecord: vi.fn(),
   updateRecord: vi.fn(),
 }))
 
 import Home from '../src/pages/Home.vue'
 import { predictChart } from '../src/api/charts'
-import { updateRecord } from '../src/api/records'
+import { saveRecord, updateRecord } from '../src/api/records'
 import { useChartStore } from '../src/stores/chart'
 
 const flush = () => new Promise((r) => setTimeout(r))
@@ -30,6 +31,7 @@ describe('Home', () => {
     push.mockClear()
     replace.mockClear()
     vi.mocked(predictChart).mockReset()
+    vi.mocked(saveRecord).mockReset()
     vi.mocked(updateRecord).mockReset()
   })
 
@@ -200,5 +202,58 @@ describe('Home', () => {
     expect(predictChart).toHaveBeenCalledTimes(1)
     expect(push).toHaveBeenCalledWith('/result')
     expect(useChartStore().editDraft).toBeNull()
+  })
+
+  // ---------- 排盘自动保存 ----------
+
+  it('auto-saves via saveRecord when logged in', async () => {
+    const { useAuthStore } = await import('../src/stores/auth')
+    useAuthStore().user = { id: 1, phone: '13800000000' }
+    vi.mocked(saveRecord).mockResolvedValue({
+      id: 99,
+      person_name: null,
+      relationship: 'SELF',
+      created_at: '2026-08-12T00:00:00',
+      chart_result: { day_master: '乙' },
+    } as never)
+    const wrapper = mount(Home)
+    await wrapper.find('button').trigger('click')
+    await flush()
+    expect(predictChart).not.toHaveBeenCalled()
+    expect(saveRecord).toHaveBeenCalledTimes(1)
+    expect(push).toHaveBeenCalledWith('/result')
+    expect(useChartStore().savedRecord).toEqual({
+      id: 99,
+      person_name: null,
+      relationship: 'SELF',
+      notes: null,
+    })
+  })
+
+  it('does not auto-save when logged out and clears stale savedRecord', async () => {
+    vi.mocked(predictChart).mockResolvedValue({ day_master: '乙' } as never)
+    // 残留上一条已保存记录（如先前登录排盘留下）
+    useChartStore().setSavedRecord({ id: 5, person_name: '旧', relationship: 'SELF', notes: null })
+    const wrapper = mount(Home)
+    await wrapper.find('button').trigger('click')
+    await flush()
+    expect(saveRecord).not.toHaveBeenCalled()
+    expect(predictChart).toHaveBeenCalledTimes(1)
+    expect(push).toHaveBeenCalledWith('/result')
+    expect(useChartStore().savedRecord).toBeNull()
+  })
+
+  it('falls back to predict when auto-save fails but still shows the chart', async () => {
+    const { useAuthStore } = await import('../src/stores/auth')
+    useAuthStore().user = { id: 1, phone: '13800000000' }
+    vi.mocked(saveRecord).mockRejectedValue(new Error('保存失败'))
+    vi.mocked(predictChart).mockResolvedValue({ day_master: '乙' } as never)
+    const wrapper = mount(Home)
+    await wrapper.find('button').trigger('click')
+    await flush()
+    expect(saveRecord).toHaveBeenCalledTimes(1)
+    expect(predictChart).toHaveBeenCalledTimes(1)
+    expect(push).toHaveBeenCalledWith('/result')
+    expect(useChartStore().savedRecord).toBeNull()
   })
 })

@@ -4,10 +4,10 @@ import { useRouter } from 'vue-router'
 import { showSuccessToast, showToast } from 'vant'
 import { predictChart } from '../api/charts'
 import { searchGeo, type GeoCity } from '../api/geo'
-import { updateRecord } from '../api/records'
+import { saveRecord, updateRecord } from '../api/records'
 import { useChartStore } from '../stores/chart'
 import { useAuthStore } from '../stores/auth'
-import type { BirthInput } from '../types'
+import type { BirthInput, ChartResult } from '../types'
 
 const GAN = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'] as const
 const ZHI = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'] as const
@@ -200,8 +200,34 @@ async function onSubmit() {
       router.replace(`/records/${draft.recordId}`)
       return
     }
-    const result = await predictChart(input)
-    chartStore.set(result, input)
+    // 已登录：排盘即自动保存（saveRecord 一次调用完成计算+入库，返回 chart_result 与记录 id）
+    if (authStore.isLoggedIn) {
+      try {
+        const saved = await saveRecord({
+          ...input,
+          person_name: input.name || undefined,
+          relationship: 'SELF',
+        })
+        chartStore.set(saved.chart_result as unknown as ChartResult, input)
+        chartStore.setSavedRecord({
+          id: saved.id,
+          person_name: saved.person_name ?? null,
+          relationship: 'SELF',
+          notes: null,
+        })
+      } catch {
+        // 自动保存失败不阻断出盘：回退普通排盘，结果页可手动保存
+        showToast('自动保存失败，可稍后手动保存')
+        const result = await predictChart(input)
+        chartStore.set(result, input)
+        chartStore.setSavedRecord(null)
+      }
+    } else {
+      // 游客不自动保存：清除可能残留的上一条已保存记录
+      const result = await predictChart(input)
+      chartStore.set(result, input)
+      chartStore.setSavedRecord(null)
+    }
     chartStore.clearEditDraft()
     router.push('/result')
   } catch (e) {

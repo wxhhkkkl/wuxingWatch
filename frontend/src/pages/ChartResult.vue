@@ -5,7 +5,7 @@ import { showSuccessToast, showToast } from 'vant'
 import { useChartStore } from '../stores/chart'
 import { useAuthStore } from '../stores/auth'
 import { fetchChartImage } from '../api/charts'
-import { saveRecord, type SaveRecordInput } from '../api/records'
+import { saveRecord, updateRecord, type SaveRecordInput } from '../api/records'
 import ChartDisplay from '../components/ChartDisplay.vue'
 
 const chartStore = useChartStore()
@@ -31,29 +31,58 @@ function goBack() {
 function onEdit() {
   showMenu.value = false
   if (!inputs) return
-  chartStore.setEditDraft({ recordId: null, input: { ...inputs } })
+  const saved = chartStore.savedRecord
+  chartStore.setEditDraft({
+    recordId: saved?.id ?? null,
+    input: { ...inputs },
+    meta: saved
+      ? {
+          person_name: saved.person_name,
+          relationship: saved.relationship,
+          notes: saved.notes,
+        }
+      : undefined,
+  })
   router.push('/')
 }
 
-async function onOpenSave() {
+function onOpenSave() {
   if (!authStore.isLoggedIn) {
     showToast('请先登录后再保存')
     router.push('/login')
     return
   }
+  const saved = chartStore.savedRecord
+  personName.value = saved?.person_name ?? inputs?.name ?? ''
+  relationship.value = saved?.relationship ?? 'SELF'
+  notes.value = saved?.notes ?? ''
   showSavePopup.value = true
 }
 
 async function onSave() {
   saving.value = true
   try {
-    await saveRecord({
+    const payload = {
       ...(inputs as SaveRecordInput),
       person_name: personName.value || undefined,
       relationship: relationship.value,
       notes: notes.value || undefined,
-    })
-    showSuccessToast('已保存')
+    }
+    const saved = chartStore.savedRecord
+    const meta = {
+      person_name: personName.value || null,
+      relationship: relationship.value,
+      notes: notes.value || null,
+    }
+    if (saved) {
+      await updateRecord(saved.id, payload)
+      chartStore.setSavedRecord({ id: saved.id, ...meta })
+      showSuccessToast('已更新')
+    } else {
+      const created = await saveRecord(payload)
+      chartStore.setSavedRecord({ id: created.id, ...meta })
+      showSuccessToast('已保存')
+    }
     showSavePopup.value = false
   } catch (e) {
     showToast((e as Error).message)
@@ -100,7 +129,9 @@ async function onGenerateImage() {
         <van-button class="action-btn" plain type="primary" :loading="generating" @click="onGenerateImage">
           生成长图
         </van-button>
-        <van-button class="action-btn" type="primary" @click="onOpenSave">保存记录</van-button>
+        <van-button class="action-btn" type="primary" @click="onOpenSave">
+          {{ chartStore.savedRecord ? '编辑信息' : '保存记录' }}
+        </van-button>
       </div>
     </template>
 
@@ -111,7 +142,7 @@ async function onGenerateImage() {
     <!-- 保存弹窗 -->
     <van-popup v-model:show="showSavePopup" position="bottom" round>
       <div class="save-form">
-        <p class="save-title">保存排盘记录</p>
+        <p class="save-title">{{ chartStore.savedRecord ? '编辑排盘信息' : '保存排盘记录' }}</p>
         <van-field v-model="personName" label="人物" placeholder="如：儿子" />
         <van-field name="relationship" label="关系">
           <template #input>
