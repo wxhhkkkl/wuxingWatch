@@ -121,10 +121,10 @@ onMounted(load)
   padding: 8px 0 24px;
 }
 
-/* 字号调节栏 */
+/* 字号调节栏：滚动时粘在固定导航栏（46px）下方，不遮挡头部 */
 .font-bar {
   position: sticky;
-  top: 0;
+  top: 46px;
   z-index: 5;
   display: flex;
   justify-content: flex-end;
