@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory('/admin/'),
   routes: [
     { path: '/login', name: 'login', component: () => import('../pages/Login.vue') },
     { path: '/', name: 'members', component: () => import('../pages/Members.vue') },
