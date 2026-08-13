@@ -1,9 +1,23 @@
-/** Minimal fetch wrapper with in-memory access token + refresh-on-401. */
+/** Minimal fetch wrapper with access token + refresh-on-401.
+ * accessToken 持久化到 localStorage：页面刷新后恢复，避免首个请求因无 token 而 401。 */
+
+const TOKEN_KEY = 'access_token'
 
 let accessToken: string | null = null
+try {
+  accessToken = localStorage.getItem(TOKEN_KEY)
+} catch {
+  accessToken = null
+}
 
 export function setAccessToken(token: string | null) {
   accessToken = token
+  try {
+    if (token) localStorage.setItem(TOKEN_KEY, token)
+    else localStorage.removeItem(TOKEN_KEY)
+  } catch {
+    /* ignore */
+  }
 }
 
 export function getAccessToken() {

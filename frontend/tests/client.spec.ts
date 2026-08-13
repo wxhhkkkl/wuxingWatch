@@ -47,3 +47,13 @@ describe('request 401 鉴权失败跳转登录', () => {
     expect(replace).not.toHaveBeenCalled()
   })
 })
+
+describe('accessToken 持久化', () => {
+  it('setAccessToken 写入 localStorage，清空时移除', () => {
+    localStorage.clear()
+    setAccessToken('token-abc')
+    expect(localStorage.getItem('access_token')).toBe('token-abc')
+    setAccessToken(null)
+    expect(localStorage.getItem('access_token')).toBeNull()
+  })
+})
