@@ -140,3 +140,38 @@ class RecordSummary(BaseModel):
     birth_solar: str
     created_at: str
     summary: dict
+
+
+# ============ 阅读模块（006-reading-module）============
+
+
+class CategoryIn(BaseModel):
+    name: str = Field(min_length=1, max_length=50)
+    sort_order: int = 0
+
+
+class CategoryOut(BaseModel):
+    id: int
+    name: str
+    sort_order: int
+
+
+class BookIn(BaseModel):
+    title: str = Field(min_length=1, max_length=100)
+    author: str | None = Field(default=None, max_length=50)
+    description: str | None = Field(default=None, max_length=500)
+    cover_url: str | None = Field(default=None, max_length=500)
+    category_id: int | None = Field(default=None, description="创建时必填")
+
+
+class ChapterIn(BaseModel):
+    title: str = Field(min_length=1, max_length=100)
+    content: str | None = None
+
+
+class ChapterReorderIn(BaseModel):
+    chapter_ids: list[int]
+
+
+class ProgressUpdateIn(BaseModel):
+    chapter_id: int

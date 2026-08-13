@@ -5,7 +5,7 @@ import logging
 from fastapi import FastAPI
 
 from api.deps import CurrentUser
-from api.routers import admin, auth, charts, geo, records
+from api.routers import admin, admin_books, auth, charts, geo, reading, records
 from api.schemas import UserOut
 from core.config import get_settings
 from db.session import Base, engine
@@ -27,6 +27,8 @@ def create_app() -> FastAPI:
     app.include_router(charts.router, prefix="/api/charts", tags=["charts"])
     app.include_router(records.router, prefix="/api/records", tags=["records"])
     app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
+    app.include_router(admin_books.router, prefix="/api/admin", tags=["admin-books"])
+    app.include_router(reading.router, prefix="/api/reading", tags=["reading"])
     app.include_router(geo.router, prefix="/api/geo", tags=["geo"])
 
     @app.get("/health")
