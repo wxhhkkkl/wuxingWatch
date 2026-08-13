@@ -7,6 +7,7 @@
 from datetime import datetime
 
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy.dialects.mysql import LONGTEXT
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from db.session import Base
@@ -52,7 +53,10 @@ class Chapter(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     book_id: Mapped[int] = mapped_column(ForeignKey("books.id", ondelete="CASCADE"), index=True)
     title: Mapped[str] = mapped_column(String(100))
-    content: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # 古籍章节可能远超 64KB（TEXT），用 LONGTEXT 承载（MySQL）
+    content: Mapped[str | None] = mapped_column(
+        Text().with_variant(LONGTEXT(), "mysql"), nullable=True
+    )
     sort_order: Mapped[int] = mapped_column(Integer)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
