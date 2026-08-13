@@ -49,6 +49,8 @@ describe('ReadingBooks', () => {
     } as never)
     const wrapper = mount(ReadingBooks)
     await flush()
+    ;(wrapper.vm as unknown as { load: (r?: boolean) => void }).load(true)
+    await flush()
     expect(wrapper.text()).toContain('子平真诠')
     expect(wrapper.text()).toContain('论语')
   })
@@ -63,6 +65,8 @@ describe('ReadingBooks', () => {
       page_size: 20,
     } as never)
     const wrapper = mount(ReadingBooks)
+    await flush()
+    ;(wrapper.vm as unknown as { load: (r?: boolean) => void }).load(true)
     await flush()
     await wrapper.find('.van-cell').trigger('click')
     expect(push).toHaveBeenCalledWith('/reading/books/1')

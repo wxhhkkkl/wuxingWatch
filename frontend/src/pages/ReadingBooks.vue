@@ -51,8 +51,10 @@ onMounted(async () => {
   } catch {
     /* 分类加载失败不阻塞列表 */
   }
-  load(true)
+  // 书籍列表由 van-list 的 @load 触发，避免与 onMounted 重复请求
 })
+
+defineExpose({ load })
 </script>
 
 <template>
