@@ -4,9 +4,10 @@ import { createPinia, setActivePinia } from 'pinia'
 
 const push = vi.fn()
 const replace = vi.fn()
+const currentRoute = { value: { fullPath: '/' } }
 
 vi.mock('vue-router', () => ({
-  useRouter: () => ({ push, replace }),
+  useRouter: () => ({ push, replace, currentRoute }),
 }))
 
 vi.mock('../src/api/charts', () => ({
@@ -22,12 +23,15 @@ import Home from '../src/pages/Home.vue'
 import { predictChart } from '../src/api/charts'
 import { saveRecord, updateRecord } from '../src/api/records'
 import { useChartStore } from '../src/stores/chart'
+import { useAuthStore } from '../src/stores/auth'
 
 const flush = () => new Promise((r) => setTimeout(r))
+const loggedInUser = { id: 1, phone: '13800000000' }
 
 describe('Home', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
+    localStorage.removeItem('precise_shichen')
     push.mockClear()
     replace.mockClear()
     vi.mocked(predictChart).mockReset()
@@ -49,16 +53,34 @@ describe('Home', () => {
     expect(wrapper.text()).toContain('闰月')
   })
 
-  it('submits the form and navigates to the result page', async () => {
-    vi.mocked(predictChart).mockResolvedValue({ day_master: '乙' } as never)
+  // ---------- 登录校验 ----------
+
+  it('redirects to login instead of charting when not logged in', async () => {
     const wrapper = mount(Home)
     await wrapper.find('button').trigger('click')
     await flush()
-    expect(predictChart).toHaveBeenCalledTimes(1)
+    expect(saveRecord).not.toHaveBeenCalled()
+    expect(predictChart).not.toHaveBeenCalled()
+    expect(push).toHaveBeenCalledWith({ name: 'login', query: { redirect: '/' } })
+  })
+
+  it('submits the form and navigates to the result page', async () => {
+    useAuthStore().user = loggedInUser
+    vi.mocked(saveRecord).mockResolvedValue({
+      id: 1,
+      chart_result: { day_master: '乙' },
+    } as never)
+    const wrapper = mount(Home)
+    await wrapper.find('button').trigger('click')
+    await flush()
+    expect(saveRecord).toHaveBeenCalledTimes(1)
+    expect(predictChart).not.toHaveBeenCalled()
     expect(push).toHaveBeenCalledWith('/result')
   })
 
-  it('shows an error toast when prediction fails', async () => {
+  it('shows an error toast when the chart cannot be produced', async () => {
+    useAuthStore().user = loggedInUser
+    vi.mocked(saveRecord).mockRejectedValue(new Error('保存失败'))
     vi.mocked(predictChart).mockRejectedValue(new Error('排盘失败'))
     const wrapper = mount(Home)
     await wrapper.find('button').trigger('click')
@@ -85,29 +107,35 @@ describe('Home', () => {
   })
 
   it('submits precise_shichen: true when the toggle is on', async () => {
-    vi.mocked(predictChart).mockResolvedValue({ day_master: '乙' } as never)
+    useAuthStore().user = loggedInUser
+    vi.mocked(saveRecord).mockResolvedValue({
+      id: 1,
+      chart_result: { day_master: '乙' },
+    } as never)
     const wrapper = mount(Home)
     ;(wrapper.vm as unknown as { preciseShichen: boolean }).preciseShichen = true
     await flush()
     await wrapper.find('button').trigger('click')
     await flush()
-    const payload = vi.mocked(predictChart).mock.calls[0][0] as { precise_shichen?: boolean }
+    const payload = vi.mocked(saveRecord).mock.calls[0][0] as { precise_shichen?: boolean }
     expect(payload.precise_shichen).toBe(true)
   })
 
   it('omits precise_shichen when the toggle is off', async () => {
-    vi.mocked(predictChart).mockResolvedValue({ day_master: '乙' } as never)
+    useAuthStore().user = loggedInUser
+    vi.mocked(saveRecord).mockResolvedValue({
+      id: 1,
+      chart_result: { day_master: '乙' },
+    } as never)
     const wrapper = mount(Home)
     await wrapper.find('button').trigger('click')
     await flush()
-    const payload = vi.mocked(predictChart).mock.calls[0][0] as { precise_shichen?: boolean }
+    const payload = vi.mocked(saveRecord).mock.calls[0][0] as { precise_shichen?: boolean }
     expect(payload.precise_shichen).toBeFalsy()
   })
 
   it('persists the toggle for logged-in users and restores on reload', async () => {
-    const { useAuthStore } = await import('../src/stores/auth')
-    useAuthStore().user = { id: 1, phone: '13800000000' }
-    vi.mocked(predictChart).mockResolvedValue({ day_master: '乙' } as never)
+    useAuthStore().user = loggedInUser
     const wrapper = mount(Home)
     ;(wrapper.vm as unknown as { preciseShichen: boolean }).preciseShichen = true
     await flush()
@@ -118,11 +146,35 @@ describe('Home', () => {
   })
 
   it('does not persist the toggle for guests', async () => {
-    localStorage.removeItem('precise_shichen')
     const wrapper = mount(Home)
     ;(wrapper.vm as unknown as { preciseShichen: boolean }).preciseShichen = true
     await flush()
     expect(localStorage.getItem('precise_shichen')).toBeNull()
+  })
+
+  // ---------- 出生地点默认北京 ----------
+
+  it('defaults birth place to Beijing with coordinates and timezone', () => {
+    const wrapper = mount(Home)
+    const vm = wrapper.vm as unknown as {
+      birthPlace: string
+      birthLatitude: number | undefined
+      birthLongitude: number | undefined
+      birthTimezone: string | undefined
+    }
+    expect(vm.birthPlace).toBe('北京')
+    expect(vm.birthLongitude).toBe(116.41)
+    expect(vm.birthLatitude).toBe(39.9)
+    expect(vm.birthTimezone).toBe('Asia/Shanghai')
+  })
+
+  // ---------- 性别选项 ----------
+
+  it('does not offer an unknown gender option', () => {
+    const wrapper = mount(Home)
+    expect(wrapper.text()).not.toContain('不详')
+    expect(wrapper.text()).toContain('男')
+    expect(wrapper.text()).toContain('女')
   })
 
   // ---------- 修改内容（editDraft） ----------
@@ -160,6 +212,7 @@ describe('Home', () => {
   })
 
   it('updates the existing record when submitting an edit draft', async () => {
+    useAuthStore().user = loggedInUser
     vi.mocked(updateRecord).mockResolvedValue({ id: 7 } as never)
     useChartStore().setEditDraft({
       recordId: 7,
@@ -190,7 +243,11 @@ describe('Home', () => {
   })
 
   it('treats a draft without recordId as a fresh chart', async () => {
-    vi.mocked(predictChart).mockResolvedValue({ day_master: '乙' } as never)
+    useAuthStore().user = loggedInUser
+    vi.mocked(saveRecord).mockResolvedValue({
+      id: 1,
+      chart_result: { day_master: '乙' },
+    } as never)
     useChartStore().setEditDraft({
       recordId: null,
       input: { gender: 'M', calendar: 'solar', birth_date: '1990-05-20', birth_time: '10:30' },
@@ -199,7 +256,7 @@ describe('Home', () => {
     await wrapper.find('button').trigger('click')
     await flush()
     expect(updateRecord).not.toHaveBeenCalled()
-    expect(predictChart).toHaveBeenCalledTimes(1)
+    expect(saveRecord).toHaveBeenCalledTimes(1)
     expect(push).toHaveBeenCalledWith('/result')
     expect(useChartStore().editDraft).toBeNull()
   })
@@ -207,8 +264,7 @@ describe('Home', () => {
   // ---------- 排盘自动保存 ----------
 
   it('auto-saves via saveRecord when logged in', async () => {
-    const { useAuthStore } = await import('../src/stores/auth')
-    useAuthStore().user = { id: 1, phone: '13800000000' }
+    useAuthStore().user = loggedInUser
     vi.mocked(saveRecord).mockResolvedValue({
       id: 99,
       person_name: null,
@@ -230,22 +286,8 @@ describe('Home', () => {
     })
   })
 
-  it('does not auto-save when logged out and clears stale savedRecord', async () => {
-    vi.mocked(predictChart).mockResolvedValue({ day_master: '乙' } as never)
-    // 残留上一条已保存记录（如先前登录排盘留下）
-    useChartStore().setSavedRecord({ id: 5, person_name: '旧', relationship: 'SELF', notes: null })
-    const wrapper = mount(Home)
-    await wrapper.find('button').trigger('click')
-    await flush()
-    expect(saveRecord).not.toHaveBeenCalled()
-    expect(predictChart).toHaveBeenCalledTimes(1)
-    expect(push).toHaveBeenCalledWith('/result')
-    expect(useChartStore().savedRecord).toBeNull()
-  })
-
   it('falls back to predict when auto-save fails but still shows the chart', async () => {
-    const { useAuthStore } = await import('../src/stores/auth')
-    useAuthStore().user = { id: 1, phone: '13800000000' }
+    useAuthStore().user = loggedInUser
     vi.mocked(saveRecord).mockRejectedValue(new Error('保存失败'))
     vi.mocked(predictChart).mockResolvedValue({ day_master: '乙' } as never)
     const wrapper = mount(Home)

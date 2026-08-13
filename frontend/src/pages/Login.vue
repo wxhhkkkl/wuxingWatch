@@ -1,11 +1,17 @@
 <script setup lang="ts">
-import { onBeforeUnmount, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onBeforeUnmount, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { showToast } from 'vant'
 import { useAuthStore } from '../stores/auth'
 
 const auth = useAuthStore()
 const router = useRouter()
+const route = useRoute()
+
+// 登录成功后回跳的页面（路由守卫传入 redirect），默认首页
+const redirect = computed(() =>
+  typeof route.query.redirect === 'string' ? route.query.redirect : '/',
+)
 
 const tab = ref<'sms' | 'password'>('sms')
 // 密码登录页内的子模式
@@ -61,7 +67,7 @@ async function onSmsLogin() {
   try {
     await auth.login(phone.value, code.value)
     showToast('登录成功')
-    router.replace('/')
+    router.replace(redirect.value)
   } catch (e) {
     showToast((e as Error).message)
   } finally {
@@ -79,11 +85,11 @@ async function onPasswordSubmit() {
     if (pwMode.value === 'login') {
       await auth.loginPassword(phone.value, password.value)
       showToast('登录成功')
-      router.replace('/')
+      router.replace(redirect.value)
     } else if (pwMode.value === 'register') {
       await auth.register(phone.value, code.value, password.value)
       showToast('注册成功')
-      router.replace('/')
+      router.replace(redirect.value)
     } else {
       await auth.resetPassword(phone.value, code.value, password.value)
       showToast('密码已重置，请登录')

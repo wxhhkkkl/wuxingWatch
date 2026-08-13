@@ -18,16 +18,24 @@ const router = useRouter()
 const chartStore = useChartStore()
 const authStore = useAuthStore()
 
+// 出生地点默认北京（经纬度与 geo.CITY_COORDS["北京"] 一致，时区 Asia/Shanghai）
+const DEFAULT_PLACE: { place: string; longitude: number; latitude: number; timezone: string } = {
+  place: '北京',
+  longitude: 116.41,
+  latitude: 39.9,
+  timezone: 'Asia/Shanghai',
+}
+
 const calendar = ref<'solar' | 'lunar' | 'sizhu'>('solar')
 const gender = ref<'M' | 'F' | 'UNKNOWN'>('M')
 const name = ref('')
 const birthDate = ref('1990-05-20')
 const birthTime = ref('12:00')
 const unknownTime = ref(false)
-const birthPlace = ref('')
-const birthLatitude = ref<number>()
-const birthLongitude = ref<number>()
-const birthTimezone = ref<string>()
+const birthPlace = ref(DEFAULT_PLACE.place)
+const birthLatitude = ref<number | undefined>(DEFAULT_PLACE.latitude)
+const birthLongitude = ref<number | undefined>(DEFAULT_PLACE.longitude)
+const birthTimezone = ref<string | undefined>(DEFAULT_PLACE.timezone)
 const isLeapMonth = ref(false)
 const loading = ref(false)
 
@@ -95,7 +103,7 @@ onMounted(() => {
       unknownTime.value = true
     }
     isLeapMonth.value = input.birth_month_is_leap ?? false
-    birthPlace.value = input.birth_place ?? ''
+    birthPlace.value = input.birth_place ?? DEFAULT_PLACE.place
     birthLatitude.value = input.latitude
     birthLongitude.value = input.longitude
     birthTimezone.value = input.timezone
@@ -166,6 +174,11 @@ function selectGeo(city: GeoCity) {
 }
 
 async function onSubmit() {
+  // 排盘前校验登录：全应用已由路由守卫锁定，此处兜底防止越权/过期态直接出盘
+  if (!authStore.isLoggedIn) {
+    router.push({ name: 'login', query: { redirect: router.currentRoute.value.fullPath } })
+    return
+  }
   const base = { name: name.value || undefined, gender: gender.value }
   let input: BirthInput
   if (isSizhu.value) {
@@ -201,29 +214,22 @@ async function onSubmit() {
       return
     }
     // 已登录：排盘即自动保存（saveRecord 一次调用完成计算+入库，返回 chart_result 与记录 id）
-    if (authStore.isLoggedIn) {
-      try {
-        const saved = await saveRecord({
-          ...input,
-          person_name: input.name || undefined,
-          relationship: 'SELF',
-        })
-        chartStore.set(saved.chart_result as unknown as ChartResult, input)
-        chartStore.setSavedRecord({
-          id: saved.id,
-          person_name: saved.person_name ?? null,
-          relationship: 'SELF',
-          notes: null,
-        })
-      } catch {
-        // 自动保存失败不阻断出盘：回退普通排盘，结果页可手动保存
-        showToast('自动保存失败，可稍后手动保存')
-        const result = await predictChart(input)
-        chartStore.set(result, input)
-        chartStore.setSavedRecord(null)
-      }
-    } else {
-      // 游客不自动保存：清除可能残留的上一条已保存记录
+    try {
+      const saved = await saveRecord({
+        ...input,
+        person_name: input.name || undefined,
+        relationship: 'SELF',
+      })
+      chartStore.set(saved.chart_result as unknown as ChartResult, input)
+      chartStore.setSavedRecord({
+        id: saved.id,
+        person_name: saved.person_name ?? null,
+        relationship: 'SELF',
+        notes: null,
+      })
+    } catch {
+      // 自动保存失败不阻断出盘：回退普通排盘，结果页可手动保存
+      showToast('自动保存失败，可稍后手动保存')
       const result = await predictChart(input)
       chartStore.set(result, input)
       chartStore.setSavedRecord(null)
@@ -319,7 +325,6 @@ async function onSubmit() {
             <van-radio-group v-model="gender" direction="horizontal">
               <van-radio name="M" checked-color="#a63431">男</van-radio>
               <van-radio name="F" checked-color="#a63431">女</van-radio>
-              <van-radio name="UNKNOWN" checked-color="#a63431">不详</van-radio>
             </van-radio-group>
           </template>
         </van-field>

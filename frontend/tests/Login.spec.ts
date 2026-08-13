@@ -7,9 +7,11 @@ const login = vi.fn()
 const loginPassword = vi.fn()
 const register = vi.fn()
 const resetPassword = vi.fn()
+let routeQuery: Record<string, string> = {}
 
 vi.mock('vue-router', () => ({
   useRouter: () => ({ push: vi.fn(), replace }),
+  useRoute: () => ({ query: routeQuery }),
 }))
 
 vi.mock('../src/stores/auth', () => ({
@@ -32,6 +34,7 @@ describe('Login', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     replace.mockClear()
+    routeQuery = {}
     login.mockReset()
     loginPassword.mockReset()
     register.mockReset()
@@ -62,5 +65,26 @@ describe('Login', () => {
     ;(wrapper.vm as unknown as { password: string }).password = 'CorrectHorse99'
     await wrapper.find('[data-testid="pw-login-btn"]').trigger('click')
     expect(loginPassword).toHaveBeenCalledWith('13800138000', 'CorrectHorse99')
+  })
+
+  it('redirects to the original page after login', async () => {
+    routeQuery = { redirect: '/records' }
+    login.mockResolvedValue(undefined)
+    const wrapper = mount(Login)
+    await flush()
+    ;(wrapper.vm as unknown as { phone: string; code: string }).phone = '13800138000'
+    ;(wrapper.vm as unknown as { code: string }).code = '123456'
+    await wrapper.find('[data-testid="sms-login-btn"]').trigger('click')
+    expect(replace).toHaveBeenCalledWith('/records')
+  })
+
+  it('redirects to home when no redirect query is present', async () => {
+    login.mockResolvedValue(undefined)
+    const wrapper = mount(Login)
+    await flush()
+    ;(wrapper.vm as unknown as { phone: string; code: string }).phone = '13800138000'
+    ;(wrapper.vm as unknown as { code: string }).code = '123456'
+    await wrapper.find('[data-testid="sms-login-btn"]').trigger('click')
+    expect(replace).toHaveBeenCalledWith('/')
   })
 })

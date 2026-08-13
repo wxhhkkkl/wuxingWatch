@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { requireAuth } from './guard'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -45,5 +46,7 @@ const router = createRouter({
     },
   ],
 })
+
+router.beforeEach(requireAuth)
 
 export default router
