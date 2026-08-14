@@ -58,7 +58,10 @@ let geoDebounce: number | undefined
 const pillars = ref<Record<PillarKey, string>>({ year: '庚午', month: '辛巳', day: '乙酉', time: '辛巳' })
 const pillarPickerKey = ref<PillarKey | null>(null)
 const pillarModel = ref<[string, string]>(['甲', '子'])
-const pillarColumns = [{ values: [...GAN] }, { values: [...ZHI] }]
+const pillarColumns = [
+  [...GAN].map((g) => ({ text: g, value: g })),
+  [...ZHI].map((z) => ({ text: z, value: z })),
+]
 const showPillarPicker = computed({
   get: () => pillarPickerKey.value !== null,
   set: (v: boolean) => {

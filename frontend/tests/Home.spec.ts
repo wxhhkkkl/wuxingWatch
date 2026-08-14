@@ -168,6 +168,41 @@ describe('Home', () => {
     expect(vm.birthTimezone).toBe('Asia/Shanghai')
   })
 
+  // ---------- 四柱输入 ----------
+
+  it('formats pillar picker columns as { text, value } pairs (Vant 4)', async () => {
+    const wrapper = mount(Home)
+    const vm = wrapper.vm as unknown as {
+      pillarColumns: Array<Array<{ text: string; value: string }>>
+    }
+    expect(vm.pillarColumns).toHaveLength(2)
+    expect(vm.pillarColumns[0]).toHaveLength(10)
+    expect(vm.pillarColumns[1]).toHaveLength(12)
+    for (const col of vm.pillarColumns) {
+      for (const opt of col) {
+        expect(opt).toHaveProperty('text')
+        expect(opt).toHaveProperty('value')
+      }
+    }
+    expect(vm.pillarColumns[0][0]).toEqual({ text: '甲', value: '甲' })
+    expect(vm.pillarColumns[1][0]).toEqual({ text: '子', value: '子' })
+  })
+
+  it('seeds the pillar model when opening a pillar field', async () => {
+    const wrapper = mount(Home)
+    const vm = wrapper.vm as unknown as {
+      calendar: string
+      openPillar: (k: string) => void
+      pillarModel: [string, string]
+      pillarPickerKey: string | null
+    }
+    vm.calendar = 'sizhu'
+    await flush()
+    vm.openPillar('day')
+    expect(vm.pillarPickerKey).toBe('day')
+    expect(vm.pillarModel).toEqual(['乙', '酉'])
+  })
+
   // ---------- 性别选项 ----------
 
   it('does not offer an unknown gender option', () => {
