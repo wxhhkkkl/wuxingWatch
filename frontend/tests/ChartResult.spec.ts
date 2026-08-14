@@ -35,6 +35,18 @@ describe('ChartResult', () => {
     expect(wrapper.text()).toContain('身强')
   })
 
+  it('renders the 命盘图 relation diagram card with tabs', async () => {
+    useChartStore().set(mockResult, mockInputs)
+    const wrapper = mount(ChartResult)
+    expect(wrapper.text()).toContain('命盘图')
+    expect(wrapper.find('[data-testid="relation-diagram"]').exists()).toBe(true)
+    // 默认关系 tab：SVG 连线图节点（年柱天干庚）
+    expect(wrapper.find('[data-testid="node-gan-year"]').text()).toBe('庚')
+    // 切到宫位 tab：显示配偶宫
+    await wrapper.find('[data-testid="tab-gongwei"]').trigger('click')
+    expect(wrapper.find('[data-testid="palace-day"]').text()).toBe('配偶宫')
+  })
+
   it('shows an empty state when no result', () => {
     const wrapper = mount(ChartResult)
     expect(wrapper.text()).toContain('暂无排盘结果')

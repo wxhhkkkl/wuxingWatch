@@ -13,6 +13,7 @@ import {
 } from '../utils/selection'
 import PillarTable from './PillarTable.vue'
 import FortuneStrip from './FortuneStrip.vue'
+import RelationDiagram from './RelationDiagram.vue'
 
 const props = defineProps<{ result: ChartResult }>()
 
@@ -232,6 +233,13 @@ function fmtDateTime(s: string): string {
       />
       <p v-if="result.missing_parts.length" class="warn">时辰不详：无法排出时柱、命宫、身宫。</p>
     </section>
+
+    <!-- 命盘图（干支 · 流通 · 宫位 · 六亲；组件自带卡片与标题） -->
+    <RelationDiagram
+      :result="result"
+      :selected-dayun="hasYears ? selectedStep : null"
+      :selected-liunian="hasYears ? selectedLiunian : null"
+    />
 
     <!-- 大运 · 流年联动 -->
     <section class="wx-card">
