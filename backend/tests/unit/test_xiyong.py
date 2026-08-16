@@ -1,11 +1,11 @@
-"""T022 — 喜忌分析：强弱（五行力量评分）驱动用神/喜神/忌神 + strength 字段。
+"""T013 — 喜忌分析：《四柱精髓》旺度法驱动（008 期替换 005 评分法）。
 
-四分支：身强喜克泄耗、身弱喜生扶、从格弃命从势喜克泄耗（取所从强神）、中和补缺抑强。
+结论 = 格局用神（正格扶抑/从格从势/化格从化神）+ 调候用神 双并列；
+strength 为旺度引擎完整输出（method="sizhu-jingsui"）。
 """
 
 from services.bazi import xiyong
 from services.bazi.constants import GAN_WUXING, ZHI_WUXING
-from services.bazi import wuxing_score
 
 
 def _p(gan, zhi):
@@ -16,88 +16,111 @@ def _chart(year, month, day, time):
     return {"year": year, "month": month, "day": day, "time": time}
 
 
-# ---------- 既有行为（适配新 summary 语义） ----------
+# ---------- 结论结构：双用神 + 旺度法标记 ----------
 
-def test_strong_chart_prefers_drain():
-    # 日主甲木，大量木 + 水 → 身强，用神取克泄耗之一
-    pillars = _chart(_p("甲", "寅"), _p("甲", "寅"), _p("甲", "辰"), _p("癸", "亥"))
+def test_conclusion_dual_yongshen_structure():
+    # 坤 乙卯 甲申 丁巳 丁未：身弱正格，喜印比；申月不需调候
+    pillars = _chart(_p("乙", "卯"), _p("甲", "申"), _p("丁", "巳"), _p("丁", "未"))
+    result = xiyong.xiyong_analysis("丁", pillars)
+    c = result["conclusion"]
+    assert result["strength"]["method"] == "sizhu-jingsui"
+    assert c["yong_shen"] in ("木", "火")           # 身弱取生扶
+    assert "tiaohou_yong_shen" in c
+    assert c["tiaohou_yong_shen"]["element"] is None  # 申月（七月）不需调候
+    assert c["tiaohou_yong_shen"]["basis"]
+    assert c["basis"]["yong_shen"] and c["basis"]["tiaohou"]
+    assert set(c["xi_shen"]) and set(c["ji_shen"])
+    assert "较弱" in c["summary"] or "正格" in c["summary"]
+
+
+def test_tiaohou_chou_month_fire():
+    # 丑月（十二月）寒湿 → 调候用神为火
+    pillars = _chart(_p("戊", "午"), _p("乙", "丑"), _p("庚", "寅"), _p("戊", "寅"))
+    result = xiyong.xiyong_analysis("庚", pillars)
+    assert result["conclusion"]["tiaohou_yong_shen"]["element"] == "火"
+
+
+def test_tiaohou_si_month_water():
+    # 巳月（四月）炎燥 → 调候用神为水
+    pillars = _chart(_p("丁", "卯"), _p("乙", "巳"), _p("庚", "辰"), _p("壬", "午"))
+    result = xiyong.xiyong_analysis("庚", pillars)
+    assert result["conclusion"]["tiaohou_yong_shen"]["element"] == "水"
+
+
+# ---------- 四格局取用方向 ----------
+
+def test_zheng_strong_prefers_drain():
+    # 身旺正格（甲寅 乙卯 甲寅 甲子：木 30 太旺但火 6 可独立泄秀 → 正格）：用神取克泄耗
+    pillars = _chart(_p("甲", "寅"), _p("乙", "卯"), _p("甲", "寅"), _p("甲", "子"))
     result = xiyong.xiyong_analysis("甲", pillars)
-    assert result["strength"]["classification"] == "身强"
-    assert result["conclusion"]["summary"] == result["strength"]["level"]
+    assert result["strength"]["ge_ju"]["type"] == "zheng"
+    assert result["strength"]["final_scores"]["木"] >= 11.2  # 身旺
     assert result["conclusion"]["yong_shen"] in ("火", "土", "金")
-    assert result["favorable_elements"]
+    assert set(result["conclusion"]["ji_shen"]) == {"木", "水"}  # 忌生扶
 
 
-def test_weak_chart_prefers_support():
-    # 日主甲木，被金克火泄 → 身弱，用神取印(水)或比劫(木)
-    pillars = _chart(_p("庚", "申"), _p("庚", "申"), _p("甲", "戌"), _p("丙", "午"))
-    result = xiyong.xiyong_analysis("甲", pillars)
-    assert result["strength"]["classification"] == "身弱"
-    assert result["conclusion"]["yong_shen"] in ("水", "木")
+def test_zheng_weak_prefers_support():
+    # 身弱正格：用神取生扶（印/比劫），忌克泄耗
+    pillars = _chart(_p("乙", "卯"), _p("甲", "申"), _p("丁", "巳"), _p("丁", "未"))
+    result = xiyong.xiyong_analysis("丁", pillars)
+    assert result["strength"]["ge_ju"]["type"] == "zheng"
+    assert result["conclusion"]["yong_shen"] in ("木", "火")
+    assert set(result["conclusion"]["ji_shen"]) == {"金", "水", "土"}
 
+
+def test_cong_ruo_follows_strongest():
+    # 乾 甲寅 丁卯 辛未 庚寅：从弱格，取所从之势（木最旺）
+    pillars = _chart(_p("甲", "寅"), _p("丁", "卯"), _p("辛", "未"), _p("庚", "寅"))
+    result = xiyong.xiyong_analysis("辛", pillars)
+    assert result["strength"]["ge_ju"]["type"] == "cong_ruo"
+    assert result["conclusion"]["yong_shen"] == "木"
+    assert set(result["conclusion"]["ji_shen"]) == {"土", "金"}  # 忌生扶
+
+
+def test_cong_qiang_prefers_support():
+    # 乾 丙午 甲午 丁巳 庚戌：从强格，喜生助（木火）
+    pillars = _chart(_p("丙", "午"), _p("甲", "午"), _p("丁", "巳"), _p("庚", "戌"))
+    result = xiyong.xiyong_analysis("丁", pillars)
+    assert result["strength"]["ge_ju"]["type"] == "cong_qiang"
+    assert result["conclusion"]["yong_shen"] in ("木", "火")
+    assert set(result["conclusion"]["xi_shen"] + [result["conclusion"]["yong_shen"]]) <= {"木", "火"}
+
+
+def test_hua_ge_follows_hua_shen():
+    # 丁巳 戊午 癸巳 丙辰：戊癸合化火（月令午火旺相、戊坐午、癸无强根）→ 化格，化神火为用
+    pillars = _chart(_p("丁", "巳"), _p("戊", "午"), _p("癸", "巳"), _p("丙", "辰"))
+    result = xiyong.xiyong_analysis("癸", pillars)
+    assert result["strength"]["ge_ju"]["type"] == "hua"
+    assert result["strength"]["ge_ju"]["hua_shen"] == "火"
+    assert result["conclusion"]["yong_shen"] == "火"
+    assert result["conclusion"]["xi_shen"] == ["木"]   # 生化神者为喜
+    assert "水" in result["conclusion"]["ji_shen"]     # 克化神者为忌
+
+
+# ---------- strength 新形状 ----------
+
+def test_strength_is_wangdu_shape():
+    pillars = _chart(_p("戊", "午"), _p("甲", "子"), _p("甲", "寅"), _p("辛", "未"))
+    da_yun = [{"ganzhi": "癸亥", "start_year": 2030, "start_age_xu": 5},
+              {"ganzhi": "壬戌", "start_year": 2040, "start_age_xu": 15}]
+    result = xiyong.xiyong_analysis("甲", pillars, da_yun)
+    s = result["strength"]
+    assert s["method"] == "sizhu-jingsui"
+    assert set(s["static_scores"]) == {"木", "火", "土", "金", "水"}
+    assert set(s["final_scores"]) == {"木", "火", "土", "金", "水"}
+    assert s["ge_ju"]["type"] in ("zheng", "cong_ruo", "cong_qiang", "hua")
+    assert [st["key"] for st in s["steps"]] == [
+        "static", "shengke", "zhichong", "final", "geju", "dayun", "yongshen"]
+    assert len(s["dayun_adjustments"]) == 2
+    assert s["dayun_adjustments"][0]["ganzhi"] == "癸亥"
+    assert s["dayun_adjustments"][0]["scores_after"]
+
+
+# ---------- 既有行为保持 ----------
 
 def test_analysis_has_disclaimer_and_ten_gods():
     pillars = _chart(_p("庚", "申"), _p("辛", "酉"), _p("甲", "辰"), _p("壬", "寅"))
     result = xiyong.xiyong_analysis("甲", pillars)
     assert "仅供参考" in result["disclaimer"]
-    assert result["ten_gods"]["year"] in ("七杀", "正官")  # 庚 vs 甲
-    assert result["direction"]["health"]  # non-empty dict
-
-
-# ---------- T016: strength 字段结构 ----------
-
-def test_strength_field_structure():
-    pillars = _chart(_p("丁", "卯"), _p("乙", "巳"), _p("庚", "辰"), _p("壬", "午"))
-    result = xiyong.xiyong_analysis("庚", pillars)
-    s = result["strength"]
-    assert s["level"] in ("旺极", "太旺", "偏旺", "中和", "偏弱", "太弱", "从格")
-    assert s["classification"] in ("身强", "身弱", "中和", "从格")
-    assert "cong_ge" in s and "day_master" in s and "day_master_wuxing" in s
-    assert s["balance_line"] == 109
-    assert set(s["scores"]) == {"木", "火", "土", "金", "水"}
-    assert len(s["steps"]) == 9
-    assert s["steps"][-1]["title"] == "旺衰等级判定"
-    assert result["conclusion"]["summary"] == s["level"]
-
-
-# ---------- T017: 四分支喜忌 ----------
-
-def test_cong_ge_prefers_drain_and_strongest():
-    # 甲日主，天干庚辛丙(无木水)，地支午酉戌午(无木水藏干) → 从格：喜克泄耗、用神取所从强神
-    pillars = _chart(_p("庚", "午"), _p("辛", "酉"), _p("甲", "戌"), _p("丙", "午"))
-    result = xiyong.xiyong_analysis("甲", pillars)
-    assert result["strength"]["cong_ge"] is True
-    assert result["strength"]["classification"] == "从格"
-    # 从格：忌生扶（木/水），用神为克泄耗（火土金）中分数最高者
-    assert result["conclusion"]["ji_shen"][0] in ("木", "水")
-    # 用神为克泄耗中分数最高
-    scores = result["strength"]["scores"]
-    cands = [w for w in ("火", "土", "金") if w != "木"]
-    expect = max(cands, key=lambda w: (scores[w], -wuxing_score.WUXING_ORDER.index(w)))
-    assert result["conclusion"]["yong_shen"] == expect
-
-
-def test_zhonghe_rule_via_helper():
-    # 中和：用神取全盘最低、忌神取全盘最高、喜神取用神相生
-    scores = {"木": 109, "火": 100, "土": 120, "金": 90, "水": 110}
-    useful, liked, feared = xiyong._select("中和", "木", scores)
-    assert useful == "金"      # 最低 90
-    assert feared[0] == "土"   # 最高 120
-    assert liked == ["水"]     # 金生水
-
-
-# ---------- T018: 用神选取（分数最低 + 并列五行序） ----------
-
-def test_yong_shen_is_min_score_candidate():
-    # 身强甲木：候选克泄耗（火土金），取分数最低
-    scores = {"木": 200, "火": 120, "土": 150, "金": 90, "水": 100}
-    useful, liked, feared = xiyong._select("身强", "木", scores)
-    assert useful == "金"  # 克泄耗中 90 最低
-    assert feared == ["木", "水"]  # 忌同我/生我
-
-
-def test_tie_break_by_wuxing_order():
-    # 候选分数并列：按五行序 木火土金水 取前者
-    scores = {"木": 200, "火": 90, "土": 120, "金": 90, "水": 100}
-    useful, _, _ = xiyong._select("身强", "木", scores)
-    assert useful == "火"  # 火与金并列 90，五行序火在前
+    assert result["ten_gods"]["year"] in ("七杀", "正官")
+    assert result["direction"]["health"]

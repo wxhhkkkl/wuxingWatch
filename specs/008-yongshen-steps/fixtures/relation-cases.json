@@ -1,0 +1,132 @@
+{
+  "_comment": "008 前后端对拍基准：backend tests/unit/test_wangdu.py 与 frontend tests/relation-graph.spec.ts 共同读取，勿移动。规则出处 specs/008-yongshen-steps/algorithm-reference.md §2~§9。reason 枚举见 data-model.md §6。pillars 顺序=[年,月,日,时]，干支如 '戊子'。cols 顺序（命盘图）=[大运?,流年?,年,月,日,时]。type 枚举：天干='五合|冲|生|克'，地支='六合|半三合|三合|三会|相冲|刑|害|破'。注意：六破不在《四柱精髓》作用体系内，字面保留（不参与成立条件判定）；地支特例（未克申酉等）只影响旺度层，不产生关系连线。岁运干支与原局干支的作用按'岁运介入可变为紧贴'规则（§6/§9），岁运之干不与原局争合（§3.6）。",
+  "cases": [
+    {
+      "name": "adjacency-branch 隔位六合/相刑不成立",
+      "pillars": ["戊子", "戊寅", "戊丑", "戊巳"],
+      "note": "支=子寅丑巳。子丑六合中隔寅（非子/丑）→隔位不论；寅巳刑中隔丑（非寅/巳）→隔位不论；相邻对子寅/寅丑/丑巳均无任何关系（§2.1-2 地支中隔须为其中一支本身）。天干全戊比和，无关系。",
+      "expected_established": [],
+      "expected_rejected": [
+        { "a": "子", "b": "丑", "layer": "branch", "type": "六合", "reason": "隔位不论" },
+        { "a": "寅", "b": "巳", "layer": "branch", "type": "刑", "reason": "隔位不论" }
+      ]
+    },
+    {
+      "name": "adjacency-stem-same-kind 天干中隔同类可论生克",
+      "pillars": ["甲寅", "乙寅", "丙寅", "戊寅"],
+      "note": "§2.1-1：甲丙相隔但中隔乙（甲之同类）→可论生；甲戊遥隔中隔乙（同类）→可论克。支全寅无关系。",
+      "expected_established": [
+        { "a": "乙", "b": "丙", "layer": "stem", "type": "生", "detail": "乙生丙" },
+        { "a": "甲", "b": "丙", "layer": "stem", "type": "生", "detail": "甲生丙" },
+        { "a": "丙", "b": "戊", "layer": "stem", "type": "生", "detail": "丙生戊" },
+        { "a": "甲", "b": "戊", "layer": "stem", "type": "克", "detail": "甲克戊" }
+      ],
+      "expected_rejected": []
+    },
+    {
+      "name": "competition-priority 争合：力大者优先、失利者不论",
+      "pillars": ["戊辰", "丙午", "辛酉", "丙子"],
+      "note": "两丙争合一辛（月丙坐午帝旺根 vs 时丙坐子受克无根）：月丙优先与辛论合，午月非水旺相→合而不化以合绊论；时丙争合失利（§3.6）。隔位：辰酉六合/辰子半三合/午子相冲均隔位不论。酉子破字面保留。",
+      "expected_established": [
+        { "a": "丙", "b": "戊", "layer": "stem", "type": "生", "detail": "丙生戊" },
+        { "a": "丙", "b": "辛", "layer": "stem", "type": "五合", "detail": "合绊", "positions": ["月", "日"] },
+        { "a": "酉", "b": "子", "layer": "branch", "type": "破", "detail": "破" }
+      ],
+      "expected_rejected": [
+        { "a": "丙", "b": "辛", "layer": "stem", "type": "五合", "reason": "争合失利", "positions": ["时", "日"] },
+        { "a": "辰", "b": "酉", "layer": "branch", "type": "六合", "reason": "隔位不论" },
+        { "a": "辰", "b": "子", "layer": "branch", "type": "半三合", "reason": "隔位不论" },
+        { "a": "午", "b": "子", "layer": "branch", "type": "相冲", "reason": "隔位不论" }
+      ]
+    },
+    {
+      "name": "combine-vs-clash 原局合冲并见先论冲",
+      "pillars": ["戊亥", "甲寅", "庚申", "戊辰"],
+      "note": "寅亥合（年-月紧贴）与寅申冲（月-日紧贴）同现：原局合冲同现一般论冲不论合（§9.3），六合让位。天干：甲克戊(月-年)、甲庚冲(月-日)、戊生庚(时-日，庚辛同类中隔可论?——戊庚相隔中隔甲非土类→不论；此处戊生庚为日-时相邻)。",
+      "expected_established": [
+        { "a": "甲", "b": "戊", "layer": "stem", "type": "克", "detail": "甲克戊" },
+        { "a": "甲", "b": "庚", "layer": "stem", "type": "冲", "detail": "甲庚相冲" },
+        { "a": "戊", "b": "庚", "layer": "stem", "type": "生", "detail": "戊生庚" },
+        { "a": "寅", "b": "申", "layer": "branch", "type": "相冲", "detail": "冲" }
+      ],
+      "expected_rejected": [
+        { "a": "亥", "b": "寅", "layer": "branch", "type": "六合", "reason": "后论关系让位" },
+        { "a": "亥", "b": "申", "layer": "branch", "type": "害", "reason": "隔位不论" }
+      ]
+    },
+    {
+      "name": "clash-resolved 相冲两支全被合住则论合不论冲",
+      "pillars": ["戊戌", "戊卯", "戊酉", "戊辰"],
+      "note": "卯酉冲（月-日紧贴）但卯被戌合、酉被辰合，两支全被合住→不论冲而论合（§9.3）。卯戌化火需火旺相月令（卯月木旺）→不化以合绊论；辰酉化金需金旺相月令→不化以相生论（§4.4-a）。戌酉害、戌辰冲均隔位。天干全戊无关系。",
+      "expected_established": [
+        { "a": "卯", "b": "戌", "layer": "branch", "type": "六合", "detail": "合绊" },
+        { "a": "酉", "b": "辰", "layer": "branch", "type": "六合", "detail": "相生（不化）" }
+      ],
+      "expected_rejected": [
+        { "a": "卯", "b": "酉", "layer": "branch", "type": "相冲", "reason": "冲被合解" },
+        { "a": "戌", "b": "酉", "layer": "branch", "type": "害", "reason": "隔位不论" },
+        { "a": "戌", "b": "辰", "layer": "branch", "type": "相冲", "reason": "隔位不论" },
+        { "a": "卯", "b": "辰", "layer": "branch", "type": "害", "reason": "隔位不论" }
+      ]
+    },
+    {
+      "name": "dayun-master-clash-bound 大运主冲之支被合绊则冲不成",
+      "pillars": ["戊酉", "戊戌", "戊子", "戊午"],
+      "dayun": "卯",
+      "note": "运支卯介入：卯戌合（合绊，戌月火不化）成立；卯为主冲之支冲年支酉，但卯被戌合绊→冲不成（§9.3 主冲之支）。卯子刑 1:1 以相生论→刑不成立（§7.2）。卯午破字面保留。原局：酉戌害紧贴成立；子午冲紧贴成立；酉子破/酉午破/戌午半合均隔位。",
+      "expected_established": [
+        { "a": "酉", "b": "戌", "layer": "branch", "type": "害", "detail": "害" },
+        { "a": "子", "b": "午", "layer": "branch", "type": "相冲", "detail": "冲" },
+        { "a": "卯", "b": "戌", "layer": "branch", "type": "六合", "detail": "合绊", "involves": "dayun" },
+        { "a": "卯", "b": "午", "layer": "branch", "type": "破", "detail": "破", "involves": "dayun" }
+      ],
+      "expected_rejected": [
+        { "a": "卯", "b": "酉", "layer": "branch", "type": "相冲", "reason": "被合绊让位", "involves": "dayun" },
+        { "a": "卯", "b": "子", "layer": "branch", "type": "刑", "reason": "条件不足", "involves": "dayun" },
+        { "a": "酉", "b": "子", "layer": "branch", "type": "破", "reason": "隔位不论" },
+        { "a": "戌", "b": "午", "layer": "branch", "type": "半三合", "reason": "隔位不论" }
+      ]
+    },
+    {
+      "name": "stem-combine-transform 甲己合化土成立 vs 合绊",
+      "pillars": ["庚午", "甲辰", "己巳", "戊申"],
+      "note": "月令辰=土旺相，甲坐辰（本气戊土），甲仅通根辰中乙木余气（1度<2.4无生克权→不能独立），全局辰湿土调候不过燥→甲己合化土成功（§3.1）。巳申合化水需水旺相月令（辰月不合化）→合绊（§4.5）。甲庚相冲（年-月紧贴）成立。",
+      "expected_established": [
+        { "a": "庚", "b": "甲", "layer": "stem", "type": "冲", "detail": "甲庚相冲" },
+        { "a": "甲", "b": "己", "layer": "stem", "type": "五合", "detail": "合化土", "positions": ["月", "日"] },
+        { "a": "戊", "b": "庚", "layer": "stem", "type": "生", "detail": "戊生庚" },
+        { "a": "甲", "b": "戊", "layer": "stem", "type": "克", "detail": "甲克戊" },
+        { "a": "巳", "b": "申", "layer": "branch", "type": "六合", "detail": "合绊" }
+      ],
+      "expected_rejected": []
+    },
+    {
+      "name": "stem-combine-binder 甲己有根能独立则合而不化",
+      "pillars": ["庚酉", "甲寅", "己巳", "戊午"],
+      "note": "甲坐寅强根能独立→甲己合而不化以合绊论（§3.1条件3不满足）。寅巳刑1:1以相生论→刑不成立（§7.1）。酉巳半合/酉午破/寅午半合均隔位。",
+      "expected_established": [
+        { "a": "庚", "b": "甲", "layer": "stem", "type": "冲", "detail": "甲庚相冲" },
+        { "a": "甲", "b": "己", "layer": "stem", "type": "五合", "detail": "合绊", "positions": ["月", "日"] },
+        { "a": "戊", "b": "庚", "layer": "stem", "type": "生", "detail": "戊生庚" },
+        { "a": "甲", "b": "戊", "layer": "stem", "type": "克", "detail": "甲克戊" }
+      ],
+      "expected_rejected": [
+        { "a": "寅", "b": "巳", "layer": "branch", "type": "刑", "reason": "条件不足" },
+        { "a": "酉", "b": "巳", "layer": "branch", "type": "半三合", "reason": "隔位不论" },
+        { "a": "寅", "b": "午", "layer": "branch", "type": "半三合", "reason": "隔位不论" }
+      ]
+    },
+    {
+      "name": "special-wei-shenyou 未克申酉为旺度层特例、关系层无连线",
+      "pillars": ["戊未", "戊申", "戊酉", "戊子"],
+      "note": "未与申/酉无刑冲合害关系→关系层不报任何连线（§2.3 特例未克申酉只参与旺度修正）。酉子破紧贴字面保留；未子害隔位不论。",
+      "expected_established": [
+        { "a": "酉", "b": "子", "layer": "branch", "type": "破", "detail": "破" }
+      ],
+      "expected_rejected": [
+        { "a": "未", "b": "子", "layer": "branch", "type": "害", "reason": "隔位不论" },
+        { "a": "申", "b": "子", "layer": "branch", "type": "半三合", "reason": "隔位不论" }
+      ]
+    }
+  ]
+}

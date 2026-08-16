@@ -154,7 +154,8 @@ describe('关系 tab', () => {
     expect(wrapper.findAll('[data-type="克"]').length).toBeGreaterThan(0)
   })
 
-  it('draws 六冲/六合 edges after selecting 相冲 and 六合', async () => {
+  it('draws 相冲 edge; 隔位六合不画线、出现在未成立分组', async () => {
+    // 子(年)与丑(日)中隔午 → 子丑合隔位不论（008 条件判定）
     const withZhi = mkResult({
       year: mkPillar('甲', '子', '木', '水', '比肩'),
       month: mkPillar('己', '午', '土', '火', '正财'),
@@ -163,17 +164,34 @@ describe('关系 tab', () => {
     })
     const wrapper = mount(RelationDiagram, { props: { result: withZhi } })
     await wrapper.find('[data-testid="filter-zhi-相冲"]').trigger('click')
-    expect(wrapper.findAll('[data-type="相冲"]').length).toBeGreaterThan(0) // 子午冲
+    expect(wrapper.findAll('[data-type="相冲"]').length).toBeGreaterThan(0) // 子午冲（年月紧贴）
+    // 六合：子丑隔位 → 不画线
     await wrapper.find('[data-testid="filter-zhi-六合"]').trigger('click')
-    expect(wrapper.findAll('[data-type="六合"]').length).toBeGreaterThan(0) // 子丑合
+    expect(wrapper.findAll('[data-type="六合"]').length).toBe(0)
+    // 但未成立分组可见原因
+    expect(wrapper.find('[data-testid="summary-rejected"]').text()).toContain('子丑合 · 隔位不论')
+  })
+
+  it('draws 六合 edge with 合化/合绊 detail for adjacent pairs', async () => {
+    // 子(年)丑(月)紧贴：丑月土旺 + 己透 → 子丑合化土
+    const withHe = mkResult({
+      year: mkPillar('甲', '子', '木', '水', '比肩'),
+      month: mkPillar('己', '丑', '土', '土', '正财'),
+      day: mkPillar('乙', '寅', '木', '木', '日主'),
+      time: mkPillar('庚', '辰', '金', '土', '正官'),
+    })
+    const wrapper = mount(RelationDiagram, { props: { result: withHe } })
+    await wrapper.find('[data-testid="filter-zhi-六合"]').trigger('click')
+    const edges = wrapper.findAll('[data-type="六合"]')
+    expect(edges.length).toBe(1)
+    expect(wrapper.find('[data-testid="summary-六合"]').text()).toContain('子丑合化土')
   })
 
   it('lists present relations in the summary below', () => {
     const wrapper = mount(RelationDiagram, { props: { result: guanxiResult() } })
     const summary = wrapper.find('[data-testid="rel-summary"]')
     expect(summary.exists()).toBe(true)
-    expect(summary.find('[data-testid="summary-合"]').text()).toContain('甲己合')
-    expect(summary.find('[data-testid="summary-合化"]').text()).toContain('甲己合化土')
+    expect(summary.find('[data-testid="summary-合"]').text()).toContain('甲己合绊') // 亥月土囚 → 合而不化
     expect(summary.find('[data-testid="summary-冲"]').text()).toContain('相冲')
   })
 
@@ -208,15 +226,30 @@ describe('关系 tab', () => {
     // 大运 甲子 + 年柱 己丑：甲己合（含大运）；四柱之间无干合（己/丙/乙/辛 互不五合）
     const result = mkResult({ year: mkPillar('己', '丑', '土', '土', '正财'), time: mkPillar('丁', '巳', '火', '火', '伤官') })
     const wrapper = mount(RelationDiagram, { props: { result, selectedDayun: dayun as never } })
-    await wrapper.find('[data-testid="filter-gan-合"]').trigger('click')
-    // 默认关联：含 大运甲×年柱己 的五合连线
-    expect(wrapper.findAll('[data-type="合"]').length).toBeGreaterThan(0)
+    await wrapper.find('[data-testid="filter-gan-合化"]').trigger('click')
+    // 默认关联：含 大运甲×年柱己 的合化连线（午月土相、己坐丑、甲无强根 → 甲己合化土）
+    expect(wrapper.findAll('[data-type="合化"]').length).toBeGreaterThan(0)
     // 大运列仍显示
     expect(wrapper.find('[data-testid="node-gan-dayun"]').text()).toBe('甲')
-    // 取消关联：大运列仍在，但干合连线消失（四柱间无五合）
+    // 取消关联：大运列仍在，但合化连线消失（四柱间无五合）
     await wrapper.find('[data-testid="toggle-dayun"]').setValue(false)
     expect(wrapper.find('[data-testid="node-gan-dayun"]').exists()).toBe(true)
-    expect(wrapper.findAll('[data-type="合"]').length).toBe(0)
+    expect(wrapper.findAll('[data-type="合化"]').length).toBe(0)
+  })
+
+  it('缺时柱：涉及时柱的关系不绘制且不报错', async () => {
+    const wrapper = mount(RelationDiagram, { props: { result: mkResult({ time: null }) } })
+    expect(wrapper.find('[data-testid="node-gan-time"]').exists()).toBe(true) // 列仍在（空）
+    for (const t of ['生', '克', '合', '合化', '冲']) {
+      await wrapper.find(`[data-testid="filter-gan-${t}"]`).trigger('click')
+    }
+    for (const t of ['三会', '三合', '六合', '相冲', '刑', '害', '破']) {
+      await wrapper.find(`[data-testid="filter-zhi-${t}"]`).trigger('click')
+    }
+    // 所有连线均不涉及时柱节点
+    for (const e of wrapper.findAll('[data-testid^="edge-"]')) {
+      expect(e.text()).not.toContain('巳')
+    }
   })
 })
 

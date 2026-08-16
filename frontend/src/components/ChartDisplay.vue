@@ -14,10 +14,13 @@ import {
 import PillarTable from './PillarTable.vue'
 import FortuneStrip from './FortuneStrip.vue'
 import RelationDiagram from './RelationDiagram.vue'
+import { isWangduStrength } from '../types'
+import { useChartStore } from '../stores/chart'
 
 const props = defineProps<{ result: ChartResult }>()
 
 const router = useRouter()
+const chartStore = useChartStore()
 
 const xi = computed(() => props.result.xi_yong)
 
@@ -146,6 +149,7 @@ watch(
   (i) => {
     const s = steps.value[i]
     selectedLiunianYear.value = s ? defaultLiunianYear(s, currentYear) : null
+    chartStore.setViewingDayun(s?.ganzhi ?? null)  // 喜忌"大运介入"步联动（008）
   },
   { immediate: true },
 )
@@ -290,17 +294,20 @@ function fmtDateTime(s: string): string {
       <p class="muted">{{ result.hidden_stems.source }}</p>
     </section>
 
-    <!-- 喜忌分析 -->
+    <!-- 喜忌分析（008 旺度法：结论先行，双用神并列） -->
     <section class="wx-card">
       <p class="wx-card-title">
         喜忌分析
         <span
-          v-if="xi.strength"
+          v-if="isWangduStrength(xi.strength)"
           class="strength-link"
           data-testid="strength-link"
           @click="router.push('/strength')"
         >
-          {{ xi.strength.level }}<van-icon name="arrow" size="12" />
+          {{ xi.conclusion.summary }} · 查看计算过程<van-icon name="arrow" size="12" />
+        </span>
+        <span v-else-if="xi.strength" class="strength-fallback">
+          · {{ xi.conclusion.summary }}（旧版口径，重新排盘可查看新法推演）
         </span>
         <span v-else class="strength-fallback"> · {{ xi.conclusion.summary }}</span>
       </p>
@@ -309,6 +316,15 @@ function fmtDateTime(s: string): string {
           <span class="xi-label">用神</span>
           <span class="xi-value" :style="{ color: wxColor(xi.conclusion.yong_shen) }">
             {{ xi.conclusion.yong_shen }}
+          </span>
+        </div>
+        <div v-if="xi.conclusion.tiaohou_yong_shen" class="xi-item">
+          <span class="xi-label">调候</span>
+          <span
+            class="xi-value"
+            :style="{ color: xi.conclusion.tiaohou_yong_shen.element ? wxColor(xi.conclusion.tiaohou_yong_shen.element) : undefined }"
+          >
+            {{ xi.conclusion.tiaohou_yong_shen.element ?? '不需调候' }}
           </span>
         </div>
         <div class="xi-item">

@@ -249,8 +249,50 @@ describe('ChartResult', () => {
     })
   })
 
-  it('shows a clickable strength badge when strength data present', async () => {
-    const withStrength = {
+  it('shows wangdu conclusion with dual yongshen and clickable 查看计算过程 entry', async () => {
+    const withWangdu = {
+      ...mockResult,
+      xi_yong: {
+        ...mockResult.xi_yong,
+        conclusion: {
+          yong_shen: '金',
+          tiaohou_yong_shen: { element: '火', basis: '生于丑月，寒湿需火调候' },
+          xi_shen: ['土'],
+          ji_shen: ['木', '水'],
+          summary: '较弱·正格',
+          basis: { yong_shen: '身弱取生扶', tiaohou: '丑月需火' },
+        },
+        strength: {
+          method: 'sizhu-jingsui',
+          level: '较弱',
+          day_master: '庚',
+          day_master_wuxing: '金',
+          static_scores: { 木: 4.55, 火: 5.6, 土: 18, 金: 4.5, 水: 3.2 },
+          final_scores: { 木: 4.55, 火: 4.0, 土: 18, 金: 4.5, 水: 3.2 },
+          ge_ju: { type: 'zheng', hua_shen: null, basis: ['日主庚金 4.5 度'], neng_duli: true },
+          steps: [
+            { key: 'static', title: '静态旺度', rule: 'r', traces: [{ target: '金', expression: '庚1+丑辛2', value: 3 }], result: '金 4.5' },
+          ],
+          dayun_adjustments: [],
+        },
+      },
+    } as never
+    useChartStore().set(withWangdu, mockInputs)
+    const wrapper = mount(ChartResult)
+    // 双用神并列：格局用神 + 调候用神
+    expect(wrapper.text()).toContain('用神')
+    expect(wrapper.text()).toContain('调候')
+    expect(wrapper.text()).toContain('较弱·正格')
+    // 查看计算过程入口 → /strength
+    const link = wrapper.find('[data-testid="strength-link"]')
+    expect(link.exists()).toBe(true)
+    expect(link.text()).toContain('较弱')
+    await link.trigger('click')
+    expect(push).toHaveBeenCalledWith('/strength')
+  })
+
+  it('shows legacy hint and hides 计算过程 entry for old-format strength records', () => {
+    const withLegacy = {
       ...mockResult,
       xi_yong: {
         ...mockResult.xi_yong,
@@ -262,13 +304,10 @@ describe('ChartResult', () => {
         },
       },
     } as never
-    useChartStore().set(withStrength, mockInputs)
+    useChartStore().set(withLegacy, mockInputs)
     const wrapper = mount(ChartResult)
-    const link = wrapper.find('[data-testid="strength-link"]')
-    expect(link.exists()).toBe(true)
-    expect(link.text()).toContain('偏旺')
-    await link.trigger('click')
-    expect(push).toHaveBeenCalledWith('/strength')
+    expect(wrapper.find('[data-testid="strength-link"]').exists()).toBe(false)
+    expect(wrapper.text()).toContain('旧版口径')
   })
 
   it('falls back to summary and hides strength link for old records', () => {

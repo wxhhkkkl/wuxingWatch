@@ -354,7 +354,7 @@ def compute_chart(
     ]
 
     hidden = hidden_stems.ruling_info(month_zhi, solar_birth, lunar_c.getJieQiTable())
-    xi = xiyong.xiyong_analysis(day_master, pillars)
+    xi = xiyong.xiyong_analysis(day_master, pillars, da_yun["steps"])
 
     return {
         "solar_birth": solar_birth.isoformat(),
@@ -457,7 +457,7 @@ def compute_from_pillars(pillars: dict[str, str], gender: str) -> dict:
         {"year": y, "ganzhi": liunian_ganzhi(y)}
         for y in range(current_year, current_year + LIU_NIAN_SPAN + 1)
     ]
-    xi = xiyong.xiyong_analysis(day_master, pillar_dicts)
+    xi = xiyong.xiyong_analysis(day_master, pillar_dicts, steps)
 
     return {
         "solar_birth": None,

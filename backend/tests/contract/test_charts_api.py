@@ -179,3 +179,27 @@ def test_liushi_hour_date_out_of_month(client):
         },
     )
     assert resp.status_code == 422
+
+
+def test_predict_xiyong_wangdu_contract(client):
+    """T014 — xi_yong 新契约（008 旺度法）：双用神结论 + strength 新形状 + 步骤顺序 + 大运修正对齐。"""
+    resp = client.post(
+        "/api/charts/predict",
+        json={"gender": "M", "calendar": "solar", "birth_date": "1990-05-20", "birth_time": "10:30"},
+    )
+    assert resp.status_code == 200
+    xi = resp.json()["xi_yong"]
+    c = xi["conclusion"]
+    assert c["yong_shen"] in ("木", "火", "土", "金", "水")
+    assert "tiaohou_yong_shen" in c and "element" in c["tiaohou_yong_shen"]
+    assert "basis" in c and "yong_shen" in c["basis"] and "tiaohou" in c["basis"]
+    s = xi["strength"]
+    assert s["method"] == "sizhu-jingsui"
+    assert set(s["static_scores"]) == {"木", "火", "土", "金", "水"}
+    assert set(s["final_scores"]) == {"木", "火", "土", "金", "水"}
+    assert all(v >= 0 for v in s["final_scores"].values())
+    assert s["ge_ju"]["type"] in ("zheng", "cong_ruo", "cong_qiang", "hua")
+    assert [st["key"] for st in s["steps"]] == [
+        "static", "shengke", "zhichong", "final", "geju", "dayun", "yongshen"]
+    da_yun_gz = [d["ganzhi"] for d in resp.json()["da_yun"]["steps"]]
+    assert [a["ganzhi"] for a in s["dayun_adjustments"]] == da_yun_gz

@@ -121,11 +121,18 @@ export interface LiuShiResponse {
   hours: LiuShiItem[]
 }
 
+export interface TiaohouYongShen {
+  element: string | null
+  basis: string
+}
+
 export interface XiYongConclusion {
   yong_shen: string
+  tiaohou_yong_shen?: TiaohouYongShen
   xi_shen: string[]
   ji_shen: string[]
   summary: string
+  basis?: { yong_shen: string; tiaohou: string }
 }
 
 export interface StrengthScoreStep {
@@ -134,7 +141,8 @@ export interface StrengthScoreStep {
   values?: Record<string, number>
 }
 
-export interface StrengthVerdict {
+/** 005 期旧评分法形状（旧记录）；008 起由 WangduVerdict 取代。 */
+export interface LegacyStrengthVerdict {
   level: string
   classification: '身强' | '身弱' | '中和' | '从格'
   cong_ge: boolean
@@ -144,6 +152,56 @@ export interface StrengthVerdict {
   balance_line: number
   scores: Record<string, number>
   steps: StrengthScoreStep[]
+  method?: undefined
+}
+
+export interface StepTrace {
+  target: string
+  expression: string
+  value: number | string | null
+}
+
+export interface WangduStep {
+  key: 'static' | 'shengke' | 'zhichong' | 'final' | 'geju' | 'dayun' | 'yongshen'
+  title: string
+  rule: string
+  traces: StepTrace[]
+  result: string
+}
+
+export interface GeJuVerdict {
+  type: 'zheng' | 'cong_ruo' | 'cong_qiang' | 'hua'
+  hua_shen: string | null
+  basis: string[]
+  neng_duli: boolean
+}
+
+export interface DayunAdjustment {
+  ganzhi: string
+  start_year: number | null
+  start_age_xu: number | null
+  deltas: StepTrace[]
+  scores_after: Record<string, number>
+  level_after: string
+}
+
+/** 008 期《四柱精髓》旺度法输出（method === 'sizhu-jingsui'）。 */
+export interface WangduVerdict {
+  method: 'sizhu-jingsui'
+  level: string
+  day_master: string
+  day_master_wuxing: string
+  static_scores: Record<string, number>
+  final_scores: Record<string, number>
+  ge_ju: GeJuVerdict
+  steps: WangduStep[]
+  dayun_adjustments: DayunAdjustment[]
+}
+
+export type StrengthVerdict = WangduVerdict | LegacyStrengthVerdict
+
+export function isWangduStrength(s: StrengthVerdict | undefined | null): s is WangduVerdict {
+  return !!s && s.method === 'sizhu-jingsui'
 }
 
 export interface XiYong {

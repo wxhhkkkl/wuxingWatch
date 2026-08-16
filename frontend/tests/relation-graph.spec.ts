@@ -1,174 +1,104 @@
+/**
+ * T021 — 命盘图关系条件判定（008：《四柱精髓》口径）。
+ * 对拍基准 specs/008-yongshen-steps/fixtures/relation-cases.json（与后端 test_wangdu.py 共读）。
+ */
 import { describe, it, expect } from 'vitest'
-import { buildRelationPairs, REL_TYPES, type RelType } from '../src/utils/relations'
+import { buildRelationJudgments, type Judgment, type RelCol } from '../src/utils/relations'
 import { GAN_WUXING, ZHI_WUXING } from '../src/utils/wuxing'
+import fixtures from '../../specs/008-yongshen-steps/fixtures/relation-cases.json'
 
-const col = (id: string, label: string, gan: string, ganWx: string, zhi: string, zhiWx: string) => ({
-  id, label, gan, ganWx, zhi, zhiWx, canggan: [],
+function mkCol(id: string, gan: string, zhi: string): RelCol {
+  return {
+    id, label: id, gan, ganWx: GAN_WUXING[gan] ?? '', zhi, zhiWx: ZHI_WUXING[zhi] ?? '', canggan: [],
+  }
+}
+
+function mkCols(pillars: string[], dayun?: string): RelCol[] {
+  const cols: RelCol[] = []
+  if (dayun) cols.push(mkCol('dayun', dayun.length > 1 ? dayun[0] : '', dayun[dayun.length - 1]))
+  const ids = ['year', 'month', 'day', 'time']
+  pillars.forEach((gz, i) => cols.push(mkCol(ids[i], gz[0], gz[1])))
+  return cols
+}
+
+interface FixturePair {
+  a: string
+  b: string
+  layer: string
+  type: string
+  detail?: string
+  reason?: string
+  positions?: string[]
+  involves?: string
+}
+
+function norm(pairs: (Judgment | FixturePair)[]): Set<string> {
+  const out = new Set<string>()
+  for (const p of pairs) {
+    const [a, b] = [p.a, p.b].sort()
+    const key = [
+      a, b, p.layer, p.type,
+      ('detail' in p && p.detail) || ('reason' in p && p.reason) || '',
+      [...(p.positions ?? [])].sort().join(','),
+      p.involves ?? '',
+    ].join('|')
+    out.add(key)
+  }
+  return out
+}
+
+describe('关系条件判定 · fixtures 对拍', () => {
+  for (const c of fixtures.cases) {
+    it(c.name, () => {
+      const result = buildRelationJudgments(mkCols(c.pillars, c.dayun))
+      expect(norm(result.established)).toEqual(norm(c.expected_established as FixturePair[]))
+      expect(norm(result.rejected)).toEqual(norm(c.expected_rejected as FixturePair[]))
+    })
+  }
 })
 
-const layerOf = (id: string) => id.split('-')[0]
-const ganPairs = (cols: ReturnType<typeof col>[]) =>
-  buildRelationPairs(cols).filter((p) => layerOf(p.a) === 'gan')
-const zhiPairs = (cols: ReturnType<typeof col>[]) =>
-  buildRelationPairs(cols).filter((p) => layerOf(p.a) === 'zhi')
-
-describe('天干关系（仅天干层）', () => {
-  it('五合（甲己/乙庚/丙辛/丁壬/戊癸）', () => {
-    expect(ganPairs([col('a', 'a', '甲', '木', '子', '水'), col('b', 'b', '己', '土', '丑', '土')])).toContainEqual(
-      expect.objectContaining({ type: '合', detail: '甲己合' }),
-    )
-    expect(ganPairs([col('a', 'a', '乙', '木', '子', '水'), col('b', 'b', '庚', '金', '丑', '土')])[0].detail).toBe('乙庚合')
-  })
-  it('合化（甲己化土/乙庚化金/丙辛化水/丁壬化木/戊癸化火）', () => {
-    expect(ganPairs([col('a', 'a', '甲', '木', '子', '水'), col('b', 'b', '己', '土', '丑', '土')])).toContainEqual(
-      expect.objectContaining({ type: '合化', detail: '甲己合化土' }),
-    )
-    expect(ganPairs([col('a', 'a', '丙', '火', '子', '水'), col('b', 'b', '辛', '金', '丑', '土')]).find((p) => p.type === '合化')!.detail).toBe('丙辛合化水')
-    expect(ganPairs([col('a', 'a', '丁', '火', '子', '水'), col('b', 'b', '壬', '水', '丑', '土')]).find((p) => p.type === '合化')!.detail).toBe('丁壬合化木')
-    expect(ganPairs([col('a', 'a', '戊', '土', '子', '水'), col('b', 'b', '癸', '水', '丑', '土')]).find((p) => p.type === '合化')!.detail).toBe('戊癸合化火')
-  })
-  it('相冲（甲庚/乙辛/丙壬/丁癸；戊己无冲）', () => {
-    expect(ganPairs([col('a', 'a', '甲', '木', '子', '水'), col('b', 'b', '庚', '金', '丑', '土')])).toContainEqual(
-      expect.objectContaining({ type: '冲', detail: '甲庚相冲' }),
-    )
-    expect(ganPairs([col('a', 'a', '戊', '土', '子', '水'), col('b', 'b', '己', '土', '丑', '土')]).some((p) => p.type === '冲')).toBe(false)
-  })
-  it('相生（木火/火土/土金/金水/水木）', () => {
-    expect(ganPairs([col('a', 'a', '甲', '木', '子', '水'), col('b', 'b', '丙', '火', '丑', '土')])).toContainEqual(
-      expect.objectContaining({ type: '生', detail: '甲丙相生' }),
-    )
-  })
-  it('相克（金木/木土/土水/水火/火金）', () => {
-    expect(ganPairs([col('a', 'a', '庚', '金', '子', '水'), col('b', 'b', '甲', '木', '丑', '土')])).toContainEqual(
-      expect.objectContaining({ type: '克', detail: '庚甲相克' }),
-    )
-    expect(ganPairs([col('a', 'a', '甲', '木', '子', '水'), col('b', 'b', '戊', '土', '丑', '土')]).some((p) => p.type === '克')).toBe(true) // 木克土
-  })
-  it('天干层不含 刑/破/害/三合/三会', () => {
-    const g = ganPairs([
-      col('a', 'a', '甲', '木', '寅', '木'),
-      col('b', 'b', '丙', '火', '巳', '火'),
-      col('c', 'c', '戊', '土', '申', '金'),
-    ])
-    expect(g.every((p) => !['刑', '破', '害', '三合', '三会'].includes(p.type))).toBe(true)
-  })
-})
-
-describe('地支关系（仅地支层）', () => {
-  it('六合（子丑合土/寅亥合木…）', () => {
-    expect(zhiPairs([col('a', 'a', '甲', '木', '子', '水'), col('b', 'b', '甲', '木', '丑', '土')])).toContainEqual(
-      expect.objectContaining({ type: '六合', detail: '子丑合土' }),
-    )
-    expect(zhiPairs([col('a', 'a', '甲', '木', '寅', '木'), col('b', 'b', '甲', '木', '亥', '水')])[0].detail).toBe('寅亥合木')
-    expect(zhiPairs([col('a', 'a', '甲', '木', '卯', '木'), col('b', 'b', '甲', '木', '戌', '土')])[0].detail).toBe('卯戌合火')
-    expect(zhiPairs([col('a', 'a', '甲', '木', '辰', '土'), col('b', 'b', '甲', '木', '酉', '金')])[0].detail).toBe('辰酉合金')
-    expect(zhiPairs([col('a', 'a', '甲', '木', '巳', '火'), col('b', 'b', '甲', '木', '申', '金')])[0].detail).toBe('巳申合水')
-    expect(zhiPairs([col('a', 'a', '甲', '木', '午', '火'), col('b', 'b', '甲', '木', '未', '土')])[0].detail).toBe('午未合土')
-  })
-  it('相冲（子午/丑未/寅申/卯酉/辰戌/巳亥）', () => {
-    expect(zhiPairs([col('a', 'a', '甲', '木', '子', '水'), col('b', 'b', '甲', '木', '午', '火')])).toContainEqual(
-      expect.objectContaining({ type: '相冲', detail: '子午相冲' }),
-    )
-    expect(zhiPairs([col('a', 'a', '甲', '木', '巳', '火'), col('b', 'b', '甲', '木', '亥', '水')])[0].detail).toBe('巳亥相冲')
-  })
-  it('相刑（子卯/寅巳申/丑戌未/辰午酉亥自刑）', () => {
-    expect(zhiPairs([col('a', 'a', '甲', '木', '子', '水'), col('b', 'b', '甲', '木', '卯', '木')])).toContainEqual(
-      expect.objectContaining({ type: '刑', detail: '子卯相刑' }),
-    )
-    expect(zhiPairs([col('a', 'a', '甲', '木', '寅', '木'), col('b', 'b', '甲', '木', '巳', '火')]).some((p) => p.type === '刑')).toBe(true)
-    expect(zhiPairs([col('a', 'a', '甲', '木', '丑', '土'), col('b', 'b', '甲', '木', '戌', '土')]).some((p) => p.type === '刑')).toBe(true)
-    expect(zhiPairs([col('a', 'a', '甲', '木', '午', '火'), col('b', 'b', '甲', '木', '午', '火')]).some((p) => p.type === '刑')).toBe(true) // 自刑
-  })
-  it('六害（子未/丑午/寅巳/卯辰/申亥/酉戌）', () => {
-    expect(zhiPairs([col('a', 'a', '甲', '木', '子', '水'), col('b', 'b', '甲', '木', '未', '土')])).toContainEqual(
-      expect.objectContaining({ type: '害', detail: '子未相害' }),
-    )
-  })
-  it('相破（子酉/午卯/巳申/亥寅/辰丑/戌未）', () => {
-    expect(zhiPairs([col('a', 'a', '甲', '木', '子', '水'), col('b', 'b', '甲', '木', '酉', '金')])).toContainEqual(
-      expect.objectContaining({ type: '破', detail: '子酉相破' }),
-    )
-    expect(zhiPairs([col('a', 'a', '甲', '木', '午', '火'), col('b', 'b', '甲', '木', '卯', '木')]).some((p) => p.type === '破')).toBe(true)
-  })
-  it('三合（申子辰/亥卯未/寅午戌/巳酉丑）', () => {
-    expect(zhiPairs([
-      col('a', 'a', '甲', '木', '申', '金'),
-      col('b', 'b', '甲', '木', '子', '水'),
-      col('c', 'c', '甲', '木', '辰', '土'),
-    ])).toContainEqual(expect.objectContaining({ type: '三合', detail: '申子辰合水' }))
-    expect(zhiPairs([
-      col('a', 'a', '甲', '木', '申', '金'),
-      col('b', 'b', '甲', '木', '子', '水'),
-    ]).some((p) => p.type === '三合')).toBe(false) // 缺辰不成局
-  })
-  it('三会（亥子丑/寅卯辰/巳午未/申酉戌）', () => {
-    expect(zhiPairs([
-      col('a', 'a', '甲', '木', '亥', '水'),
-      col('b', 'b', '甲', '木', '子', '水'),
-      col('c', 'c', '甲', '木', '丑', '土'),
-    ])).toContainEqual(expect.objectContaining({ type: '三会', detail: '亥子丑会水' }))
-  })
-  it('地支层不含 生/克/合化', () => {
-    const z = zhiPairs([col('a', 'a', '甲', '木', '子', '水'), col('b', 'b', '甲', '木', '丑', '土')])
-    expect(z.every((p) => !['生', '克', '合化'].includes(p.type))).toBe(true)
-  })
-})
-
-describe('层隔离', () => {
-  it('天干与地支的关系互不混入', () => {
-    const cols = [col('a', 'a', '甲', '木', '子', '水'), col('b', 'b', '己', '土', '丑', '土')]
-    // 天干层只含干关系
-    expect(ganPairs(cols).every((p) => ['合', '合化', '冲', '生', '克'].includes(p.type))).toBe(true)
-    // 地支层只含支关系
-    expect(zhiPairs(cols).every((p) => ['六合', '相冲', '刑', '破', '害', '三合', '三会'].includes(p.type))).toBe(true)
-    // 无藏干
-    expect(buildRelationPairs(cols).some((p) => layerOf(p.a) === 'zang')).toBe(false)
-  })
-})
-
-describe('按列子集判定（excludeColIds：不关联大运/流年）', () => {
-  const withDayun = [
-    col('dayun', '大运', '甲', '木', '子', '水'),
-    col('year', '年柱', '己', '土', '丑', '土'),
-    col('month', '月柱', '丙', '火', '寅', '木'),
+describe('关系判定 · 结构与交互约束', () => {
+  const cols = () => [
+    mkCol('dayun', '己', '卯'),
+    mkCol('year', '戊', '酉'),
+    mkCol('month', '戊', '戌'),
+    mkCol('day', '戊', '子'),
+    mkCol('time', '戊', '午'),
   ]
 
-  it('默认（不排他）包含大运/流年相关的关系', () => {
-    const pairs = buildRelationPairs(withDayun)
-    expect(pairs.some((p) => p.a === 'gan-dayun' || p.b === 'gan-dayun')).toBe(true) // 甲己合含大运
+  it('天干层与地支层互不混入', () => {
+    const { established, rejected } = buildRelationJudgments(cols())
+    const all = [...established, ...rejected]
+    expect(all.every((p) => p.layer === 'stem' || p.layer === 'branch')).toBe(true)
+    expect(established.filter((p) => p.layer === 'stem').every((p) => ['五合', '冲', '生', '克'].includes(p.type))).toBe(true)
+    expect(
+      [...established, ...rejected]
+        .filter((p) => p.layer === 'branch')
+        .every((p) => ['六合', '相冲', '半三合', '三合', '三会', '三刑', '刑', '害', '破'].includes(p.type)),
+    ).toBe(true)
   })
 
-  it('排除大运后，只剩四柱之间的关系', () => {
-    const pairs = buildRelationPairs(withDayun, { excludeColIds: ['dayun'] })
-    expect(pairs.every((p) => p.a !== 'gan-dayun' && p.b !== 'gan-dayun')).toBe(true)
-    expect(pairs.every((p) => !p.a.includes('dayun') && !p.b.includes('dayun'))).toBe(true)
-    // 四柱之间的关系仍在
-    expect(pairs.length).toBeGreaterThan(0)
+  it('excludeColIds：排除大运/流年后只按四柱判定', () => {
+    const withAll = buildRelationJudgments(cols())
+    const without = buildRelationJudgments(cols(), { excludeColIds: ['dayun', 'liunian'] })
+    expect(withAll.established.some((p) => p.involves === 'dayun')).toBe(true) // 运卯与戌六合（合绊）
+    expect(without.established.every((p) => !p.involves)).toBe(true)
+    expect(without.rejected.every((p) => !p.involves)).toBe(true)
   })
 
-  it('排除大运/流年后，成局只按四柱判定', () => {
-    // 大运申 + 年子 + 月辰 凑成申子辰三合；排除大运后四柱无三合
-    const cols = [
-      col('dayun', '大运', '庚', '金', '申', '金'),
-      col('year', '年柱', '甲', '木', '子', '水'),
-      col('month', '月柱', '丙', '火', '辰', '土'),
-      col('day', '日柱', '戊', '土', '午', '火'),
-      col('time', '时柱', '壬', '水', '戌', '土'),
-    ]
-    expect(buildRelationPairs(cols).some((p) => p.type === '三合')).toBe(true) // 含大运成局
-    expect(buildRelationPairs(cols, { excludeColIds: ['dayun'] }).some((p) => p.type === '三合')).toBe(false) // 仅四柱无三合
+  it('三支齐备时成局只报一次并携带 members', () => {
+    const c = [mkCol('year', '甲', '申'), mkCol('month', '壬', '子'), mkCol('day', '戊', '辰'), mkCol('time', '庚', '午')]
+    const { established } = buildRelationJudgments(c)
+    const sanhe = established.filter((p) => p.type === '三合')
+    expect(sanhe.length).toBe(1)
+    expect(new Set(sanhe[0].members)).toEqual(new Set(['申', '子', '辰']))
+    // 子月水旺 + 壬透 → 合化水
+    expect(sanhe[0].detail).toBe('合化水')
   })
-})
 
-describe('REL_TYPES', () => {
-  it('covers all 12 relation types', () => {
-    expect(REL_TYPES).toEqual(['生', '克', '合', '合化', '冲', '三会', '三合', '六合', '相冲', '刑', '害', '破'])
-  })
-})
-
-describe('干支五行固定映射', () => {
-  it('天干/地支五行固定映射', () => {
-    expect(GAN_WUXING['庚']).toBe('金')
-    expect(ZHI_WUXING['午']).toBe('火')
+  it('缺时柱（time 列缺失）不报错且涉及时柱关系不出现', () => {
+    const c = [mkCol('year', '戊', '子'), mkCol('month', '戊', '寅'), mkCol('day', '戊', '丑')]
+    const { established, rejected } = buildRelationJudgments(c)
+    expect([...established, ...rejected].every((p) => p.aColId !== 'time' && p.bColId !== 'time')).toBe(true)
   })
 })

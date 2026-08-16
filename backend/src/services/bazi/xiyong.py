@@ -1,16 +1,15 @@
-"""喜忌分析 — 五行力量评分驱动的强弱 → 用神/喜神/忌神 + 方向解读.
+"""喜忌分析 — 《四柱精髓》旺度法驱动（008 期）。
 
-强弱判定改用文档《静态原命局五行力量评分》的标准化评分（wuxing_score）：
-身强（偏旺及以上）喜克泄耗、身弱（偏弱/太弱）喜生扶、从格弃命从势喜克泄耗（用神取所从强神）、
-中和补缺抑强。输出结构既有字段保持兼容，增量附加 `strength`（scores + steps + verdict）。
+强弱与格局判定、用神/喜神/忌神选取全部由 wangdu 引擎产出（正格扶抑/从格从势/化格从化神
++ 调候用神双并列结论）。005 期评分法（wuxing_score）已下线、代码保留不再调用（spec clarify Q3）。
 
-明确提示：算法生成内容为参考信息，绝非专业命理建议（FR-020 disclaimer）。
+明确提示：算法生成内容为参考信息，绝非专业命理建议。
 """
 
-from services.bazi import wuxing_score
-from services.bazi.constants import GAN_WUXING, KE, SHENG, shishen
+from services.bazi import wangdu
+from services.bazi.constants import GAN_WUXING, shishen
 
-WUXING_ORDER = wuxing_score.WUXING_ORDER
+WUXING_ORDER = wangdu.WUXING_ORDER
 
 # 五脏对应（健康方向解读用）
 ZANGFU = {
@@ -21,53 +20,18 @@ ZANGFU = {
     "水": "肾、膀胱",
 }
 
+_GEJU_LABEL = {"zheng": "正格", "cong_ruo": "从弱格", "cong_qiang": "从强格", "hua": "化格"}
+
 
 def _count_wuxing(pillars: dict) -> dict[str, int]:
     """Count five elements across the 8 characters (天干 + 地支本气)."""
     counts = {wx: 0 for wx in WUXING_ORDER}
     for p in pillars.values():
+        if not p:
+            continue
         counts[p["gan_wuxing"]] += 1
         counts[p["zhi_wuxing"]] += 1
     return counts
-
-
-def _select(classification: str, dm_wx: str, scores: dict) -> tuple:
-    """按强弱分类选取 (用神, 喜神[], 忌神[])。`scores` 为五行标准化分数。
-
-    并列取舍：min/max 均以五行序 木火土金水 兜底（FR-011 可复现）。
-    """
-    wo_sh = SHENG[dm_wx]                                        # 我生（食伤）
-    wo_ke = KE[dm_wx]                                           # 我克（财）
-    ke_wo = next((k for k, v in KE.items() if v == dm_wx), None)  # 克我（官杀）
-    sheng_wo = next((k for k, v in SHENG.items() if v == dm_wx), None)  # 生我（印）
-    idx = WUXING_ORDER.index
-
-    def pick_min(cands):
-        return min(cands, key=lambda w: (scores[w], idx(w)))
-
-    def pick_max(cands):
-        return max(cands, key=lambda w: (scores[w], -idx(w)))
-
-    if classification == "身强":  # 喜克泄耗、忌生扶
-        cands = [c for c in (wo_sh, wo_ke, ke_wo) if c]
-        useful = pick_min(cands)
-        liked = [c for c in cands if c != useful]
-        feared = [c for c in (dm_wx, sheng_wo) if c]
-    elif classification == "身弱":  # 喜生扶、忌克泄耗
-        cands = [c for c in (sheng_wo, dm_wx) if c]
-        useful = pick_min(cands)
-        liked = [c for c in cands if c != useful]
-        feared = [c for c in (ke_wo, wo_sh) if c]
-    elif classification == "从格":  # 弃命从势：喜克泄耗、忌生扶，用神取所从强神
-        cands = [c for c in (wo_sh, wo_ke, ke_wo) if c]
-        useful = pick_max(cands)
-        liked = [c for c in cands if c != useful]
-        feared = [c for c in (dm_wx, sheng_wo) if c]
-    else:  # 中和：补缺抑强
-        useful = pick_min(WUXING_ORDER)
-        feared = [pick_max(WUXING_ORDER)]
-        liked = [SHENG[useful]]
-    return useful, liked, feared
 
 
 def _direction_readout(counts: dict, strong: bool) -> dict:
@@ -85,53 +49,55 @@ def _direction_readout(counts: dict, strong: bool) -> dict:
     }
 
 
-def xiyong_analysis(day_master: str, pillars: dict) -> dict:
-    """Compute 喜忌 for a chart.
+def xiyong_analysis(day_master: str, pillars: dict, da_yun: list | None = None) -> dict:
+    """Compute 喜忌 for a chart（《四柱精髓》旺度法）。
 
-    `pillars` maps year/month/day/time to pillar dicts containing
-    gan/zhi/gan_wuxing/zhi_wuxing. Returns conclusion + rationale + direction + strength.
+    `pillars` maps year/month/day/time to pillar dicts containing gan/zhi/gan_wuxing/zhi_wuxing
+    （time 可为 None）。`da_yun` 为大运 steps（可选，用于"大运介入"步预计算）。
+    Returns conclusion（格局用神+调候用神双并列）+ rationale + direction + strength（WangduResult）。
     """
     dm_wx = GAN_WUXING[day_master]
-    scoring = wuxing_score.score_wuxing(pillars, day_master)
-    level = scoring["level"]
-    classification = scoring["classification"]
-    scores = scoring["scores"]
-    counts = _count_wuxing(pillars)
-    month_branch_wx = pillars["month"]["zhi_wuxing"]
+    result = wangdu.compute_wangdu(pillars, day_master, da_yun)
+    level = result["level"]
+    ge_ju = result["ge_ju"]
+    geju_label = _GEJU_LABEL[ge_ju["type"]] + (f"（化{ge_ju['hua_shen']}）" if ge_ju["type"] == "hua" else "")
+    summary = f"{level}·{geju_label}"
 
-    useful, liked, feared = _select(classification, dm_wx, scores)
-    favorable = list(dict.fromkeys([useful] + liked))
+    yong = result["yong_shen"]
+    liked = result["xi_shen"]
+    feared = result["ji_shen"]
+    tiaohou = result["tiaohou_yong_shen"]
+
+    favorable = list(dict.fromkeys([yong] + liked + ([tiaohou["element"]] if tiaohou["element"] else [])))
     avoid = list(dict.fromkeys(feared))
-    strong = classification in ("身强", "从格")  # 方向解读沿用二值
+    # 方向解读沿用二值：身旺/从强/化格 视为强
+    strong = ge_ju["type"] in ("cong_qiang", "hua") or (
+        ge_ju["type"] == "zheng" and result["final_scores"][dm_wx] >= 11.2
+    )
+    counts = _count_wuxing(pillars)
 
     reasoning = (
-        f"日主{day_master}属{dm_wx}，月令支为{month_branch_wx}，"
-        f"命局判定为「{level}」（{classification}）。"
-        f"五行标准化分数：{' '.join(f'{wx} {scores[wx]:.1f}' for wx in WUXING_ORDER)}。"
+        f"日主{day_master}属{dm_wx}，最终旺度 {result['final_scores'][dm_wx]:g} 度，"
+        f"判定为「{level}」（{geju_label}）。"
+        f"格局用神：{yong}（{result['basis']['yong_shen']}）；"
+        f"调候用神：{tiaohou['element'] or '本月不需调候'}（{tiaohou['basis']}）。"
+        f"五行最终旺度：{' '.join(f'{wx} {result['final_scores'][wx]:g}' for wx in WUXING_ORDER)}。"
     )
 
     return {
         "conclusion": {
-            "yong_shen": useful,
+            "yong_shen": yong,
+            "tiaohou_yong_shen": tiaohou,
             "xi_shen": liked,
             "ji_shen": feared,
-            "summary": level,
+            "summary": summary,
+            "basis": result["basis"],
         },
         "favorable_elements": favorable,
         "avoid_elements": avoid,
         "reasoning": reasoning,
-        "ten_gods": {p: shishen(day_master, pillars[p]["gan"]) for p in pillars},
+        "ten_gods": {p: shishen(day_master, pillars[p]["gan"]) for p in pillars if pillars[p]},
         "direction": _direction_readout(counts, strong),
         "disclaimer": "内容为算法生成的参考信息，仅供参考，不构成专业命理建议。",
-        "strength": {
-            "level": level,
-            "classification": classification,
-            "cong_ge": scoring["cong_ge"],
-            "day_master": day_master,
-            "day_master_wuxing": dm_wx,
-            "day_master_score": scoring["day_master_score"],
-            "balance_line": scoring["balance_line"],
-            "scores": scores,
-            "steps": scoring["steps"],
-        },
+        "strength": result,
     }

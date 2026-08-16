@@ -4,12 +4,13 @@ import type { ChartResult, DaYunStep, LiuNianStep } from '../types'
 import {
   buildPillarNodes,
   buildFlowArrows,
-  buildRelationPairs,
+  buildRelationJudgments,
   LEGEND,
   PALACE_ROLE,
   relativeOf,
   REL_TYPES,
   type FlowType,
+  type Judgment,
   type PillarKey,
   type RelCol,
   type RelPair,
@@ -83,11 +84,62 @@ const relCols = computed<RelCol[]>(() => {
   return cols
 })
 
-const relPairs = computed<RelPair[]>(() =>
-  buildRelationPairs(relCols.value, {
+// 008：条件判定（成立/未成立）→ 连线只画成立关系
+const relJudgments = computed(() =>
+  buildRelationJudgments(relCols.value, {
     excludeColIds: includeDayunLiunian.value ? [] : ['dayun', 'liunian'],
   }),
 )
+
+/** 判定条目 → 连线/汇总用的 RelPair（显示文案在此组装）。 */
+function toRelPair(j: Judgment): RelPair {
+  if (j.layer === 'stem') {
+    const type: RelType = j.type === '五合' ? (j.detail?.startsWith('合化') ? '合化' : '合') : (j.type as RelType)
+    const detail = j.type === '五合' ? `${j.a}${j.b}${j.detail}` : (j.detail ?? '')
+    return { a: `gan-${j.aColId}`, b: `gan-${j.bColId}`, type, detail, aChar: j.a, bChar: j.b }
+  }
+  // 三支关系：锚定单节点，横跨逻辑在 zhiEdges
+  if (j.members) {
+    const label = j.members.join('')
+    const anchor = `zhi-${j.memberColIds![0]}`
+    const detail = j.detail === '合绊' ? `${label}${j.type}·合绊` : `${label}${j.detail}`
+    return { a: anchor, b: anchor, type: j.type as RelType, detail, aChar: label, bChar: '' }
+  }
+  const a = `zhi-${j.aColId}`
+  const b = `zhi-${j.bColId}`
+  const base = { a, b, aChar: j.a, bChar: j.b }
+  switch (j.type) {
+    case '六合':
+      return { ...base, type: '六合', detail: j.detail!.startsWith('合化') ? `${j.a}${j.b}${j.detail}` : `${j.a}${j.b}合·${j.detail}` }
+    case '相冲':
+      return { ...base, type: '相冲', detail: `${j.a}${j.b}相冲` }
+    case '半三合':
+      return { ...base, type: '三合', detail: j.detail!.startsWith('合化') ? `${j.a}${j.b}半合化${j.detail!.slice(2)}` : `${j.a}${j.b}半合·${j.detail}` }
+    case '刑':
+      return { ...base, type: '刑', detail: j.a === j.b ? `${j.a}${j.b}自刑` : `${j.a}${j.b}相刑` }
+    case '害':
+      return { ...base, type: '害', detail: `${j.a}${j.b}相害` }
+    default:
+      return { ...base, type: '破', detail: `${j.a}${j.b}相破` }
+  }
+}
+
+const relPairs = computed<RelPair[]>(() => relJudgments.value.established.map(toRelPair))
+
+// 未成立关系（判定不成立：隔位/被让位/条件不足等），汇总区单列分组
+const REJ_SHORT: Record<string, string> = {
+  五合: '合', 冲: '冲', 生: '生', 克: '克',
+  六合: '合', 相冲: '冲', 半三合: '半合', 三合: '三合', 三会: '三会',
+  三刑: '三刑', 刑: '刑', 害: '害', 破: '破',
+}
+const rejectedItems = computed<string[]>(() => {
+  const seen = new Set<string>()
+  for (const j of relJudgments.value.rejected) {
+    const label = j.members ? j.members.join('') + j.type : `${j.a}${j.b}${REJ_SHORT[j.type] ?? j.type}`
+    seen.add(`${label} · ${j.reason}`)
+  }
+  return [...seen]
+})
 
 // 关系类型筛选（多选；未勾选任何类型时不画连线）
 const selectedTypes = ref<RelType[]>([])
@@ -353,6 +405,15 @@ function colOf(from: PillarKey): number {
             <div v-for="g in relSummary.zhi" :key="g.type" class="rd-rel-summary-row" :data-testid="`summary-${g.type}`">
               <b class="rd-rel-summary-type" :style="{ color: PAIR_COLOR[g.type] }">{{ ZHI_LABEL[g.type] ?? g.type }}</b>
               <span class="rd-rel-summary-items">{{ g.items.join('、') }}</span>
+            </div>
+          </div>
+        </div>
+        <!-- 008：判定未成立的关系（隔位/被让位/条件不足等），单列分组附原因 -->
+        <div v-if="rejectedItems.length" class="rd-rel-summary-group">
+          <span class="rd-filter-label">未成立</span>
+          <div class="rd-rel-summary-rows">
+            <div class="rd-rel-summary-row" data-testid="summary-rejected">
+              <span class="rd-rel-summary-items rd-rel-rejected">{{ rejectedItems.join('、') }}</span>
             </div>
           </div>
         </div>
@@ -642,6 +703,9 @@ function colOf(from: PillarKey): number {
 }
 .rd-rel-summary-type {
   flex: 0 0 40px;
+}
+.rd-rel-rejected {
+  color: var(--wx-muted);
 }
 .rd-rel-summary-items {
   color: #555;
