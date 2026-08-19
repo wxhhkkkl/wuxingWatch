@@ -69,10 +69,10 @@ def test_zheng_weak_prefers_support():
 
 
 def test_cong_ruo_follows_strongest():
-    # 乾 甲寅 丁卯 辛未 庚寅：从弱格，取所从之势（木最旺）
+    # 乾 甲寅 丁卯 辛未 庚寅：财木 38 太旺，辛金从财（书从弱，用神同为木）
     pillars = _chart(_p("甲", "寅"), _p("丁", "卯"), _p("辛", "未"), _p("庚", "寅"))
     result = xiyong.xiyong_analysis("辛", pillars)
-    assert result["strength"]["ge_ju"]["type"] == "cong_ruo"
+    assert result["strength"]["ge_ju"]["type"] == "cong_cai"
     assert result["conclusion"]["yong_shen"] == "木"
     assert set(result["conclusion"]["ji_shen"]) == {"土", "金"}  # 忌生扶
 
@@ -108,7 +108,7 @@ def test_strength_is_wangdu_shape():
     assert s["method"] == "sizhu-jingsui"
     assert set(s["static_scores"]) == {"木", "火", "土", "金", "水"}
     assert set(s["final_scores"]) == {"木", "火", "土", "金", "水"}
-    assert s["ge_ju"]["type"] in ("zheng", "cong_ruo", "cong_qiang", "hua")
+    assert s["ge_ju"]["type"] in ("zheng", "cong_ruo", "cong_qiang", "cong_yin", "cong_sha", "cong_cai", "hua")
     assert [st["key"] for st in s["steps"]] == [
         "static", "shengke", "zhichong", "final", "geju", "dayun", "yongshen"]
     assert len(s["dayun_adjustments"]) == 2

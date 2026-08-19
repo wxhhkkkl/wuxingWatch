@@ -18,7 +18,7 @@ const hasLegacy = computed(() => {
 })
 
 const WUXING = ['木', '火', '土', '金', '水'] as const
-const GEJU_LABEL = { zheng: '正格', cong_ruo: '从弱格', cong_qiang: '从强格', hua: '化格' } as const
+const GEJU_LABEL = { zheng: '正格', cong_ruo: '从弱格', cong_qiang: '从强格', cong_yin: '从印格', cong_sha: '从杀格', cong_cai: '从财格', hua: '化格' } as const
 
 // 当前大运介入步：按结果页选中大运（store.viewingDayun），未选取当前年份所在大运，再回退第一步
 const currentAdjustment = computed(() => {

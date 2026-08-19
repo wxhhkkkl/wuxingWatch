@@ -460,7 +460,10 @@ function stemHeHuaOk(c1: JCol, c2: JCol, hua: string, cols: JCol[], monthZhi: st
     if (!zuozhi.has('水')) return false
     weak = '丙'
   } else if (pk === '丁壬') {
-    if (!zuozhi.has('木')) return false
+    // 修复（2026-08-17）：§3 条件② 坐支一支为木、另一支为水或木（与后端 wangdu.py 对齐）
+    const z1 = c1.zhi ? ZHI_WUXING[c1.zhi] : null
+    const z2 = c2.zhi ? ZHI_WUXING[c2.zhi] : null
+    if (!z1 || !z2 || !((z1 === '木' && (z2 === '水' || z2 === '木')) || (z2 === '木' && (z1 === '水' || z1 === '木')))) return false
     weak = '丁'
   } else {
     if (!zuozhi.has('火')) return false
@@ -505,8 +508,10 @@ function liuheVerdict(c1: JCol, c2: JCol, cols: JCol[], monthZhi: string): { det
     return { detail: '相生（不化）', hua: null }
   }
   if (pk === '巳申') {
-    if (['旺', '相'].includes(monthState('水', monthZhi)) && (tou('水') || taiwang('水')) && !'巳午未戌'.includes(monthZhi))
-      return { detail: '合化水', hua: '水' }
+    if (['旺', '相'].includes(monthState('水', monthZhi)) && (tou('水') || taiwang('水')) && !'巳午未戌'.includes(monthZhi)) {
+      // 修复（2026-08-17）：§4 条件④ 化神水不受重克（土太旺以上）且旺度 ≥8（与后端对齐）
+      if (deg['土'] < 26 && deg['水'] >= 8) return { detail: '合化水', hua: '水' }
+    }
     return { detail: '合绊', hua: null }
   }
   // 午未
@@ -535,7 +540,42 @@ function banheVerdict(c1: JCol, c2: JCol, cols: JCol[], monthZhi: string): { det
   return { detail: '合绊', hua: null }
 }
 
-function xingVerdict(c1: JCol, c2: JCol, monthZhi: string, zset: Record<string, number>): { ok: boolean; reason?: string } {
+/** 两支自刑逢冲或逢"非加强化神之合"则不成（§7）。与后端 wangdu.py _zixing_blocked 对齐。 */
+function zixingBlocked(z: string, cols: JCol[]): boolean {
+  const wx = ZHI_WUXING[z]
+  const zIdxs = cols.map((c, i) => (c.zhi === z ? i : -1)).filter((i) => i >= 0)
+  for (let i = 0; i < cols.length; i++) {
+    const c = cols[i]
+    if (!JU_KEYS.has(c.id) || c.zhi === z) continue
+    if (!zIdxs.some((j) => Math.abs(i - j) === 1)) continue
+    if (ZHI_CHONG[z] === c.zhi) return true
+    const pk = pairKey(z, c.zhi)
+    if (LIU_HE_MAP[pk] && !LIU_HE_MAP[pk].includes(wx)) return true
+    if (BAN_SANHE_MAP[pk] && BAN_SANHE_MAP[pk] !== wx) return true
+    for (const [grp, gwx] of Object.entries(SAN_HE_MAP)) {
+      if (grp.includes(z) && grp.includes(c.zhi) && gwx !== wx) return true
+    }
+    for (const [grp, gwx] of Object.entries(SAN_HUI_MAP)) {
+      if (grp.includes(z) && grp.includes(c.zhi) && gwx !== wx) return true
+    }
+  }
+  return false
+}
+
+/** 辰午酉亥自刑成立条件（§7）。与后端 wangdu.py _zixing_ok 对齐。 */
+function zixingOk(z: string, cols: JCol[], monthZhi: string, zset: Record<string, number>): boolean {
+  const wx = ZHI_WUXING[z]
+  const deg = wxDegreesLite(cols)
+  const n = zset[z] ?? 0
+  const tou = cols.some((c) => c.gan && GAN_WUXING[c.gan] === wx)
+  if (!(tou || deg[wx] >= 26)) return false        // 化神不透且未太旺 → 不成
+  if (n >= 4) return true                          // 4支以上：无需月令旺地
+  if (!['旺', '相'].includes(monthState(wx, monthZhi))) return false // 两支/三支：须月令化神旺相
+  if (n >= 3) return true                          // 三支：干透即可
+  return !zixingBlocked(z, cols)                   // 两支：不逢合/冲
+}
+
+function xingVerdict(c1: JCol, c2: JCol, cols: JCol[], monthZhi: string, zset: Record<string, number>): { ok: boolean; reason?: string } {
   const pk = pairKey(c1.zhi, c2.zhi)
   const count = (z: string) => (zset[z] ?? 0) * (z === monthZhi ? 2 : 1) // 当令翻倍
   if (pk === '子卯') {
@@ -548,7 +588,11 @@ function xingVerdict(c1: JCol, c2: JCol, monthZhi: string, zset: Record<string, 
     if (count('巳') >= 2 && count('巳') > count('寅')) return { ok: true }
     return { ok: false, reason: '条件不足' }
   }
-  return { ok: true } // 巳申/寅申 1:1 仍成立；丑戌/未戌/丑未两支可论；自刑两支可论
+  if (c1.zhi === c2.zhi && ZI_XING_SET.has(c1.zhi)) {
+    // 修复（2026-08-17）：自刑须满足成立条件（化神透出/太旺 + 月令旺相 + 不逢合冲）
+    return zixingOk(c1.zhi, cols, monthZhi, zset) ? { ok: true } : { ok: false, reason: '条件不足' }
+  }
+  return { ok: true } // 巳申/寅申 1:1 仍成立；丑戌/未戌/丑未两支可论
 }
 
 function sanheHuiOk(rtype: string, wx: string, branches: string[], cols: JCol[], monthZhi: string): boolean {
@@ -711,7 +755,7 @@ export function buildRelationJudgments(
           entry.detail = v.detail
           entry.hua = v.hua
         } else if (t === '刑') {
-          const v = xingVerdict(jcols[i], jcols[j], monthZhi, zsetCount)
+          const v = xingVerdict(jcols[i], jcols[j], jcols, monthZhi, zsetCount)
           if (!v.ok) entry.rejected = v.reason
           else entry.detail = '刑（成立）'
         } else if (t === '相冲') {

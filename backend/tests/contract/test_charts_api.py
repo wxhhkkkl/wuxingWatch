@@ -198,7 +198,7 @@ def test_predict_xiyong_wangdu_contract(client):
     assert set(s["static_scores"]) == {"木", "火", "土", "金", "水"}
     assert set(s["final_scores"]) == {"木", "火", "土", "金", "水"}
     assert all(v >= 0 for v in s["final_scores"].values())
-    assert s["ge_ju"]["type"] in ("zheng", "cong_ruo", "cong_qiang", "hua")
+    assert s["ge_ju"]["type"] in ("zheng", "cong_ruo", "cong_qiang", "cong_yin", "cong_sha", "cong_cai", "hua")
     assert [st["key"] for st in s["steps"]] == [
         "static", "shengke", "zhichong", "final", "geju", "dayun", "yongshen"]
     da_yun_gz = [d["ganzhi"] for d in resp.json()["da_yun"]["steps"]]

@@ -20,7 +20,8 @@ ZANGFU = {
     "水": "肾、膀胱",
 }
 
-_GEJU_LABEL = {"zheng": "正格", "cong_ruo": "从弱格", "cong_qiang": "从强格", "hua": "化格"}
+_GEJU_LABEL = {"zheng": "正格", "cong_ruo": "从弱格", "cong_qiang": "从强格",
+               "cong_yin": "从印格", "cong_sha": "从杀格", "cong_cai": "从财格", "hua": "化格"}
 
 
 def _count_wuxing(pillars: dict) -> dict[str, int]:

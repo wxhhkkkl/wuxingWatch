@@ -170,7 +170,7 @@ export interface WangduStep {
 }
 
 export interface GeJuVerdict {
-  type: 'zheng' | 'cong_ruo' | 'cong_qiang' | 'hua'
+  type: 'zheng' | 'cong_ruo' | 'cong_qiang' | 'cong_yin' | 'cong_sha' | 'cong_cai' | 'hua'
   hua_shen: string | null
   basis: string[]
   neng_duli: boolean
