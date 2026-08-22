@@ -102,3 +102,27 @@ describe('关系判定 · 结构与交互约束', () => {
     expect([...established, ...rejected].every((p) => p.aColId !== 'time' && p.bColId !== 'time')).toBe(true)
   })
 })
+
+// ---------- 009 两阶段（2026-08-19）：地支论处先后按书原文分层（与后端 BRANCH_TIER 对拍） ----------
+
+describe('009 地支论处先后分层', () => {
+  it('六冲让位六合（书 §9：六冲先于六合）', () => {
+    // 午子冲 与 子丑合 共享子支 → 论冲不论合
+    const { established } = buildRelationJudgments(mkCols(['庚午', '戊子', '己丑', '庚寅']))
+    const chong = established.filter((p) => p.type === '相冲' && new Set([p.a, p.b]).size === 2)
+    const he = established.filter((p) => p.type === '六合')
+    expect(chong.some((p) => new Set([p.a, p.b]).has('子') && new Set([p.a, p.b]).has('午'))).toBe(true)
+    expect(he.filter((p) => new Set([p.a, p.b]).has('子'))).toHaveLength(0)
+  })
+
+  it('字面多关系只保留最高层：巳申=六合（非刑）、寅申=相冲（非刑）、寅巳=刑（非害）', () => {
+    const siShen = buildRelationJudgments([mkCol('year', '甲', '巳'), mkCol('month', '壬', '申')])
+    expect(siShen.established.filter((p) => p.type === '六合' && new Set([p.a, p.b]).has('巳'))).toHaveLength(1)
+    expect(siShen.established.filter((p) => p.type === '刑' && new Set([p.a, p.b]).has('巳'))).toHaveLength(0)
+    const yinShen = buildRelationJudgments([mkCol('year', '甲', '寅'), mkCol('month', '壬', '申')])
+    expect(yinShen.established.filter((p) => p.type === '相冲' && new Set([p.a, p.b]).has('寅'))).toHaveLength(1)
+    const yinSi = buildRelationJudgments([mkCol('year', '甲', '寅'), mkCol('month', '壬', '巳')])
+    expect(yinSi.established.filter((p) => p.type === '刑' && new Set([p.a, p.b]).has('寅'))).toHaveLength(1)
+    expect(yinSi.established.filter((p) => p.type === '害' && new Set([p.a, p.b]).has('寅'))).toHaveLength(0)
+  })
+})

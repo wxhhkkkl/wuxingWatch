@@ -1,0 +1,54 @@
+{
+  "_comment": "009 两阶段构造盘对拍基准（2026-08-19）。前端 vitest 与后端 pytest 共用锚点（research R7 / tasks T001）。每例 pillars=[年,月,日,时]。",
+  "cases": [
+    {
+      "name": "static_ignores_stem_five_he",
+      "pillars": ["甲子", "己丑", "丙午", "戊午"],
+      "day_master": "己",
+      "assert": {
+        "static_step_no_wuhe": true,
+        "static_mu_gt_0": true,
+        "dynamic_a_hehua": "甲己合化土成功"
+      },
+      "note": "甲己五合满足化土条件也不在静态执行——静态保持甲木 1 度，动态 A 才合化（FR-003/SC-001）"
+    },
+    {
+      "name": "chong_beats_liuhe",
+      "pillars": ["庚午", "戊子", "己丑", "庚寅"],
+      "assert": {
+        "chong_established": "子午",
+        "liuhe_rejected": "子丑",
+        "tier": "六冲(7) > 六合(8)"
+      },
+      "note": "六冲先于六合（书 §9）：午子冲与子丑合共享子支 → 论冲不论合（FR-002）"
+    },
+    {
+      "name": "dynamic_a_only_adjacent",
+      "pillars": ["甲午", "丙戌", "己丑", "戊子"],
+      "day_master": "己",
+      "assert": { "adjacent_only": "甲己隔位不入动态 A" },
+      "note": "动态 A 仅紧贴三对（年-月、月-日、日-时）（FR-004）"
+    },
+    {
+      "name": "heban_greedy_forgets_shengke",
+      "pillars": ["甲子", "己卯", "庚午", "戊寅"],
+      "day_master": "己",
+      "assert": { "heban_trace": "贪合忘生克" },
+      "note": "合而不化（合绊）只改两干旺度（主克×0.8/受克×0.5）、贪合忘生克（FR-005/Q1）"
+    },
+    {
+      "name": "dynamic_b_all_hidden",
+      "pillars": ["甲寅", "甲寅", "甲寅", "甲寅"],
+      "day_master": "甲",
+      "assert": { "pairs": ["甲↔寅中丙", "甲↔寅中戊"] },
+      "note": "动态 B 同柱天干↔全部藏干（中气/余气参与，比和不配对）（FR-009/Q4）"
+    },
+    {
+      "name": "missing_time_two_pairs",
+      "pillars": ["甲子", "乙丑", "丙寅", null],
+      "day_master": "丙",
+      "assert": { "missing_time_hint": true },
+      "note": "缺时柱：动态 A 仅年-月、月-日两对（FR-013）"
+    }
+  ]
+}

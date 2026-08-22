@@ -109,8 +109,9 @@ def test_strength_is_wangdu_shape():
     assert set(s["static_scores"]) == {"木", "火", "土", "金", "水"}
     assert set(s["final_scores"]) == {"木", "火", "土", "金", "水"}
     assert s["ge_ju"]["type"] in ("zheng", "cong_ruo", "cong_qiang", "cong_yin", "cong_sha", "cong_cai", "hua")
+    # 009 两阶段：移除 shengke/zhichong，改为 dynamic_a/dynamic_b
     assert [st["key"] for st in s["steps"]] == [
-        "static", "shengke", "zhichong", "final", "geju", "dayun", "yongshen"]
+        "static", "dynamic_a", "dynamic_b", "final", "geju", "dayun", "yongshen"]
     assert len(s["dayun_adjustments"]) == 2
     assert s["dayun_adjustments"][0]["ganzhi"] == "癸亥"
     assert s["dayun_adjustments"][0]["scores_after"]

@@ -421,26 +421,33 @@ function stemRelation(g1: string, g2: string): { type: string; detail: string } 
   return { type: '克', detail: `${g2}克${g1}` }
 }
 
-/** 同一对支存在多个字面关系时按 §9 只保留最高优先级：生地半三合 > 冲 > 六合 > 墓地半三合 > 刑 > 害 > 破 */
+/** 地支论处先后分层（《四柱精髓》§9，2026-08-19 Q3 书原文；数字越小越优先）。
+ * 辰戌丑未土局=1（占位）、丑未戌三刑=2、三支自刑=3、会局=4、三合局=5、生地半三合=6、
+ * 六冲=7、六合=8、墓地半三合（含巳酉）=9、子卯/寅巳申/两支自刑/丑未戌两支刑=10、六害=11、破=12。
+ * 与后端 wangdu.py BRANCH_TIER 对拍一致。 */
+const BRANCH_TIER: Record<string, number> = {
+  三会: 4, 三合: 5, 生地半三合: 6, 相冲: 7, 六合: 8, 墓地半三合: 9,
+  刑: 10, 三刑: 10, 害: 11, 破: 12,
+}
+const SHENG_DI_HE = _pairSet(['亥卯', '寅午', '申子'])
+
+/** 同一对支存在多个字面关系时按 §9（BRANCH_TIER）只保留最高优先级：生地半三合 > 六冲 > 六合 > 墓地半三合 > 刑 > 害 > 破。 */
 function branchPairTypes(z1: string, z2: string): string[] {
   const pk = pairKey(z1, z2)
-  const out: string[] = []
-  if (LIU_HE_MAP[pk]) out.push('六合')
-  if (ZHI_CHONG[z1] === z2) out.push('相冲')
-  if (BAN_SANHE_MAP[pk]) out.push('半三合')
-  if (XING_PAIR_SET.has(pk)) out.push('刑')
-  if (z1 === z2 && ZI_XING_SET.has(z1)) out.push('刑')
-  if (ZHI_HAI_SET.has(pk)) out.push('害')
-  if (ZHI_PO_SET.has(pk)) out.push('破')
-  if (out.length <= 1) return out
-  const shengDi = _pairSet(['亥卯', '寅午', '申子'])
+  const cands: string[] = []
+  if (LIU_HE_MAP[pk]) cands.push('六合')
+  if (ZHI_CHONG[z1] === z2) cands.push('相冲')
+  if (BAN_SANHE_MAP[pk]) cands.push('半三合')
+  if (XING_PAIR_SET.has(pk)) cands.push('刑')
+  if (z1 === z2 && ZI_XING_SET.has(z1)) cands.push('刑')
+  if (ZHI_HAI_SET.has(pk)) cands.push('害')
+  if (ZHI_PO_SET.has(pk)) cands.push('破')
+  if (!cands.length) return []
   const rank = (t: string): number => {
-    if (t === '半三合') return shengDi.has(pk) ? 0 : 3
-    const m: Record<string, number> = { 相冲: 1, 六合: 2, 刑: 4, 害: 5, 破: 6 }
-    return m[t] ?? 7
+    if (t === '半三合') return SHENG_DI_HE.has(pk) ? BRANCH_TIER['生地半三合'] : BRANCH_TIER['墓地半三合']
+    return BRANCH_TIER[t] ?? 12
   }
-  out.sort((x, y) => rank(x) - rank(y))
-  return [out[0]]
+  return [cands.reduce((best, t) => (rank(t) < rank(best) ? t : best))]
 }
 
 function stemHeHuaOk(c1: JCol, c2: JCol, hua: string, cols: JCol[], monthZhi: string): boolean {

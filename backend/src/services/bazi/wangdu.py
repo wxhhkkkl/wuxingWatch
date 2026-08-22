@@ -146,7 +146,9 @@ def hidden_degrees(zhi: str, month_zhi: str, zhi_count: dict) -> list:
         return list(HIDDEN_FIXED[zhi])
     grp = _month_group(month_zhi)
     if zhi in ("丑", "辰") and month_zhi in "亥子" and zhi_count.get(zhi, 0) >= 3:
-        return [("癸", 2), ("辛" if zhi == "丑" else "乙", 2), ("己" if zhi == "丑" else "戊", 2)]
+        # 书/algorithm-reference §1.1：丑 亥子月 党众→水2金2土1；辰 亥子月 党众→水2木2土2
+        return [("癸", 2), ("辛" if zhi == "丑" else "乙", 2),
+                ("己" if zhi == "丑" else "戊", 1 if zhi == "丑" else 2)]
     table = _MUKU[zhi]
     if zhi in ("未", "戌") and month_zhi in "亥子丑":
         grp = "亥子丑"
@@ -186,6 +188,26 @@ SAN_HUI = {frozenset(g): wx for g, wx in {
 SAN_XING = [frozenset(("寅", "巳", "申")), frozenset(("丑", "未", "戌"))]
 
 POS_LABEL = {"year": "年", "month": "月", "day": "日", "time": "时", "dayun": "大运", "liunian": "流年"}
+ZHI_ORDER = "子丑寅卯辰巳午未申酉戌亥"  # 地支规范序（frozenset 迭代用，保证跨进程可复现）
+
+# ---- 地支论处先后分层（《四柱精髓》§9，2026-08-19 Q3 书原文；数字越小越优先）----
+# 辰戌丑未土局=1（四库土局——优先级占位、本期不单独检测/不减力，research R8 最小落地）、
+# 丑未戌三刑=2、三支自刑（三辰除外）=3、会局=4、三合局=5、生地半三合=6、六冲=7、
+# 六合=8、墓地半三合（含巳酉）=9、子卯/寅巳申/两支自刑/丑未戌两支相刑=10、六害=11、破=12。
+BRANCH_TIER = {
+    "三会": 4, "三合": 5, "生地半三合": 6, "相冲": 7, "六合": 8,
+    "墓地半三合": 9, "刑": 10, "三刑": 10, "害": 11, "破": 12,
+}
+SHENG_DI_HE = {frozenset(p) for p in [("亥", "卯"), ("寅", "午"), ("申", "子")]}
+
+
+def _branch_tier_of(e):
+    """关系条目的论处层级（书 §9；越小越优先）。半三合按生地/墓地细分。"""
+    t = e.get("type")
+    if t == "半三合":
+        pair = frozenset((e.get("a"), e.get("b")))
+        return BRANCH_TIER["生地半三合"] if pair in SHENG_DI_HE else BRANCH_TIER["墓地半三合"]
+    return BRANCH_TIER.get(t, 12)
 
 
 # ============================================================
@@ -346,70 +368,40 @@ def _stem_relation(g1, g2):
 def _branch_pair_types(z1, z2):
     """两支字面可论的关系类型列表（不含位置判定）。
 
-    同一对支存在多个字面关系时，按 §9 论处先后只保留最高优先级：
-    生地半三合 > 相冲 > 六合 > 墓地半三合 > 刑 > 害 > 破（破不在书中体系，字面保留排最后）。
+    同一对支存在多个字面关系时，按 §9 论处先后（BRANCH_TIER）只保留最高优先级：
+    生地半三合 > 六冲 > 六合 > 墓地半三合 > 刑 > 害 > 破（破不在书中体系，字面保留排最后；
+    三会/三合/三支自刑/丑未戌三刑为三支关系，见 judge_relations 的 triple 段）。
+    返回类型沿用 008 的 "半三合"（生地/墓地分层在 _branch_tier_of / 效应中按支判定）。
     """
     pair = frozenset((z1, z2))
-    out = []
+    cands = []
     if pair in LIU_HE:
-        out.append("六合")
+        cands.append("六合")
     if ZHI_CHONG.get(z1) == z2:
-        out.append("相冲")
+        cands.append("相冲")
     if pair in BAN_SANHE:
-        out.append("半三合")
+        cands.append("半三合")
     if pair in XING_PAIRS:
-        out.append("刑")
+        cands.append("刑")
     if z1 == z2 and z1 in ZI_XING:
-        out.append("刑")  # 自刑
+        cands.append("刑")  # 两支自刑
     if pair in ZHI_HAI:
-        out.append("害")
+        cands.append("害")
     if pair in ZHI_PO:
-        out.append("破")
-    if len(out) <= 1:
-        return out
-    sheng_di = {frozenset(p) for p in [("亥", "卯"), ("寅", "午"), ("申", "子")]}
-    priority = []
-    for t in out:
+        cands.append("破")
+    if not cands:
+        return []
+
+    def _rank(t):
         if t == "半三合":
-            priority.append((0 if pair in sheng_di else 3, t))
-        elif t == "相冲":
-            priority.append((1, t))
-        elif t == "六合":
-            priority.append((2, t))
-        elif t == "刑":
-            priority.append((4, t))
-        elif t == "害":
-            priority.append((5, t))
-        else:
-            priority.append((6, t))
-    priority.sort()
-    return [priority[0][1]]
+            return BRANCH_TIER["生地半三合"] if pair in SHENG_DI_HE else BRANCH_TIER["墓地半三合"]
+        return BRANCH_TIER[t]
+
+    return [min(cands, key=_rank)]
 
 
-def judge_relations(pillars, dayun_ganzhi=None, liunian_ganzhi=None):
-    """干支关系条件判定（algorithm-reference §2~§9）。
-
-    返回 {"established": [...], "rejected": [...]}；条目 {a, b, layer, type,
-    detail|reason, positions?, involves?}。命盘图（前端同构实现）与引擎共用此口径。
-    """
-    cols, month_zhi = _build_cols(pillars, dayun_ganzhi, liunian_ganzhi)
-    established, rejected = [], []
-    n = len(cols)
-    ju = [c for c in cols if c.key in ("year", "month", "day", "time")]  # 原局列
-
-    def actionable(i, j, same_kind_bridge=False):
-        """两列可论作用？原局列须相邻（中隔为其中一支/干本身或同类时按规则放宽）；
-        岁运列与原局列可论（岁运介入变紧贴）。返回 (可论, 隔位)。"""
-        ci, cj = cols[i], cols[j]
-        if ci.key not in [c.key for c in ju] or cj.key not in [c.key for c in ju]:
-            return True, False  # 岁运介入
-        lo, hi = min(i, j), max(i, j)
-        if hi - lo == 1:
-            return True, False
-        mids = [cols[k] for k in range(lo + 1, hi)]
-        return False, True if not same_kind_bridge else False, bool(mids)
-
-    # ---------- 天干层 ----------
+def _judge_stem_layer(cols, month_zhi, established, rejected):
+    """天干层条件判定（008 口径，供 judge_relations 非 only_branch 模式复用）。"""
     stem_idx = [i for i, c in enumerate(cols) if c.gan]
     gan_pairs = []  # (i, j, type, detail)
     for a in range(len(stem_idx)):
@@ -445,7 +437,6 @@ def judge_relations(pillars, dayun_ganzhi=None, liunian_ganzhi=None):
         pair = frozenset((cols[i].gan, cols[j].gan))
         # 争合针对"同一干"：按 (合组, 重复出现的那个干) 分组
         for t in (i, j):
-            other = j if t == i else i
             he_by_target.setdefault((pair, cols[t].gan, t), []).append((i, j))
     competed = set()
     for (pair, gan, t), pairs in he_by_target.items():
@@ -484,6 +475,35 @@ def judge_relations(pillars, dayun_ganzhi=None, liunian_ganzhi=None):
                                 "_ok": ok, "_hua": hua, "_i": i, "_j": j})
         else:
             established.append({"a": g1, "b": g2, "layer": "stem", "type": rtype, "detail": detail})
+
+
+def judge_relations(pillars, dayun_ganzhi=None, liunian_ganzhi=None, only_branch=False):
+    """干支关系条件判定（algorithm-reference §2~§9）。
+
+    返回 {"established": [...], "rejected": [...]}；条目 {a, b, layer, type,
+    detail|reason, positions?, involves?}。命盘图（前端同构实现）与引擎共用此口径。
+    `only_branch=True`：只判定地支层（009 阶段一静态——天干五合/生克归阶段二动态 A）。
+    """
+    cols, month_zhi = _build_cols(pillars, dayun_ganzhi, liunian_ganzhi)
+    established, rejected = [], []
+    n = len(cols)
+    ju = [c for c in cols if c.key in ("year", "month", "day", "time")]  # 原局列
+
+    def actionable(i, j, same_kind_bridge=False):
+        """两列可论作用？原局列须相邻（中隔为其中一支/干本身或同类时按规则放宽）；
+        岁运列与原局列可论（岁运介入变紧贴）。返回 (可论, 隔位)。"""
+        ci, cj = cols[i], cols[j]
+        if ci.key not in [c.key for c in ju] or cj.key not in [c.key for c in ju]:
+            return True, False  # 岁运介入
+        lo, hi = min(i, j), max(i, j)
+        if hi - lo == 1:
+            return True, False
+        mids = [cols[k] for k in range(lo + 1, hi)]
+        return False, True if not same_kind_bridge else False, bool(mids)
+
+    # ---------- 天干层（009：阶段一 only_branch 时跳过——天干五合/生克归阶段二动态 A）----------
+    if not only_branch:
+        _judge_stem_layer(cols, month_zhi, established, rejected)
 
     # ---------- 地支层 ----------
     zhi_idx = [i for i, c in enumerate(cols) if c.zhi]
@@ -524,11 +544,13 @@ def judge_relations(pillars, dayun_ganzhi=None, liunian_ganzhi=None):
     for grp, wx in list(SAN_HE.items()) + list(SAN_HUI.items()):
         if all(z in zset for z in grp):
             t = "三合" if grp in SAN_HE else "三会"
-            idxs = [zset[z][0] for z in grp]
-            triple_cands.append({"idxs": idxs, "type": t, "wx": wx, "key": "".join(sorted(grp, key='子丑寅卯辰巳午未申酉戌亥'.index))})
+            # 修复（2026-08-19）：SAN_HE/SAN_HUI 以 frozenset 为键，迭代顺序依赖哈希——
+            # 按地支规范序排序取 idxs，保证化神寄主（首支）稳定（跨进程可复现）。
+            idxs = [zset[z][0] for z in sorted(grp, key=ZHI_ORDER.index)]
+            triple_cands.append({"idxs": idxs, "type": t, "wx": wx, "key": "".join(sorted(grp, key=ZHI_ORDER.index))})
     for grp in SAN_XING:
         if all(z in zset for z in grp):
-            triple_cands.append({"idxs": [zset[z][0] for z in grp], "type": "三刑", "wx": None})
+            triple_cands.append({"idxs": [zset[z][0] for z in sorted(grp, key=ZHI_ORDER.index)], "type": "三刑", "wx": None})
 
     # ---- 逐条裁定 ----
     # 1) 先按类型细化：六合（合化/合绊/相生/互助）、半三合、刑（数量阈值）、自刑
@@ -928,7 +950,7 @@ def _zero(col, keep_wx=None):
     col.hidden = {}
 
 
-def _apply_branch_effects(relations, cols, month_zhi, traces):
+def _apply_branch_effects(relations, cols, month_zhi, traces, wx_deltas=None):
     """按判定结果修正藏干度数。返回月令变化（化神五行|None）。
 
     同组关系重复出现（如两寅一午）时，多出之支以增力论（§4 总纲）：
@@ -937,14 +959,29 @@ def _apply_branch_effects(relations, cols, month_zhi, traces):
     month_hua = None
     hua_done = {}  # (type, frozenset支) -> 化神所寄列
     extra_deg = {"六合": 5.5, "半三合": 6.0, "三合": 6.0, "三会": 8.0}
-    for e in relations["established"]:
-        if e.get("layer") != "branch":
-            continue
+    # 009：按《四柱精髓》§9 论处先后（BRANCH_TIER）处理，高优先级关系先论（会>三合>半三合>冲>合>刑>害）
+    # wx_deltas（可选）：按每条关系记录其对各五行的数值增量（供 static 步"②地支关系后"标注原因）。
+    # 用"下一条关系开始时记录上一条的增量"模式——`continue` 分支不改变状态、增量 0 自然被跳过。
+    prev_raw = _wx_degrees(cols, month_zhi, apply_penalty=False) if wx_deltas is not None else None
+    prev_label = prev_t0 = None
+    for e in sorted((x for x in relations["established"] if x.get("layer") == "branch"),
+                    key=_branch_tier_of):
+        if wx_deltas is not None and prev_label is not None:
+            cur_raw = _wx_degrees(cols, month_zhi, apply_penalty=False)
+            d = {wx: round(cur_raw[wx] - prev_raw[wx], 3) for wx in WUXING_ORDER
+                 if abs(cur_raw[wx] - prev_raw[wx]) > 1e-9}
+            if d:
+                wx_deltas.append({"label": prev_label, "detail": "；".join(traces[prev_t0:]),
+                                  "delta": d})
+            prev_raw = cur_raw
         i, j = e["_i"], e["_j"]
         ci, cj = cols[i], cols[j]
         t, detail = e["type"], e["detail"]
         pair = frozenset((ci.zhi, cj.zhi))
         hua_key = (t, pair)
+        if wx_deltas is not None:
+            prev_label = f"{ci.zhi}{cj.zhi}{t}"
+            prev_t0 = len(traces)
         if t in ("六合", "半三合", "三合", "三会") and hua_key in hua_done:
             target = hua_done[hua_key]
             gan = next(iter(target.hidden))
@@ -1020,6 +1057,13 @@ def _apply_branch_effects(relations, cols, month_zhi, traces):
             _hai_effect(ci, cj, month_zhi, cols, traces)
             continue
         # 破/三刑：度数影响小或 anchors 未覆盖，本期只标注（裁定）
+    if wx_deltas is not None and prev_label is not None:
+        cur_raw = _wx_degrees(cols, month_zhi, apply_penalty=False)
+        d = {wx: round(cur_raw[wx] - prev_raw[wx], 3) for wx in WUXING_ORDER
+             if abs(cur_raw[wx] - prev_raw[wx]) > 1e-9}
+        if d:
+            wx_deltas.append({"label": prev_label, "detail": "；".join(traces[prev_t0:]),
+                              "delta": d})
     return month_hua
 
 
@@ -1259,6 +1303,9 @@ def _chong_effect(ci, cj, cols, month_zhi, traces):
 def _xing_effect(ci, cj, cols, month_zhi, traces):
     z1, z2 = ci.zhi, cj.zhi
     pair = frozenset((z1, z2))
+    if ci.banished or cj.banished:
+        traces.append(f"{z1}{z2}刑：支已被高优先级关系合化消费，让位不论")
+        return  # 009 让位：支被会/三合/半三合/六合化消费（banished）后，低优先级刑不再作用
     if z1 == z2 and z1 in ZI_XING:
         deg = 12.0 if z1 == "酉" else 10.0
         gan = _wx_gan(ZHI_WUXING[z1])
@@ -1382,26 +1429,6 @@ def _hai_effect(ci, cj, month_zhi, cols, traces):
         traces.append(f"{z1}{z2}相害")
 
 
-def _apply_stem_effects(relations, cols, traces):
-    """天干五合：合化改归属；合绊按通用公式减力（裁定 C8：4 倍情形固定减 2 成）。"""
-    for e in relations["established"]:
-        if e.get("type") != "五合":
-            continue
-        ci, cj = cols[e["_i"]], cols[e["_j"]]
-        if e.get("_ok"):
-            hua = e["_hua"]
-            ci.gan_hua = hua
-            cj.gan_hua = hua
-            traces.append(f"{ci.gan}{cj.gan}合化{hua}成功：两干皆化为{hua}")
-        else:
-            ke_gan = GAN_HE_KE[frozenset((ci.gan, cj.gan))]
-            master = ci if ci.gan == ke_gan else cj
-            loser = cj if master is ci else ci
-            master.gan_deg *= 0.8
-            loser.gan_deg *= 0.5
-            traces.append(f"{ci.gan}{cj.gan}合而不化以合绊论：主克者{master.gan}减 2 成、受克者{loser.gan}减 5 成")
-
-
 # ============================================================
 # 同柱生克（§2.1-3 干支同柱论生克 + §2.2 相生相克旺度理论）
 # ============================================================
@@ -1422,71 +1449,187 @@ def _tzg_factor(col, stem, factor):
 
 
 def _apply_tongzhu(cols, static_scores, traces):
-    """同柱生克：每柱干支之间按同性/异性生克增减力，进入五行度数总量。
+    """动态 B：同柱生克——每柱天干 ↔ 本柱全部藏干 配对运算（008 公式扩展到全部藏干，2026-08-19 Q4）。
 
-    书"此谓同柱可论生克异柱不能论也"（生克总规则例4）；量化见"相生相克的
-    旺度理论（适用于天干和地支之间的生克）"：
+    书"此谓同柱可论生克异柱不能论也"；量化见"相生相克的旺度理论（适用于天干和地支之间的生克）"：
     - 同性相生 主×0.7 受×1.3；异性相生 主×0.8 受×1.2；
     - 同性相克 主×0.7 受×0.5；异性相克 主×0.7 受×0.6。
-    生克权：主方（生者/克者）旺度 ≥2.4 生效；
+    生克权：主方（生者/克者）旺度 ≥2.4 生效（以阶段一静态分数为基准）；
     主生有权而受生无权 → 不减不加；主生太旺（≥26）而受生无权 → 受生反减5成；
     受克无权 → 主克不减、受克照减；主克数倍于受克（≥4倍）→ 受克归零、主克耗1成。
 
-    裁定（2026-08-18）：作用对象为柱内天干度数与该柱支本气藏干度数；
-    先于天干五合、地支刑冲合害执行（书"生克总规则"在"天干相合/地支生克"之前）。
+    009：作用对象为本柱**全部藏干**（本气/中气/余气，逐个配对），与天干比和（同五行）
+    的藏干不配对；执行顺序在动态 A **之后**（先改天干五合/生克、再同柱生克）。
     """
     for c in cols:
         if not (c.gan and c.zhi) or c.key not in ("year", "month", "day", "time"):
             continue
-        wg, wz = GAN_WUXING[c.gan], ZHI_WUXING[c.zhi]
-        if wg == wz:
-            continue
-        bg = max((g for g in c.hidden if GAN_WUXING[g] == wz),
-                 key=lambda g: c.hidden[g], default=None)
-        if bg is None:
-            continue
-        if SHENG[wg] == wz:
-            rel, m_is_gan = "生", True       # 干生支（干泄）
-        elif SHENG[wz] == wg:
-            rel, m_is_gan = "生", False      # 支生干（支泄、干受生）
-        elif KE[wg] == wz:
-            rel, m_is_gan = "克", True       # 干克支
-        elif KE[wz] == wg:
-            rel, m_is_gan = "克", False      # 支克干
+        wg = GAN_WUXING[c.gan]
+        for hg, hdeg in list(c.hidden.items()):
+            if hdeg <= 0:
+                continue
+            wh = GAN_WUXING[hg]
+            if wh == wg:
+                continue  # 比和：不配对
+            if SHENG[wg] == wh:
+                rel, m_is_gan = "生", True       # 干生藏干（干泄）
+            elif SHENG[wh] == wg:
+                rel, m_is_gan = "生", False      # 藏干生干（藏泄、干受生）
+            elif KE[wg] == wh:
+                rel, m_is_gan = "克", True       # 干克藏干
+            elif KE[wh] == wg:
+                rel, m_is_gan = "克", False      # 藏干克干
+            else:
+                continue
+            tong = GAN_YIN_YANG[c.gan] == GAN_YIN_YANG[hg]
+            mf, sf = _TZSG_FACTOR[(rel, "同" if tong else "异")]
+            m_wx, s_wx = (wg, wh) if m_is_gan else (wh, wg)
+            m_deg, s_deg = static_scores[m_wx], static_scores[s_wx]
+            m_stem, s_stem = ((None, hg) if m_is_gan else (hg, None))
+            rel_word = "生" if rel == "生" else "克"
+            if rel == "生":
+                if m_deg < 2.4:
+                    continue                     # 主生无权：不生
+                if s_deg < 2.4:
+                    if m_deg < 26.0:
+                        continue                 # 主生有权、受生无权：不减不加
+                    _tzg_factor(c, s_stem, 0.5)  # 主生太旺、受生无权：受生反减5成
+                    traces.append(f"{c.gan}↔{c.zhi}中{hg}同柱生克：{m_wx}太旺{rel_word}{s_wx}无力，{s_wx}反减5成")
+                else:
+                    _tzg_factor(c, m_stem, mf)
+                    _tzg_factor(c, s_stem, sf)
+                    traces.append(f"{c.gan}↔{c.zhi}中{hg}（{'同' if tong else '异'}性{rel_word}）："
+                                  f"{m_wx}×{mf:g}、{s_wx}×{sf:g}")
+            else:  # 克
+                if m_deg < 2.4:
+                    continue                     # 主克无权：不克
+                if s_deg > 0 and m_deg >= 4.0 * s_deg:
+                    _tzg_factor(c, s_stem, 0.0)  # 主克数倍于受克：受克归零
+                    _tzg_factor(c, m_stem, 0.9)  # 主克耗1成
+                    traces.append(f"{c.gan}↔{c.zhi}中{hg}：{m_wx}数倍克{s_wx}，{s_wx}归零、{m_wx}耗1成")
+                else:
+                    if s_deg >= 2.4:
+                        _tzg_factor(c, m_stem, mf)   # 力量相当：主克减3成
+                    _tzg_factor(c, s_stem, sf)       # 受克照减
+                    traces.append(f"{c.gan}↔{c.zhi}中{hg}（{'同' if tong else '异'}性{rel_word}）："
+                                  f"{m_wx}×{mf:g}、{s_wx}×{sf:g}")
+
+
+# ============================================================
+# 阶段二 动态 A（紧贴天干三对：五合先于生克）
+# ============================================================
+
+def _adjacent_shengke(c1, c2, static_scores, traces):
+    """动态 A 普通生克（无五合）：判生克权（主方 ≥2.4）、套同性/异性倍率。
+
+    倍率表沿用同柱生克（_TZSG_FACTOR）：同性/异性生克增减力进入天干度数；生克权以阶段一
+    静态分数为基准；主生太旺（≥26）而受生无权 → 受生反减5成；主克数倍于受克（≥4倍）→ 归零耗1成。
+    """
+    w1, w2 = GAN_WUXING[c1.gan], GAN_WUXING[c2.gan]
+    if w1 == w2:
+        return
+    if SHENG[w1] == w2:
+        rel, m, s = "生", c1, c2
+    elif SHENG[w2] == w1:
+        rel, m, s = "生", c2, c1
+    elif KE[w1] == w2:
+        rel, m, s = "克", c1, c2
+    elif KE[w2] == w1:
+        rel, m, s = "克", c2, c1
+    else:
+        return
+    tong = GAN_YIN_YANG[m.gan] == GAN_YIN_YANG[s.gan]
+    mf, sf = _TZSG_FACTOR[(rel, "同" if tong else "异")]
+    m_wx, s_wx = GAN_WUXING[m.gan], GAN_WUXING[s.gan]
+    m_deg, s_deg = static_scores[m_wx], static_scores[s_wx]
+    rel_word = "生" if rel == "生" else "克"
+    if rel == "生":
+        if m_deg < 2.4:
+            return  # 主生无权：不生
+        if s_deg < 2.4:
+            if m_deg < 26.0:
+                return  # 主生有权、受生无权：不减不加
+            s.gan_deg = round(s.gan_deg * 0.5, 3)
+            traces.append(f"{m.gan}{s.gan}相邻：{m_wx}太旺生{s_wx}无力，{s_wx}反减5成")
         else:
+            m.gan_deg = round(m.gan_deg * mf, 3)
+            s.gan_deg = round(s.gan_deg * sf, 3)
+            traces.append(f"{m.gan}{s.gan}相邻相生（{'同' if tong else '异'}性）：{m.gan}×{mf:g}、{s.gan}×{sf:g}")
+    else:  # 克
+        if m_deg < 2.4:
+            return  # 主克无权：不克
+        if s_deg > 0 and m_deg >= 4.0 * s_deg:
+            s.gan_deg = 0.0
+            m.gan_deg = round(m.gan_deg * 0.9, 3)
+            traces.append(f"{m.gan}{s.gan}相邻相克：{m_wx}数倍克{s_wx}，{s_wx}归零、{m_wx}耗1成")
+        else:
+            if s_deg >= 2.4:
+                m.gan_deg = round(m.gan_deg * mf, 3)  # 力量相当：主克减3成
+            s.gan_deg = round(s.gan_deg * sf, 3)      # 受克照减
+            traces.append(f"{m.gan}{s.gan}相邻相克（{'同' if tong else '异'}性）：{m.gan}×{mf:g}、{s.gan}×{sf:g}")
+
+
+def _dynamic_a(cols, month_zhi, static_scores, traces):
+    """动态 A：紧贴天干三对（年-月、月-日、日-时），五合先于生克（贪合忘生克）。
+
+    每对：先判天干五合——争合/妒合同义（Q2：同一干被两干合 → 力量大者优先、失利者不论、
+    势均力敌双方合绊）；合化满足 `_stem_he_hua_ok`；合绊 C8 减力（主克×0.8、受克×0.5）且
+    贪合忘生克（不再执行普通生克倍率）。无五合 → 普通相生相克（判生克权、套倍率）。
+    """
+    order = ["year", "month", "day", "time"]
+    idx = {c.key: i for i, c in enumerate(cols) if c.key in order}
+    pairs = [(idx[a], idx[b]) for a, b in zip(order, order[1:])
+             if a in idx and b in idx and cols[idx[a]].gan and cols[idx[b]].gan]
+
+    # 争合（§3.6，紧贴三对内）：同一干出现在 ≥2 个五合对（同一合组）→ 力量大者优先
+    gan_he_pairs = [(i, j) for i, j in pairs
+                    if frozenset((cols[i].gan, cols[j].gan)) in GAN_HE_HUA]
+    skip = set()
+    for t in sorted({g for (i, j) in gan_he_pairs for g in (i, j)}):
+        involved = [p for p in gan_he_pairs if t in p]
+        groups = {frozenset((cols[a].gan, cols[b].gan)) for (a, b) in involved}
+        if len(involved) < 2 or len(groups) != 1:
             continue
-        tong = GAN_YIN_YANG[c.gan] == GAN_YIN_YANG[bg]
-        mf, sf = _TZSG_FACTOR[(rel, "同" if tong else "异")]
-        m_wx, s_wx = (wg, wz) if m_is_gan else (wz, wg)
-        m_deg, s_deg = static_scores[m_wx], static_scores[s_wx]
-        m_stem, s_stem = ((None, bg) if m_is_gan else (bg, None))
-        rel_word = "生" if rel == "生" else "克"
-        if rel == "生":
-            if m_deg < 2.4:
-                continue                     # 主生无权：不生
-            if s_deg < 2.4:
-                if m_deg < 26.0:
-                    continue                 # 主生有权、受生无权：不减不加
-                _tzg_factor(c, s_stem, 0.5)  # 主生太旺、受生无权：受生反减5成
-                traces.append(f"{c.gan}{c.zhi}同柱生克：{m_wx}太旺{rel_word}{s_wx}无力，{s_wx}反减5成")
+
+        def _power(p):
+            other = p[0] if p[1] == t else p[1]
+            c = cols[other]
+            root = sum(d for g, d in c.hidden.items() if GAN_WUXING[g] == GAN_WUXING[c.gan])
+            return 1.0 + root
+
+        powers = [_power(p) for p in involved]
+        if max(powers) - min(powers) < 1e-9:
+            for p in involved:
+                skip.add(p)
+                traces.append(f"{cols[p[0]].gan}{cols[p[1]].gan}争合势均力敌：双方合绊")
+            continue
+        winner = involved[powers.index(max(powers))]
+        for p in involved:
+            if p is not winner:
+                skip.add(p)
+                traces.append(f"{cols[p[0]].gan}{cols[p[1]].gan}争合失利（力量小者）：不论")
+
+    for i, j in pairs:
+        if (i, j) in skip:
+            continue
+        c1, c2 = cols[i], cols[j]
+        g1, g2 = c1.gan, c2.gan
+        pair = frozenset((g1, g2))
+        if pair in GAN_HE_HUA:
+            hua = GAN_HE_HUA[pair]
+            if _stem_he_hua_ok(c1, c2, hua, cols, month_zhi):
+                c1.gan_hua = hua
+                c2.gan_hua = hua
+                traces.append(f"{g1}{g2}合化{hua}成功：两干皆化为{hua}")
             else:
-                _tzg_factor(c, m_stem, mf)
-                _tzg_factor(c, s_stem, sf)
-                traces.append(f"{c.gan}{c.zhi}同柱生克：{m_wx}{rel_word}{s_wx}（{'同' if tong else '异'}性），"
-                              f"{m_wx}减{int((1 - mf) * 10)}成、{s_wx}{'增' if rel == '生' else '减'}{int(abs(1 - sf) * 10)}成")
-        else:  # 克
-            if m_deg < 2.4:
-                continue                     # 主克无权：不克
-            if s_deg > 0 and m_deg >= 4.0 * s_deg:
-                _tzg_factor(c, s_stem, 0.0)  # 主克数倍于受克：受克归零
-                _tzg_factor(c, m_stem, 0.9)  # 主克耗1成
-                traces.append(f"{c.gan}{c.zhi}同柱生克：{m_wx}数倍克{s_wx}，{s_wx}归零、{m_wx}耗1成")
-            else:
-                if s_deg >= 2.4:
-                    _tzg_factor(c, m_stem, mf)   # 力量相当：主克减3成
-                _tzg_factor(c, s_stem, sf)       # 受克照减
-                traces.append(f"{c.gan}{c.zhi}同柱生克：{m_wx}{rel_word}{s_wx}（{'同' if tong else '异'}性），"
-                              f"{m_wx}减{int((1 - mf) * 10)}成、{s_wx}减{int(abs(1 - sf) * 10)}成")
+                ke_gan = GAN_HE_KE[pair]
+                master = c1 if c1.gan == ke_gan else c2
+                loser = c2 if master is c1 else c1
+                master.gan_deg *= 0.8
+                loser.gan_deg *= 0.5
+                traces.append(f"{g1}{g2}合而不化（合绊）：主克者{master.gan}减2成、受克者{loser.gan}减5成（贪合忘生克）")
+        else:
+            _adjacent_shengke(c1, c2, static_scores, traces)
 
 
 # ============================================================
@@ -1506,59 +1649,81 @@ TIAOHOU = {
 
 
 def compute_wangdu(pillars: dict, day_master: str, da_yun: list | None = None) -> dict:
-    """《四柱精髓》旺度法完整推演。
+    """《四柱精髓》旺度法完整推演（009：阶段一静态地支 → 阶段二动态天干）。
 
     `pillars` = {year, month, day, time?} 各 {gan, zhi, ...}，time 可为 None（缺时柱）。
     `da_yun` = [{ganzhi, start_year, start_age_xu}, ...]（可选，预计算大运介入修正）。
     返回 WangduResult（data-model.md §1）。
+
+    阶段一静态（只动地支结构）：原始藏干 → 按书 §9 论处先后处理地支关系、只改藏干度数 →
+    通根运算（连片/距离衰减/月令特权）→ ×月令系数；天干保持原始 1 度、**天干五合零处理**。
+    阶段二动态（天干开始作用）：动态 A 紧贴三对（年-月、月-日、日-时，五合先于生克、
+    合绊贪合忘生克）→ 动态 B 同柱天干↔全部藏干。合并得最终旺度；下游 geju/dayun/yongshen 沿用 008。
     """
     cols, month_zhi = _build_cols(pillars)
     missing_time = not pillars.get("time")
-    traces_static, traces_shengke, traces_zhichong = [], [], []
+    traces_static, traces_dyna, traces_dynb = [], [], []
     dry = _xuzhao_dry(cols, month_zhi)   # 戌月局燥（只影响旺度系数）
 
-    # ---- 1. 静态旺度 ----
-    raw0 = _wx_degrees(cols, month_zhi)
-    static_scores = {wx: round(raw0[wx] * COEF[_xu_state(wx, month_zhi, dry)], 2) for wx in WUXING_ORDER}
-    # 2026-08-18：static 步按五行摊开为 天干→通根（含柱距）→递减→×系数 四步明细
+    # ================= 阶段一 静态旺度（只动地支结构，天干保持原始状态） =================
+    # 1. 地支关系判定（仅地支层；天干五合/生克归阶段二动态 A）+ 修正（只改藏干度数）
+    branch_relations = judge_relations(pillars, only_branch=True)
+    traces_zhichong = []
+    orig_hidden = {i: dict(c.hidden) for i, c in enumerate(cols)}  # 快照：地支关系处理前的原始藏干
+    wx_deltas = []  # 每条地支关系对各五行的增减（供 static ②步标注原因）
+    month_hua = _apply_branch_effects(branch_relations, cols, month_zhi, traces_zhichong, wx_deltas)
+    for e in branch_relations["rejected"]:
+        if e.get("layer") == "branch":
+            traces_zhichong.append(f"{e['a']}{e['b']}{e['type']}：{e['reason']}")
+
+    # 2. 四个子阶段分数：①原始（天干+原始藏干，地支处理前）→ ②地支关系后（修正藏干，不减）
+    #    → ③通根计算后（通根递减）→ ④月令系数相乘后（静态分数）
+    raw_orig = {wx: 0.0 for wx in WUXING_ORDER}   # ① 原始
+    for i, c in enumerate(cols):
+        if c.gan and c.gan_wx:
+            raw_orig[c.gan_wx] += 1.0             # 天干原始 1 度（动态 A 前）
+        for g, d in orig_hidden.get(i, {}).items():
+            if d > 0:
+                raw_orig[GAN_WUXING[g]] += d
+    raw_branch = _wx_degrees(cols, month_zhi, apply_penalty=False)  # ② 地支关系后（不减）
+    raw0 = _wx_degrees(cols, month_zhi)                             # ③ 通根计算后（递减）
+    static_scores = {wx: round(raw0[wx] * COEF[_xu_state(wx, month_zhi, dry)], 2) for wx in WUXING_ORDER}  # ④
     for wx in WUXING_ORDER:
         bd = _static_breakdown(cols, month_zhi, wx, dry)
         st = bd["state"]
         dry_note = ("，燥土助火" if dry and wx in ("火", "金") else "")
+        gan_sum = len([c for c in cols if c.gan and c.gan_wx == wx])
+        root_orig = raw_orig[wx] - gan_sum
+        branch_delta = raw_branch[wx] - raw_orig[wx]
+        pen = raw_branch[wx] - raw0[wx]
         traces_static.append({"target": wx,
-                              "expression": f"{wx} · 天干：{bd['gan_txt']} → {bd['gan_sum']} 度", "value": None})
+                              "expression": f"{wx} · ① 原始：天干 {gan_sum} 分 + 藏干 {root_orig:g} 分 = {raw_orig[wx]:g} 分",
+                              "value": round(raw_orig[wx], 2)})
+        reasons = "；".join((d["detail"] or d["label"]) for d in wx_deltas
+                           if d["delta"].get(wx))
         traces_static.append({"target": wx,
-                              "expression": f"{wx} · 通根：{'；'.join(bd['root_txt']) or '无同类通根'} → 合计 {bd['root_sum']} 度",
-                              "value": bd["root_sum"]})
+                              "expression": f"{wx} · ② 地支关系后：{raw_orig[wx]:g} 分 {branch_delta:+g} 分 = {raw_branch[wx]:g} 分"
+                                            f" → {raw_branch[wx]:g}" + (f"　因为{reasons}" if reasons else ""),
+                              "value": round(raw_branch[wx], 2)})
         traces_static.append({"target": wx,
-                              "expression": f"{wx} · 通根递减：{bd['pen_txt']} → 原始度 = 天干{bd['gan_sum']} + 通根{bd['root_sum']} − 递减{bd['pen']:g} = {raw0[wx]:g}",
-                              "value": raw0[wx]})
+                              "expression": f"{wx} · ③ 通根计算后：{raw_branch[wx]:g} 分 − 通根递减 {pen:g} 分 = {raw0[wx]:g} 分",
+                              "value": round(raw0[wx], 2)})
         traces_static.append({"target": wx,
-                              "expression": f"{wx} · 静态旺度 = {raw0[wx]:g} × {COEF[st]:g}（{month_zhi}月{st}地{dry_note}）",
+                              "expression": f"{wx} · ④ 月令系数后：{raw0[wx]:g} 分 × {COEF[st]:g}（{month_zhi}月{st}地{dry_note}）= {static_scores[wx]:g} 分",
                               "value": static_scores[wx]})
+    if traces_zhichong:
+        traces_static.insert(0, {"target": "",
+                                 "expression": "地支关系处理（只改藏干度数）：" + "；".join(traces_zhichong),
+                                 "value": None})
 
-    # ---- 2. 关系判定（原局）----
-    relations = judge_relations(pillars)
+    # ================= 阶段二 动态旺度（开始天干之间作用） =================
+    # 4. 动态 A：紧贴三对（年-月、月-日、日-时），五合先于生克
+    _dynamic_a(cols, month_zhi, static_scores, traces_dyna)
 
-    # ---- 2.5 同柱生克（§2.1-3/§2.2：干支同柱论生克，增减力进入度数；先于合与刑冲）----
-    _apply_tongzhu(cols, static_scores, traces_shengke)
+    # 5. 动态 B：同柱天干 ↔ 本柱全部藏干配对运算（008 公式扩展全部藏干，Q4）
+    _apply_tongzhu(cols, static_scores, traces_dynb)
 
-    # ---- 3. 天干五合修正（shengke 步；生克增减力只入判定不入总量，裁定 C13）----
-    _apply_stem_effects(relations, cols, traces_shengke)
-    for e in relations["established"]:
-        if e.get("layer") == "stem" and e["type"] in ("生", "克", "冲"):
-            traces_shengke.append(f"{e.get('detail', '')}（相邻论{e['type']}）")
-    for e in relations["rejected"]:
-        if e.get("layer") == "stem":
-            traces_shengke.append(f"{e['a']}{e['b']}{e['type']}：{e['reason']}")
-
-    # ---- 4. 地支刑冲合害修正（zhichong 步）----
-    month_hua = _apply_branch_effects(relations, cols, month_zhi, traces_zhichong)
-    for e in relations["rejected"]:
-        if e.get("layer") == "branch":
-            traces_zhichong.append(f"{e['a']}{e['b']}{e['type']}：{e['reason']}")
-
-    # ---- 5. 最终旺度（月令被合化 → 双状态平均，§1.4）----
+    # 6. 最终旺度（修正后天干 + 修正后藏干 合并；月令被合化 → 双状态平均，§1.4）
     raw1 = _wx_degrees(cols, month_zhi)
     final_scores = {}
     for wx in WUXING_ORDER:
@@ -1572,40 +1737,43 @@ def compute_wangdu(pillars: dict, day_master: str, da_yun: list | None = None) -
     dm_score = final_scores[dm_wx]
     level = level_of(dm_score)
 
-    # ---- 6. 格局判定（§11 + 裁定 C14/C5）----
+    # ---- 7. 格局判定（§11 + 裁定 C14/C5，沿用 008；全量关系含天干五合）----
+    relations = judge_relations(pillars)
     ge_ju = _judge_geju(relations, cols, day_master, dm_wx, dm_score, final_scores)
 
-    # ---- 7. 大运介入修正（§10 + 裁定 C15）----
+    # ---- 8. 大运介入修正（§10 + 裁定 C15）----
     dayun_adjustments = []
     for step in (da_yun or []):
         dayun_adjustments.append(_dayun_adjustment(step, pillars, dm_wx, final_scores, month_zhi))
 
-    # ---- 8. 取用神（§12）----
+    # ---- 9. 取用神（§12）----
     yong = _select_yongshen(ge_ju, day_master, dm_wx, final_scores, month_zhi)
 
-    # ---- 步骤组装 ----
+    # ---- 步骤组装（009 两阶段 7 键：static → dynamic_a → dynamic_b → final → geju → dayun → yongshen）----
     steps = [
-        {"key": "static", "title": "静态旺度",
-         "rule": "1 天干=1 度；藏干余气 1/中气 2/半本气 3/本气 4/纯本气 5（四墓库随月令变化）；"
-                 "通根按柱距递减（月令通根不减）；再乘月令状态系数（旺 2/余气 1.6/相 1.5/休 0.8/囚 0.7/死 0.5）"
+        {"key": "static", "title": "静态旺度（阶段一：地支结构）",
+         "rule": "原始藏干 → 按《四柱精髓》论处先后处理地支关系（只改藏干度数）→ 通根运算"
+                 "（连片/距离衰减/月令特权）→ ×月令系数（旺 2/余气 1.6/相 1.5/休 0.8/囚 0.7/死 0.5）；"
+                 "天干保持原始 1 度、**天干五合不在本步处理**"
                  + ("；时辰不详，时柱缺失，按时柱不计入计算" if missing_time else ""),
          "traces": traces_static,
          "result": "；".join(f"{wx} {static_scores[wx]:g}" for wx in WUXING_ORDER)},
-        {"key": "shengke", "title": "天干生克合修正",
-         "rule": "干支同柱论生克（干对支本气，按同性/异性增减力进入度数）；相邻天干论生克合"
-                 "（中隔同类可论生克不论合）；五合满足合化条件则化、否则合绊；争合力大者优先；"
-                 "天干生克增减力用于生克权与格局判定",
-         "traces": [{"target": "", "expression": t, "value": None} for t in traces_shengke] or
-                   [{"target": "", "expression": "天干无有效生克合关系", "value": None}],
-         "result": traces_shengke[0] if traces_shengke else "无修正"},
-        {"key": "zhichong", "title": "地支刑冲合害修正",
-         "rule": "地支相邻方论刑冲合害（中隔须为其中一支本身）；按论处先后顺序裁定；"
-                 "合化改变支的五行归属与度数，合绊/冲/刑/害按规则减力",
-         "traces": [{"target": "", "expression": t, "value": None} for t in traces_zhichong] or
-                   [{"target": "", "expression": "地支无刑冲合害修正", "value": None}],
-         "result": traces_zhichong[0] if traces_zhichong else "无修正"},
+        {"key": "dynamic_a", "title": "动态 A：紧贴天干作用（五合先于生克）",
+         "rule": "仅紧贴三对（年干-月干、月干-日干、日干-时干）；每对先判天干五合——争合/妒合同义"
+                 "（力量大者优先、势均力敌合绊）；合化满足月令化神条件；合绊只改两干旺度"
+                 "（主克×0.8、受克×0.5）且贪合忘生克（不再执行普通生克倍率）；"
+                 "无五合再执行普通相生相克（判生克权≥2.4、套同性/异性倍率）",
+         "traces": [{"target": "", "expression": t, "value": None} for t in traces_dyna] or
+                   [{"target": "", "expression": "紧贴三对无天干五合与生克作用", "value": None}],
+         "result": traces_dyna[0] if traces_dyna else "无修正"},
+        {"key": "dynamic_b", "title": "动态 B：同柱生克（全部藏干）",
+         "rule": "遍历四柱，同柱天干 ↔ 本柱全部藏干（本气/中气/余气）配对运算；008 同柱生克公式："
+                 "同性/异性生克增减力进入度数总量、生克权≥2.4、主生太旺（≥26）反减5成、主克数倍（≥4倍）归零耗1成",
+         "traces": [{"target": "", "expression": t, "value": None} for t in traces_dynb] or
+                   [{"target": "", "expression": "无同柱生克作用", "value": None}],
+         "result": traces_dynb[0] if traces_dynb else "无修正"},
         {"key": "final", "title": "最终旺度与旺衰等级",
-         "rule": "修正后度数 × 月令系数（月令被合化时取双状态平均），对照旺度分类表定级",
+         "rule": "修正后天干 + 修正后藏干 合并（月令被合化时取双状态平均），对照旺度分类表定级",
          "traces": [{"target": wx, "expression": f"{wx} {final_scores[wx]:g} 度 → {level_of(final_scores[wx])}",
                      "value": final_scores[wx]} for wx in WUXING_ORDER],
          "result": f"日主{day_master}（{dm_wx}）{dm_score:g} 度 → {level}"},

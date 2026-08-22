@@ -162,7 +162,8 @@ export interface StepTrace {
 }
 
 export interface WangduStep {
-  key: 'static' | 'shengke' | 'zhichong' | 'final' | 'geju' | 'dayun' | 'yongshen'
+  // 009 两阶段：static（阶段一静态地支）→ dynamic_a/dynamic_b（阶段二动态天干）→ final/geju/dayun/yongshen
+  key: 'static' | 'dynamic_a' | 'dynamic_b' | 'final' | 'geju' | 'dayun' | 'yongshen'
   title: string
   rule: string
   traces: StepTrace[]
