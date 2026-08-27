@@ -16,9 +16,11 @@
 - C20 同柱生克（2026-08-18，§2.1-3 + §2.2）：干支同柱论生克，每柱干对支本气按
   同性/异性增减力**进入五行度数总量**（书"此谓同柱可论生克异柱不能论也" +
   "相生相克的旺度理论"）；生克权以五行静态旺度判 ≥2.4；先于天干五合与地支刑冲合害。
-- C21 从格判定（2026-08-18，用户口径）：日主 <2.4（太弱以下）且（阴干 或 阳干无有效根）→ 从弱；
-  阳干有有效根（任一支藏同类 ≥2.0 且不逢合绊）即不从；印/官杀/财中最强根 ≥26 且显著强于
-  日主 → 从印/从杀/从财（可多个）。有效根判定见 `_dm_effective_root`。
+- C21 从格判定（2026-08-22 依老师最新反馈校准）：日主 <2.4（太弱以下）且 无有效根（阴干阳干同标准，
+  修复前阴干无条件从弱；藏同类 ≥1.0 含余气即算根）且 无紧贴实质帮扶（月干/时干 比劫/印 且帮星有根）
+  → 从弱；半三合不化不绊根（师[119][194][321]）；从印/从杀/从财：印/官杀/财最强 ≥26 且显著强于日主
+  且 **从神天干透出**（师[117][209]无印透不可从印）；从强：日主 ≥26（太旺以上）且 克泄耗三方
+  皆不能独立（final <4.0）——2026-08-22 取消"克泄耗有根→不从强"杂气规则（[74]巳中庚金余气根误挡从强）。
 - C14 格局判定中"不能独立/无实质帮扶"按 final < 4.0（较弱以下）掌握；生克权阈值仍按 2.4。
 - C15 大运步数值修正只含：运支状态增减 + 运干同类 + 通根运支 + 运支冲原局支（书中算例口径）。
 """
@@ -1778,8 +1780,9 @@ def compute_wangdu(pillars: dict, day_master: str, da_yun: list | None = None) -
                      "value": final_scores[wx]} for wx in WUXING_ORDER],
          "result": f"日主{day_master}（{dm_wx}）{dm_score:g} 度 → {level}"},
         {"key": "geju", "title": "格局判定",
-         "rule": "正格：能独立；从弱：日主<2.4 且（阴干 或 阳干无有效根）从；从强：≥26 且克泄耗方皆不能独立；"
-                 "从印/从杀/从财：印/官杀/财中最强根≥26 且远强于日主则从（可多个）；"
+         "rule": "正格：能独立；从弱：日主<2.4 且 无有效根（藏同类≥1.0含余气，阴干阳干同标准）"
+                 "且 无紧贴实质帮扶（月/时干比劫印有根）；从强：日主≥26 且 克泄耗方皆不能独立（final<4.0）；"
+                 "从印/从杀/从财：印/官杀/财中最强≥26 且远强于日主 且 从神透干 则从（可多个）；"
                  "化格：日主参与五合合化成功",
          "traces": [{"target": "", "expression": b, "value": None} for b in ge_ju["basis"]],
          "result": {"zheng": "正格", "cong_ruo": "从弱格", "cong_qiang": "从强格",
@@ -1820,25 +1823,56 @@ def compute_wangdu(pillars: dict, day_master: str, da_yun: list | None = None) -
 
 # ---------- 格局判定 ----------
 
-def _dm_effective_root(cols, dm_wx, relations):
-    """日主有效根：任一地支（未被合化/刑冲去、且不逢合绊）藏同类且度数 ≥2.0（中气根以上）。
+def _branch_bound_set(relations):
+    """合绊支集合（2026-08-22 从格修复 R2）：仅 六合/三合/三会 的"合绊"（不化）才绊根。
 
-    裁定（2026-08-18，从格判定用户口径）：阳干只要有有效根（无论强弱）即不从；
-    逢六合/半三合/三合/三会"合绊"（不化）之支，其根视为被绊而无（书[133]卯戌合绊戌根无、
-    [105]寅亥合绊亥根无）。"""
+    半三合不化不绊根——师[119]寅午半合不化寅中甲木根在、[194]午戌合而不化午火根在、
+    [321]亥未半合不化未中己土根在；三巳绊酉等多支绊由 _banhe_ban_effect 归零另行处理。
+    六合"互助/相生（不化）"亦不绊根（师[110]子丑互助丑中庚金根在——该例另涉子丑化水，见合化批次）；
+    只有字面"合绊"才绊根（书[105]寅亥合绊亥根无、师[101]寅亥合绊丁无强根）。"""
     bound = set()
     for e in relations["established"]:
         if e.get("layer") != "branch":
             continue
-        if e["type"] in ("六合", "半三合", "三合", "三会") and "化" not in e.get("detail", ""):
+        if e["type"] in ("六合", "三合", "三会") and "合绊" in e.get("detail", ""):
             bound.add(e.get("a"))
             bound.add(e.get("b"))
+    return bound
+
+
+def _wx_has_root(cols, wx, bound, threshold=2.0):
+    """五行 wx 有无有效根：任一四柱支（未被合化/刑冲去、未逢真正合绊）藏同类 ≥threshold。"""
     for c in cols:
         if c.key not in ("year", "month", "day", "time") or not c.zhi or c.banished:
             continue
         if c.zhi in bound:
             continue
-        if any(GAN_WUXING[g] == dm_wx and d >= 2.0 for g, d in c.hidden.items()):
+        if any(GAN_WUXING[g] == wx and d >= threshold for g, d in c.hidden.items()):
+            return True
+    return False
+
+
+def _dm_effective_root(cols, dm_wx, relations):
+    """日主有效根（裁定 C21，2026-08-22 校准）：日主同类藏干 ≥1.0（含余气根）即不从弱。
+
+    师[168]壬辰中癸余气根不可从、[308]戊申中余气根不可从、[133]戊寅中戊余气根不可从——
+    "阳干有气不从"，阴干同标准（[104]丁未中丁根、[158]己丑中己根均不从弱）。"""
+    return _wx_has_root(cols, dm_wx, _branch_bound_set(relations), threshold=1.0)
+
+
+def _dm_stem_help(cols, dm_wx, relations):
+    """天干实质帮扶（2026-08-22 从格修复 R3）：紧贴日主（月干/时干）的 比劫（日主同类）或 印（生日主）
+    透出，且该帮星五行有有效根（中气以上 ≥2.0）→ 不从弱。
+
+    师[150]时庚、[168]月壬、[110]时戊生庚、[302]月丁生戊、[206]时丁生戊、[297]月己时戊有势、
+    [180]月甲生丁 → 不从；[346]年庚印不贴身、[252]年癸印不贴身 → 不构成贴身帮扶；
+    [101]月丙比劫无根、[219]月乙比劫无根、[305]月癸比劫无根 → 帮星无力仍从。"""
+    help_wx = {dm_wx} | {_SHENG_INV[dm_wx]}
+    bound = _branch_bound_set(relations)
+    for c in cols:
+        if c.key not in ("month", "time") or not c.gan:
+            continue
+        if GAN_WUXING[c.gan] in help_wx and _wx_has_root(cols, GAN_WUXING[c.gan], bound):
             return True
     return False
 
@@ -1854,6 +1888,9 @@ def _judge_geju(relations, cols, day_master, dm_wx, dm_score, final_scores):
     ke_wo = _KE_INV[dm_wx]       # 官杀
     wo_sheng = SHENG[dm_wx]      # 食伤
     wo_ke = KE[dm_wx]            # 财
+    root_ok = _dm_effective_root(cols, dm_wx, relations)
+    # ---- 从强（2026-08-22：取消"克泄耗方有根→不从强"杂气规则——[74]巳中庚金1.0余气根误挡从强；
+    #       从强 = 日主 ≥26 且 克泄耗方皆不能独立 final<4.0）----
     if dm_score >= 26.0:
         weak_fangs = [f"{wx} {final_scores[wx]:g} 度" for wx in (ke_wo, wo_sheng, wo_ke)
                       if final_scores[wx] < 4.0]
@@ -1863,28 +1900,29 @@ def _judge_geju(relations, cols, day_master, dm_wx, dm_score, final_scores):
             return {"type": "cong_qiang", "hua_shen": None, "basis": basis, "neng_duli": True}
         basis.append(f"日主 {dm_score:g} 太旺以上，但克泄耗方有可独立者 → 正格（太旺宜泄）")
         return {"type": "zheng", "hua_shen": None, "basis": basis, "neng_duli": True}
-    # 从印/从杀/从财：印/官杀/财中最强的根（≥太旺26）且显著强于日主 → 从该格（可多个）
+    # ---- 从印/从杀/从财（2026-08-22 修复 R4：从神须天干透出；师[117][209]无印透不可从印）----
     # （2026-08-18 用户口径："看最强的根是哪几个，如果多个特别强那可以从多个"）
     gong_zhu = [(yin_wx, "cong_yin", "印"), (ke_wo, "cong_sha", "官杀"), (wo_ke, "cong_cai", "财")]
     strong = [(wx, typ, label) for wx, typ, label in gong_zhu
-              if final_scores[wx] >= 26.0 and final_scores[wx] > dm_score * 2.0 and dm_score < 8.8]
+              if final_scores[wx] >= 26.0 and final_scores[wx] > dm_score * 2.0 and dm_score < 8.8
+              and any(c.gan and GAN_WUXING[c.gan] == wx for c in cols)]
     if strong:
         yong_wx, yong_typ, yong_label = max(strong, key=lambda t: final_scores[t[0]])
         labels = "、".join(f"{l}{final_scores[wx]:g}度" for wx, _, l in strong)
-        basis.append(f"印/官杀/财中最强根：{labels}（≥太旺26），日主 {dm_score:g} 弱而顺从 → 从{yong_label}")
+        basis.append(f"印/官杀/财中最强根：{labels}（≥太旺26 且透干），日主 {dm_score:g} 弱而顺从 → 从{yong_label}")
         return {"type": yong_typ, "cong_targets": [wx for wx, _, _ in strong],
                 "hua_shen": None, "basis": basis, "neng_duli": False}
-    # 从弱（2026-08-18 用户口径）：日主 <2.4（太弱以下）且（阴干 或 阳干无有效根）从弱
-    root_ok = _dm_effective_root(cols, dm_wx, relations)
-    yin_gan = GAN_YIN_YANG[day_master] == "阴"
-    if dm_score < 2.4 and (yin_gan or not root_ok):
-        basis.append(f"日主旺度 {dm_score:g}（{level_of(dm_score)}）")
-        basis.append(("阴干太弱（<2.4）从弱" if yin_gan
-                      else f"阳干无有效根（旺度 {dm_score:g} <2.4）从弱"))
+    # ---- 从弱（2026-08-22 修复 R1/R3：阴干也须无有效根；天干无实质帮扶）----
+    if dm_score < 2.4 and not root_ok and not _dm_stem_help(cols, dm_wx, relations):
+        basis.append(f"日主旺度 {dm_score:g}（{level_of(dm_score)}），无有效根、天干无实质帮扶 → 从弱")
         return {"type": "cong_ruo", "hua_shen": None, "basis": basis, "neng_duli": False}
     neng_duli = dm_score >= 2.4
-    basis.append(f"日主旺度 {dm_score:g}（{level_of(dm_score)}），"
-                 + ("有生克权能独立" if neng_duli else "但有印比帮扶") + " → 正格")
+    if dm_score < 2.4:
+        why = "有有效根" if root_ok else "天干有实质帮扶"
+        basis.append(f"日主旺度 {dm_score:g}（{level_of(dm_score)}），{why}，故不从 → 正格")
+    else:
+        basis.append(f"日主旺度 {dm_score:g}（{level_of(dm_score)}），"
+                     + ("有生克权能独立" if neng_duli else "但有印比帮扶") + " → 正格")
     return {"type": "zheng", "hua_shen": None, "basis": basis, "neng_duli": neng_duli}
 
 

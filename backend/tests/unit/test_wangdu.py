@@ -456,10 +456,10 @@ def test_geju_yang_gan_wu_gen_cong_ruo_195():
 
 
 def test_geju_yang_gan_feng_he_cong_ruo_133():
-    """[133] 乾 丁卯 壬寅 戊戌 乙卯：戊（阳干）1.0，戌逢卯戌合绊不算根、寅戊余气<2 → 无根从弱，官木为用。"""
+    """[133] 乾 丁卯 壬寅 戊戌 乙卯：戊（阳干）0.5。2026-08-22 校准——寅中戊余气根（≥1.0）即不从：
+    师[168]辰中余气根、[308]申中余气根"阳干有气不从"；卯戌化火去戌根但寅根仍在 → 正格身弱。"""
     r = wangdu.compute_wangdu(_chart("丁卯", "壬寅", "戊戌", "乙卯"), "戊")
-    assert r["ge_ju"]["type"] == "cong_ruo"
-    assert r["yong_shen"] == "木"          # 书"官星为用"
+    assert r["ge_ju"]["type"] == "zheng"   # 2026-08-22 前为 cong_ruo（余气根标准 <2.0）
 
 
 def test_geju_yang_gan_xing_diao_cong_ruo_259():
@@ -475,16 +475,77 @@ def test_geju_yang_gan_you_gen_zheng_355():
     assert r["level"] in ("太弱", "弱极")
 
 
-def test_geju_cong_yin_184_204_322_347():
-    """从印：印星 ≥26 太旺、日主弱而从之（书/师判从印）。"""
-    cases = [("壬寅", "癸卯", "丁卯", "辛亥", "丁", "木"),   # [184] 印木30
-             ("壬寅", "甲辰", "丙戌", "辛卯", "丙", "木"),   # [204] 印木44，书"水木为用"
-             ("丁巳", "丙午", "己未", "己巳", "己", "火"),   # [322] 印火57
-             ("庚辰", "戊子", "甲辰", "壬申", "甲", "水")]   # [347] 印水38，书"金水为用"
+def test_geju_cong_yin_204_322_347():
+    """从印：印星 ≥26 太旺、从神印星透干（2026-08-22 R4：师[117][209]"无印透不可从印"）、日主弱而从之。
+    [184] 印木34 但不透（天干无甲乙）→ 2026-08-22 起不从印（归正格），已从本用例剔除。"""
+    cases = [("壬寅", "甲辰", "丙戌", "辛卯", "丙", "木"),   # [204] 印木44（甲透），书"水木为用"
+             ("丁巳", "丙午", "己未", "己巳", "己", "火"),   # [322] 印火57（丙透）
+             ("庚辰", "戊子", "甲辰", "壬申", "甲", "水")]   # [347] 印水38（壬透），书"金水为用"
     for y, m, d, t, dm, yong in cases:
         r = wangdu.compute_wangdu(_chart(y, m, d, t), dm)
         assert r["ge_ju"]["type"] == "cong_yin", f"{y}{m}{d}{t} 应从印"
         assert r["yong_shen"] == yong
+
+
+def test_geju_yin_bu_tou_bu_cong_yin_184():
+    """[184] 乾 壬寅 癸卯 丁卯 辛亥：印木34 太旺但天干无甲乙透 → 不从印（师[117][209]口径），
+    且丁有寅中丙余气根 → 不从弱 → 正格身弱。2026-08-22 前误判从印。"""
+    r = wangdu.compute_wangdu(_chart("壬寅", "癸卯", "丁卯", "辛亥"), "丁")
+    assert r["ge_ju"]["type"] == "zheng"
+
+
+# ---------- T012b 从格判定 2026-08-22 校准（依老师最新反馈：R1-R5） ----------
+
+def test_geju_yin_gan_you_gen_bu_cong_104():
+    """R1 阴干有根不从弱 [104] 乾 癸亥 癸亥 丁未 壬寅：丁火未中丁中气根 → 不从弱（师"未寅都有中气根不可能从"）。
+    2026-08-22 前阴干<2.4 无条件从弱。"""
+    r = wangdu.compute_wangdu(_chart("癸亥", "癸亥", "丁未", "壬寅"), "丁")
+    assert r["ge_ju"]["type"] == "zheng"
+
+
+def test_geju_yin_gan_you_gen_bu_cong_158_160():
+    """R1 阴干有根不从弱 [158]己丑未根 / [160]己丑未辰三根：师"坐下丑土又有未土不可能从""地支三根不可能从"。"""
+    assert wangdu.compute_wangdu(_chart("乙巳", "丁亥", "己丑", "辛未"), "己")["ge_ju"]["type"] == "zheng"
+    assert wangdu.compute_wangdu(_chart("乙未", "丁亥", "己丑", "戊辰"), "己")["ge_ju"]["type"] == "zheng"
+
+
+def test_geju_ban_he_bu_hua_bu_ban_gen_119():
+    """R2 半三合不化不绊根 [119] 乾 辛酉 丁酉 甲寅 庚午：寅午半合不化，寅中甲木根仍在 → 不从
+    （师"阳干只要有根气就不可从"）。2026-08-22 前寅午合绊去寅根误判从弱。"""
+    r = wangdu.compute_wangdu(_chart("辛酉", "丁酉", "甲寅", "庚午"), "甲")
+    assert r["ge_ju"]["type"] == "zheng"
+
+
+def test_geju_ban_he_bu_hua_bu_ban_gen_321():
+    """R2 半三合不化不绊根 [321] 乾 甲子 丙子 己亥 辛未：亥未半合不化，未中己土根仍在 → 不从
+    （师"未中有根有气不可从弱"）。2026-08-22 前亥未合绊去未根误判从弱。"""
+    r = wangdu.compute_wangdu(_chart("甲子", "丙子", "己亥", "辛未"), "己")
+    assert r["ge_ju"]["type"] == "zheng"
+
+
+def test_geju_stem_help_bu_cong_150_168_206_302():
+    """R3 天干实质帮扶（紧贴比劫/印 有根）→ 不从弱。
+    [150]两庚+申根、[168]三壬+辰中余气根、[206]丁巳生戊、[302]丁生戊 均师判不从。"""
+    assert wangdu.compute_wangdu(_chart("庚申", "壬午", "辛未", "庚寅"), "辛")["ge_ju"]["type"] == "zheng"
+    assert wangdu.compute_wangdu(_chart("壬辰", "壬寅", "壬午", "庚戌"), "壬")["ge_ju"]["type"] == "zheng"
+    assert wangdu.compute_wangdu(_chart("丙寅", "辛卯", "戊辰", "丁巳"), "戊")["ge_ju"]["type"] == "zheng"
+    assert wangdu.compute_wangdu(_chart("甲申", "丁卯", "戊戌", "甲寅"), "戊")["ge_ju"]["type"] == "zheng"
+
+
+def test_geju_cong_yin_need_tou_209():
+    """R4 从印需印透 [209] 乾 庚申 戊子 乙亥 庚辰：水旺但水不透、乙有亥中甲根 → 不从印、不从弱
+    （师"水旺但水不透，木有根。不可判断为从印。只能正格身弱被生扶"）。"""
+    r = wangdu.compute_wangdu(_chart("庚申", "戊子", "乙亥", "庚辰"), "乙")
+    assert r["ge_ju"]["type"] == "zheng"
+
+
+def test_geju_cong_qiang_74():
+    """2026-08-22 校准：取消"克泄耗方有根→不从强"杂气规则。
+    [74] 癸丑己未己巳庚午：己土 31.8 太旺、克泄耗方（木0/金0.25/水0）皆 <4.0 → 从强
+    （修复前巳中庚金1.0余气根误判杂气→正格）。[6][317] 同口径：日主≥26 且克泄耗皆<4.0 即从强。"""
+    assert wangdu.compute_wangdu(_chart("癸丑", "己未", "己巳", "庚午"), "己")["ge_ju"]["type"] == "cong_qiang"
+    assert wangdu.compute_wangdu(_chart("壬申", "癸丑", "戊戌", "壬戌"), "戊")["ge_ju"]["type"] == "cong_qiang"
+    assert wangdu.compute_wangdu(_chart("戊申", "己未", "戊戌", "癸丑"), "戊")["ge_ju"]["type"] == "cong_qiang"
 
 
 def test_geju_cong_sha_213():
@@ -524,9 +585,10 @@ def test_zi_chou_hua_shui_121():
 
 
 def test_zi_chou_hua_shui_123():
-    """根因⑤ [123] 坤 壬子 癸丑 乙巳 癸未：子丑合化水 → 水旺木漂 → 从格。"""
+    """根因⑤ [123] 坤 壬子 癸丑 乙巳 癸未：子丑合化水 → 水旺。2026-08-22 校准——乙坐巳，未中乙余气根
+    （≥1.0）仍在 → 阴干有根不从弱；印水透（壬癸）且贴身 → 实质帮扶 → 正格身弱（原判"水旺木漂从弱"被新口径取代）。"""
     r = wangdu.compute_wangdu(_chart("壬子", "癸丑", "乙巳", "癸未"), "乙")
-    assert r["ge_ju"]["type"] in ("cong_ruo", "cong_yin", "cong_cai")
+    assert r["ge_ju"]["type"] == "zheng"
 
 
 def test_yin_hai_bu_hua_128():
