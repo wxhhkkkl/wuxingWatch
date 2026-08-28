@@ -78,8 +78,9 @@ def test_cong_ruo_follows_strongest():
 
 
 def test_cong_qiang_prefers_support():
-    # 乾 丙午 甲午 丁巳 庚戌：从强格，喜生助（木火）
-    pillars = _chart(_p("丙", "午"), _p("甲", "午"), _p("丁", "巳"), _p("庚", "戌"))
+    # 乾 丙午 丙午 丁巳 乙未：巳午未三会火 → 火从强，喜生助（木火）
+    # （2026-08-27 月令守则后 原 丙午甲午丁巳庚戌 午戌半合化火使土4.8独立 → 正格，改用三会从强盘）
+    pillars = _chart(_p("丙", "午"), _p("丙", "午"), _p("丁", "巳"), _p("乙", "未"))
     result = xiyong.xiyong_analysis("丁", pillars)
     assert result["strength"]["ge_ju"]["type"] == "cong_qiang"
     assert result["conclusion"]["yong_shen"] in ("木", "火")
@@ -109,9 +110,9 @@ def test_strength_is_wangdu_shape():
     assert set(s["static_scores"]) == {"木", "火", "土", "金", "水"}
     assert set(s["final_scores"]) == {"木", "火", "土", "金", "水"}
     assert s["ge_ju"]["type"] in ("zheng", "cong_ruo", "cong_qiang", "cong_yin", "cong_sha", "cong_cai", "hua")
-    # 009 两阶段：移除 shengke/zhichong，改为 dynamic_a/dynamic_b
-    assert [st["key"] for st in s["steps"]] == [
-        "static", "dynamic_a", "dynamic_b", "final", "geju", "dayun", "yongshen"]
+    # 010 定性1-5 → 定量6-11：14 键（废弃 static/dynamic_a/dynamic_b/final）
+    from services.bazi import wangdu
+    assert [st["key"] for st in s["steps"]] == wangdu.STEP_KEYS
     assert len(s["dayun_adjustments"]) == 2
     assert s["dayun_adjustments"][0]["ganzhi"] == "癸亥"
     assert s["dayun_adjustments"][0]["scores_after"]

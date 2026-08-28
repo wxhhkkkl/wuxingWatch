@@ -46,6 +46,15 @@ def level_of(score: float) -> str:
     return "弱极"
 
 
+# ---- 010 步骤键序列（data-model §2：定性 1-5 → 定量 6-11 → 下游沿用，共 14 键）----
+# 废弃 009 的 static/dynamic_a/dynamic_b/final 四键。
+STEP_KEYS = [
+    "month_hua", "month_state", "branch_rel", "branch_root", "stem_hua",   # 定性（1-5）
+    "base_score", "branch_effects", "tonggen", "month_coef", "stem_shengke", "total",  # 定量（6-11）
+    "geju", "dayun", "yongshen",                                            # 下游沿用
+]
+
+
 # ---- 月令状态（§1.2 四季旺相休囚死 + 特殊规则）----
 COEF = {"旺": 2.0, "余气": 1.6, "相": 1.5, "休": 0.8, "囚": 0.7, "死": 0.5}
 _SHENG_INV = {v: k for k, v in SHENG.items()}
@@ -93,6 +102,48 @@ def _xu_state(wx: str, month_zhi: str, dry: bool) -> str:
         if wx == "金" and st == "相":
             return "死"
     return st
+
+
+def _effective_state(wx: str, month_effective_wx: str, dry: bool, month_zhi: str) -> str:
+    """010 第2/9步状态基准：以月令有效五行（化神/本气）判旺相休囚死。
+
+    月令未合化（month_effective_wx == 月令本气）→ 沿用 month_state（保留 override：辰木余气、丑水相等）；
+    月令合化为化神 → 按 element_state(wx, 化神)（单一化神基准，Q2=A，取代 009 双状态平均）。
+    戌月燥土与月令合化判定独立（spec Assumptions），dry 调整始终按原始戌月。
+    """
+    if month_effective_wx == ZHI_WUXING[month_zhi]:
+        st = month_state(wx, month_zhi)
+    else:
+        st = element_state(wx, month_effective_wx)
+    if dry and month_zhi == "戌":
+        if wx == "火" and st == "休":
+            st = "相"
+        if wx == "金" and st == "相":
+            st = "死"
+    return st
+
+
+def _month_effective_wx(relations, cols, month_zhi):
+    """第1步：月令能否合化 → 月令有效五行（化神|原始本气）。
+
+    仅**月令参与的三合/三会**化成功才改变月令五行性质（2026-08-27 用户口径）；
+    六合/半三合涉及月令时，即便化神满足也不改变月令五行（化神须与月令本气一致方能化，
+    见 _liuhe_verdict/_banhe_verdict 的月令守则）→ 月令有效五行恒为本气。
+    """
+    month_idx = next((i for i, c in enumerate(cols) if c.key == "month"), None)
+    if month_idx is None:
+        return ZHI_WUXING[month_zhi]
+    for e in sorted((x for x in relations["established"] if x.get("layer") == "branch"),
+                    key=_branch_tier_of):
+        t = e["type"]
+        if t not in ("三合", "三会"):
+            continue
+        if not e.get("_ok"):
+            continue
+        idxs = e.get("_idxs") or []
+        if month_idx in idxs:
+            return e["_hua"]
+    return ZHI_WUXING[month_zhi]
 
 
 def element_state(wx: str, el: str) -> str:
@@ -227,6 +278,7 @@ class _Col:
         self.gan_hua = None                          # 合化后所属五行（None=未化）
         self.hidden = dict(hidden_degrees(zhi, month_zhi, zhi_count)) if zhi else {}
         self.banished = False                        # 被合化/会化后原藏干作废
+        self.hua_host = False                        # 合化后化神所寄列（供低优先级关系让位）
 
     @property
     def gan_wx(self):
@@ -291,58 +343,6 @@ def _wx_degrees(cols, month_zhi, apply_penalty=True):
             pen = 0.0 if max(rcols) - min(rcols) == len(rcols) - 1 else 1.0
             out[wx] = max(0.0, raw[wx] - pen)
     return out
-
-
-def _static_breakdown(cols, month_zhi, wx, dry):
-    """五行 wx 静态旺度分步明细（与 `_wx_degrees` 同口径）：天干→通根（含柱距）→递减→状态。
-
-    供 static 步逐条展示；数值与 raw0/static_scores 一致。
-    """
-    gans_pos = [i for i, c in enumerate(cols) if c.gan and c.gan_wx == wx]
-    roots = [(i, c.zhi, cg, deg) for i, c in enumerate(cols)
-             if c.zhi and not c.banished
-             for cg, deg in c.hidden.items() if deg > 0 and GAN_WUXING[cg] == wx]
-    month_idx = next((i for i, c in enumerate(cols) if c.key == "month"), None)
-    gan_txt = " + ".join(f"{cols[i].gan}1" for i in gans_pos) or "无天干"
-    gan_sum = len(gans_pos)
-    root_txt = []
-    root_sum = 0.0
-    month_has_root = month_idx is not None and any(i == month_idx for i, *_ in roots)
-    for i, z, cg, deg in roots:
-        root_sum += deg
-        if month_has_root:
-            label = "月令通根特权按同柱"  # 通根月令者不按远近，均按同柱论
-        elif i == month_idx:
-            label = "月令通根不减"
-        elif gans_pos:
-            d = min(abs(i - g) for g in gans_pos)
-            label = {0: "同柱不减", 1: "相邻−0.5", 2: "相隔−1"}.get(d, f"远隔−{min(2.0, deg):g}")
-        else:
-            label = "不透干"
-        root_txt.append(f"{z}中{cg}{deg:g}（{label}）")
-    rcols = [i for i, *_ in roots]
-    if not rcols:
-        pen, pen_txt = 0.0, "无同类通根，不减"
-    elif month_has_root:
-        pen, pen_txt = 0.0, "通根月令特权，按同柱不减"
-    elif gans_pos:
-        far = sum(min(2.0, deg) for i, z, cg, deg in roots if min(abs(i - g) for g in gans_pos) >= 3)
-        near_ds = [min(abs(i - g) for g in gans_pos) for i, z, cg, deg in roots
-                   if min(abs(i - g) for g in gans_pos) < 3]
-        near = min({0: 0.0, 1: 0.5, 2: 1.0}[d] for d in near_ds) if near_ds else 0.0
-        pen = far + near
-        parts = []
-        if far:
-            parts.append(f"远隔根−{far:g}")
-        if near:
-            parts.append(f"最近根−{near:g}")
-        pen_txt = "，".join(parts) if parts else "不减"
-    else:
-        pen = 0.0 if max(rcols) - min(rcols) == len(rcols) - 1 else 1.0
-        pen_txt = "根支连续不减" if pen == 0 else "根支不连续−1"
-    return {"gan_txt": gan_txt, "gan_sum": gan_sum,
-            "root_txt": root_txt, "root_sum": round(root_sum, 2),
-            "pen_txt": pen_txt, "pen": pen, "state": _xu_state(wx, month_zhi, dry)}
 
 
 # ============================================================
@@ -719,22 +719,32 @@ def _stem_he_hua_ok(c1, c2, hua, cols, month_zhi):
 
 
 def _liuhe_verdict(c1, c2, cols, month_zhi):
-    """地支六合 → (detail, 化神|None)。不化时按组给出合绊/相生/互助细分。"""
+    """地支六合 → (detail, 化神|None)。不化时按组给出合绊/相生/互助细分。
+
+    2026-08-27 用户口径：月令参与的六合，化神须与月令本气五行一致方能化（否则按合绊）；
+    仅月令参与的三合/三会才改变月令五行性质。
+    """
     z1, z2 = c1.zhi, c2.zhi
     pair = frozenset((z1, z2))
     huas = LIU_HE[pair]
     mg = _month_group(month_zhi)
+    month_in_pair = z1 == month_zhi or z2 == month_zhi
     # 化神透出检查
     def _tou(wx):
         return any(c.gan and GAN_WUXING[c.gan] == wx for c in cols)
     def _taiwang(wx):
         return _wx_degrees(cols, month_zhi)[wx] >= 26.0
+    def _month_align(hua):
+        """月令参与时化神须与月令本气一致；否则不化（按合绊）。"""
+        return (not month_in_pair) or hua == ZHI_WUXING[month_zhi]
 
     hua = None
     if pair == frozenset(("子", "丑")):
-        if month_state("水", month_zhi) in ("旺", "相") and month_zhi != "戌" and (_tou("水") or _taiwang("水")):
+        if month_state("水", month_zhi) in ("旺", "相") and month_zhi != "戌" \
+                and (_tou("水") or _taiwang("水")) and _month_align("水"):
             hua = "水"
-        elif month_state("土", month_zhi) in ("旺", "相") and month_zhi != "子" and (_tou("土") or _taiwang("土")):
+        elif month_state("土", month_zhi) in ("旺", "相") and month_zhi != "子" \
+                and (_tou("土") or _taiwang("土")) and _month_align("土"):
             hua = "土"
         if hua:
             return f"合化{hua}", hua
@@ -749,36 +759,40 @@ def _liuhe_verdict(c1, c2, cols, month_zhi):
         yin_n = sum(2 if c.zhi == "寅" and month_zhi == "寅" else 1 for c in cols if c.zhi == "寅")
         deg_tmp = _wx_degrees(cols, month_zhi)
         water_too_strong = deg_tmp["水"] >= 3.0 * max(deg_tmp["木"], 0.01) or hai_n >= 3
-        if (month_state("木", month_zhi) in ("旺", "相") or _taiwang("木")) and (_tou("木") or _taiwang("木")) and not water_too_strong:
+        if (month_state("木", month_zhi) in ("旺", "相") or _taiwang("木")) and (_tou("木") or _taiwang("木")) \
+                and not water_too_strong and _month_align("木"):
             return "合化木", "木"
         if hai_n >= 3 or yin_n >= 2:
             return "合绊", None           # 3亥以上绊寅、两寅绊亥：亥/寅被绊（§4 不化 b/c）
         return "相生（不化）", None       # 寅+1、亥−1（1:1 或两亥一寅）
     if pair == frozenset(("卯", "戌")):
         if (month_state("火", month_zhi) in ("旺", "相") or _taiwang("火")) and (_tou("火") or _taiwang("火")) \
-                and month_zhi != "卯":
+                and month_zhi != "卯" and _month_align("火"):
             return "合化火", "火"
         return "合绊", None
     if pair == frozenset(("辰", "酉")):
         # 多辰合绊（2026-08-18 根因⑤）：≥5辰（当令翻倍）绊 1 酉 → 酉归零（书[137]3辰当令=6辰绊1酉）
         chen_n = sum(2 if c.zhi == "辰" and month_zhi == "辰" else 1 for c in cols if c.zhi == "辰")
-        if month_state("金", month_zhi) in ("旺", "相") and (_tou("金") or _taiwang("金")) and month_zhi != "辰":
+        if month_state("金", month_zhi) in ("旺", "相") and (_tou("金") or _taiwang("金")) \
+                and month_zhi != "辰" and _month_align("金"):
             return "合化金", "金"
         if chen_n >= 5:
             return "合绊", None
         return "相生（不化）", None       # 酉+1、辰−1、辰中乙减半
     if pair == frozenset(("巳", "申")):
         if month_state("水", month_zhi) in ("旺", "相") and (_tou("水") or _taiwang("水")) \
-                and month_zhi not in "巳午未戌":
+                and month_zhi not in "巳午未戌" and _month_align("水"):
             # 修复（2026-08-17）：§4 条件④ 化神水不受重克（主克者土太旺以上）且旺度 ≥8（一般≥10）
             deg = _wx_degrees(cols, month_zhi)
             if deg["土"] < 26.0 and deg["水"] >= 8.0:
                 return "合化水", "水"
         return "合绊", None               # 巳−1、申减半、申中壬−1（书[142][145][149] 化神水<8 均不化）
     # 午未
-    if month_state("火", month_zhi) in ("旺", "相") and (_tou("火") or _taiwang("火")) and month_zhi != "亥":
+    if month_state("火", month_zhi) in ("旺", "相") and (_tou("火") or _taiwang("火")) \
+            and month_zhi != "亥" and _month_align("火"):
         return "合化火", "火"
-    if month_state("土", month_zhi) in ("旺", "相") and (_tou("土") or _taiwang("土")) and month_zhi != "寅":
+    if month_state("土", month_zhi) in ("旺", "相") and (_tou("土") or _taiwang("土")) \
+            and month_zhi != "寅" and _month_align("土"):
         return "合化土", "土"             # 裁定 C2（用户补充口径）
     if month_zhi in "寅卯巳午未戌":
         return "互助", None               # 各+1
@@ -801,6 +815,9 @@ def _banhe_verdict(c1, c2, cols, month_zhi):
     def _taiwang():
         return _wx_degrees(cols, month_zhi)[wx] >= 26.0
     ok = (month_state(wx, month_zhi) in ("旺", "相") or _taiwang()) and (_tou() or _taiwang())
+    # 2026-08-27 用户口径：月令参与时化神须与月令本气五行一致方能化（否则按合绊）
+    if (z1 == month_zhi or z2 == month_zhi) and wx != ZHI_WUXING[month_zhi]:
+        ok = False
     # 各组附加限制（墓库不临月令等）
     if pair == frozenset(("卯", "未")) and month_zhi == "未":
         ok = False
@@ -952,121 +969,99 @@ def _zero(col, keep_wx=None):
     col.hidden = {}
 
 
-def _apply_branch_effects(relations, cols, month_zhi, traces, wx_deltas=None):
-    """按判定结果修正藏干度数。返回月令变化（化神五行|None）。
+def _apply_branch_effects(relations, cols, month_zhi, traces, mode="hehua"):
+    """按判定结果修正藏干度数（010 定性/定量分离）。
 
+    mode="hehua"（第3步定性）：只做合化藏干重组（三合/三会/六合/半三合化成功 + 多出之支随化增力）。
+    mode="numeric"（第7步定量）：做刑冲破害数值 + 合绊减力（让位于已被合化消费之支）。
     同组关系重复出现（如两寅一午）时，多出之支以增力论（§4 总纲）：
     六合 +5.5 / 半三合、三合 +6 / 三会 +8，随之而化。
+    月令合化由 _month_effective_wx（第1步）单独判定，本函数不再返回 month_hua。
     """
-    month_hua = None
     hua_done = {}  # (type, frozenset支) -> 化神所寄列
     extra_deg = {"六合": 5.5, "半三合": 6.0, "三合": 6.0, "三会": 8.0}
-    # 009：按《四柱精髓》§9 论处先后（BRANCH_TIER）处理，高优先级关系先论（会>三合>半三合>冲>合>刑>害）
-    # wx_deltas（可选）：按每条关系记录其对各五行的数值增量（供 static 步"②地支关系后"标注原因）。
-    # 用"下一条关系开始时记录上一条的增量"模式——`continue` 分支不改变状态、增量 0 自然被跳过。
-    prev_raw = _wx_degrees(cols, month_zhi, apply_penalty=False) if wx_deltas is not None else None
-    prev_label = prev_t0 = None
     for e in sorted((x for x in relations["established"] if x.get("layer") == "branch"),
                     key=_branch_tier_of):
-        if wx_deltas is not None and prev_label is not None:
-            cur_raw = _wx_degrees(cols, month_zhi, apply_penalty=False)
-            d = {wx: round(cur_raw[wx] - prev_raw[wx], 3) for wx in WUXING_ORDER
-                 if abs(cur_raw[wx] - prev_raw[wx]) > 1e-9}
-            if d:
-                wx_deltas.append({"label": prev_label, "detail": "；".join(traces[prev_t0:]),
-                                  "delta": d})
-            prev_raw = cur_raw
         i, j = e["_i"], e["_j"]
         ci, cj = cols[i], cols[j]
         t, detail = e["type"], e["detail"]
         pair = frozenset((ci.zhi, cj.zhi))
         hua_key = (t, pair)
-        if wx_deltas is not None:
-            prev_label = f"{ci.zhi}{cj.zhi}{t}"
-            prev_t0 = len(traces)
-        if t in ("六合", "半三合", "三合", "三会") and hua_key in hua_done:
-            target = hua_done[hua_key]
-            gan = next(iter(target.hidden))
-            add = extra_deg[t]
-            target.hidden[gan] = target.hidden.get(gan, 0) + add
-            for c in (ci, cj):
-                if c is not target and not c.banished:
-                    _zero(c)
-            traces.append(f"{ci.zhi}{cj.zhi}多出之支随化增力 +{add:g}")
-            continue
-        if t in ("三合", "三会"):
-            if not e.get("_ok"):
-                # 2026-08-18 根因⑤：三合合绊减力表（§5.1）进入度数（书[155]亥卯未合绊卯减力）
-                if t == "三合":
-                    _sanhe_ban_apply(e["_idxs"], cols, traces)
+        if t in ("六合", "半三合", "三合", "三会"):
+            # ---- 同组重复：多出之支随化增力（只 hehua 步落地）----
+            if hua_key in hua_done:
+                if mode == "hehua":
+                    target = hua_done[hua_key]
+                    gan = next(iter(target.hidden))
+                    add = extra_deg[t]
+                    target.hidden[gan] = target.hidden.get(gan, 0) + add
+                    for c in (ci, cj):
+                        if c is not target and not c.banished:
+                            _zero(c)
+                    traces.append(f"{ci.zhi}{cj.zhi}多出之支随化增力 +{add:g}")
                 continue
-            total = 18.0 if t == "三合" else 24.0
-            for k in e["_idxs"]:
-                _zero(cols[k])
-            ci.hidden = { _wx_gan(e["_hua"]): total }
-            ci.banished = False
-            hua_done[hua_key] = ci
-            traces.append(f"{ci.zhi}{cj.zhi}等{t}化{e['_hua']}成功：三支变纯{e['_hua']}，共 {total} 度")
-            if any(cols[k].key == "month" for k in e["_idxs"]):
-                month_hua = e["_hua"]
-            continue
-        if t == "六合":
-            hua = e.get("_hua")
-            if hua:
+            if t in ("三合", "三会"):
+                if not e.get("_ok"):
+                    # 2026-08-18 根因⑤：三合合绊减力表（§5.1）进入度数（书[155]亥卯未合绊卯减力）
+                    if mode == "numeric" and t == "三合":
+                        _sanhe_ban_apply(e["_idxs"], cols, traces)
+                    continue
+                if mode == "numeric":
+                    continue  # 合化已在 hehua 步落地
+                total = 18.0 if t == "三合" else 24.0
+                for k in e["_idxs"]:
+                    _zero(cols[k])
+                ci.hidden = {_wx_gan(e["_hua"]): total}
+                ci.banished = False
+                ci.hua_host = True
+                hua_done[hua_key] = ci
+                traces.append(f"{ci.zhi}{cj.zhi}等{t}化{e['_hua']}成功：三支变纯{e['_hua']}，共 {total} 度")
+                continue
+            # ---- 六合 / 半三合 ----
+            if e.get("_hua"):
+                if mode == "numeric":
+                    continue  # 合化已在 hehua 步落地
+                # 2026-08-27 让位守卫：支已被更高优先级合化消费（banished 或为已化化神宿主）
+                # → 本合不化让位（§9 会>三合>半三合>六合；避免化神宿主被低优先级合覆盖）
+                if ci.banished or cj.banished or ci.hua_host or cj.hua_host:
+                    continue
                 for c in (ci, cj):
                     _zero(c)
-                ci.hidden = {_wx_gan(hua): 11.0}
+                ci.hidden = {_wx_gan(e["_hua"]): (11.0 if t == "六合" else 12.0)}
                 ci.banished = False
+                ci.hua_host = True
                 hua_done[hua_key] = ci
-                traces.append(f"{ci.zhi}{cj.zhi}合化{hua}成功：两支变纯{hua}，共 11 度")
-                if ci.key == "month" or cj.key == "month":
-                    month_hua = hua
-            else:
-                if ci.banished or cj.banished:
-                    continue   # 支已被三合/三会/六合化消费 → 本六合不化让位（§9 会>三合>六合）
+                traces.append(f"{ci.zhi}{cj.zhi}{t}化{e['_hua']}成功：两支变纯{e['_hua']}，"
+                              f"共 {'11' if t == '六合' else '12'} 度")
+                continue
+            # 六合/半三合 未化（合绊/相生/互助）→ 数值留待 numeric 步
+            if mode == "hehua":
+                continue
+            if ci.banished or cj.banished or ci.hua_host or cj.hua_host:
+                continue  # 支已被合化消费 → 本合不化让位（§9 会>三合>半三合>六合）
+            if t == "六合":
                 _liuhe_ban_effect(ci, cj, detail, month_zhi, traces)
-            continue
-        if t == "半三合":
-            hua = e.get("_hua")
-            if hua:
-                for c in (ci, cj):
-                    _zero(c)
-                ci.hidden = {_wx_gan(hua): 12.0}
-                ci.banished = False
-                hua_done[hua_key] = ci
-                traces.append(f"{ci.zhi}{cj.zhi}半三合化{hua}成功：两支变纯{hua}，共 12 度")
-                # 修复（2026-08-17）：半三合化（含月令支）同样须记月令被合化 →
-                # 月令为化神时双状态平均（§1.3，书中例4 乾乙卯丁亥壬戌壬寅 壬水 2.8）
-                if ci.key == "month" or cj.key == "month":
-                    month_hua = hua
             else:
-                if ci.banished or cj.banished:
-                    continue   # 支已被三合/三会/六合化消费 → 本半三合不化让位（§9 会>三合>半三合）
                 _banhe_ban_effect(ci, cj, detail, month_zhi, cols, traces)
             continue
+        # ---- 刑冲破害（只 numeric 步）----
+        if mode == "hehua":
+            continue
+        if ci.banished or cj.banished or ci.hua_host or cj.hua_host:
+            traces.append(f"{ci.zhi}{cj.zhi}{t}：支已被合化消费，让位不论")
+            continue
         if t == "相冲":
-            month_hua = month_hua or _chong_effect(ci, cj, cols, month_zhi, traces)
-            continue
-        if t == "刑":
+            _chong_effect(ci, cj, cols, month_zhi, traces)
+        elif t == "刑":
             _xing_effect(ci, cj, cols, month_zhi, traces)
-            continue
-        if t == "害":
+        elif t == "害":
             # §8 害成功条件"其中一支不逢冲"（2026-08-18 根因⑥：书[114]子午冲先于子未害）
             if any(rt.get("type") == "相冲" and "rejected" not in rt
                    and (rt.get("_i") in (i, j) or rt.get("_j") in (i, j))
                    for rt in relations["established"]):
                 continue
             _hai_effect(ci, cj, month_zhi, cols, traces)
-            continue
         # 破/三刑：度数影响小或 anchors 未覆盖，本期只标注（裁定）
-    if wx_deltas is not None and prev_label is not None:
-        cur_raw = _wx_degrees(cols, month_zhi, apply_penalty=False)
-        d = {wx: round(cur_raw[wx] - prev_raw[wx], 3) for wx in WUXING_ORDER
-             if abs(cur_raw[wx] - prev_raw[wx]) > 1e-9}
-        if d:
-            wx_deltas.append({"label": prev_label, "detail": "；".join(traces[prev_t0:]),
-                              "delta": d})
-    return month_hua
 
 
 def _wx_gan(wx):
@@ -1518,7 +1513,7 @@ def _apply_tongzhu(cols, static_scores, traces):
 
 
 # ============================================================
-# 阶段二 动态 A（紧贴天干三对：五合先于生克）
+# 阶段二 天干层（010 第10步 stem_shengke：先合-冲再生克 + 同柱生克）
 # ============================================================
 
 def _adjacent_shengke(c1, c2, static_scores, traces):
@@ -1571,67 +1566,203 @@ def _adjacent_shengke(c1, c2, static_scores, traces):
             traces.append(f"{m.gan}{s.gan}相邻相克（{'同' if tong else '异'}性）：{m.gan}×{mf:g}、{s.gan}×{sf:g}")
 
 
-def _dynamic_a(cols, month_zhi, static_scores, traces):
-    """动态 A：紧贴天干三对（年-月、月-日、日-时），五合先于生克（贪合忘生克）。
+def _stem_hehua_outcomes(cols, month_zhi):
+    """紧贴三对天干五合判定结果（争合/合化/合绊）。返回 {(i,j): 'hua'|'ban'|'skip'}。
 
-    每对：先判天干五合——争合/妒合同义（Q2：同一干被两干合 → 力量大者优先、失利者不论、
-    势均力敌双方合绊）；合化满足 `_stem_he_hua_ok`；合绊 C8 减力（主克×0.8、受克×0.5）且
-    贪合忘生克（不再执行普通生克倍率）。无五合 → 普通相生相克（判生克权、套倍率）。
+    争合/妒合同义：同一干被两干合（同一合组）→ 力量大者优先、失利者 skip；
+    势均力敌双方 skip（合绊）。合化满足 _stem_he_hua_ok；否则合绊 ban。
+    （010 第5步定性 + 第10步定量共用同一判定，保证口径一致。）
     """
     order = ["year", "month", "day", "time"]
     idx = {c.key: i for i, c in enumerate(cols) if c.key in order}
     pairs = [(idx[a], idx[b]) for a, b in zip(order, order[1:])
              if a in idx and b in idx and cols[idx[a]].gan and cols[idx[b]].gan]
-
-    # 争合（§3.6，紧贴三对内）：同一干出现在 ≥2 个五合对（同一合组）→ 力量大者优先
     gan_he_pairs = [(i, j) for i, j in pairs
                     if frozenset((cols[i].gan, cols[j].gan)) in GAN_HE_HUA]
     skip = set()
+
+    def _power(p):
+        other = p[0] if p[1] == t else p[1]
+        c = cols[other]
+        return 1.0 + sum(d for g, d in c.hidden.items() if GAN_WUXING[g] == GAN_WUXING[c.gan])
+
     for t in sorted({g for (i, j) in gan_he_pairs for g in (i, j)}):
         involved = [p for p in gan_he_pairs if t in p]
         groups = {frozenset((cols[a].gan, cols[b].gan)) for (a, b) in involved}
         if len(involved) < 2 or len(groups) != 1:
             continue
-
-        def _power(p):
-            other = p[0] if p[1] == t else p[1]
-            c = cols[other]
-            root = sum(d for g, d in c.hidden.items() if GAN_WUXING[g] == GAN_WUXING[c.gan])
-            return 1.0 + root
-
         powers = [_power(p) for p in involved]
         if max(powers) - min(powers) < 1e-9:
+            skip.update(involved)  # 势均力敌：双方合绊
+        else:
+            winner = involved[powers.index(max(powers))]
             for p in involved:
-                skip.add(p)
-                traces.append(f"{cols[p[0]].gan}{cols[p[1]].gan}争合势均力敌：双方合绊")
-            continue
-        winner = involved[powers.index(max(powers))]
-        for p in involved:
-            if p is not winner:
-                skip.add(p)
-                traces.append(f"{cols[p[0]].gan}{cols[p[1]].gan}争合失利（力量小者）：不论")
-
+                if p is not winner:
+                    skip.add(p)  # 失利者不论
+    result = {}
     for i, j in pairs:
-        if (i, j) in skip:
+        pair = frozenset((cols[i].gan, cols[j].gan))
+        if pair not in GAN_HE_HUA:
             continue
+        if (i, j) in skip:
+            result[(i, j)] = "skip"
+            continue
+        hua = GAN_HE_HUA[pair]
+        result[(i, j)] = "hua" if _stem_he_hua_ok(cols[i], cols[j], hua, cols, month_zhi) else "ban"
+    return result
+
+
+def _stem_shengke(cols, month_zhi, static_scores, hehua_outcomes, traces):
+    """第10步：天干生克（紧贴三对，先合-冲再生克；含同柱生克）。
+
+    合：五合——合化（归属已在第5步改）、合绊（主克×0.8/受克×0.5、贪合忘生克）、争合失利/势均力敌 skip。
+    冲：天干相冲（甲庚/乙辛/丙壬/丁癸，皆同性克）按 ×0.7/×0.5 进度数；被合化消费之干不论冲。
+    生克：普通相生相克，按优先级 同性克>异性生>异性克>同性生 排序处理（数值沿用现行倍率，基本不变）。
+    同柱生克（干↔本柱全部藏干）附于本步，生克权基准为第9步系数后分数。
+    """
+    order = ["year", "month", "day", "time"]
+    idx = {c.key: i for i, c in enumerate(cols) if c.key in order}
+    pairs = [(idx[a], idx[b]) for a, b in zip(order, order[1:])
+             if a in idx and b in idx and cols[idx[a]].gan and cols[idx[b]].gan]
+    # ---- 合（五合：合化/合绊/争合让位）----
+    for (i, j), out in sorted(hehua_outcomes.items()):
         c1, c2 = cols[i], cols[j]
         g1, g2 = c1.gan, c2.gan
-        pair = frozenset((g1, g2))
-        if pair in GAN_HE_HUA:
-            hua = GAN_HE_HUA[pair]
-            if _stem_he_hua_ok(c1, c2, hua, cols, month_zhi):
-                c1.gan_hua = hua
-                c2.gan_hua = hua
-                traces.append(f"{g1}{g2}合化{hua}成功：两干皆化为{hua}")
-            else:
-                ke_gan = GAN_HE_KE[pair]
-                master = c1 if c1.gan == ke_gan else c2
-                loser = c2 if master is c1 else c1
-                master.gan_deg *= 0.8
-                loser.gan_deg *= 0.5
-                traces.append(f"{g1}{g2}合而不化（合绊）：主克者{master.gan}减2成、受克者{loser.gan}减5成（贪合忘生克）")
+        if out == "hua":
+            traces.append(f"{g1}{g2}已合化{GAN_HE_HUA[frozenset((g1, g2))]}（归属已改）")
+        elif out == "ban":
+            ke_gan = GAN_HE_KE[frozenset((g1, g2))]
+            master = c1 if c1.gan == ke_gan else c2
+            loser = c2 if master is c1 else c1
+            master.gan_deg = round(master.gan_deg * 0.8, 3)
+            loser.gan_deg = round(loser.gan_deg * 0.5, 3)
+            traces.append(f"{g1}{g2}合而不化（合绊）：主克者{master.gan}减2成、受克者{loser.gan}减5成（贪合忘生克）")
         else:
-            _adjacent_shengke(c1, c2, static_scores, traces)
+            traces.append(f"{g1}{g2}争合失利/势均力敌，不论")
+    # ---- 冲（天干相冲，同性克倍率；被合化消费之干不论冲）----
+    for i, j in pairs:
+        c1, c2 = cols[i], cols[j]
+        g1, g2 = c1.gan, c2.gan
+        if frozenset((g1, g2)) not in GAN_CHONG:
+            continue
+        if c1.gan_hua or c2.gan_hua:
+            traces.append(f"{g1}{g2}相冲让位：干已合化，不论冲")
+            continue
+        w1, w2 = GAN_WUXING[g1], GAN_WUXING[g2]
+        ke = g2 if KE[w2] == w1 else g1
+        loser = g1 if ke == g2 else g2
+        (c2 if ke == g2 else c1).gan_deg = round((c2 if ke == g2 else c1).gan_deg * 0.7, 3)
+        (c1 if loser == g1 else c2).gan_deg = round((c1 if loser == g1 else c2).gan_deg * 0.5, 3)
+        traces.append(f"{g1}{g2}相冲（同性克）：{ke}×0.7、{loser}×0.5")
+    # ---- 生克（优先级 同性克>异性生>异性克>同性生）----
+    shengke_pairs = [(i, j) for i, j in pairs
+                     if frozenset((cols[i].gan, cols[j].gan)) not in GAN_HE_HUA
+                     and frozenset((cols[i].gan, cols[j].gan)) not in GAN_CHONG
+                     and GAN_WUXING[cols[i].gan] != GAN_WUXING[cols[j].gan]]
+
+    def _rank(i, j):
+        g1, g2 = cols[i].gan, cols[j].gan
+        w1, w2 = GAN_WUXING[g1], GAN_WUXING[g2]
+        tong = GAN_YIN_YANG[g1] == GAN_YIN_YANG[g2]
+        rel = "生" if (SHENG[w1] == w2 or SHENG[w2] == w1) else "克"
+        return {"克": {"同": 1, "异": 3}, "生": {"同": 4, "异": 2}}[rel]["同" if tong else "异"]
+
+    for i, j in sorted(shengke_pairs, key=lambda p: _rank(*p)):
+        _adjacent_shengke(cols[i], cols[j], static_scores, traces)
+    # ---- 同柱生克（干↔本柱全部藏干）----
+    _apply_tongzhu(cols, static_scores, traces)
+
+
+def _judge_root_preserved(cols, relations, month_zhi):
+    """第4步：地支改变后根气是否保留。返回 {支key: {五行: bool}}。
+
+    去根情形：合化消费（banished）、真正合绊（六合/三合/三会合绊）、刑冲破害定性去根
+    （辰戌/丑未冲成功去杂气、子午卯酉/寅申巳亥冲去受克方休囚死杂气、丑戌刑成功去杂气、
+    自刑去杂气、寅巳/子卯刑掉全去、丑午害≥2丑去午火、子未害≥5子去未土）。
+    减半/损半类视为保留（弱化）。
+    """
+    bound = _branch_bound_set(relations)
+    preserved = {}
+    for c in cols:
+        if c.key not in ("year", "month", "day", "time") or not c.zhi:
+            continue
+        preserved[c.key] = {GAN_WUXING[g]: True for g, d in c.hidden.items() if d > 0}
+        if c.banished or c.zhi in bound:
+            for wx in preserved[c.key]:
+                preserved[c.key][wx] = False
+    for e in relations["established"]:
+        if e.get("layer") != "branch" or "rejected" in e:
+            continue
+        t = e["type"]
+        if t == "相冲":
+            _mark_chong_removed(e, cols, month_zhi, preserved)
+        elif t == "刑":
+            _mark_xing_removed(e, cols, month_zhi, preserved)
+        elif t == "害":
+            _mark_hai_removed(e, cols, month_zhi, preserved)
+    return preserved
+
+
+def _mark_chong_removed(e, cols, month_zhi, preserved):
+    ci, cj = cols[e["_i"]], cols[e["_j"]]
+    pair = frozenset((ci.zhi, cj.zhi))
+    if pair in (frozenset(("辰", "戌")), frozenset(("丑", "未"))):
+        tou = any(c.gan and GAN_WUXING[c.gan] == "土" for c in cols)
+        if month_state("土", month_zhi) in ("旺", "相") and (tou or _wx_degrees(cols, month_zhi)["土"] >= 26.0):
+            for c in (ci, cj):
+                for wx in preserved[c.key]:
+                    if wx != "土":
+                        preserved[c.key][wx] = False
+        return
+    # 子午卯酉/寅申巳亥：受克方本气减半(留)、杂气休囚死去除、旺相留
+    w1, w2 = ZHI_WUXING[ci.zhi], ZHI_WUXING[cj.zhi]
+    loser = cj if KE[w1] == w2 else ci
+    for wx in preserved[loser.key]:
+        if wx == ZHI_WUXING[loser.zhi]:
+            continue
+        if month_state(wx, month_zhi) not in ("旺", "相"):
+            preserved[loser.key][wx] = False
+
+
+def _mark_xing_removed(e, cols, month_zhi, preserved):
+    ci, cj = cols[e["_i"]], cols[e["_j"]]
+    z1, z2 = ci.zhi, cj.zhi
+    pair = frozenset((z1, z2))
+    if pair == frozenset(("丑", "戌")):
+        tou = any(c.gan and GAN_WUXING[c.gan] == "土" for c in cols)
+        if month_state("土", month_zhi) in ("旺", "相") and tou:
+            for c in (ci, cj):
+                for wx in preserved[c.key]:
+                    if wx != "土":
+                        preserved[c.key][wx] = False
+        return
+    if z1 == z2 and z1 in ZI_XING:
+        for c in (ci, cj):
+            for wx in preserved[c.key]:
+                if wx != ZHI_WUXING[z1]:
+                    preserved[c.key][wx] = False
+        return
+    if pair in (frozenset(("寅", "巳")), frozenset(("子", "卯"))):
+        loser, mode = _xing_diao(ci, cj, cols, month_zhi)
+        if loser is not None and mode == "掉":
+            for wx in preserved[loser.key]:
+                preserved[loser.key][wx] = False
+
+
+def _mark_hai_removed(e, cols, month_zhi, preserved):
+    ci, cj = cols[e["_i"]], cols[e["_j"]]
+    pair = frozenset((ci.zhi, cj.zhi))
+    if pair == frozenset(("丑", "午")):
+        wu = ci if ci.zhi == "午" else cj
+        chou_n = sum(2 if c.zhi == "丑" and month_zhi == "丑" else 1 for c in cols if c.zhi == "丑")
+        if chou_n >= 2:
+            preserved[wu.key]["火"] = False
+        return
+    if pair == frozenset(("子", "未")):
+        wei = ci if ci.zhi == "未" else cj
+        zi_n = sum(2 if c.zhi == "子" and month_zhi == "子" else 1 for c in cols if c.zhi == "子")
+        if zi_n >= 5:
+            preserved[wei.key]["土"] = False
 
 
 # ============================================================
@@ -1651,139 +1782,171 @@ TIAOHOU = {
 
 
 def compute_wangdu(pillars: dict, day_master: str, da_yun: list | None = None) -> dict:
-    """《四柱精髓》旺度法完整推演（009：阶段一静态地支 → 阶段二动态天干）。
+    """《四柱精髓》旺度法完整推演（010：定性 1-5 → 定量 6-11）。
 
     `pillars` = {year, month, day, time?} 各 {gan, zhi, ...}，time 可为 None（缺时柱）。
     `da_yun` = [{ganzhi, start_year, start_age_xu}, ...]（可选，预计算大运介入修正）。
-    返回 WangduResult（data-model.md §1）。
+    返回 WangduResult（data-model.md §1，14 键 steps）。
 
-    阶段一静态（只动地支结构）：原始藏干 → 按书 §9 论处先后处理地支关系、只改藏干度数 →
-    通根运算（连片/距离衰减/月令特权）→ ×月令系数；天干保持原始 1 度、**天干五合零处理**。
-    阶段二动态（天干开始作用）：动态 A 紧贴三对（年-月、月-日、日-时，五合先于生克、
-    合绊贪合忘生克）→ 动态 B 同柱天干↔全部藏干。合并得最终旺度；下游 geju/dayun/yongshen 沿用 008。
+    定性（第1-5步）只判定性质与归属：月令能否合化（单一化神基准）→ 月令旺相休囚死 →
+    地支关系判定（§9 论处先后、合化藏干重组）→ 地支根气保留 → 天干能否合化。
+    定量（第6-11步）落数值：基础分数 → 地支刑冲破害数值 → 通根 → 旺相休囚系数 →
+    天干生克（紧贴三对先合-冲再生克，含同柱生克）→ 总分数。性质未变按原始五行、改变按新数值。
     """
     cols, month_zhi = _build_cols(pillars)
     missing_time = not pillars.get("time")
-    traces_static, traces_dyna, traces_dynb = [], [], []
-    dry = _xuzhao_dry(cols, month_zhi)   # 戌月局燥（只影响旺度系数）
-
-    # ================= 阶段一 静态旺度（只动地支结构，天干保持原始状态） =================
-    # 1. 地支关系判定（仅地支层；天干五合/生克归阶段二动态 A）+ 修正（只改藏干度数）
+    dry = _xuzhao_dry(cols, month_zhi)
     branch_relations = judge_relations(pillars, only_branch=True)
-    traces_zhichong = []
-    orig_hidden = {i: dict(c.hidden) for i, c in enumerate(cols)}  # 快照：地支关系处理前的原始藏干
-    wx_deltas = []  # 每条地支关系对各五行的增减（供 static ②步标注原因）
-    month_hua = _apply_branch_effects(branch_relations, cols, month_zhi, traces_zhichong, wx_deltas)
+
+    # ================= 定性阶段（第 1-5 步） =================
+    month_idx = next((i for i, c in enumerate(cols) if c.key == "month"), None)
+    month_effective_wx = _month_effective_wx(branch_relations, cols, month_zhi)  # 第1步
+    month_he = any(e.get("type") in ("六合", "半三合", "三合", "三会")
+                   and month_idx in (e.get("_idxs") or [e.get("_i"), e.get("_j")])
+                   for e in branch_relations["established"] if e.get("layer") == "branch")
+    if month_effective_wx != ZHI_WUXING[month_zhi]:
+        mh_expr = f"月令{month_zhi}合化{month_effective_wx}成功 → 月令有效五行={month_effective_wx}"
+    elif month_he:
+        mh_expr = f"月令{month_zhi}参与合局但合绊（不化）→ 月令有效五行保持本气{ZHI_WUXING[month_zhi]}"
+    else:
+        mh_expr = f"月令{month_zhi}无合局 → 月令有效五行保持本气{ZHI_WUXING[month_zhi]}"
+    traces_month_hua = [{"target": "", "expression": mh_expr, "value": None}]
+
+    # 第2步 月令旺相休囚死（单一化神基准，Q2=A）
+    st_of = lambda wx: _effective_state(wx, month_effective_wx, dry, month_zhi)
+    traces_month_state = [{"target": wx,
+                           "expression": f"{wx} 对 {month_effective_wx} 为{st_of(wx)}（{month_zhi}月，系数 {COEF[st_of(wx)]:g}）",
+                           "value": COEF[st_of(wx)]} for wx in WUXING_ORDER]
+
+    # 第3步 地支关系判定（合化藏干重组，只改归属）
+    traces_branch_rel = []
+    _apply_branch_effects(branch_relations, cols, month_zhi, traces_branch_rel, mode="hehua")
     for e in branch_relations["rejected"]:
         if e.get("layer") == "branch":
-            traces_zhichong.append(f"{e['a']}{e['b']}{e['type']}：{e['reason']}")
+            traces_branch_rel.append(f"{e['a']}{e['b']}{e['type']}：{e['reason']}")
 
-    # 2. 四个子阶段分数：①原始（天干+原始藏干，地支处理前）→ ②地支关系后（修正藏干，不减）
-    #    → ③通根计算后（通根递减）→ ④月令系数相乘后（静态分数）
-    raw_orig = {wx: 0.0 for wx in WUXING_ORDER}   # ① 原始
-    for i, c in enumerate(cols):
-        if c.gan and c.gan_wx:
-            raw_orig[c.gan_wx] += 1.0             # 天干原始 1 度（动态 A 前）
-        for g, d in orig_hidden.get(i, {}).items():
-            if d > 0:
-                raw_orig[GAN_WUXING[g]] += d
-    raw_branch = _wx_degrees(cols, month_zhi, apply_penalty=False)  # ② 地支关系后（不减）
-    raw0 = _wx_degrees(cols, month_zhi)                             # ③ 通根计算后（递减）
-    static_scores = {wx: round(raw0[wx] * COEF[_xu_state(wx, month_zhi, dry)], 2) for wx in WUXING_ORDER}  # ④
-    for wx in WUXING_ORDER:
-        bd = _static_breakdown(cols, month_zhi, wx, dry)
-        st = bd["state"]
-        dry_note = ("，燥土助火" if dry and wx in ("火", "金") else "")
-        gan_sum = len([c for c in cols if c.gan and c.gan_wx == wx])
-        root_orig = raw_orig[wx] - gan_sum
-        branch_delta = raw_branch[wx] - raw_orig[wx]
-        pen = raw_branch[wx] - raw0[wx]
-        traces_static.append({"target": wx,
-                              "expression": f"{wx} · ① 原始：天干 {gan_sum} 分 + 藏干 {root_orig:g} 分 = {raw_orig[wx]:g} 分",
-                              "value": round(raw_orig[wx], 2)})
-        reasons = "；".join((d["detail"] or d["label"]) for d in wx_deltas
-                           if d["delta"].get(wx))
-        traces_static.append({"target": wx,
-                              "expression": f"{wx} · ② 地支关系后：{raw_orig[wx]:g} 分 {branch_delta:+g} 分 = {raw_branch[wx]:g} 分"
-                                            f" → {raw_branch[wx]:g}" + (f"　因为{reasons}" if reasons else ""),
-                              "value": round(raw_branch[wx], 2)})
-        traces_static.append({"target": wx,
-                              "expression": f"{wx} · ③ 通根计算后：{raw_branch[wx]:g} 分 − 通根递减 {pen:g} 分 = {raw0[wx]:g} 分",
-                              "value": round(raw0[wx], 2)})
-        traces_static.append({"target": wx,
-                              "expression": f"{wx} · ④ 月令系数后：{raw0[wx]:g} 分 × {COEF[st]:g}（{month_zhi}月{st}地{dry_note}）= {static_scores[wx]:g} 分",
-                              "value": static_scores[wx]})
-    if traces_zhichong:
-        traces_static.insert(0, {"target": "",
-                                 "expression": "地支关系处理（只改藏干度数）：" + "；".join(traces_zhichong),
-                                 "value": None})
+    # 第4步 地支根气保留
+    root_preserved = _judge_root_preserved(cols, branch_relations, month_zhi)
+    traces_branch_root = []
+    for k, per in root_preserved.items():
+        c = next(c for c in cols if c.key == k)
+        for wx, kept in per.items():
+            traces_branch_root.append({"target": wx,
+                                       "expression": f"{c.zhi}中{_wx_gan(wx)}（{wx}）根{'保留' if kept else '不留'}",
+                                       "value": None})
 
-    # ================= 阶段二 动态旺度（开始天干之间作用） =================
-    # 4. 动态 A：紧贴三对（年-月、月-日、日-时），五合先于生克
-    _dynamic_a(cols, month_zhi, static_scores, traces_dyna)
-
-    # 5. 动态 B：同柱天干 ↔ 本柱全部藏干配对运算（008 公式扩展全部藏干，Q4）
-    _apply_tongzhu(cols, static_scores, traces_dynb)
-
-    # 6. 最终旺度（修正后天干 + 修正后藏干 合并；月令被合化 → 双状态平均，§1.4）
-    raw1 = _wx_degrees(cols, month_zhi)
-    final_scores = {}
-    for wx in WUXING_ORDER:
-        s1 = raw1[wx] * COEF[_xu_state(wx, month_zhi, dry)]
-        if month_hua and month_hua != ZHI_WUXING[month_zhi]:
-            s2 = raw1[wx] * COEF[element_state(wx, month_hua)]
-            final_scores[wx] = round((s1 + s2) / 2, 2)
+    # 第5步 天干能否合化（紧贴三对，复用 _stem_he_hua_ok 原口径）
+    hehua_outcomes = _stem_hehua_outcomes(cols, month_zhi)
+    traces_stem_hua = []
+    for (i, j), out in hehua_outcomes.items():
+        g1, g2 = cols[i].gan, cols[j].gan
+        hua = GAN_HE_HUA[frozenset((g1, g2))]
+        if out == "hua":
+            cols[i].gan_hua = hua
+            cols[j].gan_hua = hua
+            traces_stem_hua.append({"target": "", "expression": f"{g1}{g2}合化{hua}成功：两干皆化为{hua}", "value": None})
+        elif out == "ban":
+            traces_stem_hua.append({"target": "", "expression": f"{g1}{g2}合而不化（合绊），归属不变", "value": None})
         else:
-            final_scores[wx] = round(s1, 2)
+            traces_stem_hua.append({"target": "", "expression": f"{g1}{g2}争合失利/势均力敌，不论", "value": None})
+    if not hehua_outcomes:
+        traces_stem_hua.append({"target": "", "expression": "紧贴三对内天干无五合，无合化", "value": None})
+
+    # ================= 定量阶段（第 6-11 步） =================
+    # 第6步 五行基础分数
+    raw_base = _wx_degrees(cols, month_zhi, apply_penalty=False)
+    traces_base = []
+    for wx in WUXING_ORDER:
+        gan_n = sum(1 for c in cols if c.gan and c.gan_wx == wx)
+        traces_base.append({"target": wx,
+                            "expression": f"{wx} · 天干 {gan_n} 分 + 藏干 {raw_base[wx] - gan_n:g} 分 = {raw_base[wx]:g} 分",
+                            "value": round(raw_base[wx], 2)})
+
+    # 第7步 地支刑冲破害数值
+    traces_branch_effects = []
+    _apply_branch_effects(branch_relations, cols, month_zhi, traces_branch_effects, mode="numeric")
+    if not traces_branch_effects:
+        traces_branch_effects.append("无刑冲破害/合绊数值修正")
+    raw_after_effects = _wx_degrees(cols, month_zhi, apply_penalty=False)
+
+    # 第8步 计算通根
+    raw0 = _wx_degrees(cols, month_zhi)
+    traces_tonggen = [{"target": wx,
+                       "expression": f"{wx} · 通根计算：{raw_after_effects[wx]:g} 分 − 递减 {raw_after_effects[wx] - raw0[wx]:g} 分 = {raw0[wx]:g} 分",
+                       "value": round(raw0[wx], 2)} for wx in WUXING_ORDER]
+
+    # 第9步 旺相休囚系数（单一化神基准）
+    static_scores = {wx: round(raw0[wx] * COEF[st_of(wx)], 2) for wx in WUXING_ORDER}
+    traces_month_coef = [{"target": wx,
+                          "expression": f"{wx} · {raw0[wx]:g} 分 × {COEF[st_of(wx)]:g}（{month_zhi}月{st_of(wx)}）= {static_scores[wx]:g} 分",
+                          "value": static_scores[wx]} for wx in WUXING_ORDER]
+
+    # 第10步 天干生克（先合-冲再生克，紧贴三对；含同柱生克）
+    traces_stem_shengke = []
+    _stem_shengke(cols, month_zhi, static_scores, hehua_outcomes, traces_stem_shengke)
+
+    # 第11步 总分数
+    raw1 = _wx_degrees(cols, month_zhi)
+    final_scores = {wx: round(raw1[wx] * COEF[st_of(wx)], 2) for wx in WUXING_ORDER}
     dm_wx = GAN_WUXING[day_master]
     dm_score = final_scores[dm_wx]
     level = level_of(dm_score)
+    traces_total = [{"target": wx, "expression": f"{wx} {final_scores[wx]:g} 度 → {level_of(final_scores[wx])}",
+                     "value": final_scores[wx]} for wx in WUXING_ORDER]
 
-    # ---- 7. 格局判定（§11 + 裁定 C14/C5，沿用 008；全量关系含天干五合）----
+    # ---- 下游沿用（geju / dayun / yongshen）----
     relations = judge_relations(pillars)
     ge_ju = _judge_geju(relations, cols, day_master, dm_wx, dm_score, final_scores)
-
-    # ---- 8. 大运介入修正（§10 + 裁定 C15）----
-    dayun_adjustments = []
-    for step in (da_yun or []):
-        dayun_adjustments.append(_dayun_adjustment(step, pillars, dm_wx, final_scores, month_zhi))
-
-    # ---- 9. 取用神（§12）----
+    dayun_adjustments = [_dayun_adjustment(step, pillars, dm_wx, final_scores, month_zhi)
+                         for step in (da_yun or [])]
     yong = _select_yongshen(ge_ju, day_master, dm_wx, final_scores, month_zhi)
 
-    # ---- 步骤组装（009 两阶段 7 键：static → dynamic_a → dynamic_b → final → geju → dayun → yongshen）----
+    # ---- 步骤组装（010 14 键：定性 1-5 → 定量 6-11 → 下游沿用）----
     steps = [
-        {"key": "static", "title": "静态旺度（阶段一：地支结构）",
-         "rule": "原始藏干 → 按《四柱精髓》论处先后处理地支关系（只改藏干度数）→ 通根运算"
-                 "（连片/距离衰减/月令特权）→ ×月令系数（旺 2/余气 1.6/相 1.5/休 0.8/囚 0.7/死 0.5）；"
-                 "天干保持原始 1 度、**天干五合不在本步处理**"
+        {"key": "month_hua", "title": "第 1 步 · 月令能否合化",
+         "rule": "判定月令支参与的合局能否化成功；化成功按化神五行定性（单一化神基准）、合绊不影响月令五行性质",
+         "traces": traces_month_hua, "result": f"月令有效五行 = {month_effective_wx}"},
+        {"key": "month_state", "title": "第 2 步 · 月令旺相休囚死",
+         "rule": "以月令有效五行为基准（Q2=A 单一化神基准）判各五行旺相休囚死（旺2/余气1.6/相1.5/休0.8/囚0.7/死0.5）",
+         "traces": traces_month_state,
+         "result": "；".join(f"{wx}{st_of(wx)}" for wx in WUXING_ORDER)},
+        {"key": "branch_rel", "title": "第 3 步 · 地支关系判定",
+         "rule": "按 §9 论处先后（会>三合>半三合>冲>六合>刑>害>破）完整判定；合化成功的支做藏干重组（性质改变）",
+         "traces": [{"target": "", "expression": t, "value": None} for t in traces_branch_rel],
+         "result": "；".join(t for t in traces_branch_rel[:3]) or "无地支关系成立"},
+        {"key": "branch_root", "title": "第 4 步 · 地支根气保留",
+         "rule": "地支关系改变后，判定各支各五行根气保留/去除（供通根与从格）",
+         "traces": traces_branch_root,
+         "result": "；".join(t["expression"] for t in traces_branch_root)},
+        {"key": "stem_hua", "title": "第 5 步 · 天干能否合化",
+         "rule": "紧贴三对判天干五合能否化成功（月令化神旺相/坐支/弱方不独立）；化成功改两干归属",
+         "traces": traces_stem_hua,
+         "result": "；".join(t["expression"] for t in traces_stem_hua)},
+        {"key": "base_score", "title": "第 6 步 · 五行基础分数",
+         "rule": "天干 + 定性后藏干求和（合化重组后、未刑冲破害、未通根、未×系数）"
                  + ("；时辰不详，时柱缺失，按时柱不计入计算" if missing_time else ""),
-         "traces": traces_static,
+         "traces": traces_base, "result": "；".join(f"{wx} {raw_base[wx]:g}" for wx in WUXING_ORDER)},
+        {"key": "branch_effects", "title": "第 7 步 · 地支刑冲破害数值",
+         "rule": "对刑/冲/害/破 与 合绊减力 做藏干数值修正（增减/减半/归零）",
+         "traces": [{"target": "", "expression": t, "value": None} for t in traces_branch_effects],
+         "result": "；".join(f"{wx} {raw_after_effects[wx]:g}" for wx in WUXING_ORDER)},
+        {"key": "tonggen", "title": "第 8 步 · 计算通根",
+         "rule": "通根递减（透干/不透干、月令特权、柱距折扣），消费第 4 步根气",
+         "traces": traces_tonggen, "result": "；".join(f"{wx} {raw0[wx]:g}" for wx in WUXING_ORDER)},
+        {"key": "month_coef", "title": "第 9 步 · 旺相休囚系数",
+         "rule": "× 月令状态系数（单一化神基准，基准取自第 2 步）",
+         "traces": traces_month_coef,
          "result": "；".join(f"{wx} {static_scores[wx]:g}" for wx in WUXING_ORDER)},
-        {"key": "dynamic_a", "title": "动态 A：紧贴天干作用（五合先于生克）",
-         "rule": "仅紧贴三对（年干-月干、月干-日干、日干-时干）；每对先判天干五合——争合/妒合同义"
-                 "（力量大者优先、势均力敌合绊）；合化满足月令化神条件；合绊只改两干旺度"
-                 "（主克×0.8、受克×0.5）且贪合忘生克（不再执行普通生克倍率）；"
-                 "无五合再执行普通相生相克（判生克权≥2.4、套同性/异性倍率）",
-         "traces": [{"target": "", "expression": t, "value": None} for t in traces_dyna] or
-                   [{"target": "", "expression": "紧贴三对无天干五合与生克作用", "value": None}],
-         "result": traces_dyna[0] if traces_dyna else "无修正"},
-        {"key": "dynamic_b", "title": "动态 B：同柱生克（全部藏干）",
-         "rule": "遍历四柱，同柱天干 ↔ 本柱全部藏干（本气/中气/余气）配对运算；008 同柱生克公式："
-                 "同性/异性生克增减力进入度数总量、生克权≥2.4、主生太旺（≥26）反减5成、主克数倍（≥4倍）归零耗1成",
-         "traces": [{"target": "", "expression": t, "value": None} for t in traces_dynb] or
-                   [{"target": "", "expression": "无同柱生克作用", "value": None}],
-         "result": traces_dynb[0] if traces_dynb else "无修正"},
-        {"key": "final", "title": "最终旺度与旺衰等级",
-         "rule": "修正后天干 + 修正后藏干 合并（月令被合化时取双状态平均），对照旺度分类表定级",
-         "traces": [{"target": wx, "expression": f"{wx} {final_scores[wx]:g} 度 → {level_of(final_scores[wx])}",
-                     "value": final_scores[wx]} for wx in WUXING_ORDER],
-         "result": f"日主{day_master}（{dm_wx}）{dm_score:g} 度 → {level}"},
+        {"key": "stem_shengke", "title": "第 10 步 · 天干生克",
+         "rule": "紧贴三对：先合-冲（合化/合绊×0.8×0.5、天干冲按同性克×0.7×0.5）再生克"
+                 "（优先级 同性克>异性生>异性克>同性生）；含同柱生克",
+         "traces": [{"target": "", "expression": t, "value": None} for t in traces_stem_shengke],
+         "result": traces_stem_shengke[0] if traces_stem_shengke else "无天干生克作用"},
+        {"key": "total", "title": "第 11 步 · 总分数",
+         "rule": "合并修正后天干 + 修正后藏干 × 系数（单一化神基准），对照阈值表定旺衰等级",
+         "traces": traces_total, "result": f"日主{day_master}（{dm_wx}）{dm_score:g} 度 → {level}"},
         {"key": "geju", "title": "格局判定",
-         "rule": "正格：能独立；从弱：日主<2.4 且 无有效根（藏同类≥1.0含余气，阴干阳干同标准）"
-                 "且 无紧贴实质帮扶（月/时干比劫印有根）；从强：日主≥26 且 克泄耗方皆不能独立（final<4.0）；"
-                 "从印/从杀/从财：印/官杀/财中最强≥26 且远强于日主 且 从神透干 则从（可多个）；"
-                 "化格：日主参与五合合化成功",
+         "rule": "正格/从格/化格（沿用；根气反映刑冲破害后状态）",
          "traces": [{"target": "", "expression": b, "value": None} for b in ge_ju["basis"]],
          "result": {"zheng": "正格", "cong_ruo": "从弱格", "cong_qiang": "从强格",
                     "cong_yin": "从印格", "cong_sha": "从杀格", "cong_cai": "从财格",
@@ -1791,8 +1954,7 @@ def compute_wangdu(pillars: dict, day_master: str, da_yun: list | None = None) -
         {"key": "dayun", "title": "当前大运介入",
          "rule": "大运旺度=原局旺度±运支状态（旺+2/相+1/余气+1.5/休−1/囚−1.5/死−2）"
                  "+运干同类与通根叠加±运支与原局冲；仅作展示，不改变喜忌结论",
-         "traces": [],
-         "result": "随当前选中大运展示（见 dayun_adjustments）"},
+         "traces": [], "result": "随当前选中大运展示（见 dayun_adjustments）"},
         {"key": "yongshen", "title": "取用神与喜忌结论",
          "rule": "正格扶抑（身旺克泄耗/身弱生扶）、从格从势、化格从化神；调候按逐月需求；"
                  "一般只考虑月干、时干、日支三个位置",

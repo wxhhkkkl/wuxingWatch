@@ -162,8 +162,10 @@ export interface StepTrace {
 }
 
 export interface WangduStep {
-  // 009 两阶段：static（阶段一静态地支）→ dynamic_a/dynamic_b（阶段二动态天干）→ final/geju/dayun/yongshen
-  key: 'static' | 'dynamic_a' | 'dynamic_b' | 'final' | 'geju' | 'dayun' | 'yongshen'
+  // 010 定性 1-5 → 定量 6-11 → 下游沿用（14 键，废弃 static/dynamic_a/dynamic_b/final）
+  key: 'month_hua' | 'month_state' | 'branch_rel' | 'branch_root' | 'stem_hua'
+    | 'base_score' | 'branch_effects' | 'tonggen' | 'month_coef' | 'stem_shengke' | 'total'
+    | 'geju' | 'dayun' | 'yongshen'
   title: string
   rule: string
   traces: StepTrace[]

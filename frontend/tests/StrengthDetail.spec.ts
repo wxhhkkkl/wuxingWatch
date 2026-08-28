@@ -15,17 +15,17 @@ import StrengthDetail from '../src/pages/StrengthDetail.vue'
 
 const wangduSteps = [
   {
-    key: 'static', title: '静态旺度', rule: '藏干度数×月令系数',
+    key: 'month_state', title: '月令旺相休囚死', rule: '以月令有效五行判状态',
     traces: [{ target: '火', expression: '天干丁×2 = 2 度；巳中丙 3 度', value: 6 }],
     result: '火：6 度 × 0.7 = 4.2 度',
   },
   {
-    key: 'zhichong', title: '地支刑冲合害修正', rule: '相邻方论',
+    key: 'branch_effects', title: '地支刑冲破害数值', rule: '相邻方论',
     traces: [{ target: '', expression: '巳申合绊：巳−1', value: null }],
     result: '巳申合绊：巳−1',
   },
   {
-    key: 'final', title: '最终旺度与旺衰等级', rule: '对照分类表',
+    key: 'total', title: '总分数', rule: '对照分类表',
     traces: [{ target: '火', expression: '火 4.2 度 → 较弱', value: 4.2 }],
     result: '日主丁（火）4.2 度 → 较弱',
   },
@@ -92,7 +92,7 @@ describe('StrengthDetail（旺度法）', () => {
     expect(wrapper.find('[data-testid="strength-level"]').text()).toBe('较弱')
     expect(wrapper.text()).toContain('正格')
     // 步骤卡片含完整数值轨迹
-    expect(wrapper.text()).toContain('静态旺度')
+    expect(wrapper.text()).toContain('月令旺相休囚死')
     expect(wrapper.text()).toContain('巳申合绊：巳−1')
     expect(wrapper.text()).toContain('4.2')
   })

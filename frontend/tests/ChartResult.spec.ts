@@ -271,7 +271,7 @@ describe('ChartResult', () => {
           final_scores: { 木: 4.55, 火: 4.0, 土: 18, 金: 4.5, 水: 3.2 },
           ge_ju: { type: 'zheng', hua_shen: null, basis: ['日主庚金 4.5 度'], neng_duli: true },
           steps: [
-            { key: 'static', title: '静态旺度', rule: 'r', traces: [{ target: '金', expression: '庚1+丑辛2', value: 3 }], result: '金 4.5' },
+            { key: 'month_coef', title: '旺相休囚系数', rule: 'r', traces: [{ target: '金', expression: '庚1+丑辛2', value: 3 }], result: '金 4.5' },
           ],
           dayun_adjustments: [],
         },

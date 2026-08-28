@@ -28,6 +28,11 @@ def _dayun(*ganzhi_list):
     return [{"ganzhi": gz, "start_year": 2000 + i * 10, "start_age_xu": 1 + i * 10} for i, gz in enumerate(ganzhi_list)]
 
 
+def _assert_steps_keys(r):
+    """010：断言 steps 为 14 键新序列（定性 1-5 → 定量 6-11 → geju/dayun/yongshen）。"""
+    assert [st["key"] for st in r["steps"]] == wangdu.STEP_KEYS
+
+
 # ---------- T003 静态/最终旺度锚点 ----------
 
 def test_case_user_quoted_ding_wei():
@@ -100,16 +105,15 @@ def test_case_geng_xu_dynamic():
 
 # ---------- T005 格局锚点 ----------
 
-def test_geju_cong_qiang_wang_ji():
-    """乾 丙午 甲午 丁巳 庚戌：火 29.62 太旺、金不能独立 → 从强格。
-
-    009 两阶段（2026-08-19）：静态含地支关系修正——午午自刑 与 午戌半三合（更高层）并存让位，
-    火由旧口径 40（旺极）降为 29.62（太旺）；从强格结论不变（≥26 且克泄耗方不能独立），此处断言 ≥26。"""
+def test_geju_huo_ji_wang_ji_bu_cong_qiang():
+    """乾 丙午 甲午 丁巳 庚戌：午戌半三合化火（月令午本气火=化神一致）→ 火 41.3 旺极。
+    克泄耗方：木0.8/金0/水0 不能独立，但 土4.8 ≥4.0 可独立 → 不从强 → 正格（太旺宜泄）。
+    2026-08-27 月令守则 + 让位守卫（午午自刑让位）后从 009 的从强 29.62 变为旺极正格。"""
     r = wangdu.compute_wangdu(_chart("丙午", "甲午", "丁巳", "庚戌"), "丁")
     assert r["final_scores"]["火"] >= 26.0
-    assert r["level"] == "太旺"
-    assert r["ge_ju"]["type"] == "cong_qiang"
-    assert set(r["xi_shen"] + [r["yong_shen"]]) <= {"木", "火"}  # 从强喜生助
+    assert r["level"] == "旺极"
+    assert r["ge_ju"]["type"] == "zheng"
+    assert r["yong_shen"] == "土"          # 身旺取克泄耗（土相地有力）
 
 
 def test_geju_cong_qiang_jia_ji_hua_tu():
@@ -161,19 +165,20 @@ def test_dayun_wu_wu_jia_zi():
     assert adj["庚申"]["level_after"] == "较弱"
 
 
-def test_dayun_month_branch_transformed_average():
-    """乾 壬子 癸丑 辛酉 己亥：月令丑被亥子丑会水 → 双状态平均；金 6.56 偏弱；乙卯运 4.06 / 丙辰运 7.56。
+def test_dayun_month_branch_transformed_single_basis():
+    """乾 壬子 癸丑 辛酉 己亥：月令丑被亥子丑会水 → 月令有效五行=水（010 单一化神基准，Q2=A）；
+    金 对 水 为休（0.8）→ 金 4.56 较弱；乙卯运 2.06 / 丙辰运 5.56。
 
-    009 两阶段（2026-08-19）：动态 A 辛癸相邻相生（辛×0.7、癸×1.3）→ 金 6.56（旧 6.9）。"""
+    009 双状态平均 → 金 6.56 偏弱（2026-08-27 010 单基准后数值变化，US3 差异记录）。"""
     r = wangdu.compute_wangdu(
         _chart("壬子", "癸丑", "辛酉", "己亥"), "辛",
         _dayun("乙卯", "丙辰"),
     )
-    assert abs(r["final_scores"]["金"] - 6.56) < 0.05
-    assert r["level"] == "偏弱"
+    assert abs(r["final_scores"]["金"] - 4.56) < 0.05
+    assert r["level"] == "较弱"
     adj = {a["ganzhi"]: a for a in r["dayun_adjustments"]}
-    assert abs(adj["乙卯"]["scores_after"]["金"] - 4.06) < 0.05  # 囚地 −1.5、卯冲酉 −1
-    assert abs(adj["丙辰"]["scores_after"]["金"] - 7.56) < 0.05  # 相地 +1
+    assert abs(adj["乙卯"]["scores_after"]["金"] - 2.06) < 0.05  # 囚地 −1.5、卯冲酉 −1
+    assert abs(adj["丙辰"]["scores_after"]["金"] - 5.56) < 0.05  # 相地 +1
 
 
 def test_reproducible():
@@ -192,14 +197,12 @@ def test_missing_time_pillar():
 
 # ---------- T008 修复回归（2026-08-17 全书 361 命例对拍发现的引擎缺陷） ----------
 
-def test_fix_banhe_month_double_state():
-    """修复：半三合化（含月令支）须触发"月令被合化"双状态平均（§1.3）。
-    书中例4 乾 乙卯 丁亥 壬戌 壬寅：亥卯半三合化木 → 月令亥化木 → 壬水双状态平均。
-
-    009 两阶段（2026-08-19）：动态 A 丁壬合绊（贪合忘生克，壬×0.8/丁×0.5）+ 动态 B 壬↔戌中丁戊/寅中甲丙戊 →
-    水 1.05 太弱 → 从弱（旧 1.54；均未计书第一章静态口径 2.8，差异见对照测试报告）。"""
+def test_fix_banhe_month_liuhe_bu_bian():
+    """书中例4 乾 乙卯 丁亥 壬戌 壬寅：亥卯半三合（月令亥参与，化木≠亥水本气）→ 2026-08-27 月令守则不化（合绊）；
+    月令有效五行保持水 → 水 6.75 偏弱 正格（010 单基准曾化木 → 水 1.44 从弱，被月令守则取代，US3 差异记录）。"""
     r = wangdu.compute_wangdu(_chart("乙卯", "丁亥", "壬戌", "壬寅"), "壬")
-    assert abs(r["final_scores"]["水"] - 1.05) < 0.05
+    assert abs(r["final_scores"]["水"] - 6.75) < 0.05
+    assert r["ge_ju"]["type"] == "zheng"
 
 
 def test_fix_si_shen_he_hua_condition():
@@ -240,11 +243,12 @@ def test_fix_zixing_condition():
 
 
 def test_fix_zixing_ok_when_conditions_met():
-    """自刑条件满足时仍触发：乾 丙午 甲午 丁巳 庚戌 午午自刑（丙透+午月旺）→ 火太旺从强（书[280]，同既有锚点；
-    009 与午戌半三合让位后火 29.62 太旺，从强结论不变）。"""
+    """自刑条件满足时仍触发：乾 丙午 甲午 丁巳 庚戌 午午自刑（丙透+午月旺）→ 火太旺。
+    2026-08-27 月令守则：午戌半三合化火（化神火=午本气一致）成立且午午自刑让位；火 41.3 旺极，
+    但克泄耗中 土4.8 可独立 → 正格（太旺宜泄），不再从强（009 曾从强，US3 差异记录）。"""
     r = wangdu.compute_wangdu(_chart("丙午", "甲午", "丁巳", "庚戌"), "丁")
     assert r["final_scores"]["火"] >= 26.0
-    assert r["ge_ju"]["type"] == "cong_qiang"
+    assert r["ge_ju"]["type"] == "zheng"
 
 
 def test_fix_zixing_blocked_by_clash():
@@ -265,11 +269,11 @@ def test_fix_xing_diao_gen():
 def test_fix_zi_mao_xing_diao():
     """子卯刑 4卯刑掉1子 → 子水根去除、壬水大幅削弱（书[259] 坤 癸卯 乙卯 壬子 癸卯）。
 
-    009 两阶段：刑掉在**静态阶段**（地支关系处理）已发生——static 步 traces 含"子被刑掉"；
-    动态 A 癸乙/壬乙相邻相生（壬泄）+ 动态 B → 水 1.59 太弱从弱。此处断言刑掉根这一修复本体。"""
+    010 定量步：刑掉在 branch_effects（第7步）落数值——traces 含"子被刑掉"；
+    天干生克步 + 通根 → 水 太弱从弱。此处断言刑掉根这一修复本体。"""
     r = wangdu.compute_wangdu(_chart("癸卯", "乙卯", "壬子", "癸卯"), "壬")
-    static_step = next(s for s in r["steps"] if s["key"] == "static")
-    assert any("刑掉" in t["expression"] for t in static_step["traces"])  # 子被刑掉
+    be = next(s for s in r["steps"] if s["key"] == "branch_effects")
+    assert any("刑掉" in t["expression"] for t in be["traces"])  # 子被刑掉
     assert r["final_scores"]["水"] < 2.4
     assert r["ge_ju"]["type"] == "cong_ruo"
 
@@ -402,14 +406,14 @@ def test_tongzhu_yi_chou_shou_ke_bu_cong():
     assert abs(r["final_scores"]["木"] - 15.81) < 0.1
 
 
-def test_tongzhu_ren_wu_ke_huo_cong_ruo_105():
-    """[105] 坤 丁亥 壬寅 壬午 庚戌：壬午同柱 壬克火（壬泄×0.7）+ 寅午戌化火（财火30太旺）→
-    从财格 用火 喜木（书"从弱喜木火"；修复前 3.22 比弱正格）。"""
+def test_tongzhu_ren_wu_ke_huo_105():
+    """[105] 坤 丁亥 壬寅 壬午 庚戌：寅午戌三合火（月令寅参与三合，化火）→ 月令=火、火 18.6 较旺。
+    日主壬 2.7 比弱、财火 18.6 未达 ≥26 → 正格身弱，用神金 喜水
+    （书/师判"从财用火喜木"；2026-08-27 月令守则后三合仍化但火未及从财阈值，US3 差异记录）。"""
     r = wangdu.compute_wangdu(_chart("丁亥", "壬寅", "壬午", "庚戌"), "壬")
-    assert r["ge_ju"]["type"] in ("cong_cai", "cong_ruo")
-    assert r["yong_shen"] == "火"
-    assert "木" in r["xi_shen"]          # 书"喜木火"
-    assert r["final_scores"]["水"] < 2.4
+    assert r["ge_ju"]["type"] == "zheng"
+    assert r["yong_shen"] == "金"
+    assert r["final_scores"]["水"] < 2.75
 
 
 def test_tongzhu_ren_sheng_mu_cong_ruo_192():
@@ -578,17 +582,21 @@ def test_sanhe_poju_164():
 
 
 def test_zi_chou_hua_shui_121():
-    """根因⑤ [121] 乾 庚申 己丑 戊子 壬子：丑月水=相 → 子丑合化水 → 戊从（书"子丑合化水从弱"）。"""
+    """根因⑤ [121] 乾 庚申 己丑 戊子 壬子：2026-08-27 月令守则——子丑六合（月令丑参与，化水≠丑土本气）→ 不化；
+    月令有效五行保持土 → 戊 36.4 旺极 正格，用神水（书"子丑合化水从弱"被新口径取代，US3 差异记录）。"""
     r = wangdu.compute_wangdu(_chart("庚申", "己丑", "戊子", "壬子"), "戊")
-    assert r["ge_ju"]["type"] in ("cong_ruo", "cong_cai", "cong_yin")
+    assert r["ge_ju"]["type"] == "zheng"
     assert r["yong_shen"] == "水"
+    assert r["final_scores"]["土"] >= 26.0
 
 
 def test_zi_chou_hua_shui_123():
-    """根因⑤ [123] 坤 壬子 癸丑 乙巳 癸未：子丑合化水 → 水旺。2026-08-22 校准——乙坐巳，未中乙余气根
-    （≥1.0）仍在 → 阴干有根不从弱；印水透（壬癸）且贴身 → 实质帮扶 → 正格身弱（原判"水旺木漂从弱"被新口径取代）。"""
+    """根因⑤ [123] 坤 壬子 癸丑 乙巳 癸未：2026-08-27 月令守则——子丑六合（月令丑参与，化水≠丑土本气）→ 不化；
+    月令有效五行保持土 → 印水未达太旺(≥26) 且乙有未中余气根 → 正格身弱，用神水 喜木
+    （010 单基准曾判从印，被月令守则取代，US3 差异记录）。"""
     r = wangdu.compute_wangdu(_chart("壬子", "癸丑", "乙巳", "癸未"), "乙")
     assert r["ge_ju"]["type"] == "zheng"
+    assert r["yong_shen"] == "水"
 
 
 def test_yin_hai_bu_hua_128():
@@ -668,70 +676,69 @@ def test_branch_chong_beats_liuhe_letting():
 
 # ---------- T004 静态阶段天干五合零处理（FR-003 / SC-001） ----------
 
-def test_static_ignores_stem_five_he():
-    """T004/FR-003：静态阶段天干五合零处理——甲己五合满足合化条件也不在静态执行。
-    若静态误处理，甲(木)会被合化为土、木静态归零；零处理则甲仍按 1 度计入木。"""
+def test_stem_hua_qualitative_not_in_branch_steps():
+    """010 第5步：天干五合定性在 stem_hua 步（合化归属改变），地支/基础步无天干五合处理。
+    甲己合化土成功 → stem_hua 记"甲己合化土成功"；branch_rel/branch_effects 步无"合化土"。"""
     r = wangdu.compute_wangdu(_chart("甲子", "己丑", "丙午", "戊午"), "己")
-    static_step = next(s for s in r["steps"] if s["key"] == "static")
-    static_txt = "".join(t["expression"] for t in static_step["traces"])
-    assert "合化" not in static_txt and "合绊" not in static_txt   # 静态无天干五合处理
-    assert r["static_scores"]["木"] > 0.0                          # 甲木天干 1 度未被合化
-    dyna = next(s for s in r["steps"] if s["key"] == "dynamic_a")
-    assert any("甲己合化土成功" in t["expression"] for t in dyna["traces"])  # 动态 A 才合化
+    sh = next(s for s in r["steps"] if s["key"] == "stem_hua")
+    assert any("甲己合化土成功" in t["expression"] for t in sh["traces"])
+    for k in ("branch_rel", "branch_effects"):
+        step = next(s for s in r["steps"] if s["key"] == k)
+        txt = "".join(t["expression"] for t in step["traces"])
+        assert "合化土" not in txt
 
 
-# ---------- T008/T009/T010 动态 A 与动态 B ----------
+# ---------- 010 第10步 天干生克（先合-冲再生克；含同柱生克） ----------
 
-def test_dynamic_a_only_adjacent_pairs():
-    """T008/FR-004：动态 A 仅紧贴三对（年-月、月-日、日-时）——隔位五合不进入。"""
-    # 年干甲、日干己（隔月干）——甲己五合但非紧贴 → 动态 A 不处理
+def test_stem_shengke_only_adjacent_pairs():
+    """010 FR-012/Q3：天干层仅紧贴三对（年-月、月-日、日-时）——隔位五合不进入。"""
+    # 年干甲、日干己（隔月干）——甲己五合但非紧贴 → stem_shengke 不处理
     r = wangdu.compute_wangdu(_chart("甲午", "丙戌", "己丑", "戊子"), "己")
-    dyna = next(s for s in r["steps"] if s["key"] == "dynamic_a")
-    txt = "".join(t["expression"] for t in dyna["traces"])
+    ss = next(s for s in r["steps"] if s["key"] == "stem_shengke")
+    txt = "".join(t["expression"] for t in ss["traces"])
     assert "甲己" not in txt
 
 
-def test_dynamic_a_heban_greedy_forgets_shengke():
-    """T009/FR-005：合绊贪合忘生克——合而不化的紧贴对只改两干旺度（主克×0.8/受克×0.5）、
-    不再执行普通相生相克倍率。"""
+def test_stem_shengke_heban_greedy_forgets_shengke():
+    """010 FR-012：合绊贪合忘生克——合而不化的紧贴对只改两干旺度（主克×0.8/受克×0.5）。"""
     # 甲己合而不化（卯月 化神土非旺相）→ 合绊
     r = wangdu.compute_wangdu(_chart("甲子", "己卯", "庚午", "戊寅"), "己")
-    dyna = next(s for s in r["steps"] if s["key"] == "dynamic_a")
-    txt = "".join(t["expression"] for t in dyna["traces"])
+    ss = next(s for s in r["steps"] if s["key"] == "stem_shengke")
+    txt = "".join(t["expression"] for t in ss["traces"])
     assert "贪合忘生克" in txt
     assert "甲己" in txt
 
 
-def test_dynamic_b_all_hidden_stems():
-    """T010/FR-009：动态 B 同柱天干↔本柱全部藏干配对（本气/中气/余气）——甲寅 三对（甲↔寅中甲 比和不配对）。
+def test_stem_shengke_tongzhu_all_hidden_stems():
+    """010 FR-012：同柱生克并入第10步——干↔本柱全部藏干（本气/中气/余气）配对。
 
     取四甲寅盘使甲木静态 32（生克权 ≥2.4）→ 甲↔寅中丙（中气）、甲↔寅中戊（余气）生效。"""
     r = wangdu.compute_wangdu(_chart("甲寅", "甲寅", "甲寅", "甲寅"), "甲")
-    dynb = next(s for s in r["steps"] if s["key"] == "dynamic_b")
-    txt = "".join(t["expression"] for t in dynb["traces"])
+    ss = next(s for s in r["steps"] if s["key"] == "stem_shengke")
+    txt = "".join(t["expression"] for t in ss["traces"])
     assert "甲↔寅中丙" in txt   # 中气丙2（木生火）
     assert "甲↔寅中戊" in txt   # 余气戊1（木克土）
 
 
-def test_missing_time_dynamic_a_two_pairs():
-    """FR-013：缺时柱——动态 A 仅年-月、月-日两对；计算与展示正常并提示时柱缺失。"""
+def test_missing_time_stem_shengke_two_pairs():
+    """FR-013：缺时柱——天干层仅年-月、月-日两对；计算与展示正常并提示时柱缺失。"""
     r = wangdu.compute_wangdu(_chart("甲子", "乙丑", "丙寅", None), "丙")
     assert r["method"] == "sizhu-jingsui"
     assert any("时柱缺失" in (s.get("rule", "") + s.get("result", "")) for s in r["steps"])
 
 
-def test_dynamic_a_hehua_success():
-    """FR-006/FR-015：动态 A 合化成功——满足月令化神条件则两干废弃原五行、按化神记账。"""
+def test_stem_hua_success():
+    """010 FR-006：天干合化成功——满足月令化神条件则两干归属改化神。"""
     r = wangdu.compute_wangdu(_chart("甲子", "己丑", "丙午", "戊午"), "己")
-    dyna = next(s for s in r["steps"] if s["key"] == "dynamic_a")
-    assert any("甲己合化土成功" in t["expression"] for t in dyna["traces"])
+    sh = next(s for s in r["steps"] if s["key"] == "stem_hua")
+    assert any("甲己合化土成功" in t["expression"] for t in sh["traces"])
 
 
-def test_dynamic_a_zheng_he():
-    """FR-007/FR-015：争合——月干己被年干甲、日干甲争合 → 力量大者优先、失利者不论（妒合同义 Q2）。"""
+def test_stem_hua_zheng_he():
+    """010 FR-006：争合——月干己被年干甲、日干甲争合 → 力量大者优先、失利者不论（妒合同义 Q2）。"""
     r = wangdu.compute_wangdu(_chart("甲午", "己丑", "甲寅", "戊辰"), "己")
-    dyna = next(s for s in r["steps"] if s["key"] == "dynamic_a")
-    txt = "".join(t["expression"] for t in dyna["traces"])
+    ss = next(s for s in r["steps"] if s["key"] == "stem_shengke")
+    txt = "".join(t["expression"] for t in ss["traces"])
     assert "争合" in txt
 
 
@@ -761,3 +768,99 @@ def test_muku_hidden_degrees_rules():
     assert wangdu.hidden_degrees("戌", "亥", {"戌": 1}) == [("丁", 1), ("戊", 3), ("辛", 2)]
     assert wangdu.hidden_degrees("戌", "辰", {"戌": 1}) == [("辛", 2), ("丁", 1), ("戊", 3)]
     assert wangdu.hidden_degrees("戌", "寅", {"戌": 1}) == [("丁", 2), ("戊", 3), ("辛", 1)]
+
+
+# ---------- T010 五行打分顺序重构 010 锚点（定性 1-5 → 定量 6-11，14 键） ----------
+
+def test_010_month_hua_liuhe_bu_bian_xing_zhi():
+    """[010 定性步·月令守则 2026-08-27] 月令参与的六合，化神与月令本气不一致 → 不化（合绊），月令五行不变。
+
+    壬子 癸丑 乙巳 癸未：丑月 子丑六合（化水≠丑土本气）→ 合绊；月令有效五行保持土（非化神水）；
+    month_state 以土为基准（土旺 2.0）；子丑按相生（不化）处理（丑助子：子+1、丑−0.5）。"""
+    r = wangdu.compute_wangdu(_chart("壬子", "癸丑", "乙巳", "癸未"), "乙")
+    _assert_steps_keys(r)
+    mh = next(st for st in r["steps"] if st["key"] == "month_hua")
+    mh_txt = mh["result"] + "；".join(t["expression"] for t in mh["traces"])
+    assert "土" in mh["result"] and "合化水" not in mh_txt  # 月令有效五行=土（本气）
+    ms = next(st for st in r["steps"] if st["key"] == "month_state")
+    ms_txt = "；".join(t["expression"] for t in ms["traces"])
+    assert "土" in ms_txt and "旺" in ms_txt  # 基准=土 → 土旺
+    be = next(st for st in r["steps"] if st["key"] == "branch_effects")
+    be_txt = "；".join(t["expression"] for t in be["traces"])
+    assert "子丑不化" in be_txt  # 六合不化以相生论：丑助子
+
+
+def test_010_month_ban_bu_gai_bian_xing_zhi():
+    """[010 定性步] 卯戌合绊（戌月）：月令五行性质不变（合绊不影响月令性质）。
+
+    丁卯 丙戌 己丑 丙寅：月戌 卯戌合绊（戌月火=休不旺）→ month_hua 记"合绊"；
+    month_state 以土为基准（土旺 2.0）。"""
+    r = wangdu.compute_wangdu(_chart("丁卯", "丙戌", "己丑", "丙寅"), "己")
+    _assert_steps_keys(r)
+    mh = next(st for st in r["steps"] if st["key"] == "month_hua")
+    mh_txt = mh["result"] + "；".join(t["expression"] for t in mh["traces"])
+    assert "合绊" in mh_txt and "合化" not in mh_txt
+    ms = next(st for st in r["steps"] if st["key"] == "month_state")
+    ms_txt = "；".join(t["expression"] for t in ms["traces"])
+    assert "土" in ms_txt and "旺" in ms_txt  # 基准=原始戌土
+
+
+def test_010_qualitative_quantitative_separation():
+    """[010 定性/定量分离] 合化藏干重组在 branch_rel（第3步），刑冲破害/合绊数值在 branch_effects（第7步）。
+
+    丙午 甲午 丁巳 庚戌：午戌半三合化火（月令午本气火=化神一致）→ branch_rel 记合化；branch_effects 只做数值不重复合化。"""
+    r = wangdu.compute_wangdu(_chart("丙午", "甲午", "丁巳", "庚戌"), "丁")
+    br = next(st for st in r["steps"] if st["key"] == "branch_rel")
+    br_txt = "；".join(t["expression"] for t in br["traces"])
+    assert "化火" in br_txt  # 合化重组在定性步
+    be = next(st for st in r["steps"] if st["key"] == "branch_effects")
+    be_txt = "；".join(t["expression"] for t in be["traces"])
+    assert "化火" not in be_txt  # 刑冲破害数值步不重复做合化
+
+
+def test_010_root_preserved_xing_po():
+    """[010 根气保留] 丑午相害（丑当令=两丑）午中火尽去 → branch_root 记"不留"。"""
+    r = wangdu.compute_wangdu(_chart("己丑", "癸丑", "乙午", "丙寅"), "乙")
+    _assert_steps_keys(r)
+    broot = next(st for st in r["steps"] if st["key"] == "branch_root")
+    broot_txt = "；".join(t["expression"] for t in broot["traces"])
+    assert "午" in broot_txt and "不留" in broot_txt
+
+
+def test_010_stem_shengke_chong_gan_jia_geng():
+    """[010 天干层先合-冲] 甲庚天干冲（紧贴）：stem_shengke 步冲按同性克进度数。"""
+    r = wangdu.compute_wangdu(_chart("甲子", "庚午", "丙寅", "戊辰"), "丙")
+    _assert_steps_keys(r)
+    ss = next(st for st in r["steps"] if st["key"] == "stem_shengke")
+    ss_txt = "；".join(t["expression"] for t in ss["traces"])
+    assert "甲庚" in ss_txt and "冲" in ss_txt
+
+
+def test_010_stem_shengke_he_ban_tan_sheng():
+    """[010 天干层先合-冲] 丙辛合绊：贪合忘生克（主克×0.8、受克×0.5）。"""
+    r = wangdu.compute_wangdu(_chart("丙寅", "辛酉", "庚午", "癸未"), "庚")
+    _assert_steps_keys(r)
+    ss = next(st for st in r["steps"] if st["key"] == "stem_shengke")
+    ss_txt = "；".join(t["expression"] for t in ss["traces"])
+    assert "贪合忘生克" in ss_txt
+
+
+def test_010_stem_shengke_priority_tong_ke_xian():
+    """[010 天干生克优先级] 同性克 > 异性生：丙庚（同性克，rank1）先于 庚癸（异性生，rank2）。
+
+    甲子 丙寅 庚午 癸酉：丙庚=同性克、庚癸=异性生、甲丙=同性生（rank4）；三者生克权皆足
+    （火48/金3.85/木8 ≥2.4）→ 按优先级排序处理，克 trace 先于生 trace。"""
+    r = wangdu.compute_wangdu(_chart("甲子", "丙寅", "庚午", "癸酉"), "庚")
+    _assert_steps_keys(r)
+    ss = next(st for st in r["steps"] if st["key"] == "stem_shengke")
+    exprs = [t["expression"] for t in ss["traces"]]
+    ke_idx = next(i for i, e in enumerate(exprs) if "丙庚" in e and "克" in e)
+    sheng_idxs = [i for i, e in enumerate(exprs) if "生" in e]
+    assert sheng_idxs and ke_idx < min(sheng_idxs)
+
+
+def test_010_steps_14_keys_sequence():
+    """[010 契约] steps 14 键序列（定性 1-5 → 定量 6-11 → geju/dayun/yongshen），无旧四键。"""
+    r = wangdu.compute_wangdu(_chart("甲子", "丙寅", "庚午", "癸未"), "庚")
+    assert [st["key"] for st in r["steps"]] == wangdu.STEP_KEYS
+    assert not any(st["key"] in ("static", "dynamic_a", "dynamic_b", "final") for st in r["steps"])
