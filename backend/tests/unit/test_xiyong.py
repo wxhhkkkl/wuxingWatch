@@ -78,13 +78,14 @@ def test_cong_ruo_follows_strongest():
 
 
 def test_cong_qiang_prefers_support():
-    # 乾 丙午 丙午 丁巳 乙未：巳午未三会火 → 火从强，喜生助（木火）
-    # （2026-08-27 月令守则后 原 丙午甲午丁巳庚戌 午戌半合化火使土4.8独立 → 正格，改用三会从强盘）
-    pillars = _chart(_p("丙", "午"), _p("丙", "午"), _p("丁", "巳"), _p("乙", "未"))
-    result = xiyong.xiyong_analysis("丁", pillars)
+    # 乾 己丑 甲戌 戊戌 丁巳（书[335]）：甲己化土、戊 35.8 旺极、克泄耗全无 → 从强，喜生助
+    # （011 C24：原 丙午丙午丁巳乙未 三会火盘因 食伤土 3.6 ≥2.4 → 不从强，改用品 [335] 从强盘）
+    pillars = _chart(_p("己", "丑"), _p("甲", "戌"), _p("戊", "戌"), _p("丁", "巳"))
+    result = xiyong.xiyong_analysis("戊", pillars)
     assert result["strength"]["ge_ju"]["type"] == "cong_qiang"
-    assert result["conclusion"]["yong_shen"] in ("木", "火")
-    assert set(result["conclusion"]["xi_shen"] + [result["conclusion"]["yong_shen"]]) <= {"木", "火"}
+    assert result["conclusion"]["yong_shen"] == "土"
+    assert set(result["conclusion"]["xi_shen"] + [result["conclusion"]["yong_shen"]]) <= {"火", "土"}
+    assert set(result["conclusion"]["ji_shen"]) == {"木", "金", "水"}  # 忌克泄耗
 
 
 def test_hua_ge_follows_hua_shen():

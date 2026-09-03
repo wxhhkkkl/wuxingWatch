@@ -21,6 +21,8 @@
   → 从弱；半三合不化不绊根（师[119][194][321]）；从印/从杀/从财：印/官杀/财最强 ≥26 且显著强于日主
   且 **从神天干透出**（师[117][209]无印透不可从印）；从强：日主 ≥26（太旺以上）且 克泄耗三方
   皆不能独立（final <4.0）——2026-08-22 取消"克泄耗有根→不从强"杂气规则（[74]巳中庚金余气根误挡从强）。
+  **（011 已以 C24 取代本裁定，见 _judge_geju：从强克泄耗<2.4 且不[透干且有字面根]；从印删透干改"
+  比劫星/财/食伤<2.4+阴阳根口径"；从弱前置 阳干字面见根即不从/阴干根削弱残余<2.4、印透干须印无根、从神取最强）**
 - C14 格局判定中"不能独立/无实质帮扶"按 final < 4.0（较弱以下）掌握；生克权阈值仍按 2.4。
 - C15 大运步数值修正只含：运支状态增减 + 运干同类 + 通根运支 + 运支冲原局支（书中算例口径）。
 """
@@ -277,6 +279,7 @@ class _Col:
         self.gan_deg = 1.0 if gan else 0.0          # 天干度数（合化后改归属五行）
         self.gan_hua = None                          # 合化后所属五行（None=未化）
         self.hidden = dict(hidden_degrees(zhi, month_zhi, zhi_count)) if zhi else {}
+        self.hidden0 = dict(self.hidden)             # 011 从格：初始藏干快照（字面根判据 C24-2）
         self.banished = False                        # 被合化/会化后原藏干作废
         self.hua_host = False                        # 合化后化神所寄列（供低优先级关系让位）
 
@@ -1946,7 +1949,7 @@ def compute_wangdu(pillars: dict, day_master: str, da_yun: list | None = None) -
          "rule": "合并修正后天干 + 修正后藏干 × 系数（单一化神基准），对照阈值表定旺衰等级",
          "traces": traces_total, "result": f"日主{day_master}（{dm_wx}）{dm_score:g} 度 → {level}"},
         {"key": "geju", "title": "格局判定",
-         "rule": "正格/从格/化格（沿用；根气反映刑冲破害后状态）",
+         "rule": "化格→从强→从印→从弱→正格（011 C24：字面根/透干+有根否决/比劫星除日主/阴阳口径）",
          "traces": [{"target": "", "expression": b, "value": None} for b in ge_ju["basis"]],
          "result": {"zheng": "正格", "cong_ruo": "从弱格", "cong_qiang": "从强格",
                     "cong_yin": "从印格", "cong_sha": "从杀格", "cong_cai": "从财格",
@@ -2002,46 +2005,140 @@ def _branch_bound_set(relations):
     return bound
 
 
-def _wx_has_root(cols, wx, bound, threshold=2.0):
-    """五行 wx 有无有效根：任一四柱支（未被合化/刑冲去、未逢真正合绊）藏同类 ≥threshold。"""
-    for c in cols:
-        if c.key not in ("year", "month", "day", "time") or not c.zhi or c.banished:
+# ---- 011 从格新口径辅助（裁定 C24-1..C24-4，2026-09-03）----
+# 根气判据统一（C24-2）：仅"合化成功"之支原藏干作废不算根——由 _transformed_idx 依 relations 推出，
+# 不能看 banished 标记（刑掉等亦置 banished，但字面根须保留）；其余一律"字面藏干"，刑冲破害/合绊
+# （不化）都不除根，藏干表含该五行（含余气）即算有根。
+# 从弱阳干"字上出现即不从"（C24 前置1）；从印/从弱阴干"根须被削弱、残余<2.4"（C24-4）。
+# 比劫数值门不含日主本干（C24-1 决策，帮身星口径）；比劫透干排除日主柱（C24-3）。
+_ACT_CRUSH = {"相冲", "刑", "三刑", "破", "害", "自刑"}          # 刑冲破害
+_ACT_COMBINE = {"六合", "半三合", "三合", "三会"}                # 合（仅"合绊"算削弱动作）
+
+
+def _transformed_idx(relations):
+    """合化成功之支索引（C24-2 字面根豁免）：六合/半三合化成功=两参与支；三合/三会化成功=全部参与支。"""
+    out = set()
+    for e in relations["established"]:
+        if e.get("layer") != "branch":
             continue
-        if c.zhi in bound:
+        t = e["type"]
+        if t not in _ACT_COMBINE:
             continue
-        if any(GAN_WUXING[g] == wx and d >= threshold for g, d in c.hidden.items()):
+        if t in ("三合", "三会"):
+            if not e.get("_ok"):
+                continue
+            out.update(e.get("_idxs") or [])
+        else:
+            if not e.get("_hua"):
+                continue
+            out.add(e.get("_i"))
+            out.add(e.get("_j"))
+    return out
+
+
+def _wx_literal_root(cols, wx, transformed):
+    """字面有根（C24-2）：任一未被合化成功消费之支，初始藏干(hidden0)含 wx → True。"""
+    for i, c in enumerate(cols):
+        if c.key not in ("year", "month", "day", "time") or not c.zhi:
+            continue
+        if i in transformed:
+            continue
+        if any(GAN_WUXING[g] == wx and d > 0 for g, d in (c.hidden0 or {}).items()):
             return True
     return False
 
 
-def _dm_effective_root(cols, dm_wx, relations):
-    """日主有效根（裁定 C21，2026-08-22 校准）：日主同类藏干 ≥1.0（含余气根）即不从弱。
-
-    师[168]壬辰中癸余气根不可从、[308]戊申中余气根不可从、[133]戊寅中戊余气根不可从——
-    "阳干有气不从"，阴干同标准（[104]丁未中丁根、[158]己丑中己根均不从弱）。"""
-    return _wx_has_root(cols, dm_wx, _branch_bound_set(relations), threshold=1.0)
+def _wx_residual(col, wx):
+    """支作用后残余藏干（判定时 cols.hidden 已含刑冲合害/合绊数值突变）。"""
+    return sum(d for g, d in col.hidden.items() if GAN_WUXING[g] == wx and d > 0)
 
 
-def _dm_stem_help(cols, dm_wx, relations):
-    """天干实质帮扶（2026-08-22 从格修复 R3）：紧贴日主（月干/时干）的 比劫（日主同类）或 印（生日主）
-    透出，且该帮星五行有有效根（中气以上 ≥2.0）→ 不从弱。
-
-    师[150]时庚、[168]月壬、[110]时戊生庚、[302]月丁生戊、[206]时丁生戊、[297]月己时戊有势、
-    [180]月甲生丁 → 不从；[346]年庚印不贴身、[252]年癸印不贴身 → 不构成贴身帮扶；
-    [101]月丙比劫无根、[219]月乙比劫无根、[305]月癸比劫无根 → 帮星无力仍从。"""
-    help_wx = {dm_wx} | {_SHENG_INV[dm_wx]}
-    bound = _branch_bound_set(relations)
-    for c in cols:
-        if c.key not in ("month", "time") or not c.gan:
+def _zhi_acted(cols, relations, zhi, kinds):
+    """支 zhi 是否被某类成立关系作用：冲/刑/破/害 全算；合类仅"合绊"算削弱动作。"""
+    for e in relations["established"]:
+        if e.get("layer") != "branch" or e.get("reason"):
             continue
-        if GAN_WUXING[c.gan] in help_wx and _wx_has_root(cols, GAN_WUXING[c.gan], bound):
+        t = e["type"]
+        if t not in kinds:
+            continue
+        if t in _ACT_COMBINE and "合绊" not in e.get("detail", ""):
+            continue
+        idxs = e.get("_idxs")
+        if idxs is None:
+            idxs = (e.get("_i"), e.get("_j"))
+        for k in idxs:
+            if k is not None and k < len(cols) and cols[k].zhi == zhi:
+                return True
+    return False
+
+
+def _dm_root_ok_011(cols, dm_wx, relations, day_is_yang, act_kinds, transformed):
+    """日主根口径（C24）：阳干=字面无一点根；阴干=每个字面根支须被 act_kinds 削弱且残余<2.4。
+    返回 (ok, 不满足原因)。"""
+    if day_is_yang:
+        if _wx_literal_root(cols, dm_wx, transformed):
+            return False, "阳干字面有根（字上出现即不从）"
+        return True, ""
+    for i, c in enumerate(cols):
+        if c.key not in ("year", "month", "day", "time") or not c.zhi:
+            continue
+        if i in transformed:
+            continue
+        if not any(GAN_WUXING[g] == dm_wx and d > 0 for g, d in (c.hidden0 or {}).items()):
+            continue
+        if not _zhi_acted(cols, relations, c.zhi, act_kinds):
+            return False, f"阴干根支{c.zhi}未被削弱动作作用"
+        if _wx_residual(c, dm_wx) >= 2.4:
+            return False, f"阴干根支{c.zhi}削弱后残余 {_wx_residual(c, dm_wx):g} ≥2.4"
+    return True, ""
+
+
+def _tou_gan(cols, wx):
+    """天干透出（C24-3）：年/月/时柱天干（比劫口径排除日主柱）。"""
+    for c in cols:
+        if c.key not in ("year", "month", "time") or not c.gan:
+            continue
+        if c.gan_wx == wx:
             return True
     return False
+
+
+def _weak_elem(cols, wx, final_scores, transformed):
+    """禁令清单元素判据（<2.4 且不[透干且有字面根]），供 印/财/食伤/官杀。"""
+    if final_scores[wx] >= 2.4:
+        return False
+    if _tou_gan(cols, wx) and _wx_literal_root(cols, wx, transformed):
+        return False
+    return True
+
+
+def _bijie_score(cols, dm_wx, final_scores, month_zhi):
+    """比劫星（C24-1：数值门不含日主本干）：同五行总量 − 日主本干折算度（×月令系数）。"""
+    raw = _wx_degrees(cols, month_zhi)[dm_wx]
+    day = next((c for c in cols if c.key == "day"), None)
+    day_in = day.gan_deg if (day and day.gan and day.gan_wx == dm_wx) else 0.0
+    coef = (final_scores[dm_wx] / raw) if raw > 0 else 1.0
+    return max(0.0, round((raw - day_in) * coef, 2))
+
+
+def _weak_bijie(cols, dm_wx, final_scores, month_zhi, transformed):
+    """比劫星 <2.4 且 不[比劫透干(除日主)且有字面根]。"""
+    if _bijie_score(cols, dm_wx, final_scores, month_zhi) >= 2.4:
+        return False
+    if _tou_gan(cols, dm_wx) and _wx_literal_root(cols, dm_wx, transformed):
+        return False
+    return True
 
 
 def _judge_geju(relations, cols, day_master, dm_wx, dm_score, final_scores):
+    """格局判定（011 C24 从格新口径，2026-09-03，替代 010 的 C21）。
+
+    判定顺序：化格（C5 不变）→ 从强 → 从印 → 从弱（从食伤/从财/从杀，取最强从神）→ 正格。
+    根气=C24-2 字面藏干（合化成功作废支除外）；比劫数值门不含日主本干、透干排除日主柱（C24-1/3）；
+    阳干字面见根即不从 / 阴干根须被削弱且残余<2.4（C24 前置1、C24-4）。阈值：≥26 太旺、<2.4 太弱。
+    """
     basis = []
-    # 化格：日主参与的五合合化成功（裁定 C5）
+    # 化格：日主参与的五合合化成功（裁定 C5，不变）
     for e in relations["established"]:
         if e.get("type") == "五合" and e.get("_ok") and day_master in (e["a"], e["b"]):
             basis.append(f"日主{day_master}参与{e['a']}{e['b']}合化{e['_hua']}成功")
@@ -2050,38 +2147,80 @@ def _judge_geju(relations, cols, day_master, dm_wx, dm_score, final_scores):
     ke_wo = _KE_INV[dm_wx]       # 官杀
     wo_sheng = SHENG[dm_wx]      # 食伤
     wo_ke = KE[dm_wx]            # 财
-    root_ok = _dm_effective_root(cols, dm_wx, relations)
-    # ---- 从强（2026-08-22：取消"克泄耗方有根→不从强"杂气规则——[74]巳中庚金1.0余气根误挡从强；
-    #       从强 = 日主 ≥26 且 克泄耗方皆不能独立 final<4.0）----
+    month_zhi = next((c.zhi for c in cols if c.key == "month"), None)
+    yang = GAN_YIN_YANG[day_master] == "阳"
+    transformed = _transformed_idx(relations)
+
+    # ---- 从强（011：日主 ≥26 且 官杀/财/食伤 各<2.4 且皆不[透干且有字面根]）----
     if dm_score >= 26.0:
-        weak_fangs = [f"{wx} {final_scores[wx]:g} 度" for wx in (ke_wo, wo_sheng, wo_ke)
-                      if final_scores[wx] < 4.0]
-        if len(weak_fangs) == 3:
+        bads = [wx for wx in (ke_wo, wo_ke, wo_sheng) if not _weak_elem(cols, wx, final_scores, transformed)]
+        if not bads:
             basis.append(f"日主旺度 {dm_score:g} ≥ 26（太旺以上）")
-            basis.append(f"克泄耗方皆不能独立：{'；'.join(weak_fangs)}")
+            basis.append(f"官杀 {final_scores[ke_wo]:g}、财 {final_scores[wo_ke]:g}、食伤 {final_scores[wo_sheng]:g} "
+                         f"各 <2.4 且皆不[透干且有字面根] → 从强")
             return {"type": "cong_qiang", "hua_shen": None, "basis": basis, "neng_duli": True}
-        basis.append(f"日主 {dm_score:g} 太旺以上，但克泄耗方有可独立者 → 正格（太旺宜泄）")
+        # 区分 数值≥2.4 与 [透干且有根] 两类拒因
+        num_bad = [w for w in (ke_wo, wo_ke, wo_sheng) if final_scores[w] >= 2.4]
+        tt_bad = [w for w in (ke_wo, wo_ke, wo_sheng)
+                  if final_scores[w] < 2.4 and _tou_gan(cols, w) and _wx_literal_root(cols, w, transformed)]
+        basis.append(f"日主 {dm_score:g} ≥26 不从强："
+                     + (f"{'、'.join(f'{w}{final_scores[w]:g}' for w in num_bad)} ≥2.4；" if num_bad else "")
+                     + (f"{'、'.join(f'{w} 透干且有字面根' for w in tt_bad)}" if tt_bad else "")
+                     + " → 正格（太旺）")
         return {"type": "zheng", "hua_shen": None, "basis": basis, "neng_duli": True}
-    # ---- 从印/从杀/从财（2026-08-22 修复 R4：从神须天干透出；师[117][209]无印透不可从印）----
-    # （2026-08-18 用户口径："看最强的根是哪几个，如果多个特别强那可以从多个"）
-    gong_zhu = [(yin_wx, "cong_yin", "印"), (ke_wo, "cong_sha", "官杀"), (wo_ke, "cong_cai", "财")]
-    strong = [(wx, typ, label) for wx, typ, label in gong_zhu
-              if final_scores[wx] >= 26.0 and final_scores[wx] > dm_score * 2.0 and dm_score < 8.8
-              and any(c.gan and GAN_WUXING[c.gan] == wx for c in cols)]
-    if strong:
-        yong_wx, yong_typ, yong_label = max(strong, key=lambda t: final_scores[t[0]])
-        labels = "、".join(f"{l}{final_scores[wx]:g}度" for wx, _, l in strong)
-        basis.append(f"印/官杀/财中最强根：{labels}（≥太旺26 且透干），日主 {dm_score:g} 弱而顺从 → 从{yong_label}")
-        return {"type": yong_typ, "cong_targets": [wx for wx, _, _ in strong],
-                "hua_shen": None, "basis": basis, "neng_duli": False}
-    # ---- 从弱（2026-08-22 修复 R1/R3：阴干也须无有效根；天干无实质帮扶）----
-    if dm_score < 2.4 and not root_ok and not _dm_stem_help(cols, dm_wx, relations):
-        basis.append(f"日主旺度 {dm_score:g}（{level_of(dm_score)}），无有效根、天干无实质帮扶 → 从弱")
-        return {"type": "cong_ruo", "hua_shen": None, "basis": basis, "neng_duli": False}
+
+    # ---- 从印（印 ≥26；比劫星/财/食伤 各<2.4 且不[透干且有根]；日主根阴阳口径：阳无字面根 / 阴根被冲刑合削弱<2.4）----
+    if dm_score < 2.4 and final_scores[yin_wx] >= 26.0:
+        bijie_ok = _weak_bijie(cols, dm_wx, final_scores, month_zhi, transformed)
+        others_ok = all(_weak_elem(cols, wx, final_scores, transformed) for wx in (wo_ke, wo_sheng))
+        root_ok, root_why = _dm_root_ok_011(cols, dm_wx, relations, yang,
+                                            _ACT_CRUSH | _ACT_COMBINE, transformed)
+        if bijie_ok and others_ok and root_ok:
+            basis.append(f"印（{yin_wx}）{final_scores[yin_wx]:g} ≥ 26")
+            basis.append(f"比劫星 {_bijie_score(cols, dm_wx, final_scores, month_zhi):g}、财 {final_scores[wo_ke]:g}、"
+                         f"食伤 {final_scores[wo_sheng]:g} 各<2.4 且不[透干且有字面根]")
+            basis.append(f"日主根：{'阳干地支无一点字面根' if yang else '阴干字面根已被 冲刑合 削弱、残余<2.4'} → 从印")
+            return {"type": "cong_yin", "hua_shen": None, "cong_targets": [yin_wx],
+                    "basis": basis, "neng_duli": False}
+
+    # ---- 从弱（前置1/2 → 前置3 取最强从神）----
+    if dm_score < 2.4:
+        root_ok, root_why = _dm_root_ok_011(cols, dm_wx, relations, yang, _ACT_CRUSH, transformed)
+        if root_ok:
+            # 前置2 印：印透干 ⇒ 印不得有一点字面根
+            if (not _tou_gan(cols, yin_wx)) or (not _wx_literal_root(cols, yin_wx, transformed)):
+                def _flavor_ok(fx, label):
+                    if label == "食伤":
+                        return (_weak_elem(cols, yin_wx, final_scores, transformed)
+                                and _weak_elem(cols, ke_wo, final_scores, transformed)
+                                and not _wx_literal_root(cols, dm_wx, transformed))   # 比劫字面不得有任何根（C24-6）
+                    if label == "财":
+                        return (_weak_bijie(cols, dm_wx, final_scores, month_zhi, transformed)
+                                and _weak_elem(cols, yin_wx, final_scores, transformed))
+                    return (_weak_elem(cols, yin_wx, final_scores, transformed)
+                            and _weak_elem(cols, wo_sheng, final_scores, transformed)
+                            and _weak_bijie(cols, dm_wx, final_scores, month_zhi, transformed))
+
+                flavors = [(wo_sheng, "cong_ruo", "食伤"), (wo_ke, "cong_cai", "财"),
+                           (ke_wo, "cong_sha", "官杀")]
+                pick = [(fx, typ, lab) for fx, typ, lab in flavors
+                        if final_scores[fx] >= 26.0 and _flavor_ok(fx, lab)]
+                if pick:
+                    fx, typ, lab = max(pick, key=lambda t: final_scores[t[0]])
+                    basis.append(f"日主旺度 {dm_score:g}（{level_of(dm_score)}），"
+                                 + ("字面无日主根" if yang else "阴干字面根已被 刑冲破害 削弱残余<2.4"))
+                    basis.append(f"从神 {lab}（{fx}）{final_scores[fx]:g} ≥26 且禁令清单干净（印/帮身各<2.4 且不[透干且有根]）→ 从弱")
+                    return {"type": typ, "hua_shen": None, "cong_targets": [fx],
+                            "basis": basis, "neng_duli": False}
+                basis.append(f"日主 {dm_score:g} 太弱以下、根气与印前置通过，但无 ≥26 且禁令清单干净的从神 → 不从弱")
+            else:
+                basis.append(f"日主 {dm_score:g}，印透干且有字面根 → 不从弱")
+        else:
+            basis.append(f"日主 {dm_score:g}，{root_why} → 不从弱")
+
     neng_duli = dm_score >= 2.4
     if dm_score < 2.4:
-        why = "有有效根" if root_ok else "天干有实质帮扶"
-        basis.append(f"日主旺度 {dm_score:g}（{level_of(dm_score)}），{why}，故不从 → 正格")
+        basis.append(f"日主旺度 {dm_score:g}（{level_of(dm_score)}），不从/无可从之神 → 正格")
     else:
         basis.append(f"日主旺度 {dm_score:g}（{level_of(dm_score)}），"
                      + ("有生克权能独立" if neng_duli else "但有印比帮扶") + " → 正格")

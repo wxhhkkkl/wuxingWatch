@@ -80,15 +80,16 @@ def test_case_ji_chou_dynamic():
     """乾 己丑 戊辰 乙酉 辛巳：合绊介入后 火 1.6、土 11.91、水 0；金 偏弱（书中 9 中和）。
 
     009 两阶段（2026-08-19）：动态 A 乙戊/辛乙相邻相克 + 动态 B 全部藏干（土数倍克水→水归零等）
-    → 乙木 1.4 太弱（阴干）→ 从弱格（书中乙=1.6 太弱，方向一致）。"""
+    → 乙木 1.4 太弱（阴干）。011 C24（2026-09-03）：无 ≥26 之从神 → 不从弱 → 正格（见断言）。"""
     r = wangdu.compute_wangdu(_chart("己丑", "戊辰", "乙酉", "辛巳"), "乙")
     f = r["final_scores"]
     assert abs(f["火"] - 1.6) < 0.05   # (巳3 − 巳酉合绊1) × 0.8（休）
     assert abs(f["土"] - 11.91) < 0.05  # 动态 A 乙戊相克 + 动态 B 戊↔辰中乙克等修正
     assert abs(f["水"] - 0.0) < 0.05   # 动态 B 己/戊↔丑辰中癸 土数倍克水 → 水归零
     assert wangdu.level_of(f["金"]) == "偏弱"  # 辛干受巳火克（同柱）→ 金偏弱
-    assert f["木"] < 2.4                # 乙木 1.4 太弱（阴干）→ 从弱
-    assert r["ge_ju"]["type"] == "cong_ruo"
+    assert f["木"] < 2.4                # 乙木 1.4 太弱
+    # 011 C24（2026-09-03）：乙阴 1.4<2.4、印水 0，但克泄耗方无 ≥26 之从神 → 不从弱 → 正格
+    assert r["ge_ju"]["type"] == "zheng"
 
 
 def test_case_geng_xu_dynamic():
@@ -117,9 +118,11 @@ def test_geju_huo_ji_wang_ji_bu_cong_qiang():
 
 
 def test_geju_cong_qiang_jia_ji_hua_tu():
-    """乾 己丑 甲戌 戊戌 壬戌：甲己化土、壬水弱极不能独立 → 从强格（书中日元 38 旺极）。"""
+    """乾 己丑 甲戌 戊戌 壬戌：甲己化土、戊 40.9 旺极。
+    011 C24（2026-09-03）：从强需克泄耗不[透干且有字面根]——时壬(财)透干且丑藏癸字面根 → 否决 → 正格（太旺）。
+    011 前按"克泄耗皆<4.0"判从强。"""
     r = wangdu.compute_wangdu(_chart("己丑", "甲戌", "戊戌", "壬戌"), "戊")
-    assert r["ge_ju"]["type"] == "cong_qiang"
+    assert r["ge_ju"]["type"] == "zheng"
 
 
 def test_geju_cong_ruo():
@@ -140,7 +143,8 @@ def test_geju_zheng_bi_ruo():
     r = wangdu.compute_wangdu(_chart("甲午", "癸酉", "癸未", "甲寅"), "癸")
     assert abs(r["final_scores"]["水"] - 1.85) < 0.05
     assert r["level"] == "太弱"
-    assert r["ge_ju"]["type"] == "cong_ruo"
+    # 011 C24：癸阴 1.85<2.4、水无字面根，但无 ≥26 之从神 → 不从弱 → 正格
+    assert r["ge_ju"]["type"] == "zheng"
 
 
 # ---------- T006 大运旺度锚点 + 可复现 ----------
@@ -260,10 +264,11 @@ def test_fix_zixing_blocked_by_clash():
 
 
 def test_fix_xing_diao_gen():
-    """修复：数量型三刑"刑掉"根（§7）——寅巳刑 两巳当令=4巳刑掉一寅 → 乙木无根从弱（书[253]）。
-    修复前引擎不刑掉根 → 误判正格。"""
+    """[253] 乾 庚寅 辛巳 乙巳 壬午：数量型三刑"刑掉"根——寅巳刑 两巳当令=4巳刑掉一寅 → 乙无根。
+    011 C24（2026-09-03）：乙阴无根可通过，但无 ≥26 之从神（火19/土5/金2.5 皆不足）→ 不从弱 → 正格
+    （011 前按"刑掉根→从弱"，书/师 08-18 判从弱，被 011 从神门槛取代）。"""
     r = wangdu.compute_wangdu(_chart("庚寅", "辛巳", "乙巳", "壬午"), "乙")
-    assert r["ge_ju"]["type"] == "cong_ruo"
+    assert r["ge_ju"]["type"] == "zheng"
 
 
 def test_fix_zi_mao_xing_diao():
@@ -273,9 +278,10 @@ def test_fix_zi_mao_xing_diao():
     天干生克步 + 通根 → 水 太弱从弱。此处断言刑掉根这一修复本体。"""
     r = wangdu.compute_wangdu(_chart("癸卯", "乙卯", "壬子", "癸卯"), "壬")
     be = next(s for s in r["steps"] if s["key"] == "branch_effects")
-    assert any("刑掉" in t["expression"] for t in be["traces"])  # 子被刑掉
+    assert any("刑掉" in t["expression"] for t in be["traces"])  # 子被刑掉（数值层仍落）
     assert r["final_scores"]["水"] < 2.4
-    assert r["ge_ju"]["type"] == "cong_ruo"
+    # 011 C24：壬阳干 字面 子（水本气根，刑掉不除字面）→ 不从弱 → 正格（011 前"刑掉根→从弱"被阳干字面口径取代）
+    assert r["ge_ju"]["type"] == "zheng"
 
 
 # ---------- T007 关系判定对拍（fixtures 前后端共读） ----------
@@ -425,38 +431,46 @@ def test_tongzhu_ren_sheng_mu_cong_ruo_192():
 
 
 def test_tongzhu_wu_yin_shou_ke_cong_ruo_340():
-    """[340] 乾 戊子 庚申 戊寅 辛酉：戊寅同柱 木克土（戊受克×0.5）→ 戊 2.16 从弱
-    （修复前 2.4 比弱正格）；书"戊土无根无气以从弱论，取木水为用"。"""
+    """[340] 乾 戊子 庚申 戊寅 辛酉：戊寅同柱 木克土（戊受克×0.5）→ 戊 1.4 太弱。
+    011 C24（2026-09-03）：戊阳干 字面见 申/寅 中戊土（余气根）→ 不从弱 → 正格
+    （书"无根从弱"、011 前判从弱，被阳干字面口径取代）。"""
     r = wangdu.compute_wangdu(_chart("戊子", "庚申", "戊寅", "辛酉"), "戊")
-    assert r["ge_ju"]["type"] == "cong_ruo"
+    assert r["ge_ju"]["type"] == "zheng"
     assert r["final_scores"]["土"] < 2.4
 
 
 # ---------- T012 从格判定重写（2026-08-18 用户口径：阴干<2.4从 / 阳干有根不从 / 从印杀财看最强根） ----------
 
 def test_geju_yin_gan_cong_ruo_170():
-    """[170] 乾 乙巳 己丑 乙丑 乙酉：乙（阴干）2.1 太弱 → 从弱（修复前印水6.4≥4 挡成正格）。"""
+    """[170] 乾 乙巳 己丑 乙丑 乙酉：乙 弱极。
+    011 C24（2026-09-03）：无 ≥26 之从神 → 不从弱 → 正格
+    （师08-18"乙2.1应从"、011 前判从弱，被从神≥26 门槛取代）。"""
     r = wangdu.compute_wangdu(_chart("乙巳", "己丑", "乙丑", "乙酉"), "乙")
-    assert r["ge_ju"]["type"] == "cong_ruo"
+    assert r["ge_ju"]["type"] == "zheng"
 
 
 def test_geju_yin_gan_cong_ruo_346():
-    """[346] 坤 庚戌 戊寅 癸酉 乙卯：癸（阴干）0.4 弱极 → 从弱（修复前印金4.2 挡成正格）。"""
+    """[346] 坤 庚戌 戊寅 癸酉 乙卯：癸 0.4 弱极。
+    011 C24（2026-09-03）：庚月干印金透 且 酉/戌 字面金根 → 印透干且有根 → 不从弱 → 正格
+    （师08-18"水0.4应从"、011 前判从弱，被前置2 印根口径取代）。"""
     r = wangdu.compute_wangdu(_chart("庚戌", "戊寅", "癸酉", "乙卯"), "癸")
-    assert r["ge_ju"]["type"] == "cong_ruo"
+    assert r["ge_ju"]["type"] == "zheng"
 
 
 def test_geju_yang_gan_wu_gen_cong_ruo_176():
-    """[176] 乾 庚子 乙酉 甲辰 庚午：甲（阳干）0.5 无根（辰酉合化金去辰中乙木）→ 从弱。"""
+    """[176] 乾 庚子 乙酉 甲辰 庚午：甲 0.25（辰酉合化金去辰中乙木）。
+    011 C24（2026-09-03）：无 ≥26 之从神（官金/财土/食伤火 皆不足）→ 不从弱 → 正格
+    （师08-18"甲0.5弱极应从"、011 前判从弱，被从神≥26 门槛取代）。"""
     r = wangdu.compute_wangdu(_chart("庚子", "乙酉", "甲辰", "庚午"), "甲")
-    assert r["ge_ju"]["type"] == "cong_ruo"
+    assert r["ge_ju"]["type"] == "zheng"
 
 
 def test_geju_yang_gan_wu_gen_cong_ruo_195():
-    """[195] 乾 壬辰 丁未 庚午 丙戌：庚（阳干）0.5 无根（午戌合化火去戌中金气）→ 从弱，官火为用。"""
+    """[195] 乾 壬辰 丁未 庚午 丙戌：庚 弱极（午戌合化火去戌中金气）。
+    011 C24（2026-09-03）：无 ≥26 之从神 → 不从弱 → 正格
+    （书"官旺为用从弱"、师08-18"必从"、011 前判从弱，被从神≥26 门槛取代）。"""
     r = wangdu.compute_wangdu(_chart("壬辰", "丁未", "庚午", "丙戌"), "庚")
-    assert r["ge_ju"]["type"] == "cong_ruo"
-    assert r["yong_shen"] == "火"          # 书"官旺为用"
+    assert r["ge_ju"]["type"] == "zheng"
 
 
 def test_geju_yang_gan_feng_he_cong_ruo_133():
@@ -467,9 +481,11 @@ def test_geju_yang_gan_feng_he_cong_ruo_133():
 
 
 def test_geju_yang_gan_xing_diao_cong_ruo_259():
-    """[259] 坤 癸卯 乙卯 壬子 癸卯：壬（阳干）子根被刑掉 → 无根从弱（修复前 2.4 比弱正格）。"""
+    """[259] 坤 癸卯 乙卯 壬子 癸卯：壬阳干 1.59（子被刑掉）。
+    011 C24（2026-09-03）：阳干 字面见 子（水本气根，刑掉不除字面）→ 不从弱 → 正格
+    （师08-18"子刑掉应从"、011 前判从弱，被阳干字面口径取代）。"""
     r = wangdu.compute_wangdu(_chart("癸卯", "乙卯", "壬子", "癸卯"), "壬")
-    assert r["ge_ju"]["type"] == "cong_ruo"
+    assert r["ge_ju"]["type"] == "zheng"
 
 
 def test_geju_yang_gan_you_gen_zheng_355():
@@ -480,15 +496,16 @@ def test_geju_yang_gan_you_gen_zheng_355():
 
 
 def test_geju_cong_yin_204_322_347():
-    """从印：印星 ≥26 太旺、从神印星透干（2026-08-22 R4：师[117][209]"无印透不可从印"）、日主弱而从之。
-    [184] 印木34 但不透（天干无甲乙）→ 2026-08-22 起不从印（归正格），已从本用例剔除。"""
-    cases = [("壬寅", "甲辰", "丙戌", "辛卯", "丙", "木"),   # [204] 印木44（甲透），书"水木为用"
-             ("丁巳", "丙午", "己未", "己巳", "己", "火"),   # [322] 印火57（丙透）
-             ("庚辰", "戊子", "甲辰", "壬申", "甲", "水")]   # [347] 印水38（壬透），书"金水为用"
-    for y, m, d, t, dm, yong in cases:
+    """011 C24（2026-09-03）从印口径：印≥26 + 日主<2.4 + 比劫星/财/食伤<2.4 且不[透干且有根] + 阴阳根口径。
+    以下书/师 08-18"必然从印"三例 因 日主 ≥2.4（5.1/5.11/3.06）→ 不达从印日主<2.4 门 → 正格身弱：
+    [204] 丙3.06 印木48.4；[322] 己5.1 印火56.4；[347] 甲5.11 印水42.2（011 前按"印≥26+透干"判从印）。"""
+    cases = [("壬寅", "甲辰", "丙戌", "辛卯", "丙"),   # [204]
+             ("丁巳", "丙午", "己未", "己巳", "己"),   # [322]
+             ("庚辰", "戊子", "甲辰", "壬申", "甲")]   # [347]
+    for y, m, d, t, dm in cases:
         r = wangdu.compute_wangdu(_chart(y, m, d, t), dm)
-        assert r["ge_ju"]["type"] == "cong_yin", f"{y}{m}{d}{t} 应从印"
-        assert r["yong_shen"] == yong
+        assert r["ge_ju"]["type"] == "zheng", f"{y}{m}{d}{t} 011 应从弱不从印→正格"
+        assert r["ge_ju"].get("cong_targets") is None
 
 
 def test_geju_yin_bu_tou_bu_cong_yin_184():
@@ -544,25 +561,28 @@ def test_geju_cong_yin_need_tou_209():
 
 
 def test_geju_cong_qiang_74():
-    """2026-08-22 校准：取消"克泄耗方有根→不从强"杂气规则。
-    [74] 癸丑己未己巳庚午：己土 31.8 太旺、克泄耗方（木0/金0.25/水0）皆 <4.0 → 从强
-    （修复前巳中庚金1.0余气根误判杂气→正格）。[6][317] 同口径：日主≥26 且克泄耗皆<4.0 即从强。"""
-    assert wangdu.compute_wangdu(_chart("癸丑", "己未", "己巳", "庚午"), "己")["ge_ju"]["type"] == "cong_qiang"
-    assert wangdu.compute_wangdu(_chart("壬申", "癸丑", "戊戌", "壬戌"), "戊")["ge_ju"]["type"] == "cong_qiang"
-    assert wangdu.compute_wangdu(_chart("戊申", "己未", "戊戌", "癸丑"), "戊")["ge_ju"]["type"] == "cong_qiang"
+    """011 C24（2026-09-03）从强口径：日主≥26 且 官杀/财/食伤各<2.4 且皆不[透干且有字面根]。
+    以下三例均因 [透干且有字面根] 否决（011 前按"克泄耗皆<4.0"判从强）→ 正格（太旺）：
+    [74] 己31.8（癸财透+丑癸根、庚食伤透+丑辛根）；[6] 戊28.44（水3/金3.15≥2.4）；[317] 戊29.1（癸财透+丑癸根）。"""
+    assert wangdu.compute_wangdu(_chart("癸丑", "己未", "己巳", "庚午"), "己")["ge_ju"]["type"] == "zheng"
+    assert wangdu.compute_wangdu(_chart("壬申", "癸丑", "戊戌", "壬戌"), "戊")["ge_ju"]["type"] == "zheng"
+    assert wangdu.compute_wangdu(_chart("戊申", "己未", "戊戌", "癸丑"), "戊")["ge_ju"]["type"] == "zheng"
 
 
 def test_geju_cong_sha_213():
-    """[213] 乾 甲寅 丁卯 戊辰 丙辰：七杀木50 太旺 → 从杀。"""
+    """[213] 乾 甲寅 丁卯 戊辰 丙辰：戊 1.75，七杀木 50 太旺。
+    011 C24（2026-09-03）：戊阳干 字面见 寅/辰 中戊根 → 不从弱 → 正格
+    （书/师08-18"按从格"、011 前判从杀，被阳干字面口径取代）。"""
     r = wangdu.compute_wangdu(_chart("甲寅", "丁卯", "戊辰", "丙辰"), "戊")
-    assert r["ge_ju"]["type"] == "cong_sha"
+    assert r["ge_ju"]["type"] == "zheng"
 
 
 def test_geju_cong_cai_270():
-    """[270] 坤 己丑 丁丑 甲辰 戊辰：财土36 太旺 → 从财（书"以从财论故富"）。"""
+    """[270] 坤 己丑 丁丑 甲辰 戊辰：甲 0.7，财土 35.3 太旺。
+    011 C24（2026-09-03）：甲阳干 字面见 丑/辰 中甲根（丑乙、辰乙）→ 不从弱 → 正格
+    （书"以从财论故富"、011 前判从财，被阳干字面口径取代）。"""
     r = wangdu.compute_wangdu(_chart("己丑", "丁丑", "甲辰", "戊辰"), "甲")
-    assert r["ge_ju"]["type"] == "cong_cai"
-    assert r["yong_shen"] == "土"
+    assert r["ge_ju"]["type"] == "zheng"
 
 
 # ---------- T013 根因④⑤⑥（2026-08-18：三合破局 / 合化细节 / 刑冲合害） ----------
@@ -628,9 +648,11 @@ def test_sanhe_ban_jianli_155():
 
 
 def test_chou_wu_hai_dang_ling_292():
-    """根因⑥ [292] 坤 庚戌 己丑 丙午 丁酉：丑当令=两丑害一午 → 午火尽去 → 从弱（书"其中之火无存"）。"""
+    """根因⑥ [292] 坤 庚戌 己丑 丙午 丁酉：丑当令=两丑害一午 → 午火尽去（数值层仍成立，火<2.0）。
+    011 C24（2026-09-03）：丙阳干 字面见 午（火根，害去不除字面）→ 不从弱 → 正格
+    （师08-18"应从弱"、011 前判从弱，被阳干字面口径取代）。"""
     r = wangdu.compute_wangdu(_chart("庚戌", "己丑", "丙午", "丁酉"), "丙")
-    assert r["ge_ju"]["type"] == "cong_ruo"
+    assert r["ge_ju"]["type"] == "zheng"
     assert r["final_scores"]["火"] < 2.0
 
 
