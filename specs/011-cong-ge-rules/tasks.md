@@ -4,6 +4,13 @@
 **Prerequisites**: plan.md, spec.md, research.md, data-model.md
 **Tests**: 宪法 II TDD 强制——每项引擎逻辑先写失败测试再实现。
 
+## 执行状态（2026-09-03）
+
+- ✅ T001-T012（US1）：引擎重写完成、测试按 011 口径收编翻转锚点——**后端 295 全绿**（commit a8c25da）。
+- ✅ T016-T019（US3）：`xiyong.py` 从神喜忌随 `ge_ju.type`/`cong_targets` 传导无需改（类型未变）；测试 `test_xiyong.py` 从强用例改用 [335] 盘 → 全绿；前端 `types.ts` 无形状变化、**vitest 153 全绿**。
+- ✅ T020/T021：全量双端绿、US1 已提交；本 spec/plan/tasks/tasks 文档已提交。
+- ◐ T013-T015（US2）：产出 [从格规则-011-翻转清单-20260903.md](../../doc/从格规则-011-翻转清单-20260903.md)（锚点级实测翻转 16 项 + 维持 2 项 + 类别规律）；对照 md 已标注 011 取代。**全量 361 重算**待独立 harness（非仓库内脚本）跑出后同步该 doc 的完整逐例表。
+
 ## 依赖图（故事完成顺序）
 
 ```text
