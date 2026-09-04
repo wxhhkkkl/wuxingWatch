@@ -16,6 +16,8 @@
 - C20 同柱生克（2026-08-18，§2.1-3 + §2.2）：干支同柱论生克，每柱干对支本气按
   同性/异性增减力**进入五行度数总量**（书"此谓同柱可论生克异柱不能论也" +
   "相生相克的旺度理论"）；生克权以五行静态旺度判 ≥2.4；先于天干五合与地支刑冲合害。
+  **（C25，2026-09-04 用户口径：同柱生克"先不计算、罗列但不算分数"——第10步仅罗列
+  同柱配对关系，不再增减任何度数；C20 的进总量口径作废待复核，见 _list_tongzhu）**
 - C21 从格判定（2026-08-22 依老师最新反馈校准）：日主 <2.4（太弱以下）且 无有效根（阴干阳干同标准，
   修复前阴干无条件从弱；藏同类 ≥1.0 含余气即算根）且 无紧贴实质帮扶（月干/时干 比劫/印 且帮星有根）
   → 从弱；半三合不化不绊根（师[119][194][321]）；从印/从杀/从财：印/官杀/财最强 ≥26 且显著强于日主
@@ -1440,26 +1442,16 @@ _TZSG_FACTOR = {
 # 主方（生者/克者）须有生克权（旺度 ≥ 比弱 2.4）方生效（书"比弱或比弱以上有生克权"）。
 
 
-def _tzg_factor(col, stem, factor):
-    """给某柱天干（stem=None）或某藏干乘系数（同柱生克增减力）。"""
-    if stem is None:
-        col.gan_deg = round(col.gan_deg * factor, 3)
-    elif stem in col.hidden:
-        col.hidden[stem] = round(col.hidden[stem] * factor, 3)
+def _list_tongzhu(cols, traces):
+    """同柱生克罗列（裁定 C25，2026-09-04 用户口径）：列出每柱天干 ↔ 本柱全部藏干的
+    相生/相克配对关系，**不进入任何度数**（第10步"先不计算、罗列但不算分数"）。
 
+    书"此谓同柱可论生克异柱不能论也"——可论的是配对关系本身：干与支中藏干（本气/中气/
+    余气）五行非比和者，按 §2.2 相生相克定性（同性/异性生克增减系数见 _TZSG_FACTOR）。
+    C20（008，2026-08-18）曾让同柱生克按系数**进入五行度数总量**，并随 010 并入第10步
+    天干层；C25 起暂停计分、仅罗列，先看配对清单再定后续计分口径（用户"先不严格区分"）。
 
-def _apply_tongzhu(cols, static_scores, traces):
-    """动态 B：同柱生克——每柱天干 ↔ 本柱全部藏干 配对运算（008 公式扩展到全部藏干，2026-08-19 Q4）。
-
-    书"此谓同柱可论生克异柱不能论也"；量化见"相生相克的旺度理论（适用于天干和地支之间的生克）"：
-    - 同性相生 主×0.7 受×1.3；异性相生 主×0.8 受×1.2；
-    - 同性相克 主×0.7 受×0.5；异性相克 主×0.7 受×0.6。
-    生克权：主方（生者/克者）旺度 ≥2.4 生效（以阶段一静态分数为基准）；
-    主生有权而受生无权 → 不减不加；主生太旺（≥26）而受生无权 → 受生反减5成；
-    受克无权 → 主克不减、受克照减；主克数倍于受克（≥4倍）→ 受克归零、主克耗1成。
-
-    009：作用对象为本柱**全部藏干**（本气/中气/余气，逐个配对），与天干比和（同五行）
-    的藏干不配对；执行顺序在动态 A **之后**（先改天干五合/生克、再同柱生克）。
+    作用对象为本柱全部藏干（逐个配对），与天干比和（同五行）的藏干不配对。
     """
     for c in cols:
         if not (c.gan and c.zhi) or c.key not in ("year", "month", "day", "time"):
@@ -1472,47 +1464,19 @@ def _apply_tongzhu(cols, static_scores, traces):
             if wh == wg:
                 continue  # 比和：不配对
             if SHENG[wg] == wh:
-                rel, m_is_gan = "生", True       # 干生藏干（干泄）
+                rel, m_wx, s_wx = "生", wg, wh    # 干生藏干（干泄）
             elif SHENG[wh] == wg:
-                rel, m_is_gan = "生", False      # 藏干生干（藏泄、干受生）
+                rel, m_wx, s_wx = "生", wh, wg    # 藏干生干（藏泄、干受生）
             elif KE[wg] == wh:
-                rel, m_is_gan = "克", True       # 干克藏干
+                rel, m_wx, s_wx = "克", wg, wh    # 干克藏干
             elif KE[wh] == wg:
-                rel, m_is_gan = "克", False      # 藏干克干
+                rel, m_wx, s_wx = "克", wh, wg    # 藏干克干
             else:
                 continue
             tong = GAN_YIN_YANG[c.gan] == GAN_YIN_YANG[hg]
-            mf, sf = _TZSG_FACTOR[(rel, "同" if tong else "异")]
-            m_wx, s_wx = (wg, wh) if m_is_gan else (wh, wg)
-            m_deg, s_deg = static_scores[m_wx], static_scores[s_wx]
-            m_stem, s_stem = ((None, hg) if m_is_gan else (hg, None))
             rel_word = "生" if rel == "生" else "克"
-            if rel == "生":
-                if m_deg < 2.4:
-                    continue                     # 主生无权：不生
-                if s_deg < 2.4:
-                    if m_deg < 26.0:
-                        continue                 # 主生有权、受生无权：不减不加
-                    _tzg_factor(c, s_stem, 0.5)  # 主生太旺、受生无权：受生反减5成
-                    traces.append(f"{c.gan}↔{c.zhi}中{hg}同柱生克：{m_wx}太旺{rel_word}{s_wx}无力，{s_wx}反减5成")
-                else:
-                    _tzg_factor(c, m_stem, mf)
-                    _tzg_factor(c, s_stem, sf)
-                    traces.append(f"{c.gan}↔{c.zhi}中{hg}（{'同' if tong else '异'}性{rel_word}）："
-                                  f"{m_wx}×{mf:g}、{s_wx}×{sf:g}")
-            else:  # 克
-                if m_deg < 2.4:
-                    continue                     # 主克无权：不克
-                if s_deg > 0 and m_deg >= 4.0 * s_deg:
-                    _tzg_factor(c, s_stem, 0.0)  # 主克数倍于受克：受克归零
-                    _tzg_factor(c, m_stem, 0.9)  # 主克耗1成
-                    traces.append(f"{c.gan}↔{c.zhi}中{hg}：{m_wx}数倍克{s_wx}，{s_wx}归零、{m_wx}耗1成")
-                else:
-                    if s_deg >= 2.4:
-                        _tzg_factor(c, m_stem, mf)   # 力量相当：主克减3成
-                    _tzg_factor(c, s_stem, sf)       # 受克照减
-                    traces.append(f"{c.gan}↔{c.zhi}中{hg}（{'同' if tong else '异'}性{rel_word}）："
-                                  f"{m_wx}×{mf:g}、{s_wx}×{sf:g}")
+            traces.append(f"{c.gan}↔{c.zhi}中{hg}（{'同' if tong else '异'}性{rel_word}）："
+                          f"{m_wx}{rel_word}{s_wx}，罗列不计分")
 
 
 # ============================================================
@@ -1621,7 +1585,7 @@ def _stem_shengke(cols, month_zhi, static_scores, hehua_outcomes, traces):
     合：五合——合化（归属已在第5步改）、合绊（主克×0.8/受克×0.5、贪合忘生克）、争合失利/势均力敌 skip。
     冲：天干相冲（甲庚/乙辛/丙壬/丁癸，皆同性克）按 ×0.7/×0.5 进度数；被合化消费之干不论冲。
     生克：普通相生相克，按优先级 同性克>异性生>异性克>同性生 排序处理（数值沿用现行倍率，基本不变）。
-    同柱生克（干↔本柱全部藏干）附于本步，生克权基准为第9步系数后分数。
+    同柱生克（干↔本柱全部藏干）附于本步——C25（2026-09-04）**仅罗列配对关系、不进度数**。
     """
     order = ["year", "month", "day", "time"]
     idx = {c.key: i for i, c in enumerate(cols) if c.key in order}
@@ -1672,8 +1636,8 @@ def _stem_shengke(cols, month_zhi, static_scores, hehua_outcomes, traces):
 
     for i, j in sorted(shengke_pairs, key=lambda p: _rank(*p)):
         _adjacent_shengke(cols[i], cols[j], static_scores, traces)
-    # ---- 同柱生克（干↔本柱全部藏干）----
-    _apply_tongzhu(cols, static_scores, traces)
+    # ---- 同柱生克（干↔本柱全部藏干）：C25 仅罗列，不进度数 ----
+    _list_tongzhu(cols, traces)
 
 
 def _judge_root_preserved(cols, relations, month_zhi):
@@ -1942,7 +1906,7 @@ def compute_wangdu(pillars: dict, day_master: str, da_yun: list | None = None) -
          "result": "；".join(f"{wx} {static_scores[wx]:g}" for wx in WUXING_ORDER)},
         {"key": "stem_shengke", "title": "第 10 步 · 天干生克",
          "rule": "紧贴三对：先合-冲（合化/合绊×0.8×0.5、天干冲按同性克×0.7×0.5）再生克"
-                 "（优先级 同性克>异性生>异性克>同性生）；含同柱生克",
+                 "（优先级 同性克>异性生>异性克>同性生）；同柱生克（干↔本柱藏干）罗列不计分（C25）",
          "traces": [{"target": "", "expression": t, "value": None} for t in traces_stem_shengke],
          "result": traces_stem_shengke[0] if traces_stem_shengke else "无天干生克作用"},
         {"key": "total", "title": "第 11 步 · 总分数",

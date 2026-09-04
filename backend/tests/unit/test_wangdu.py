@@ -40,11 +40,12 @@ def test_case_user_quoted_ding_wei():
 
     2026-08-18 同柱生克落地：甲申 金克木、丁未 火生土（丁泄×0.7）→ 火 3.99 比弱。
     009 两阶段（2026-08-19）：静态含地支关系修正、动态 A 紧贴甲丁相邻相生（甲×0.8、丁×1.2）、
-    动态 B 全部藏干 → 火 3.91 比弱；身弱喜印比不变。"""
+    动态 B 全部藏干 → 火 3.91 比弱；身弱喜印比不变。
+    2026-09-04 C25：同柱生克"罗列不计分"（第10步）→ 火 4.34 较弱；身弱正格取木不变。"""
     r = wangdu.compute_wangdu(_chart("乙卯", "甲申", "丁巳", "丁未"), "丁")
     assert r["method"] == "sizhu-jingsui"
-    assert abs(r["final_scores"]["火"] - 3.91) < 0.05
-    assert r["level"] == "比弱"
+    assert abs(r["final_scores"]["火"] - 4.34) < 0.05
+    assert r["level"] == "较弱"
     assert r["ge_ju"]["type"] == "zheng"
     assert r["yong_shen"] in ("木", "火")  # 身弱取生扶（印/比劫）
 
@@ -61,7 +62,8 @@ def test_case_geng_yin_static():
     assert abs(s["木"] - 4.55) < 0.1   # (乙1 + 寅3+3 − 相邻通根 0.5) × 0.7（囚）
     assert wangdu.level_of(s["水"]) == "比弱"
     # 009 动态 A（乙庚合绊贪合忘生克 + 乙戊/戊庚相邻生克）+ 动态 B（全部藏干）→ 庚 final 2.81 比弱
-    assert r["level"] == "比弱"
+    # 2026-09-04 C25：同柱不计分、仅罗列 → 庚 final 4.56 较弱
+    assert r["level"] == "较弱"
 
 
 def test_case_wu_shen_static():
@@ -77,17 +79,18 @@ def test_case_wu_shen_static():
 # ---------- T004 刑冲合害介入锚点 ----------
 
 def test_case_ji_chou_dynamic():
-    """乾 己丑 戊辰 乙酉 辛巳：合绊介入后 火 1.6、土 11.91、水 0；金 偏弱（书中 9 中和）。
+    """乾 己丑 戊辰 乙酉 辛巳：合绊介入后 火 1.6、土 13.2、水 1.0；金 10.05 中和（书中 9 中和）。
 
     009 两阶段（2026-08-19）：动态 A 乙戊/辛乙相邻相克 + 动态 B 全部藏干（土数倍克水→水归零等）
-    → 乙木 1.4 太弱（阴干）。011 C24（2026-09-03）：无 ≥26 之从神 → 不从弱 → 正格（见断言）。"""
+    → 乙木 1.4 太弱（阴干）。011 C24（2026-09-03）：无 ≥26 之从神 → 不从弱 → 正格（见断言）。
+    2026-09-04 C25：同柱不计分、仅罗列 → 土 13.2、水保留 1.0、金 10.05 中和（对书中 9 中和）。"""
     r = wangdu.compute_wangdu(_chart("己丑", "戊辰", "乙酉", "辛巳"), "乙")
     f = r["final_scores"]
     assert abs(f["火"] - 1.6) < 0.05   # (巳3 − 巳酉合绊1) × 0.8（休）
-    assert abs(f["土"] - 11.91) < 0.05  # 动态 A 乙戊相克 + 动态 B 戊↔辰中乙克等修正
-    assert abs(f["水"] - 0.0) < 0.05   # 动态 B 己/戊↔丑辰中癸 土数倍克水 → 水归零
-    assert wangdu.level_of(f["金"]) == "偏弱"  # 辛干受巳火克（同柱）→ 金偏弱
-    assert f["木"] < 2.4                # 乙木 1.4 太弱
+    assert abs(f["土"] - 13.2) < 0.05  # 相邻乙辛/辛乙相克后土（C25 前同柱再克藏干 → 11.91）
+    assert abs(f["水"] - 1.0) < 0.05   # 丑/辰中癸存留（C25 前同柱"土数倍克水 → 水归零"）
+    assert wangdu.level_of(f["金"]) == "中和"  # C25：辛干不再受同柱巳中火克 → 金 10.05 中和（书中 9 中和）
+    assert f["木"] < 2.4                # 乙木 2.16 太弱
     # 011 C24（2026-09-03）：乙阴 1.4<2.4、印水 0，但克泄耗方无 ≥26 之从神 → 不从弱 → 正格
     assert r["ge_ju"]["type"] == "zheng"
 
@@ -96,10 +99,11 @@ def test_case_geng_xu_dynamic():
     """乾 庚戌 庚辰 庚午 丙戌：金 =（天干 3 + 年戌辛 2 − 辰戌冲 1）× 1.5 = 6，偏弱；取土金为用。
 
     2026-08-18 同柱生克：庚戌/庚辰 土生金（庚×1.3）、庚午 火克金（庚×0.6）→ 金 6.3 偏弱。
-    009 两阶段（2026-08-19）：动态 A 丙庚相邻相克（丙×0.7、庚×0.5）+ 动态 B 庚↔午中丁/己克生 → 金 5.94 偏弱。"""
+    009 两阶段（2026-08-19）：动态 A 丙庚相邻相克（丙×0.7、庚×0.5）+ 动态 B 庚↔午中丁/己克生 → 金 5.94 偏弱。
+    2026-09-04 C25：同柱不计分、仅罗列 → 金 5.25 较弱（土生金增益消失多于火克金减损）。"""
     r = wangdu.compute_wangdu(_chart("庚戌", "庚辰", "庚午", "丙戌"), "庚")
-    assert abs(r["final_scores"]["金"] - 5.94) < 0.05
-    assert r["level"] == "偏弱"
+    assert abs(r["final_scores"]["金"] - 5.25) < 0.05
+    assert r["level"] == "较弱"
     assert r["ge_ju"]["type"] == "zheng"
     assert r["yong_shen"] in ("土", "金")  # 身弱取生扶
 
@@ -139,33 +143,35 @@ def test_geju_zheng_bi_ruo():
 
     2026-08-18 同柱生克：癸酉 金生水（癸×1.3）、癸未 土克水（癸×0.5）→ 水 2.7 比弱正格；
     009 动态 A（癸甲相邻相生×2，癸泄）+ 动态 B 全部藏干（癸↔未中丁/己克等）→ 水 1.85 <2.4
-    阴干 → 从弱（结论变化已记录于对照测试报告）。"""
+    阴干 → 从弱（结论变化已记录于对照测试报告）。
+    2026-09-04 C25：同柱不计分、仅罗列 → 水 2.4 比弱（从弱先决日主<2.4 不成立）→ 正格。"""
     r = wangdu.compute_wangdu(_chart("甲午", "癸酉", "癸未", "甲寅"), "癸")
-    assert abs(r["final_scores"]["水"] - 1.85) < 0.05
-    assert r["level"] == "太弱"
-    # 011 C24：癸阴 1.85<2.4、水无字面根，但无 ≥26 之从神 → 不从弱 → 正格
+    assert abs(r["final_scores"]["水"] - 2.4) < 0.05
+    assert r["level"] == "比弱"
+    # 011 C24：癸 2.4 达比弱门槛有生克权、无 ≥26 之从神 → 不从弱 → 正格
     assert r["ge_ju"]["type"] == "zheng"
 
 
 # ---------- T006 大运旺度锚点 + 可复现 ----------
 
 def test_dayun_wu_wu_jia_zi():
-    """坤 戊午 甲子 甲寅 辛未：原局木 8.56 偏弱；癸亥运 11.56 / 壬戌运 7.06 / 辛酉运 6.56 / 庚申运 5.06。
+    """坤 戊午 甲子 甲寅 辛未：原局木 8.85 中和；癸亥运 11.85 / 壬戌运 7.35 / 辛酉运 6.85 / 庚申运 5.35。
 
     009 两阶段（2026-08-19）：动态 A 甲戊相邻相克（木数倍克土）+ 动态 B 甲↔子中癸/寅中丙戊 →
-    木 8.56（旧 9.3 中和）；大运增减基数随之下移约 0.74。"""
+    木 8.56（旧 9.3 中和）；大运增减基数随之下移约 0.74。
+    2026-09-04 C25：同柱不计分、仅罗列 → 木 8.85 中和（各运随基数整体上移约 0.29）。"""
     r = wangdu.compute_wangdu(
         _chart("戊午", "甲子", "甲寅", "辛未"), "甲",
         _dayun("癸亥", "壬戌", "辛酉", "庚申"),
     )
-    assert abs(r["final_scores"]["木"] - 8.56) < 0.05
-    assert r["level"] == "偏弱"
+    assert abs(r["final_scores"]["木"] - 8.85) < 0.05
+    assert r["level"] == "中和"
     adj = {a["ganzhi"]: a for a in r["dayun_adjustments"]}
-    assert abs(adj["癸亥"]["scores_after"]["木"] - 11.56) < 0.05  # 相地+1、通根亥中甲+2
+    assert abs(adj["癸亥"]["scores_after"]["木"] - 11.85) < 0.05  # 相地+1、通根亥中甲+2
     assert adj["癸亥"]["level_after"] == "偏旺"
-    assert abs(adj["壬戌"]["scores_after"]["木"] - 7.06) < 0.05   # 囚地 −1.5
-    assert abs(adj["辛酉"]["scores_after"]["木"] - 6.56) < 0.05   # 死地 −2
-    assert abs(adj["庚申"]["scores_after"]["木"] - 5.06) < 0.05   # 死地 −2、申冲寅寅减半再 −1.5
+    assert abs(adj["壬戌"]["scores_after"]["木"] - 7.35) < 0.05   # 囚地 −1.5
+    assert abs(adj["辛酉"]["scores_after"]["木"] - 6.85) < 0.05   # 死地 −2
+    assert abs(adj["庚申"]["scores_after"]["木"] - 5.35) < 0.05   # 死地 −2、申冲寅寅减半再 −1.5
     assert adj["庚申"]["level_after"] == "较弱"
 
 
@@ -203,9 +209,10 @@ def test_missing_time_pillar():
 
 def test_fix_banhe_month_liuhe_bu_bian():
     """书中例4 乾 乙卯 丁亥 壬戌 壬寅：亥卯半三合（月令亥参与，化木≠亥水本气）→ 2026-08-27 月令守则不化（合绊）；
-    月令有效五行保持水 → 水 6.75 偏弱 正格（010 单基准曾化木 → 水 1.44 从弱，被月令守则取代，US3 差异记录）。"""
+    月令有效五行保持水 → 水 6.75 偏弱 正格（010 单基准曾化木 → 水 1.44 从弱，被月令守则取代，US3 差异记录）。
+    2026-09-04 C25：同柱不计分、仅罗列（壬戌/壬寅 水泄耗不再扣减）→ 水 9.6 中和，仍正格。"""
     r = wangdu.compute_wangdu(_chart("乙卯", "丁亥", "壬戌", "壬寅"), "壬")
-    assert abs(r["final_scores"]["水"] - 6.75) < 0.05
+    assert abs(r["final_scores"]["水"] - 9.6) < 0.05
     assert r["ge_ju"]["type"] == "zheng"
 
 
@@ -317,13 +324,14 @@ def test_yong_shen_geng_strong_prefers_shui_shouxie():
 
 
 def test_yong_shen_xin_strong_qu_shui_guard():
-    """[326] 坤 辛未 丁酉 辛未 丁酉：辛金 10.88 中和（009 动态 A 三对丁辛相邻相克 + 动态 B 全部藏干，
-    由旧身旺 24 降为中和）→ 身中和取生扶（金），不再触发"辛喜水洗涤"的身旺取用分支。
+    """[326] 坤 辛未 丁酉 辛未 丁酉：辛金 21.5 比旺（009 动态 A 三对丁辛相邻相克，静态 24 → 21.5；
+    动态 B 全部藏干曾把辛再降至 10.88 中和）。辛比旺 → 按辛性"辛喜水洗涤"取水泄秀。
 
-    结论变化已记录于对照测试报告；本测试验证 009 引擎在中和档取生扶（金/土）而非被带偏。"""
+    2026-09-04 C25：同柱不计分、仅罗列 → 辛金维持比旺，确认触发"辛喜水"身旺取用分支而非被带偏取金。"""
     r = wangdu.compute_wangdu(_chart("辛未", "丁酉", "辛未", "丁酉"), "辛")
     assert r["ge_ju"]["type"] == "zheng"
-    assert r["yong_shen"] == "金"
+    assert r["level"] == "比旺"
+    assert r["yong_shen"] == "水"
 
 
 def test_yong_shen_geng_weak_qu_bijie():
@@ -380,9 +388,10 @@ def test_case_xu_yue_zao_tu_zhu_huo():
     丁身旺按丁性取土为用（书"土金为用"方向一致）。修复前火=7.2 偏弱。
 
     009 两阶段（2026-08-19）：静态火 13.5；动态 A 丁戊相邻相生（丁×0.8）+ 丁庚相邻相克（火数倍克金）
-    + 动态 B → 火 11.28 偏旺；取用仍土、金仍脆。"""
+    + 动态 B → 火 11.28 偏旺；取用仍土、金仍脆。
+    2026-09-04 C25：同柱不计分、仅罗列 → 火 13.08 偏旺（丁泄木生火等的同柱扣减消失）；取用仍土。"""
     r = wangdu.compute_wangdu(_chart("辛酉", "戊戌", "丁卯", "庚戌"), "丁")
-    assert abs(r["final_scores"]["火"] - 11.28) < 0.05
+    assert abs(r["final_scores"]["火"] - 13.08) < 0.05
     assert r["level"] == "偏旺"
     assert r["ge_ju"]["type"] == "zheng"
     assert r["yong_shen"] == "土"
@@ -405,29 +414,33 @@ def test_tongzhu_yi_chou_shou_ke_bu_cong():
     不再满足从强（修复前木 28 从强）；书"身较旺又不从，以土金为用"。
 
     009 两阶段（2026-08-19）：动态 A 辛乙/乙戊相邻相克 + 动态 B 辛↔卯中乙×2、乙↔丑中辛己、戊↔寅中甲丙 →
-    木 15.81 较旺。"""
+    木 15.81 较旺。
+    2026-09-04 C25：同柱不计分、仅罗列 → 木 26.9 太旺；011 C24 仍不从强（食伤火3≥2.4、
+    官杀金/财土透干且有字面根）→ 正格（太旺），用神金、书"以土金为用"方向维持。"""
     r = wangdu.compute_wangdu(_chart("辛卯", "辛卯", "乙丑", "戊寅"), "乙")
     assert r["ge_ju"]["type"] == "zheng"
-    assert r["level"] == "较旺"
-    assert abs(r["final_scores"]["木"] - 15.81) < 0.1
+    assert r["level"] == "太旺"
+    assert abs(r["final_scores"]["木"] - 26.9) < 0.1
 
 
 def test_tongzhu_ren_wu_ke_huo_105():
-    """[105] 坤 丁亥 壬寅 壬午 庚戌：寅午戌三合火（月令寅参与三合，化火）→ 月令=火、火 18.6 较旺。
-    日主壬 2.7 比弱、财火 18.6 未达 ≥26 → 正格身弱，用神金 喜水
-    （书/师判"从财用火喜木"；2026-08-27 月令守则后三合仍化但火未及从财阈值，US3 差异记录）。"""
+    """[105] 坤 丁亥 壬寅 壬午 庚戌：寅午戌三合火（月令寅参与三合，化火）→ 月令=火、火 37（final）太旺。
+    日主壬 3.71 比弱；财火虽 ≥26 但日主有生克权可独立 → 不从财 → 正格身弱，用神金 喜水
+    （书/师判"从财用火喜木"；2026-09-04 C25 同柱不计分后日主水由 <2.75 回升至 3.71，仍判正格身弱）。"""
     r = wangdu.compute_wangdu(_chart("丁亥", "壬寅", "壬午", "庚戌"), "壬")
     assert r["ge_ju"]["type"] == "zheng"
     assert r["yong_shen"] == "金"
-    assert r["final_scores"]["水"] < 2.75
+    assert abs(r["final_scores"]["水"] - 3.71) < 0.05
 
 
 def test_tongzhu_ren_sheng_mu_cong_ruo_192():
     """[192] 乾 癸卯 甲寅 壬午 壬寅：壬寅同柱 水生木（壬泄）+ 壬午 壬克火 → 壬 1.68 从弱
-    （修复前 static=final=2.4 比弱正格，C13 使生克泄力完全不进度数）；书"此造从弱，午火为用"。"""
+    （修复前 static=final=2.4 比弱正格，C13 使生克泄力完全不进度数）；书"此造从弱，午火为用"。
+    2026-09-04 C25：同柱不计分、仅罗列 → 木从神 25.12<26、财火12/官土2 皆不足 → 不从弱 → 正格；
+    壬 2.0 仍 < static 2.4（泄力来自相邻癸甲/壬甲相生，非同柱）。"""
     r = wangdu.compute_wangdu(_chart("癸卯", "甲寅", "壬午", "壬寅"), "壬")
-    assert r["ge_ju"]["type"] == "cong_ruo"
-    assert r["final_scores"]["水"] < r["static_scores"]["水"]  # 动态 < 静态（生克泄力生效）
+    assert r["ge_ju"]["type"] == "zheng"
+    assert r["final_scores"]["水"] < r["static_scores"]["水"]  # 相邻天干生克泄力生效（非同柱）
 
 
 def test_tongzhu_wu_yin_shou_ke_cong_ruo_340():
@@ -437,6 +450,20 @@ def test_tongzhu_wu_yin_shou_ke_cong_ruo_340():
     r = wangdu.compute_wangdu(_chart("戊子", "庚申", "戊寅", "辛酉"), "戊")
     assert r["ge_ju"]["type"] == "zheng"
     assert r["final_scores"]["土"] < 2.4
+
+
+def test_tongzhu_c25_list_only_not_scored():
+    """C25（2026-09-04）：第10步同柱生克仅罗列、不计分。
+
+    [192] 乾 癸卯 甲寅 壬午 壬寅：干↔本柱藏干的同柱生克配对均以"罗列不计分"条目出现在
+    stem_shengke 步骤中；条目不带任何 ×增减系数（与相邻天干生克/合冲的进度数条目区分开）。"""
+    r = wangdu.compute_wangdu(_chart("癸卯", "甲寅", "壬午", "壬寅"), "壬")
+    step = next(s for s in r["steps"] if s["key"] == "stem_shengke")
+    expr = [t["expression"] for t in step["traces"]]
+    tongzhu = [t for t in expr if "↔" in t]
+    assert tongzhu, "应列出同柱干↔藏干配对"
+    assert all(t.endswith("罗列不计分") for t in tongzhu)
+    assert all("×" not in t for t in tongzhu)
 
 
 # ---------- T012 从格判定重写（2026-08-18 用户口径：阴干<2.4从 / 阳干有根不从 / 从印杀财看最强根） ----------
