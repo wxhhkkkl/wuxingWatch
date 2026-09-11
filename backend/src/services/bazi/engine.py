@@ -10,7 +10,12 @@ from datetime import datetime, timedelta
 from lunar_python import Solar
 from lunar_python.eightchar import Yun
 
-from services.bazi import hidden_stems, pillar_detail, shichen, xiyong
+from services.bazi import hidden_stems, pillar_detail, shichen, xiyong  # 旧引擎（保留）
+from services.bazi.v2 import xiyong_analysis as _v2_analysis  # noqa: F401  (012 v2)
+
+
+class xiyong_v2:  # noqa: N801  薄命名空间，便于调用点写作 xiyong_v2.xiyong_analysis
+    xiyong_analysis = staticmethod(_v2_analysis)
 from services.bazi.constants import (
     GAN_LIST,
     GAN_WUXING,
@@ -199,8 +204,13 @@ def compute_chart(
     latitude: float | None = None,
     timezone: str | None = None,
     precise_shichen: bool = False,
+    hour_known: bool = True,
 ) -> dict:
     """Compute the full ChartResult dict for a solar birth time.
+
+    `hour_known=False` 表示**时辰不详**（上游仍以午时占位排盘）。此时旺度/喜忌
+    按**三柱**计算并给出降级说明（FR-057），但排盘字段本身**不变**。
+    
 
     真太阳时按出生地经度与 IANA 时区调整；若出生时刻处于夏令时，
     将记录时钟（夏令时）修正为标准时间后再排盘，并在结果中注明。
@@ -354,7 +364,9 @@ def compute_chart(
     ]
 
     hidden = hidden_stems.ruling_info(month_zhi, solar_birth, lunar_c.getJieQiTable())
-    xi = xiyong.xiyong_analysis(day_master, pillars, da_yun["steps"])
+    # 012：切换到 v2 引擎（旧 xiyong/wangdu 原封保留，见 spec C26-3）
+    xi = xiyong_v2.xiyong_analysis(day_master, pillars, da_yun["steps"],
+                                   hour_known=hour_known)
 
     return {
         "solar_birth": solar_birth.isoformat(),
@@ -457,7 +469,7 @@ def compute_from_pillars(pillars: dict[str, str], gender: str) -> dict:
         {"year": y, "ganzhi": liunian_ganzhi(y)}
         for y in range(current_year, current_year + LIU_NIAN_SPAN + 1)
     ]
-    xi = xiyong.xiyong_analysis(day_master, pillar_dicts, steps)
+    xi = xiyong_v2.xiyong_analysis(day_master, pillar_dicts, steps)
 
     return {
         "solar_birth": None,

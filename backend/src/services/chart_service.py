@@ -93,6 +93,7 @@ def compute(payload) -> tuple[dict, datetime | None]:
         longitude=longitude,
         latitude=payload.latitude,
         timezone=payload.timezone,
+        hour_known=hm is not None,
         precise_shichen=bool(getattr(payload, "precise_shichen", False)) and hm is not None,
     )
 

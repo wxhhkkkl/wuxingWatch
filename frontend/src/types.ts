@@ -404,3 +404,138 @@ export interface BirthInput {
   birth_pillars?: { year: string; month: string; day: string; time: string }
   precise_shichen?: boolean
 }
+
+// ============================================================
+// 012 期 v2 结论契约（engine === 'wangdu-v2'）
+// ============================================================
+// **独立设计、不与旧契约耦合**（spec FR-053）——字段名与嵌套均与 `WangduVerdict`
+// 不同，展示层按 `engine` 分流（FR-054）。data-model.md §1 为准。
+//
+// 排盘字段（pillars / lunar_birth 等）**不属于本契约**，一律不变。
+
+export interface V2RelationEffect {
+  zhi: string
+  gan?: string
+  wuxing?: string
+  delta?: number
+  scale?: number
+  remove?: boolean
+  reason: string
+}
+
+export interface V2Relation {
+  tier: number          // 1..18，对应十八级先后顺序
+  type: string
+  members: string[]
+  cols: string[]
+  hua: string | null
+  detail: string
+  effects: V2RelationEffect[]
+  reason?: string       // rejected 时的不成立原因
+  blocked_by?: { tier: number; type: string; cols: string[] } | null
+}
+
+export interface V2Degrees {
+  base: number
+  after_relations: number
+  root: number
+  static: number
+  final: number
+  coef: number
+  state: string
+}
+
+export interface V2GeJu {
+  type: 'zheng' | 'cong_ruo' | 'cong_qiang' | 'cong_yin' | 'cong_sha' | 'cong_cai' | 'hua'
+  hua_shen: string | null
+  cong_targets: string[]
+  neng_duli: boolean
+  liang_qi: string[] | null
+  basis: string[]
+}
+
+export interface V2YongShenBlock {
+  element: string | null
+  basis: string
+  direction?: string
+  reason?: string
+}
+
+export interface V2Tiaohou {
+  element: string | null
+  basis: string
+  met: boolean
+  quantified: string
+  position: string | null
+}
+
+export interface V2YongShen {
+  empty: boolean
+  theoretical: V2YongShenBlock | null
+  practical: V2YongShenBlock | null
+  tiaohou: V2Tiaohou | null
+  xi_shen: string[]
+  ji_shen: string[]
+  xian_shen: string[]
+  /** 第一/第二/第三用神（FR-039）。**刻度未定**，见下。 */
+  tier: { first: string | null; second: string | null; third: string | null }
+  direction: string | null
+  basis: string
+  /** 旬空标注：**无削弱系数**（书中无量化）。只标「逢旬空·受制」。 */
+  xunkong?: { kong: string[]; notes: string[] }
+}
+
+export interface V2Layers {
+  /** 层次等级刻度**属书中未量化项**，须 C26-n 裁定；裁定前恒为空串。 */
+  verdict: string
+  met: string[]
+  missing: string[]
+  penalties: { reason: string; delta: string }[]
+  basis: string
+}
+
+export interface V2Step {
+  key: string
+  title: string
+  rule: string
+  /** 该段生效的**口径裁定编号**（C26-n / O-n），可在 research.md 定位（FR-056）。 */
+  rulings?: string[]
+  traces: StepTrace[]
+  result: string
+}
+
+export interface V2DayunStep {
+  ganzhi: string
+  start_year: number | null
+  start_age_xu: number | null
+  level: string
+  ge_ju: V2GeJu
+  yong_shen: V2YongShen
+  /** 该步的**关系裁定**——已把本步干支并入判定（FR-042 的大运维度）。 */
+  relations: { established: V2Relation[]; rejected: V2Relation[] }
+  transition: '成格' | '破格' | null
+  deltas: StepTrace[]
+  scores_after: Record<string, number>
+}
+
+/** 012 期 v2 结论（engine === 'wangdu-v2'）。 */
+export interface WangduV2 {
+  engine: 'wangdu-v2'
+  contract_version: 2
+  day_master: string
+  day_master_wuxing: string
+  input_scope: 'four_pillars' | 'three_pillars'
+  degradations: string[]
+  relations: { established: V2Relation[]; rejected: V2Relation[] }
+  degrees: Record<string, V2Degrees>
+  level: string
+  ge_ju: V2GeJu
+  yong_shen: V2YongShen
+  layers?: V2Layers
+  steps: V2Step[]
+  dayun: V2DayunStep[]
+}
+
+export function isWangduV2(s: unknown): s is WangduV2 {
+  return !!s && typeof s === 'object' && (s as { engine?: string }).engine === 'wangdu-v2'
+}

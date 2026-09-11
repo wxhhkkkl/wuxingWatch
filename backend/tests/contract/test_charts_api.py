@@ -193,14 +193,15 @@ def test_predict_xiyong_wangdu_contract(client):
     assert c["yong_shen"] in ("木", "火", "土", "金", "水")
     assert "tiaohou_yong_shen" in c and "element" in c["tiaohou_yong_shen"]
     assert "basis" in c and "yong_shen" in c["basis"] and "tiaohou" in c["basis"]
+    # 012 起预测走 **v2 契约**（engine=wangdu-v2）；旧 `method=sizhu-jingsui`
+    # 只出现在改造前落库的历史记录里，由前端按标识分流（FR-053/054）。
     s = xi["strength"]
-    assert s["method"] == "sizhu-jingsui"
-    assert set(s["static_scores"]) == {"木", "火", "土", "金", "水"}
+    assert s["engine"] == "wangdu-v2", "012 起默认产出 v2 结论"
+    assert s["contract_version"] == 2
     assert set(s["final_scores"]) == {"木", "火", "土", "金", "水"}
     assert all(v >= 0 for v in s["final_scores"].values())
     assert s["ge_ju"]["type"] in ("zheng", "cong_ruo", "cong_qiang", "cong_yin", "cong_sha", "cong_cai", "hua")
-    # 010 定性1-5 → 定量6-11：14 键（废弃 static/dynamic_a/dynamic_b/final）
-    from services.bazi import wangdu
-    assert [st["key"] for st in s["steps"]] == wangdu.STEP_KEYS
+    assert s["input_scope"] in ("four_pillars", "three_pillars")
     da_yun_gz = [d["ganzhi"] for d in resp.json()["da_yun"]["steps"]]
-    assert [a["ganzhi"] for a in s["dayun_adjustments"]] == da_yun_gz
+    # v2 契约里逐步大运结论落在 `strength.dayun`（旧契约的 `dayun_adjustments` 已被取代）
+    assert [a["ganzhi"] for a in s["dayun"]] == da_yun_gz

@@ -17,6 +17,8 @@ import {
   type RelType,
 } from '../utils/relations'
 import { GAN_WUXING, wxColor, ZHI_WUXING } from '../utils/wuxing'
+import { v2RelationsToJudgments } from '../utils/v2relations'
+import { isWangduV2 } from '../types'
 
 const props = defineProps<{
   result: ChartResult
@@ -84,12 +86,66 @@ const relCols = computed<RelCol[]>(() => {
   return cols
 })
 
+// 012 方案 A：命盘图**优先消费后端 v2 裁定**；无裁定（旧记录）时回退本地判定。
+//
+// 背景：008 期起本组件在浏览器里**自己再判一遍**关系，与后端 `judge_relations`
+// 构成双实现，且两份已经漂移（丑·水状态、丑/辰党众取度）。012 裁定改为消费后端
+// 裁定（research R7 方案 A）——后端 `strength.relations` 即唯一口径来源。
+const v2Strength = computed(() => {
+  const s = (props.result as { xi_yong?: { strength?: unknown } })?.xi_yong?.strength
+  return isWangduV2(s) ? s : null
+})
+
+/** 原局裁定（后端）。 */
+const backendJudgments = computed(() => {
+  const s = v2Strength.value
+  return s ? v2RelationsToJudgments(s.relations) : null
+})
+
+/** 选中大运那一步的裁定（后端已把该步干支并入判定）——含大运维度由此走后端。 */
+const backendDayunJudgments = computed(() => {
+  const s = v2Strength.value
+  const gz = props.selectedDayun?.ganzhi
+  if (!s || !gz) return null
+  const step = (s.dayun ?? []).find((d) => d.ganzhi === gz)
+  return step ? v2RelationsToJudgments(step.relations) : null
+})
+
+/** 该判定是否牵涉大运/流年列。 */
+function touchesJu(j: Judgment): boolean {
+  const cols = [j.aColId, j.bColId, ...(j.memberColIds ?? [])]
+  return cols.includes('dayun') || cols.includes('liunian')
+}
+
 // 008：条件判定（成立/未成立）→ 连线只画成立关系
-const relJudgments = computed(() =>
-  buildRelationJudgments(relCols.value, {
+//
+// 012 方案 A 之后的取数：**原局关系取自后端裁定**（唯一口径来源）；
+// **大运/流年维度后端暂无对应物**（`compute_strength` 只算原局），
+// 故这一部分仍由本地判定补充——混合来源是临时状态，见 research R7。
+const relJudgments = computed(() => {
+  const back = backendJudgments.value
+  const local = buildRelationJudgments(relCols.value, {
     excludeColIds: includeDayunLiunian.value ? [] : ['dayun', 'liunian'],
-  }),
-)
+  })
+  if (!back) return local
+  if (!includeDayunLiunian.value) return back
+
+  // 选中大运时**优先用后端该步的裁定**（已含该步干支）；
+  // 流年维度后端暂未按年返回，仍需本地补充——混合来源是临时状态（research R7）。
+  const stepBack = backendDayunJudgments.value
+  const juOnly = (list: Judgment[]) =>
+    list.filter((j) => touchesJu(j) && !(j.aColId === 'dayun' || j.bColId === 'dayun'))
+  if (stepBack) {
+    return {
+      established: [...stepBack.established, ...juOnly(local.established)],
+      rejected: [...stepBack.rejected, ...juOnly(local.rejected)],
+    }
+  }
+  return {
+    established: [...back.established, ...local.established.filter(touchesJu)],
+    rejected: [...back.rejected, ...local.rejected.filter(touchesJu)],
+  }
+})
 
 /** 判定条目 → 连线/汇总用的 RelPair（显示文案在此组装）。 */
 function toRelPair(j: Judgment): RelPair {

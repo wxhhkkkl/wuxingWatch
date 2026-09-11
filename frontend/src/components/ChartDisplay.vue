@@ -14,7 +14,7 @@ import {
 import PillarTable from './PillarTable.vue'
 import FortuneStrip from './FortuneStrip.vue'
 import RelationDiagram from './RelationDiagram.vue'
-import { isWangduStrength } from '../types'
+import { isWangduStrength, isWangduV2 } from '../types'
 import { useChartStore } from '../stores/chart'
 
 const props = defineProps<{ result: ChartResult }>()
@@ -299,7 +299,7 @@ function fmtDateTime(s: string): string {
       <p class="wx-card-title">
         喜忌分析
         <span
-          v-if="isWangduStrength(xi.strength)"
+          v-if="isWangduStrength(xi.strength) || isWangduV2(xi.strength)"
           class="strength-link"
           data-testid="strength-link"
           @click="router.push('/strength')"
