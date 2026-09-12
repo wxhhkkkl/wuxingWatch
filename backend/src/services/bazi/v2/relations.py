@@ -25,7 +25,7 @@
   ② 月令为化神的当令之地（折中参数 ≤3）；
   ③ 透出化神，或全局**地支**化神静态旺度 ≥26。
   其中「透出」的范围**按关系类型分档**：
-    三会（下 1072）/ 三合（上 3437）——「**全局**必须透出（不需在X上透出）」；
+    三会（下 1074）/ 三合（上 3438）——「**全局**必须透出（不需在X上透出）」；
     六合（上 2886）/ 半三合——「X和Y至少有一支**在其上**透出」。
   三合另有「1 冲即破」（C22）；天合地合须天干、地支**都**化成功（书《—》待核）。
 
@@ -54,7 +54,10 @@ from services.bazi.v2 import _ordered, tables
 
 
 # ===============================================================
-# 十八级级表（书《—》待核 原文，共 18 级，顺序即权威）
+# 十八级级表（书 下 3186 原文，共 18 级，顺序即权威）
+#
+# ⚠️ 其中 **16 拱会 / 17 拱合不产出候选**（2026-09-11 用户裁定去除）——
+# 书里只给级名、无成立条件与度数。级位保留以维持编号与书一致。
 # ===============================================================
 
 @dataclass(frozen=True)
@@ -95,7 +98,7 @@ TIERS: tuple[Tier, ...] = (
 # 否则 `寅寅午` 这类「两条同层级半三合共用一支」会双双成立，违反 O-5。
 _HE_HUI = frozenset((4, 6, 12))                        # 三会 / 三合 / 六合（「合会三兄弟」）
 # FR-003 的「刑冲与合会」那一支里，「合会」是**任意合会**——含半三合(10/13)。
-# 书 下 2712 例明文：「午午自刑成功，**同时**午戌合化火也成功」（两者化神同为火）。
+# 书 下 2721 例明文：「午午自刑成功，**同时**午戌合化火也成功」（两者化神同为火）。
 # 但「合会 ↔ 合会」仍只限三兄弟，否则 `寅寅午` 的两条半三合又会双双成立（O-5）。
 _HE_HUI_ANY = frozenset((4, 6, 10, 12, 13))
 _XING_CHONG = frozenset((2, 5, 7, 8, 11, 14))          # 天克地冲 / 丑未戌刑 / 三支自刑 / 六冲 / 寅巳申三刑 / 两支刑
@@ -154,36 +157,17 @@ _PILLAR_ORDER = _ordered.PILLAR_ORDER
 # ===============================================================
 
 # 天干五合（书 上 1577「甲己合化土，乙庚合化金，丙辛合化水，丁壬合化木，戊癸合化火（或土）」）。
-# 值 = **候选化神元组**，与 `ZHI_LIUHE` 同构；`戊癸` 是唯一的多化神项（书 上 2078
-# 「戊癸**既能合化为火，又能合化为土**」），按序试条件——先火（上 2080）、后土（上 2124）。
-_GAN_HE_HUA_OPTIONS: dict[frozenset, tuple[str, ...]] = {
-    frozenset("甲己"): ("土",), frozenset("乙庚"): ("金",),
-    frozenset("丙辛"): ("水",), frozenset("丁壬"): ("木",),
-    frozenset("戊癸"): ("火", "土"),
+#
+# **戊癸只取化火**（2026-09-11 用户裁定）。
+# ⚠️ 书内冲突留痕：书上 2078 明写「戊癸**既能合化为火，又能合化为土**」，上 2124-2135
+# 另有整节「②戊癸合化土成功的条件」（五条件俱全），下 3969 列「戊癸化火（化土）格」，
+# 下 4134/4138 两例亦明判「戊癸化土格」。本实现**按裁定只认化火**——
+# 上述化土条文与两例因此判不出（差异可追溯至此条）。
+GAN_HE_HUA: dict[frozenset, str] = {
+    frozenset("甲己"): "土", frozenset("乙庚"): "金",
+    frozenset("丙辛"): "水", frozenset("丁壬"): "木",
+    frozenset("戊癸"): "火",
 }
-# `_gan_hua_resolve` 每次解析出的化神（只对多化神项有意义）
-_RESOLVED_HUA: dict[frozenset, str] = {}
-
-
-class _GanHeHuaTable(dict):
-    """天干五合表：`下标取「本次解析出的化神」`，而非恒取首项。
-
-    **为什么重载下标**：本仓既有的取名范式是「先 `_gan_hua_ok()` 判成立、再
-    `GAN_HE_HUA[pair]` 取化神」（`geju._day_master_he_hua`——本文件之外的调用点），
-    而戊癸有火/土两个候选，只有判过条件才知道是哪个。`_gan_hua_resolve` 每次
-    解析前先清掉该对的记录、成功时写回，故：
-
-    - 判成立后立刻取下标 → 拿到**刚解析出的那一个**；
-    - 没有解析记录（只问「这个五合是什么」的旁路调用）→ 退回首项（戊癸为「火」）。
-
-    直接读原始候选请用 `dict.get(GAN_HE_HUA, pair)`（`get` 不走本重载）。
-    """
-
-    def __getitem__(self, pair):
-        return _RESOLVED_HUA.get(pair) or dict.__getitem__(self, pair)[0]
-
-
-GAN_HE_HUA = _GanHeHuaTable(_GAN_HE_HUA_OPTIONS)
 # 天干相冲（书：天干无相冲，此即「同性相克」的四组）
 GAN_CHONG = [frozenset("甲庚"), frozenset("乙辛"), frozenset("丙壬"), frozenset("丁癸")]
 
@@ -219,16 +203,16 @@ BANHE_SHENGDI = [("亥", "卯", "木"), ("寅", "午", "火"),
 BANHE_MUDI = [("卯", "未", "木"), ("午", "戌", "火"),
               ("子", "辰", "水"), ("巳", "酉", "金")]
 
-# 拱合 / 拱会（书《—》待核）——「不存在合化之说」，故只作结构关系
-GONGHE = [("亥", "未", "木"), ("寅", "戌", "火"), ("巳", "丑", "金"), ("申", "辰", "水")]
-GONGHUI = [("寅", "辰"), ("巳", "未"), ("申", "戌"), ("亥", "丑")]
+# 拱合 / 拱会：**已去除**（2026-09-11 用户裁定）——书里只有级名、无成立条件与度数，
+# 原实现的「取第一个 X + 第一个 Y、不看柱距」会把不相干的支判成拱并抢走 tier 18。
+# 故 `GONGHE`/`GONGHUI` 两张表连同 tier 16/17 的候选枚举一并删除。
 MAOCHEN = frozenset("卯辰")
 
 SIKU = frozenset("辰戌丑未")
 
 # **自刑**（书 下 第十节「相刑」1-4）：支 → (化神, 成功后**每支**度数)。
-#   辰辰 化土 每支 5（下 2586）｜午午 化火 每支 5（下 2695）
-#   酉酉 化金 每支 6（下 2749）｜亥亥 化水 每支 5（下 2805）
+#   辰辰 化土 每支 5（下 2583）｜午午 化火 每支 5（下 2691）
+#   酉酉 化金 每支 6（下 2750）｜亥亥 化水 每支 5（下 2805）
 # 两支柱：`ZIXING`（已有）给出哪四支可自刑。
 ZIXING_HUA: dict[str, tuple[str, float]] = {
     "辰": ("土", 5.0), "午": ("火", 5.0), "酉": ("金", 6.0), "亥": ("水", 5.0)}
@@ -259,8 +243,13 @@ SPECIAL_PAIRS: tuple[tuple[str, str], ...] = (
     ("巳", "戌"),                    # ⑤巳生戌
     ("辰", "巳"), ("辰", "午"),      # ⑥辰晦巳午
     ("辰", "亥"),                    # ⑦辰克亥
-    ("戌", "申"), ("戌", "酉"),      # ⑧戌生金（书 上 494/499/501）
+    ("戌", "申"),                    # ⑧未戌分档的「戌脆金 / 戌生金」（书 上 490/494/495/503）
 )
+# **为何没有 ("戌","酉")**：该注册是**死分支**——酉戌相邻时必先成酉戌害（tier 15 < 18），
+# tier 18 的戌酉只能进 `rejected`；而**酉侧**的数值已由 `ban.hai_effects` 的酉戌害三档
+# 完整覆盖，且三档与未戌分档一一对应（下 3122「当戌中丁火≥3度：酉金减半」＝戌脆金减半、
+# 下 3124「丁火为2度：酉金减1/4」＝戌脆金1/4、下 3126「丁火为1度：酉金增力1度」＝戌生金）。
+# 故不注册，避免「注册了但走不到」。
 
 
 # ---- 特殊生克的月令分组（书《上》第三节 地支特殊生克「第三节 地支特殊生克」）----
@@ -273,22 +262,29 @@ _SP_HAIZI = frozenset("亥子")
 _SP_COLD3 = frozenset("亥子丑")
 # 戌**反有生金之力**之月（书 上 494 申酉月、499 亥子丑月、501 辰月）
 _SP_XU_SHENG_JIN = frozenset("申酉亥子丑辰")
+# 戌**脆金**之月（书 上 490 巳午未月「其脆金之力是减半…其中之火均减力1度」、上 495 戌月
+# 「其脆金之力为减半…其中之火均减力1度」、上 503 寅卯月「其脆金之力为1/4，此时戌中丁火
+# 减力0.5度」）。与上面的生金之月**互补**，合起来覆盖全部十二月令——即戌对申酉**无月不论**。
+_SP_XU_CUI_JIN = frozenset("巳午未戌")
+_SP_XU_CUI_JIN_QUARTER = frozenset("寅卯")
 
 
 def _special_applies(z1: str, z2: str, month_zhi: str, cols: list[_Col]) -> bool:
     """该特殊生克在本月令下是否成立。
 
-    书明列三处「无作用」的情形：
+    书明列两处「无作用」的情形：
     - ①未克申酉 c：未生**亥子丑**月时「没有克金之力也无生金之力」（书 上 2313）；
-    - ⑧戌生金：戌只于 申酉 / 亥子丑 / 辰 三月（含运）「反有生金之力」（书 上 494/499/501）；
     - ⑦辰克亥 b：辰生申酉丑亥子月时「不克亥水，也不助亥水」（书 上 2429）。
     另 ⑦ 要求 **辰与亥个数比为 1:1**（书《上》第三节 地支特殊生克「（注意：以下规则专指子和丑个数比为1：1的情况）」）。
+
+    **戌对申酉无月不论**：生金（申酉/亥子丑/辰，上 494/499/501）与脆金（巳午未/戌/寅卯，
+    上 490/495/503）互补，覆盖全部十二月令，故该对恒成立。
     """
     pair = frozenset((z1, z2))
     if pair == frozenset({"未", "申"}) or pair == frozenset({"未", "酉"}):
         return month_zhi not in _SP_NO_GOLD
     if pair == frozenset({"戌", "申"}) or pair == frozenset({"戌", "酉"}):
-        return month_zhi in _SP_XU_SHENG_JIN
+        return True
     if pair == frozenset({"辰", "亥"}):
         if month_zhi in frozenset("申酉丑亥子"):
             return False
@@ -311,32 +307,51 @@ def _special_effects(z1: str, z2: str, month_zhi: str,
 
     if pair == frozenset({"未", "申"}) or pair == frozenset({"未", "酉"}):
         jin = z2 if z2 in ("申", "酉") else z1
-        # 未中丁火按**每个**受方计（书 上 524「未土脆克3申，其中的丁火共减力0.5×3＝1.5度」）
+        # 未中丁火按**每个**受方计（书 上 528「未土脆克3申，其中的丁火共减力0.5×3＝1.5度」）
         if month_zhi in _SP_HOT:
             fx.append({"zhi": jin, "wuxing": "金", "delta": None, "scale": 0.5,
                        "reason": "未克申酉：燥月申酉减半（书 上 2307「a. 当未土生于巳、午、未、戌月时，未土克申酉金，此时申酉金减半（杂气不变），未中丁火减力1度」）"})
             fx.append({"zhi": "未", "gan": "丁", "delta": -1.0 * n_recv,
-                       "reason": "未克申酉：未中丁火每个受方减 1 度（书 上 2307「未中丁火减力1度」；多支算例 上 524「未土脆克3申，其中的丁火共减力0.5×3＝1.5度」）"})
+                       "reason": "未克申酉：未中丁火每个受方减 1 度（书 上 2307「未中丁火减力1度」；多支算例 上 528「未土脆克3申，其中的丁火共减力0.5×3＝1.5度」）"})
         elif month_zhi in _SP_YINMAO_SHENYOU:
             fx.append({"zhi": jin, "wuxing": "金", "delta": None, "scale": 0.75,
                        "reason": "未克申酉：申酉减 1/4（书 上 2311「b. 当未土生于寅卯申酉月时，未土克申酉金，申酉金减力1/4（杂气不变），此时未中丁火减力0.5度」）"})
             fx.append({"zhi": "未", "gan": "丁", "delta": -0.5 * n_recv,
-                       "reason": "未克申酉：未中丁火每个受方减 0.5 度（书 上 2311；多支算例 上 524 同）"})
+                       "reason": "未克申酉：未中丁火每个受方减 0.5 度（书 上 2311；多支算例 上 528 同）"})
         elif month_zhi == "辰":
             # 书 上 501《特殊情况三》辰月档；与 上 2313①c（把辰并入「不发生任何变化」）
             # **书内自相矛盾**——按「精髓正文取更具体者」，取辰月的 1/6。
             fx.append({"zhi": jin, "wuxing": "金", "delta": None, "scale": 5 / 6,
                        "reason": "未克申酉：辰月未土脆金之力 1/6（书 上 501「未戌生于辰月：…未土的脆金之力为1/6，这时未中之火均减力0.33度」；与 上 2313①c 冲突，取更具体者）"})
             fx.append({"zhi": "未", "gan": "丁", "delta": round(-0.33 * n_recv, 4),
-                       "reason": "未克申酉：辰月未中之火每个受方减 0.33 度（书 上 501 同句；多支算例 上 524 同）"})
+                       "reason": "未克申酉：辰月未中之火每个受方减 0.33 度（书 上 501 同句；多支算例 上 528 同）"})
 
+    # 注：`戌-酉` 这一支**只作本规则的酉侧定义保留**——`SPECIAL_PAIRS` 不再注册它
+    # （酉戌相邻必先成酉戌害，tier 18 走不到），生产中酉侧由 `ban.hai_effects` 的
+    # 酉戌害三档（下 3122-3126）按同一套分档处理；见 `SPECIAL_PAIRS` 处的说明。
     elif pair == frozenset({"戌", "申"}) or pair == frozenset({"戌", "酉"}):
         jin, jin_gan = ("申", "庚") if "申" in pair else ("酉", "辛")
-        # 书 上 494「戌…**其不脆金反生金（使金增力1度）**，其中戊土减力1度，辛金、丁火不变」
-        fx.append({"zhi": jin, "gan": jin_gan, "delta": 1.0,
-                   "reason": "戌生金：戌使金增力 1 度（书 上 494「戌含土3度，含金2度，含火1度，其不脆金反生金（使金增力1度），其中戊土减力1度，辛金、丁火不变」；亥子丑月 上 499、辰月 上 501 同「戌无脆金之力反有生金之力」）"})
-        fx.append({"zhi": "戌", "gan": "戊", "delta": -1.0,
-                   "reason": "戌生金：戌中戊土减 1 度（书 上 494 同句；辛金、丁火不变）"})
+        if month_zhi in _SP_XU_SHENG_JIN:
+            # 书 上 494「戌…**其不脆金反生金（使金增力1度）**，其中戊土减力1度，辛金、丁火不变」
+            fx.append({"zhi": jin, "gan": jin_gan, "delta": 1.0,
+                       "reason": "戌生金：戌使金增力 1 度（书 上 494「戌含土3度，含金2度，含火1度，其不脆金反生金（使金增力1度），其中戊土减力1度，辛金、丁火不变」；亥子丑月 上 499、辰月 上 501 同「戌无脆金之力反有生金之力」）"})
+            fx.append({"zhi": "戌", "gan": "戊", "delta": -1.0,
+                       "reason": "戌生金：戌中戊土减 1 度（书 上 494 同句；辛金、丁火不变）"})
+        elif month_zhi in _SP_XU_CUI_JIN:
+            # 书 上 490（巳午未月）/ 上 495（戌月）：「未戌…其脆金之力是减半（即受克者金减去
+            # 一半的力量），这时其中之火均减力1度，土不减力」；上 494 的申酉月档把戌列为
+            # 「不脆金反生金」，故这两个月令档**互斥**。
+            fx.append({"zhi": jin, "wuxing": "金", "delta": None, "scale": 0.5,
+                       "reason": f"戌脆金（{month_zhi}月）：{jin}中金减半（书 上 490「未戌生于巳午未月：…其脆金之力是减半（即受克者金减去一半的力量）」；戌月同 上 495）"})
+            fx.append({"zhi": "戌", "gan": "丁", "delta": -1.0,
+                       "reason": "戌脆金：戌中丁火减 1 度（书 上 490/495「这时其中之火均减力1度，土不减力」）"})
+        elif month_zhi in _SP_XU_CUI_JIN_QUARTER:
+            # 书 上 503「未戌生于寅卯月：…戌含土3度，含火2度，含金1度，其脆金之力为1/4，
+            # 此时戌中丁火减力0.5度，其他不变」
+            fx.append({"zhi": jin, "wuxing": "金", "delta": None, "scale": 0.75,
+                       "reason": f"戌脆金（{month_zhi}月）：{jin}中金减 1/4（书 上 503「未戌生于寅卯月：…其脆金之力为1/4」）"})
+            fx.append({"zhi": "戌", "gan": "丁", "delta": -0.5,
+                       "reason": "戌脆金：戌中丁火减 0.5 度（书 上 503「此时戌中丁火减力0.5度，其他不变」）"})
 
     elif pair == frozenset({"子", "寅"}):
         fx.append({"zhi": "子", "wuxing": "水", "delta": -1.0 * n_recv,
@@ -418,7 +433,7 @@ _SPECIAL_RECV: dict[frozenset, tuple[str, ...]] = {
 }
 
 # 书**给出多支总量**的两组特例（其余特例书未给，仍按 1:1 条目逐对成立）：
-#   未克申酉——上 524「未土脆克3申，其中的丁火共减力0.5×3＝1.5度」；
+#   未克申酉——上 528「未土脆克3申，其中的丁火共减力0.5×3＝1.5度」；
 #   子生寅——上 2359「1子生3寅，子水减去3度剩下2度；3个寅木一共增力1度」。
 _SPECIAL_MULTI: frozenset = frozenset((frozenset("未申"), frozenset("未酉"),
                                        frozenset("子寅")))
@@ -470,9 +485,11 @@ LIUHE_BAN: dict[frozenset, dict[str, list[tuple]]] = {
               ("亥", "壬", -1.0), ("亥", "甲", "keep_dang_half_shiling")],
     },
     # ④其他情况（1:1）：戌中戊土减半、丁火 +1；辛金当令减半/失令去除；卯木 −1。（书《上》第四节 地支六合「④其他情况：在卯戌个数比为1:1的情况：戌中戊土减半，当令的辛金减半」）
+    # 「戌中丁火 +1」是**两戌的总量**（上 883「火增力 1 度，平均每个戌土增力 0.5 度火」），
+    # 故标 `split` 由 `pipeline._adjusted_hidden` 按命中柱数均分。
     frozenset("卯戌"): {
         "*": [("戌", "戊", "half"), ("戌", "辛", "half_dang_remove_shiling"),
-              ("戌", "丁", 1.0), ("卯", "乙", -1.0)],
+              ("戌", "丁", 1.0, "split"), ("卯", "乙", -1.0)],
     },
     # ③其他情况（1:1）：酉金 +1；辰中戊土 −1.25（= 生克之力 1 度 + 合绊之力 0.25 度）；
     #   癸水当令 +1/失令不变；乙木当令减半/失令去除。
@@ -501,6 +518,89 @@ LIUHE_BAN: dict[frozenset, dict[str, list[tuple]]] = {
                 ("未", "乙", "half_dang_remove_shiling")],
     },
 }
+
+
+# ===============================================================
+# 合绊之力（书《上》第四节 七、合绊之力 上 3343-3346）
+# ===============================================================
+# 「六合绊除了生克之力外，还要受到合绊之力，除受生本气、受生中气、余气不受合绊之力外，
+#  其余均受合绊之力——**本气减力0.25度，中气减力0.125度**，且合绊之力不能平摊。」
+# 「不作用的藏干不受生克之力也不受合绊之力。」「※如果藏干不减力，则它一定不受合绊之力。」
+_BAN_POWER = {"本气": -0.25, "中气": -0.125}
+
+# 「受生」而**增力**的藏干不受合绊之力（上 3343 的「除受生本气、受生中气…外」）。
+# 键含**支**——寅亥一对里寅中甲木受生、亥中甲木却是受泄（上 3369「亥中甲木为中气，
+# 综合状态失令，要减去0.5度的生克之力，同时还要受到合绊之力」），不能只按干名豁免。
+_LIUHE_SHENG_GAN: dict[frozenset, frozenset] = {
+    # 寅中甲木受亥水生（上 2718「寅中甲木增力1度」；上 3367「寅中甲木，是受生本气，
+    # 故不受合绊之力」）
+    frozenset("寅亥"): frozenset({("寅", "甲")}),
+    # 戌中丁火受卯木生（上 3410「戌中丁火为受生本气，要增力1度，**不受合绊之力**」）
+    frozenset("卯戌"): frozenset({("戌", "丁")}),
+    # 酉中辛金受辰土生（上 2904 ③「酉金增力1度」）
+    frozenset("辰酉"): frozenset({("酉", "辛")}),
+    # 未中己土受午火生（上 3171 ②「未中己土增力1度」）
+    frozenset("午未"): frozenset({("未", "己")}),
+}
+
+# 书里**逐项写明**「（0.125 度是合绊之力）」——即已把合绊之力**并进 delta** 的 (对, 干)：
+# 子丑全表（书 2493-2501 六个档均标注）+ 辰酉的辰中戊土（书 2987「辰中戊土减力1.25度」）。
+# 其余条目只含生克之力，其合绊之力由 `_ban_power_fx` 按上 3343 通则追加。
+_LIUHE_BAN_IN_DELTA: dict[frozenset, frozenset] = {
+    frozenset("子丑"): frozenset({"癸", "辛", "己"}),
+    frozenset("辰酉"): frozenset({"戊"}),
+}
+
+# 四库「实际本气 / 中气 / 余气」的**名次定序表**。书 上 3344 注：「这里的本气和中气指的是
+# **实际**本气和中气，比如说，戌土生于巳月，戌土含火4度，含土2度，这时候戌土的本气实际
+# 上是火不是土，中气实际是土不是火」——故**度数**定主次；本表只在度数相同时定序
+# （如戌月的 丁3/戊3），取各库支「其他月」表中的 本气→中气→余气 序。
+_MUKU_CANON: dict[str, tuple[str, ...]] = {
+    "丑": ("己", "辛", "癸"), "辰": ("戊", "乙", "癸"),
+    "戌": ("戊", "辛", "丁"), "未": ("己", "丁", "乙"),
+}
+
+
+def _hidden_role(zhi: str, gan: str, cols: list) -> str | None:
+    """`gan` 在该支**本月令**下是实际本气 / 中气 / 余气；0 度者视为不存在（返回 None）。"""
+    hid = tables.hidden_degrees(zhi, _MONTH_CTX["zhi"],
+                                dangzhong=tables.dangzhong_for(cols, zhi))
+    live = [(g, d) for g, d in hid if d > 0]
+    canon = _MUKU_CANON.get(zhi, tuple(g for g, _ in hid))
+    live.sort(key=lambda x: (-x[1], canon.index(x[0]) if x[0] in canon else len(canon)))
+    for i, (g, _) in enumerate(live[:3]):
+        if g == gan:
+            return ("本气", "中气", "余气")[i]
+    return None
+
+
+def _ban_power_fx(pair: frozenset, zhi: str, gan: str, label: str,
+                  mode: str, val: float, cols: list) -> dict | None:
+    """为**已因生克之力减力**的藏干补一条「合绊之力」（书 上 3343/3346）。
+
+    - 「如果藏干不减力，则它一定不受合绊之力」（上 3346）→ 只在生克之力使其**减力**时叠加；
+    - 已减到 0（`remove`）者不再计——上 3371「受到生克之力，失令要全部减力，变为0度，
+      由于已经变为0度了，就不用再计算合绊之力了」；
+    - 余气两不受——上 3371「寅中戊土，为余气，不管是受生余气，还是受克余气，均不受
+      合绊之力，只受生克之力」；
+    - 受生而增力者不受——上 3343「除受生本气、受生中气…外」（见 `_LIUHE_SHENG_GAN`）；
+    - `delta` 已含合绊之力的条目（`_LIUHE_BAN_IN_DELTA`）不重复叠加。
+    """
+    if mode == "remove":
+        return None
+    if not ((mode == "delta" and val < 0) or (mode == "scale" and val < 1)):
+        return None
+    if (zhi, gan) in _LIUHE_SHENG_GAN.get(pair, frozenset()):
+        return None
+    if gan in _LIUHE_BAN_IN_DELTA.get(pair, frozenset()):
+        return None
+    role = _hidden_role(zhi, gan, cols)
+    if role not in _BAN_POWER:
+        return None
+    return {"zhi": zhi, "gan": gan, "delta": _BAN_POWER[role],
+            "reason": f"{label}合绊之力（{_MONTH_CTX['zhi']}月）：{zhi}中{gan}为{role}，"
+                      f"再减力 {abs(_BAN_POWER[role]):g} 度（书 上 3343「本气减力0.25度，"
+                      f"中气减力0.125度……余气不受合绊之力」）"}
 
 
 def _resolve_ban_op(op, wx: str, month_zhi: str) -> tuple[str, float] | None:
@@ -561,7 +661,7 @@ class _Cand:
     members: list[str]
     cols: list[str]
     hua: str | None = None
-    # 可合化出的多个五行——只有子丑（水/土）与午未（火/土）两对。书 上 4062：
+    # 可合化出的多个五行——只有子丑（水/土）与午未（火/土）两对。书 上 3326：
     # 「如果满足了合化为火的条件，那它就合化为火；如果满足了合化为土的条件，那就
     # 合化为土；如果两者都没有满足，那就以互助或合绊论」，故按序试条件。
     hua_options: tuple[str, ...] = ()
@@ -674,7 +774,8 @@ def _zuozhi_wx(zhi: str | None, month_zhi: str) -> str:
 
 
 def _gan_hua_one(g1: str, c1: _Col, g2: str, c2: _Col, month_zhi: str, hua: str,
-                 final: dict | None = None, cols: list | None = None) -> bool:
+                 final: dict | None = None, cols: list | None = None,
+                 effective_month: str | None = None) -> bool:
     """**指定化神**下的天干五合化成功判定（书《上》第二节 天干生克 等五节同构模板）。
 
     各节条件（下表为书里逐条原文的归纳）：
@@ -686,33 +787,33 @@ def _gan_hua_one(g1: str, c1: _Col, g2: str, c2: _Col, month_zhi: str, hua: str,
     | 丙辛化水 | 一支为水、另一支为金或水 | **丙** | — |
     | 丁壬化木 | 一支为木、另一支为水或木 | **丁** | — |
     | 戊癸化火 | 一支为火（**燥土可当火看**）、另一支为木或火 | **癸** | — |
-    | 戊癸化土 | **至少一支坐支为土**（见下） | **癸** | 有（2129） |
 
     ② 月令为化神当令之地；③ 坐支要求（本气）；④ 弱方须「不能独立」（**需动态旺度
-    `final`**，无则跳过并记由调用方补判）；⑤ 燥湿只对甲己与**戊癸化土**两组合用
-    （书 上 2124-2129 的化土五条件之一；化火只有四条件，无此条）。
+    `final`**，无则跳过并记由调用方补判）；⑤ 燥湿只对甲己一组用（书 上 2124-2129
+    的化土五条件之一；化火只有四条件，无此条）。
+
+    > 戊癸原按书 上 2124-2135 另有「合化土」五条件，2026-09-11 用户裁定只取化火，
+    > 故该支已删（见 `GAN_HE_HUA` 处的书内冲突留痕）。
     """
     pair = frozenset((g1, g2))
-    # ② 月令当令
-    if month_zhi and tables.COMPROMISE_PARAM[tables.month_state(hua, month_zhi)] > 3:
-        return False
+    # ② 月令当令。
+    # **月令被地支合化改宗时以化神为基准**——书 上 1638：「月令为土，似乎也满足第二个
+    # 条件，但**辰酉合化金成功，月令变为土的休地**，这个条件不能满足，所以甲己合而不化」：
+    # 辰本为土的旺地，但辰酉合金后月令已是金，土相对金为**休**（被所泄），故不当令。
+    # 不传 `effective_month` 时照旧按原始月支判（地支层的 tier 1 用这条路径）。
+    if month_zhi:
+        state = (tables.element_state(hua, effective_month) if effective_month
+                 else tables.month_state(hua, month_zhi))
+        if tables.COMPROMISE_PARAM[state] > 3:
+            return False
     # ③ 坐支要求（本气）
     sheng_hua = next(w for w, v in SHENG.items() if v == hua)
     z1 = ZHI_WUXING.get(c1.zhi or "", "")
     z2 = ZHI_WUXING.get(c2.zhi or "", "")
     if pair == frozenset("戊癸"):
         z1, z2 = _zuozhi_wx(c1.zhi, month_zhi), _zuozhi_wx(c2.zhi, month_zhi)
-    if pair == frozenset("戊癸") and hua == "土":
-        # 书 上 2127 的字面要求是「至少有一支为土，**另一支为火或土**」，但书自己的
-        # 两处实例都只有一支坐支为土、另一支为水/金而仍判化土成功：
-        #   上 2613 乾 乙巳 辛巳 戊子 癸丑（戊坐子水、癸坐丑土）「戊癸也合化土成功」；
-        #   下 4133 乾 甲申 戊辰 癸酉 己未（戊坐辰土、癸坐酉金）「戊癸合化土成功」。
-        # 而判不化的两例各由**别的条件**挡下：上 2180（戌月，戌＋卯）由条件⑤太过干燥、
-        # 上 2197（丑＋申）由条件④癸水可独立。故此处按实例取「至少一支坐支为土」。
-        if "土" not in (z1, z2):
-            return False
-    elif not ((z1 == hua and z2 in (sheng_hua, hua))
-              or (z2 == hua and z1 in (sheng_hua, hua))):
+    if not ((z1 == hua and z2 in (sheng_hua, hua))
+            or (z2 == hua and z1 in (sheng_hua, hua))):
         return False
     # ④ 弱方不能独立
     weak_gan = _WEAK_PARTY.get(pair)
@@ -721,10 +822,8 @@ def _gan_hua_one(g1: str, c1: _Col, g2: str, c2: _Col, month_zhi: str, hua: str,
         weak_deg = final.get(weak_wx, 0.0)
         if weak_deg >= WEAK_LINE:
             return False                      # 弱方能独立 → 不合化
-    # ⑤ 燥湿（甲己、戊癸化土）——两者都要判**全盘**，
-    #    故须由调用方传入完整 `cols`；未传则跳过该条件。
-    if cols and (pair == frozenset("甲己")
-                 or (pair == frozenset("戊癸") and hua == "土")):
+    # ⑤ 燥湿（只甲己一组）——须判**全盘**，故由调用方传入完整 `cols`；未传则跳过该条件。
+    if cols and pair == frozenset("甲己"):
         if _too_wet(cols=cols, month_zhi=month_zhi) or _too_dry(
                 cols=cols, c1=c1, c2=c2, month_zhi=month_zhi):
             return False
@@ -732,29 +831,27 @@ def _gan_hua_one(g1: str, c1: _Col, g2: str, c2: _Col, month_zhi: str, hua: str,
 
 
 def _gan_hua_resolve(g1: str, c1: _Col, g2: str, c2: _Col, month_zhi: str,
-                     final: dict | None = None, cols: list | None = None) -> str | None:
-    """**按序试**该五合对的各候选化神，返回成立的化神；都不成立返回 None。
+                     final: dict | None = None, cols: list | None = None,
+                     effective_month: str | None = None) -> str | None:
+    """该五合对的化神；化不成返回 None。
 
-    次序取自书 上 2078：「如果满足合化火的条件就合化为火，如果满足合化土的条件就
-    合化为土」——先火后土。解析结果写入 `_RESOLVED_HUA`，供 `GAN_HE_HUA[pair]` 取值
-    （见 `_GanHeHuaTable`）。
+    > 每组五合只有一个化神（戊癸原按书 上 2078 有火/土两个候选，2026-09-11 用户裁定
+    > **只取化火**，见 `GAN_HE_HUA` 处的书内冲突留痕）。
     """
     pair = frozenset((g1, g2))
-    opts = GAN_HE_HUA.get(pair)
-    if not opts:
+    hua = GAN_HE_HUA.get(pair)
+    if not hua:
         return None
-    _RESOLVED_HUA.pop(pair, None)          # 每次从首项重新试，失败即不留记录
-    for hua in opts:
-        if _gan_hua_one(g1, c1, g2, c2, month_zhi, hua, final, cols):
-            _RESOLVED_HUA[pair] = hua
-            return hua
-    return None
+    return (hua if _gan_hua_one(g1, c1, g2, c2, month_zhi, hua, final, cols,
+                                effective_month) else None)
 
 
 def _gan_hua_ok(g1: str, c1: _Col, g2: str, c2: _Col, month_zhi: str,
-                final: dict | None = None, cols: list | None = None) -> bool:
+                final: dict | None = None, cols: list | None = None,
+                effective_month: str | None = None) -> bool:
     """天干五合是否化成功（按序试候选化神，见 `_gan_hua_resolve`）。"""
-    return _gan_hua_resolve(g1, c1, g2, c2, month_zhi, final, cols) is not None
+    return _gan_hua_resolve(g1, c1, g2, c2, month_zhi, final, cols,
+                            effective_month) is not None
 
 
 WEAK_LINE = 2.4                 # 太弱以下 / 强根分界（C26-7）
@@ -763,6 +860,16 @@ WEAK_LINE = 2.4                 # 太弱以下 / 强根分界（C26-7）
 _WEAK_PARTY = {frozenset("甲己"): "甲", frozenset("乙庚"): "乙",
                frozenset("丙辛"): "丙", frozenset("丁壬"): "丁",
                frozenset("戊癸"): "癸"}
+
+# 五合**合绊**时「减 4 成」的一方——与上面的④「弱方」是**不同**的概念：
+#   上 1595 甲己「甲木减去2成…己土减去4成」、上 1777 乙庚「庚金减去2成…乙木减去4成」、
+#   上 1874 丙辛「丙火减去2成…辛金减去4成」、上 1991 丁壬「壬水减去2成…丁火减去4成」、
+#   上 2089 戊癸「戊土减去2成…癸水减去4成」——**减 4 成的恒为阴干**。
+# 对照 `_WEAK_PARTY`：甲己的④弱方是甲、但 −4 成者是己；丙辛的④弱方是丙、−4 成者是辛。
+# 两者仅在乙庚/丁壬/戊癸三组同向。
+_HE_REDUCE4_PARTY = {frozenset("甲己"): "己", frozenset("乙庚"): "乙",
+                     frozenset("丙辛"): "辛", frozenset("丁壬"): "丁",
+                     frozenset("戊癸"): "癸"}
 _WET_MONTHS = frozenset("亥子丑")
 _DRY_MONTHS = frozenset("巳午未戌")
 _DRY_EARTH = frozenset("未戌")
@@ -868,7 +975,7 @@ def _ju_dangzhong_ok(cand: _Cand, cols: list[_Col],
         return any(c.zhi == z and c.key in ("month", "_dayun") for c in cols)
 
     if cand.tier == 6:
-        # 巳酉丑三合条件④（书 上 4588）：丑临月令/大运时，
+        # 巳酉丑三合条件④（书 上 3646）：丑临月令/大运时，
         # 丑党众（特指丑、辰）<3 且 巳党众（特指巳、午、未）<2。
         # 其余三合（亥卯未/寅午戌/申子辰）无此条。
         if pair == frozenset(("巳", "酉", "丑")) and lin("丑"):
@@ -876,7 +983,7 @@ def _ju_dangzhong_ok(cand: _Cand, cols: list[_Col],
         return True
 
     if cand.tier == 9:
-        # 卯辰半会条件 4（书 下 2913「辰土临月令或大运时：卯与辰的个数比必须＞1，
+        # 卯辰半会条件 4（书 下 2912「辰土临月令或大运时：卯与辰的个数比必须＞1，
         # 若卯木临月令或大运，则卯辰的个数比≥1 即可」）。干支**不含**大运时只受月令约束。
         if lin("辰"):
             return n("卯") > n("辰")
@@ -927,7 +1034,7 @@ def _ju_dangzhong_ok(cand: _Cand, cols: list[_Col],
             # 条件④（书《上》第四节 地支六合）：子水的**动态旺度不能独立**（含整个地支水的旺度）。
             return _zhi_degrees(cols, _MONTH_CTX.get("zhi", "")).get("水", 0.0) < WEAK_LINE
         if pair == frozenset(("午", "未")) and hua == "土":
-            # 条件④「状态不能太过干燥」（书 上 3910/3925）：
+            # 条件④「状态不能太过干燥」（书 上 3229/3239）：
             # 生于巳午未戌（燥土）月时，若无丑冲未、也没有两个湿土（辰丑）与之相邻，
             # 即为太过干燥 → 化土不成。
             if _MONTH_CTX.get("zhi") in ("巳", "午", "未", "戌"):
@@ -1020,7 +1127,7 @@ def _hua_ok(cand: _Cand, cols: list[_Col], month_zhi: str,
             if fire >= 3.0:
                 return False
 
-    # ---- 三会附加条件（书《下》第七节 地支三会）/ 卯辰半会条件 1（书 下 2907） ----
+    # ---- 三会附加条件（书《下》第七节 地支三会）/ 卯辰半会条件 1（书 下 2906） ----
     if cand.tier in (4, 9):
         counts = {c.zhi: sum(1 for d in cols if d.zhi == c.zhi) for c in cols if c.zhi}
         for c in cols:
@@ -1081,12 +1188,50 @@ def _adjacent(st: _State, a: _Col, b: _Col) -> bool:
     由相隔变为作用（《四柱预测学入门》L1446-1451；009 契约同口径）。
     典型书例：寅申不相邻故相冲不成（下 3294）。
     """
+    # 岁运列（`_dayun` / `_liunian`）拼在四柱**之后**，与年/月永远相距 ≥3，
+    # 若按盘面柱距判相邻，则「岁运与原局」的天克地冲/天合地合/六合等**全部**判不出来。
+    # 书里岁运可作用于原局任何一柱——下 1786「进入壬戌运，**与月天克地冲**」、
+    # 下 3294「进入癸酉运，流年**与月柱天克地冲**」。故含岁运者不做相邻约束。
+    if a.key in _EXTRA_ORDER or b.key in _EXTRA_ORDER:
+        return True
     i, j = st.idx(a.key), st.idx(b.key)
     lo, hi = (i, j) if i < j else (j, i)
     if hi - lo == 1:
         return True
     mid = st.cols[lo + 1:hi]
     return any(c.zhi in (a.zhi, b.zhi) for c in mid if c.zhi)
+
+
+def _touching(st: _State, a: _Col, b: _Col) -> bool:
+    """柱位**严格相邻**——不含 `_adjacent` 的「中隔同类」例外。
+
+    **六冲用这条**：书 下 1656「日时子午相冲（**年时子午不冲**）」——年午与时子中隔的
+    日午正是同类，若走 `_adjacent` 的例外会被判成相邻而误冲；下 1683 原局同句
+    「年日子午不冲」亦然。冲是结构关系，书一律要求紧贴（上 1575 总则）。
+
+    **岁运列不受此限**（同 `_adjacent`）：岁运可作用于原局任何一柱。
+    """
+    if a.key in _EXTRA_ORDER or b.key in _EXTRA_ORDER:
+        return True
+    return abs(st.idx(a.key) - st.idx(b.key)) == 1
+
+
+def _tier11_windows(st: _State) -> list[list[_Col]]:
+    """构成寅巳申三刑的连续三柱（书 下 2186-2198 的两条构成条件）。
+
+    三支须紧贴成一段，且**中间那支必须是寅或巳**：
+      ①「巳火同时与寅申相邻」／②「寅木同时与巳申相邻」——故「申在中间」不算。
+
+    `_candidates` 的 tier 11 与 tier 8 的**抑制**共用本函数：三刑的度数已含
+    「寅申冲」（书 下 2190「其他藏干变化遵守寅巳刑、寅申冲、巳申合」），
+    若让 tier 8 的寅申冲再单独成立，既会消费掉申寅把三刑挤掉，又会把冲算两遍。
+    """
+    out: list[list[_Col]] = []
+    for i in range(len(st.cols) - 2):
+        win = st.cols[i:i + 3]
+        if {c.zhi for c in win} == {"寅", "巳", "申"} and win[1].zhi in ("寅", "巳"):
+            out.append(win)
+    return out
 
 
 def _contiguous(st: _State, cols: list[_Col]) -> bool:
@@ -1105,9 +1250,9 @@ def _cols_with(st: _State, zhi: str) -> list[_Col]:
 def _ju_cols(st: _State, zhis: tuple[str, ...]) -> list[_Col] | None:
     """一个「局」的**全部**参与支（含同类多支），按柱位排序；构局之支不齐返回 None。
 
-    书：多出的同类支**加入合局**——半三合「多出 1 个寅或 1 个午就多出 6 度」（下 605），
-    三合「多出 1 支就多出 6 度」（上 4425），合绊时「多一支就多减一次合绊之力」（上 4440）。
-    故 `寅寅午` 是**一条**「2 寅合 1 午」（下 645 书例原话），
+    书：多出的同类支**加入合局**——半三合「多出 1 个寅或 1 个午就多出 6 度」（下 430），
+    三合「多出 1 支就多出 6 度」（上 3448/3545），合绊时「多一支…就多减一次合绊之力」（上 3458/3555）。
+    故 `寅寅午` 是**一条**「2 寅合 1 午」（下 452 书例原话），
     **不是**两条互相竞争、靠让位裁决的关系。
 
     顺带覆盖了书《—》待核⑤「中隔之支为其中一支本身」那条例外：中隔支与两端同类时会被
@@ -1123,7 +1268,7 @@ def _ju_cols(st: _State, zhis: tuple[str, ...]) -> list[_Col] | None:
 
 
 def _ju_detail(cols: list[_Col], suffix: str) -> str:
-    """「2寅1午半合火」——多支时逐个标出个数，与书的表述一致（下 645「2 寅合绊 1 午」）。
+    """「2寅1午半合火」——多支时逐个标出个数，与书的表述一致（下 452「2 寅合绊 1 午」）。
 
     有重复支时**每个**都带个数（只给重复项带会让「2寅午」读不出午是几个）；
     无重复时按常规写法（「寅午半合火」）。
@@ -1148,7 +1293,7 @@ def _broken_by_chong(st: _State, cols: list[_Col]) -> str | None:
     故 `_broken_by_chong` 对 **三合/三会/半三合一并适用**（O-2 由此结案）。
 
     **冲的双方须相邻**（2026-09-10 修订 O-2）：书自己说「**月时寅午由于不相邻不能
-    相合**」（下 738），通用原则是「相隔不作用，相邻才能作用」——冲既是「作用」，
+    相合**」（下 508），通用原则是「相隔不作用，相邻才能作用」——冲既是「作用」，
     同样受相邻约束。故盘内**非相邻的冲不破局**。
 
     > 修订前按「任一冲即破」执行（O-2 原文引三会成立条件 5「不能出现申酉戌中的
@@ -1170,7 +1315,8 @@ def _candidates(tier: int, st: _State) -> list[_Cand]:
 
     相邻约束：两两关系（六合/六冲/六害/两支刑/半三合/卯辰半会）须 `_adjacent`；
     三支关系（三会/三合/寅巳申三刑/丑未戌刑/三支自刑）须 `_contiguous`；
-    拱合/拱会与四库土局**不受**相邻限制（拱者本为「拱」出中间那一支）。
+    四库土局**不受**相邻限制（书 下 1854 把它列为独立条件，四支齐即可）。
+    > 拱合/拱会（tier 16/17）**已去除**，不再产出候选——见 `_candidates` 里那段留痕。
     """
     tname = TYPE_OF_TIER[tier]
     out: list[_Cand] = []
@@ -1180,20 +1326,28 @@ def _candidates(tier: int, st: _State) -> list[_Cand]:
         # 由下级关系照常判定（判定在 judge_relations 内）。书证 下 3245
         # 「乙酉与庚辰天合地合，地支辰酉合化金成功，天干乙庚合化金也成功，天合地合成功，
         #  故不再论天克地冲」；优先级见 下 3186/3191「当天合地合不成功时方论天克地冲」。
+        # **两柱须相邻紧贴**——书 上 1575 总则「不管是天干五合，还是地支六合、三合、
+        # 三会、半三合、六害、三刑、六冲，它们要想成功，必须满足一个最基本的前提条件
+        # ——即它们必须相邻紧贴」；上 2125 各合化条件 1 亦逐条重申。
         for a, b in _pairs(st):
             if not (a.gan and b.gan and a.zhi and b.zhi):
                 continue
+            if not _adjacent(st, a, b):
+                continue
             if frozenset((a.gan, b.gan)) in GAN_HE_HUA and frozenset((a.zhi, b.zhi)) in ZHI_LIUHE:
-                # 候选阶段取**首项**占位；戊癸有火/土两个候选，化神由 `judge_relations`
-                # 按序试条件后回填（见 `_gan_hua_resolve`）。
-                gan_hua_wx = dict.get(GAN_HE_HUA, frozenset((a.gan, b.gan)))[0]
+                # 每组五合只有一个化神（戊癸原按书 上 2078 有火/土两候选，2026-09-11
+                # 用户裁定**只取化火**，见 `GAN_HE_HUA` 处的书内冲突留痕）。
+                gan_hua_wx = GAN_HE_HUA[frozenset((a.gan, b.gan))]
                 out.append(_Cand(1, tname, [a.gan, b.gan, a.zhi, b.zhi], [a.key, b.key],
                                  hua=gan_hua_wx,
                                  detail=f"{a.gan}{b.gan}合、{a.zhi}{b.zhi}合"))
 
     elif tier == 2:    # 天克地冲：同一柱对，天干相冲 + 地支相冲
+        # **两柱须相邻紧贴**（书 上 1575 总则，见 tier 1 处的同一段引文）。
         for a, b in _pairs(st):
             if not (a.gan and b.gan and a.zhi and b.zhi):
+                continue
+            if not _adjacent(st, a, b):
                 continue
             if frozenset((a.gan, b.gan)) in GAN_CHONG and frozenset((a.zhi, b.zhi)) in ZHI_CHONG:
                 out.append(_Cand(2, tname, [a.gan, b.gan, a.zhi, b.zhi], [a.key, b.key],
@@ -1239,11 +1393,34 @@ def _candidates(tier: int, st: _State) -> list[_Cand]:
                 out.append(_Cand(7, tname, [z, z, z], [c.key for c in hit[:3]],
                                  hua=ZIXING_HUA[z][0], detail=f"三{z}自刑"))
 
-    elif tier == 8:    # 六冲（须相邻）
-        for a, b in _pairs(st):
-            if a.zhi and b.zhi and frozenset((a.zhi, b.zhi)) in ZHI_CHONG and _adjacent(st, a, b):
-                out.append(_Cand(8, tname, _ordered.sort_zhis([a.zhi, b.zhi]),
-                                 [a.key, b.key], detail=f"{a.zhi}{b.zhi}冲"))
+    elif tier == 8:    # 六冲（须相邻；**同一冲对的全部相邻参与支并入同一条**）
+        # 书按「参与的支数」逐支累计（下 1693「1酉冲2卯，酉金减力2度」；下 1684
+        # 「3午冲1子…子水一共减力3.5度」），而「参与」的前提是**与该支相邻**
+        # ——下 1656「日时子午相冲（**年时子午不冲**）」、下 1683 原局「年日子午不冲」
+        # 都明示不相邻者不计入。故先按「是否至少与对方某一支相邻」筛出参与柱，
+        # 再并成一条；这样 `cand.cols` 含全部参与支，`split` 的摊分才落得下去。
+        # ⚠️ 岁运**桥接**（下 1684「运支午火的介入，使得年支跟日支变为紧贴」）
+        # 未实现——大运列接在四柱之后，只按盘面柱距判定相邻。
+        for pair in ZHI_CHONG:
+            z1, z2 = sorted(pair, key=lambda z: _ordered.ZHI_ORDER.index(z))
+            c1, c2 = _cols_with(st, z1), _cols_with(st, z2)
+            if not (c1 and c2):
+                continue
+            keys = [c.key for c in c1 if any(_touching(st, c, d) for d in c2)]
+            keys += [c.key for c in c2 if any(_touching(st, c, d) for d in c1)]
+            if not keys:
+                continue
+            # 落在寅巳申三刑内的寅申冲由 tier 11 统一按其组合规则施加，不重复成立——
+            # 但**只剔掉窗内的柱**：一条冲对可能一部分落在三刑窗内、一部分在窗外
+            # （如 `寅巳申寅` 的时寅在窗外），把整条丢掉会让窗外那支的冲一并消失。
+            if {z1, z2} == {"寅", "申"}:
+                inside = {c.key for win in _tier11_windows(st) for c in win}
+                keys = [k for k in keys if k not in inside]
+                if not keys:
+                    continue
+            cols_ = sorted(dict.fromkeys(keys), key=st.idx)
+            out.append(_Cand(8, tname, _ordered.sort_zhis([z1, z2]), cols_,
+                             detail=f"{z1}{z2}冲"))
 
     elif tier == 9:    # 卯辰半会（须相邻；化神木——书 下 2905「①卯辰半会木成功的条件」）
         for a, b in _pairs(st):
@@ -1259,11 +1436,13 @@ def _candidates(tier: int, st: _State) -> list[_Cand]:
                                  [c.key for c in cs], hua=hua,
                                  detail=_ju_detail(cs, f"半合{hua}")))
 
-    elif tier == 11:   # 寅巳申三刑（三支须紧贴）
-        cs = [_cols_with(st, z) for z in ("寅", "巳", "申")]
-        if all(cs) and _contiguous(st, [c[0] for c in cs]):
-            out.append(_Cand(11, tname, ["寅", "巳", "申"], [c[0].key for c in cs],
-                             detail="寅巳申三刑"))
+    elif tier == 11:   # 寅巳申三刑（书 下 2184-2200）
+        # 三支须紧贴成一段，且**中间那支必须是寅或巳**——书只给两条构成条件：
+        #   ①「巳火同时与寅申相邻」②「寅木同时与巳申相邻」。
+        # 故「申在中间」（寅申巳 / 巳申寅）不构成三刑。
+        for win in _tier11_windows(st):
+            out.append(_Cand(11, tname, ["寅", "巳", "申"], [c.key for c in win],
+                             detail=f"寅巳申三刑（{win[1].zhi}居中）"))
 
     elif tier == 12:   # 六合（须紧贴；同类多支并入同一条）
         # 书《上》第四节 地支六合：「地支之合（包括六合、三合、三会）……**不存在争合现象**，
@@ -1297,25 +1476,43 @@ def _candidates(tier: int, st: _State) -> list[_Cand]:
                 out.append(_Cand(14, tname, [z, z], [c.key for c in hit],
                                  hua=ZIXING_HUA[z][0], detail=f"两{z}自刑"))
 
-    elif tier == 15:   # 六害（须相邻）
-        for a, b in _pairs(st):
-            if a.zhi and b.zhi and frozenset((a.zhi, b.zhi)) in ZHI_HAI and _adjacent(st, a, b):
-                out.append(_Cand(15, tname, _ordered.sort_zhis([a.zhi, b.zhi]),
-                                 [a.key, b.key], detail=f"{a.zhi}{b.zhi}害"))
+    elif tier == 15:   # 六害（须相邻；**同一害对的全部相邻参与支并入同一条**）
+        # 书的多支条文给的是**总量、按支数平摊**（下 3092「1申与2亥相害…平均每个亥水
+        # 减去1度甲木」；下 2986「3子害1未…3子共减去1度，平均每个子水减去0.33度」），
+        # 故与 tier 8 同构：先按相邻筛出参与柱，再并成一条，`split` 才摊得出去。
+        # **相邻仍用 `_adjacent`（含「中隔同类」例外），与 tier 8 的 `_touching` 不同**。
+        # 书 下 3015（坤 乙未 戊子 甲子 甲子）明写「此造子水当令，且**3子害1未**」——
+        # 其中时子与年未隔两柱、并不紧贴，书仍按**个数比 3:1** 计入；而六冲那边
+        # 下 1656 明写「年时子午**不冲**」。故「相邻紧贴」（上 1575）约束的是该关系能否
+        # **成立**，而多支条文里的「个数比」是**程度**——两者口径不同，不强行统一。
+        for pair in ZHI_HAI:
+            z1, z2 = sorted(pair, key=lambda z: _ordered.ZHI_ORDER.index(z))
+            c1, c2 = _cols_with(st, z1), _cols_with(st, z2)
+            if not (c1 and c2):
+                continue
+            keys = [c.key for c in c1 if any(_adjacent(st, c, d) for d in c2)]
+            keys += [c.key for c in c2 if any(_adjacent(st, c, d) for d in c1)]
+            if not keys:
+                continue
+            out.append(_Cand(15, tname, _ordered.sort_zhis([z1, z2]),
+                             sorted(dict.fromkeys(keys), key=st.idx),
+                             detail=f"{z1}{z2}害"))
 
-    elif tier == 16:   # 拱会（不受相邻限制——拱者本为拱出中间那一支）
-        for z1, z2 in GONGHUI:
-            a, b = _cols_with(st, z1), _cols_with(st, z2)
-            if a and b:
-                out.append(_Cand(16, tname, _ordered.sort_zhis([z1, z2]),
-                                 [a[0].key, b[0].key], detail=f"{z1}{z2}拱会"))
-
-    elif tier == 17:   # 拱合（同上）
-        for z1, z2, hua in GONGHE:
-            a, b = _cols_with(st, z1), _cols_with(st, z2)
-            if a and b:
-                out.append(_Cand(17, tname, _ordered.sort_zhis([z1, z2]),
-                                 [a[0].key, b[0].key], hua=hua, detail=f"{z1}{z2}拱合"))
+    # 16 拱会 / 17 拱合：**已去除**（2026-09-11 用户裁定；**属已知的有意偏离**）。
+    #
+    # 书里并非「只有级名」——**如实记录**这条偏离丢掉了什么：
+    #   · 上 1685 给了拱合的**度数效果**：「亥未拱合，木失令，**亥中甲木完全去除**」；
+    #   · 下 2614「故辰辰自刑不成功，此时不再论辰辰自刑，而应论**申辰拱合**」、
+    #     下 2656「现在有寅辰拱会介入，故最终论**寅辰拱会**」——拱合/拱会可作**最终结论关系**；
+    #   · 上 1088③/1090④ 把「2亥拱1未」「1亥拱」当作**未月火/金状态的分档判据**。
+    # 原实现的毛病是：只能取「第一个 X + 第一个 Y」、连柱距都不看，把不相干的支判成拱，
+    # 且无任何度数效果（死效果），还把 tier 18 的戌脆金/戌生金整批抢走
+    # （书 上 1430/1433/521/513 四例全跑不出）。裁定在「按书补成立条件与度数」与
+    # 「整体去除」之间选了后者——故上述上 1685 的度数、下 2614/2656 的结论
+    # **本实现不复现**。级位保留在 `TIERS` 里以维持十八级的编号与书一致。
+    #
+    # 「亥拱未」改由 `pipeline._muku_ctx` 直接判定（严格相邻 + 排除已被占用的亥），
+    # 不经关系层。
 
     elif tier == 18:   # 特殊生克（书 第三节 2294-2458，七条特例）
         for z1, z2 in SPECIAL_PAIRS:
@@ -1394,7 +1591,7 @@ def _huzhu_source(cand: _Cand) -> str:
 # 各局**标准情形**的支数（无同类多支时）——用于把 `HUA_DEGREE` 的局总量折成每支量
 _STD_BRANCHES: dict[int, int] = {3: 4, 4: 3, 6: 3, 9: 2, 10: 2, 12: 2, 13: 2}
 _JU_SOURCE: dict[int, str] = {
-    3: "书 下 1870", 4: "书 下 1085", 6: "书 上 4425", 9: "书 下 2917",
+    3: "书 下 1870", 4: "书 下 1085", 6: "书 上 3545", 9: "书 下 2917",
     10: "书《下》第六节 半三合", 12: "书《上》第四节 地支六合", 13: "书《下》第六节 半三合"}
 
 
@@ -1405,7 +1602,7 @@ def _ju_per_branch(tier: int, hua: str | None, members: list[str]) -> float:
     两张表并存会各自漂移（本文件的层级分档就曾漏过 10 三次）。
 
     **午未合化火是六合里的例外**：书《上》第五节 地支三合 给 12 度（每支 6），
-    而六合其余各对为 11 度（每支 5.5，上 2758 等）；午未合化土（上 3941）仍按 5.5。
+    而六合其余各对为 11 度（每支 5.5，上 2896 辰酉 / 上 2587 子丑）；午未合化土（上 3244）仍按 5.5。
     """
     if tier == 12 and hua == "火" and frozenset(members) == frozenset(("午", "未")):
         return 6.0
@@ -1413,6 +1610,54 @@ def _ju_per_branch(tier: int, hua: str | None, members: list[str]) -> float:
     if n is None or tier not in HUA_DEGREE:
         return 6.0
     return round(HUA_DEGREE[tier] / n, 3)
+
+
+def _liuhe_ban_effects(pair: frozenset, *, with_power: bool, keys: list[str] | None = None) -> list[dict]:
+    """六合**合绊**时按 `LIUHE_BAN` 逐月令表产出的藏干增减。
+
+    `with_power=False` 时只给**生克之力**、不叠「合绊之力」（上 3343 通则的
+    本气 −0.25 / 中气 −0.125）——寅巳申三刑的「巳申合（**不包括合绊之力**）」
+    （书 下 2190/2196）就是这一档。
+    """
+    ban = LIUHE_BAN.get(pair)
+    if not ban:
+        return []
+    grp = _ban_month_group(_MONTH_CTX["zhi"])
+    rules = ban.get(grp) or ban.get("*") or []
+    label = "".join(sorted(pair))
+    out: list[dict] = []
+    for rule in rules:
+        zhi, gan, op = rule[0], rule[1], rule[2]
+        # 可选的第三项后缀 `"split"`：该 delta 是**多支总量**，由
+        # `pipeline._adjusted_hidden` 按命中柱数均分（书 上 883）。
+        split = len(rule) > 3 and rule[3] == "split"
+        res = _resolve_ban_op(op, GAN_WUXING[gan], _MONTH_CTX["zhi"])
+        if res is None:
+            continue
+        mode, val = res
+        base = {"zhi": zhi, "gan": gan,
+                "reason": f"{label}合绊（{_MONTH_CTX['zhi']}月）：{zhi}中{gan}"
+                          f"{'完全去除' if mode == 'remove' else ('减半' if mode == 'scale' else f'{val:+g} 度')}"}
+        if mode == "remove":
+            base["remove"] = True
+        elif mode == "scale":
+            base["scale"] = val
+        else:
+            # delta 模式**始终**带 delta 键（含 0.0）——契约要求恰有一种模式，
+            # 缺键会让消费方（pipeline._adjusted_hidden）取不到值。
+            base["delta"] = val
+        if split:
+            base["split"] = True
+        out.append(base)
+        if not with_power:
+            continue
+        # 生克之力之外再叠「合绊之力」（书 上 3343 通则）——次序不可倒：
+        # 合绊之力是**在减力结果上**再减，故须排在生克 effect **之后**
+        # （上 3410 戌中戊土 = 2 − 1（减半）− 0.125 = 0.875）。
+        power = _ban_power_fx(pair, zhi, gan, label, mode, val, cols_of(_MONTH_CTX))
+        if power:
+            out.append(power)
+    return out
 
 
 def _effects_for(cand: _Cand, hua_succeeded: bool = False) -> list[dict]:
@@ -1466,28 +1711,9 @@ def _effects_for(cand: _Cand, hua_succeeded: bool = False) -> list[dict]:
 
     # 六合**合绊**（未化成功）时走逐月令的藏干增减表
     if cand.tier in (1, 12) and not hua_succeeded:
-        ban = LIUHE_BAN.get(frozenset(zs))
-        if ban:
-            grp = _ban_month_group(_MONTH_CTX["zhi"])
-            rules = ban.get(grp) or ban.get("*") or []
-            label = "".join(sorted(zs))
-            for zhi, gan, op in rules:
-                res = _resolve_ban_op(op, GAN_WUXING[gan], _MONTH_CTX["zhi"])
-                if res is None:
-                    continue
-                mode, val = res
-                base = {"zhi": zhi, "gan": gan,
-                        "reason": f"{label}合绊（{_MONTH_CTX['zhi']}月）：{zhi}中{gan}"
-                                  f"{'完全去除' if mode == 'remove' else ('减半' if mode == 'scale' else f'{val:+g} 度')}"}
-                if mode == "remove":
-                    base["remove"] = True
-                elif mode == "scale":
-                    base["scale"] = val
-                else:
-                    # delta 模式**始终**带 delta 键（含 0.0）——契约要求恰有一种模式，
-                    # 缺键会让消费方（pipeline._adjusted_hidden）取不到值。
-                    base["delta"] = val
-                out.append(base)
+        fx = _liuhe_ban_effects(frozenset(zs), with_power=True)
+        if fx:
+            out.extend(fx)
             return out
 
     # 辰酉 / 卯戌 的合绊增减已由上方 LIUHE_BAN 系统表覆盖（书《—》待核），
@@ -1496,7 +1722,7 @@ def _effects_for(cand: _Cand, hua_succeeded: bool = False) -> list[dict]:
     # ---- 三合/三会/半三合**合化成功**：参与支变为纯粹的化神，每支 6 度 ----
     # 书《下》第六节 半三合「合化成功后午戌都变为了纯粹的火（里面不再含有其他五行），火的力量得到」（寅午）：「合化成功后寅午都变为了纯粹的火（里面不再含有其他五行）……
     # 寅午各含火 6 度，一共 12 度。**多出的寅、午亦加入合局论化并以增力论，多出 1 个
-    # 寅或 1 个午就多出 6 度**」。上 4425（三合）、下 1089（三会）、下 333（卯未）同构。
+    # 寅或 1 个午就多出 6 度**」。上 3545（三合）、下 1085（三会）、下 253（卯未）同构。
     # 故度数 = 6 × 参与支数，由 `cand.cols`（含同类多支）直接得出。
     # ---- 自刑**成功**：参与支变为纯粹的化神，每支按各支自刑的定值（书 下 2586 等）----
     if cand.tier in (7, 14) and hua_succeeded and len(set(cand.members)) == 1             and cand.members[0] in ZIXING_HUA:
@@ -1523,7 +1749,7 @@ def _effects_for(cand: _Cand, hua_succeeded: bool = False) -> list[dict]:
                                   f"（{_JU_SOURCE.get(cand.tier, '书')}）"})
         return out
 
-    # ---- 卯辰半会**会绊**（书 下 2919-2927，①②两档）----
+    # ---- 卯辰半会**会绊**（书 下 2923/2926，①②两档）----
     if cand.tier == 9 and not hua_succeeded:
         cs = cols_of(_MONTH_CTX)
         mz = _MONTH_CTX["zhi"]
@@ -1535,22 +1761,22 @@ def _effects_for(cand: _Cand, hua_succeeded: bool = False) -> list[dict]:
             #    辰中戊土减半；辰中癸水当令减半、失令完全减力；辰中乙木不变
             out.append({"zhi": "卯", "gan": "乙", "delta": -1.25,
                         "reason": "卯辰会绊（辰含土不为0）：卯木减去1度，再减去0.25度的会绊之力"
-                                  "（书 下 2921「卯木减去1度，同时还要再减去0.25度的会绊之力」；算例 下 2946「卯木减力1.25度」）"})
+                                  "（书 下 2923「卯木减去1度，同时还要再减去0.25度的会绊之力」；算例 下 2937「卯木减力1.25度」）"})
             out.append({"zhi": "辰", "gan": "戊", "delta": None, "scale": 0.5,
-                        "reason": "卯辰会绊：辰中戊土减半（书 下 2921「辰中戊土减半」；算例 下 2946「辰中戊土减力1.5度」）"})
+                        "reason": "卯辰会绊：辰中戊土减半（书 下 2923「辰中戊土减半」；算例 下 2937「辰中戊土减力1.5度」）"})
             out.append({"zhi": "辰", "gan": "癸",
                         **({"delta": None, "scale": 0.5}
                            if tables.COMPROMISE_PARAM[tables.month_state("水", mz)] <= 3
                            else {"remove": True}),
-                        "reason": "卯辰会绊：辰中癸水当令减半、失令完全减力（书 下 2921；算例 下 2946「辰中癸水完全减力变为0」）"})
+                        "reason": "卯辰会绊：辰中癸水当令减半、失令完全减力（书 下 2923；算例 下 2937「辰中癸水完全减力变为0」）"})
         else:
             # ② 辰含土量为 0：卯木 +1 度、再 −0.25 度会绊之力；辰中癸水 −1 度；辰中乙木不变
             out.append({"zhi": "卯", "gan": "乙", "delta": 0.75,
                         "reason": "卯辰会绊（辰含土为0）：卯木增力1度，再减去0.25度的会绊之力"
-                                  "（书 下 2925「卯木增力1度，辰中癸水减力1度，同时还要减去0.25度的会绊之力」）"})
+                                  "（书 下 2926「卯木增力1度，辰中癸水减力1度，同时还要减去0.25度的会绊之力」）"})
             out.append({"zhi": "辰", "gan": "癸", "delta": -1.0,
-                        "reason": "卯辰会绊（辰含土为0）：辰中癸水减力1度（书 下 2925 同）"})
-        # 辰中乙木两档均**不变**（书 下 2921/2925），故不登记
+                        "reason": "卯辰会绊（辰含土为0）：辰中癸水减力1度（书 下 2926 同）"})
+        # 辰中乙木两档均**不变**（书 下 2923/2926），故不登记
         return out
 
     # ---- 三合/三会/半三合**合绊**：局内生克 + 合绊之力（书《上》第五节 地支三合 / 书《下》第七节 地支三会）----
@@ -1568,19 +1794,91 @@ def _effects_for(cand: _Cand, hua_succeeded: bool = False) -> list[dict]:
         from services.bazi.v2 import ban as _ban
         out.extend(_ban.chong_effects(list(cand.members), cols_of(_MONTH_CTX),
                                       _MONTH_CTX["zhi"],
-                                      chong_ok=_muku_chong_ok(cand.members, cols_of(_MONTH_CTX))))
+                                      chong_ok=_muku_chong_ok(cand.members, cols_of(_MONTH_CTX)),
+                                      keys=list(cand.cols)))
+        return out
+
+    # ---- 寅巳申三刑（书 下 2184-2200）----
+    #
+    # 「其他藏干变化遵守**寅巳刑、寅申冲、巳申合（不包括合绊之力）**的藏干变化」
+    # （下 2190/2196）——故先把三项组合变化的藏干增减原样叠加，再按 ① 判申的去留。
+    if cand.tier == 11:
+        from services.bazi.v2 import ban as _ban
+        cs = cols_of(_MONTH_CTX)
+        mz = _MONTH_CTX["zhi"]
+        keys = list(cand.cols)
+        cols3 = [next((c for c in cs if c.key == k), None) for k in keys]
+        by_zhi = {c.zhi: c for c in cols3 if c is not None}
+        adjacent = lambda a, b: (a in by_zhi and b in by_zhi
+                                 and _touching(_State(cs), by_zhi[a], by_zhi[b]))
+        # **各项按自身的相邻性过滤**——书 下 2211 的盘里 申与巳不相邻（寅居中），
+        # 故「巳申合」不适用（书在该例明写「巳火**只受寅刑**，巳火=3+1=4」，未计合的 −1）。
+        # 次序 **先冲 → 再合 → 后刑**：书 下 2211 算「寅木=3−1.5−1=0.5」，
+        # 即先按冲减半、再按刑减 1；倒过来会得 1.0。
+        if adjacent("寅", "申"):
+            out.extend(_ban.chong_effects(["寅", "申"], cs, mz,
+                                          chong_ok=_muku_chong_ok(["寅", "申"], cs),
+                                          keys=keys))
+        if adjacent("巳", "申"):
+            out.extend(_liuhe_ban_effects(frozenset(("巳", "申")), with_power=False))
+        if adjacent("寅", "巳"):
+            out.extend(_ban.xing_effects(["寅", "巳"], cs, mz))
+
+        # ① 巳火同时与寅申相邻 → 再判「申金被刑掉 / 刑伤」；
+        # ② 寅木同时与巳申相邻 → **只**走上面三项组合，不刑申（书 下 2196）。
+        mid = next((c for c in cs if c.key == keys[1]), None) if len(keys) > 1 else None
+        if mid is not None and mid.zhi == "巳":
+            def _dang(wx: str) -> bool:
+                return tables.COMPROMISE_PARAM[tables.month_state(wx, mz)] <= 3
+
+            n_yin = sum(1 for k in keys
+                        if (c := next((x for x in cs if x.key == k), None)) and c.zhi == "寅")
+            n_si = sum(1 for k in keys
+                       if (c := next((x for x in cs if x.key == k), None)) and c.zhi == "巳")
+            shen = next((c for c in cs if c.key in keys and c.zhi == "申"), None)
+            if shen is not None:
+                # a 火当令 **或** 金失令 → 1 寅 1 巳 即可**完全刑掉** 1 申
+                # b 金当令 **或** 火失令 → 须 2寅1巳 或 1寅2巳 才刑掉；1寅1巳 只能**刑伤**
+                #   （申中之金减力 2/3，书 下 2194）
+                if _dang("火") or not _dang("金"):
+                    kill = n_yin >= 1 and n_si >= 1
+                else:
+                    kill = (n_yin >= 2 and n_si >= 1) or (n_yin >= 1 and n_si >= 2)
+                if kill:
+                    for gan, _d in tables.hidden_degrees(
+                            "申", mz, dangzhong=tables.dangzhong_for(cs, "申")):
+                        out.append({
+                            "zhi": "申", "gan": gan, "remove": True,
+                            "reason": f"寅巳申三刑①：巳居中、{'火当令' if _dang('火') else '金失令'}"
+                                      f"（{n_yin}寅{n_si}巳）→ 申金被完全刑掉，申中{gan}变为 0 度"
+                                      f"（书 下 2190「1寅与1巳合作可以完全刑掉1申，此时申金的"
+                                      f"所有藏干被完全刑掉变为0」）"})
+                else:
+                    # 「申中之金减力 **2/3**」（书 下 2194）是**固定量 2/3 度**、按申支数摊分
+                    # ——书 下 2251「申金减力2/3（**平均每个申金减1/3**）」（该盘 2 申）即此，
+                    # 不是「降到原值的 1/3」。
+                    out.append({
+                        "zhi": "申", "gan": "庚", "delta": -2 / 3, "split": True,
+                        "reason": f"寅巳申三刑①：巳居中、金当令（{n_yin}寅{n_si}巳）→ 只能"
+                                  f"**刑伤**申金，申中之金共减 2/3 度（书 下 2194「1寅与1巳可"
+                                  f"刑伤1申（申中之金减力2/3）」；多支摊分见 下 2251"
+                                  f"「申金减力2/3（平均每个申金减1/3）」）"})
         return out
 
     # ---- 相刑 / 六害（书《下》第九节 合冲论+ / 2849+）----
     if cand.tier in (14, 15):
         from services.bazi.v2 import ban as _ban
-        fn = _ban.xing_effects if cand.tier == 14 else _ban.hai_effects
-        out.extend(fn(list(cand.members), cols_of(_MONTH_CTX), _MONTH_CTX["zhi"]))
+        if cand.tier == 15:
+            out.extend(_ban.hai_effects(list(cand.members), cols_of(_MONTH_CTX),
+                                        _MONTH_CTX["zhi"], keys=list(cand.cols)))
+        else:
+            out.extend(_ban.xing_effects(list(cand.members), cols_of(_MONTH_CTX),
+                                         _MONTH_CTX["zhi"]))
         return out
 
     if cand.tier == 18:
         # `cand.cols` 已在 `judge_relations` 里并入同一特例的全部参与柱（见 `_special_group`），
-        # 故受方个数直接由它数出（书 上 524/2359 的「多支」总量/平摊）。
+        # 故受方个数直接由它数出（书 上 528/2359 的「多支」总量/平摊）。
         pair = frozenset(cand.members)
         cs = cols_of(_MONTH_CTX)
         n_recv = 1
@@ -1636,8 +1934,17 @@ def judge_relations(pillars: dict) -> dict:
                 # 并存**仅限** FR-003 列举的两类（书《—》待核）；其余按 O-5 严格让位。
                 # 曾用「化神相等即并存」的宽口径，会让 `寅寅午` 的两条生地半三合
                 # 双双成立（共用时支午），违反 O-5「一支只参与一个关系」。
+                taken = {b for b, _ in blocking}
+                free = [k for k in cand.cols if k not in taken]
                 if may_coexist(cand, blocking, cols):
                     pass  # 并存
+                elif free and {st.zhi_of(k) for k in free} >= set(cand.members):
+                    # **部分被占用时收窄候选、不整条让位**：书对同一盘里的每一对分别取舍——
+                    # 下 2885「此造2丑害1午，但年月丑未相冲，故年日之丑午害不成功，
+                    # **只论日时之丑午害**」；下 1908「最后不论丑未冲（丑未不相邻），
+                    # 只论卯未合绊，丑戌刑、辰戌冲」。故把已消费的柱剔掉后照常判剩下的；
+                    # 剔完若连关系类型都不齐（如六合只剩一支），才整条让位。
+                    cand.cols = free
                 else:
                     blk = blocking[0][1]
                     # 共用支与抢占者都带**柱位**：只写类型+支会得到两行完全相同的
@@ -1649,13 +1956,13 @@ def judge_relations(pillars: dict) -> dict:
                     # 先后取先者）。混用会让读者以为存在层级差。
                     rank = "更高一级的" if blk["tier"] < cand.tier else "同级的先者"
                     ent = _entry(cand)
+                    # 抢占者只写一次名字：`detail` 本身已含级名（如「寅巳申三刑（寅居中）」、
+                    # 「1卯2戌六合」），再套一层 `type` 会得到「寅巳申三刑（寅巳申三刑（寅居中））」。
+                    blk_name = blk.get("detail") or blk["type"]
                     ent["reason"] = (f"{chars} 已被{rank}"
-                                     f"「{blk['type']}（{blk.get('detail', '')}，{blk_where}）」"
-                                     f"占用，本关系让位不再论")
+                                     f"「{blk_name}」（{blk_where}）占用，本关系让位不再论")
                     ent["blocked_by"] = {
-                        "tier": blocking[0][1]["tier"],
-                        "type": blocking[0][1]["type"],
-                        "cols": blocking[0][1]["cols"],
+                        "tier": blk["tier"], "type": blk["type"], "cols": blk["cols"],
                     }
                     rejected.append(ent)
                     continue
@@ -1702,7 +2009,7 @@ def judge_relations(pillars: dict) -> dict:
             # 书《上》第五节 地支三合「合化成功后亥卯未三支都变为了纯粹的木（里面不再含有其他五行），木的力」 / 书《下》第七节 地支三会「会木成功后寅卯辰三支都变为了纯粹的木（里面不再含有其他五行），木的力」：「合而不化**又没有被冲开者，以合绊论之**」——
             # 故化不成时仍**成立**（`hua=None`，按合绊处理），只是不再消费外的影响更强。
             if cand.hua_options:
-                # 双化神（子丑 / 午未）：按书 上 4062 的顺序**逐个试条件**，
+                # 双化神（子丑 / 午未）：按书 上 3326 的顺序**逐个试条件**，
                 # 先满足者即为化神；都不满足则按首个记名、走合绊/互助。
                 picked = next((h for h in cand.hua_options
                                if _hua_ok(cand, cols, month_zhi, h)), None)
@@ -1725,7 +2032,7 @@ def judge_relations(pillars: dict) -> dict:
             # 漏掉它会让条目一边报 `hua=火`、一边按合绊施加度数影响（第 2 段的
             # 「局内生克 + 合绊之力」），读者看到「化火成功」与「合绊」并存而困惑。
             if tier in (4, 6, 10, 12, 13, 7, 14) and not hua_ok_now and cand.hua                     and len(set(cand.members)) == 1 and cand.members[0] in ZIXING_HUA:
-                # 自刑不成功 → 藏干**保持不变**（书 下 2589 等），故只标注、不置 effects
+                # 自刑不成功 → 藏干**保持不变**（书 下 2586 等），故只标注、不置 effects
                 ent["hua"] = None
                 ent["detail"] = f"{cand.detail}（不成功，藏干不变）"
             elif tier in (4, 6, 9, 10, 12, 13) and not hua_ok_now:

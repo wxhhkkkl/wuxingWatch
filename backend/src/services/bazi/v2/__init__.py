@@ -56,18 +56,31 @@ def xiyong_analysis_v2(day_master: str, pillars: dict, da_yun: list | None = Non
     from services.bazi.v2 import degrees, geju, pipeline, xiyong_v2
 
     r = pipeline.compute_strength(pillars)
-    cols = degrees.build_cols(pillars)
+    # **一律用管线交出来的那一份 cols**——日干可能被天干五合换了字（甲→戊，书 上 1593），
+    # 自行 `build_cols` 会拿到原字，后果是旺度按土算、格局/取用/十神却按木算。
+    cols = r["cols"]
+    day_master = r["day_master"]          # 换字后的日干（未换字时即原字）
     dm_wx = GAN_WUXING.get(day_master, "")
     final = r["final_scores"]
     month_zhi = next((c.zhi for c in cols if c.key == "month"), "") or ""
 
     # `has_sheng` 取 `pipeline.compute_strength` 的**同一份**「有生」判据（C26-8）——
-    # 「不能独立」的第三个合取项（书 上 1598「无生（或虽有若无）」）必须真实判定，
-    # 传全 False 等于把这一条静默删除，使所有从格判定偏向从格。
+    # 「不能独立」的第三个合取项（书 上 1598「无生（或虽有若无）」）必须真实判定：
+    # 传全 False 等于把这一条静默删除、使所有从格判定偏向从格；而「有生」本身又须
+    # 满足书 上 689「**主生者必须具有生克权**」（上 982 例1「丙火没有生克权，丙火
+    # 不能生日元己土」），故不能把「受生方被生」直接当有生（第一轮的漏网之处）。
+    # 口径细节见 `pipeline.stem_layer` 的 docstring。
+    # **日主的一切旺度取日主那一组、贴身位取该位置的实例**（S7 / 书 上 651、下 4055）：
+    # 同一个五行的不同天干旺度不等，用「五行合计」判从格会把「日主变成 0 度」
+    # （书 下 4263）这类命例判错。
     gj = geju.judge_geju(cols=cols, final=final,
-                         root={w: r["degrees"][w]["root"] for w in r["degrees"]},
+                         root=r["root_scaled"],
                          has_sheng=r["has_sheng"],
-                         rel=r["relations"], month_zhi=month_zhi)
+                         rel=r["relations"], month_zhi=month_zhi,
+                         dm_group=r.get("day_master_group"),
+                         tieshen=geju.tieshen_instances(
+                             cols, stem_groups=r.get("stem_groups") or [],
+                             benqi_instances=r.get("benqi_instances") or []))
     ys = xiyong_v2.select_yongshen(day_master=day_master, dm_wx=dm_wx, final=final,
                                    static=r["static_scores"], cols=cols,
                                    ge_ju=gj, month_zhi=month_zhi)
@@ -92,6 +105,8 @@ def xiyong_analysis_v2(day_master: str, pillars: dict, da_yun: list | None = Non
         "engine": "wangdu-v2",
         "contract_version": 2,
         "day_master": day_master,
+        # 换字前的日干：日干参与五合且化成功时二者不同（甲→戊），前端据此标「戊·原甲」
+        "day_master_original": r["day_master_original"],
         "day_master_wuxing": dm_wx,
         "input_scope": r["input_scope"],
         "degradations": r["degradations"],
@@ -100,6 +115,11 @@ def xiyong_analysis_v2(day_master: str, pillars: dict, da_yun: list | None = Non
         "static_scores": r["static_scores"],
         "final_scores": r["final_scores"],
         "level": r["level"],
+        # S7 实例明细（data-model §3a）：`static_scores`/`final_scores`/`degrees[wx]`
+        # 仍是**五行合计**（前端能量条照旧），实例另开字段供追溯。
+        "stem_groups": r["stem_groups"],
+        "day_master_group": r["day_master_group"],
+        "benqi_instances": r["benqi_instances"],
         "ge_ju": gj,
         "yong_shen": ys,
         "layers": lay,
@@ -145,7 +165,9 @@ def xiyong_analysis(day_master: str, pillars: dict, da_yun: list | None = None,
     avoid = list(dict.fromkeys(ys.get("ji_shen", [])))
 
     reasoning = (
-        f"日主{day_master}属{dm_wx}，动态旺度 {r['degrees'][dm_wx]['final']:g} 度，"
+        f"日主{r['day_master']}"
+        + (f"（原{day_master}）" if r["day_master"] != day_master else "")
+        + f"属{dm_wx}，动态旺度 {r['degrees'][dm_wx]['final']:g} 度，"
         f"判定为「{r['level']}」（{label}）。理论用神：{theo}"
         + (f"，实际用神：{prac}（{(ys.get('practical') or {}).get('reason', '')}）" if prac else "")
         + f"；调候：{tiaohou.get('element') or '无需调候'}。"
@@ -171,7 +193,9 @@ def xiyong_analysis(day_master: str, pillars: dict, da_yun: list | None = None,
         "favorable_elements": favorable,
         "avoid_elements": avoid,
         "reasoning": reasoning,
-        "ten_gods": {k: shishen(day_master, v["gan"])
+        # 十神按**换字后的日主**算——日干合化成功则日主已改宗（甲日化土，以土为我），
+        # 仍按原字算会与 `day_master_wuxing` 自相矛盾。
+        "ten_gods": {k: shishen(r["day_master"], v["gan"])
                      for k, v in pillars.items() if v and v.get("gan")},
         "direction": _direction_readout(r),
         "disclaimer": "内容为算法生成的参考信息，仅供参考，不构成专业命理建议。",

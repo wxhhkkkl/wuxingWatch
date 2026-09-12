@@ -70,6 +70,14 @@ _CHEN_OTHER = [("癸", 1.0), ("乙", 2.0), ("戊", 3.0)]
 _CHEN_DANGZHONG = [("癸", 2.0), ("乙", 2.0), ("戊", 3.0)]
 
 # 未土、戌土（上 489-503）
+#
+# 戌中的火一律记 **丁**（不是丙）：书里凡指名道姓处都写「戌中**丁火**」——
+# 上 494「未戌生于申酉月：…辛金、**丁火**不变」、下 3122「当戌中**丁火**≥3 度」（酉戌害）、
+# 下 1353「戌中**丁火**受耗减力」等；未同样记丁。此前 `_SHU` 记作丙，导致所有以「戌-丁」为目标的
+# effect（卯戌合绊火 +1、巳生戌戌中丁火 +0.5、酉戌害戌火 −1…）在
+# `pipeline._adjusted_hidden` 的 `fx["gan"]` 过滤处被**静默丢弃**（丙≠丁），
+# 书例 上 883 的「卯戌合绊火增力 1 度」即因此从 11.25 掉到 9.75。
+# 丙与丁同属火，改这一处**不改变任何五行合计**，只让按干名定位的 effect 生效。
 _WEI = {
     "hot": [("丁", 4.0), ("己", 2.0)],                     # 巳午未月
     "xu": [("丁", 3.0), ("己", 3.0)],                      # 戌月
@@ -79,11 +87,11 @@ _WEI = {
     "yinmao": [("己", 3.0), ("丁", 2.0), ("乙", 1.0)],     # 寅卯月
 }
 _SHU = {
-    "hot": [("丙", 4.0), ("戊", 2.0)],
-    "xu": [("丙", 3.0), ("戊", 3.0)],
-    "shenyou": [("戊", 3.0), ("辛", 2.0), ("丙", 1.0)],
-    "cold": [("戊", 3.0), ("丙", 1.0), ("辛", 2.0)],
-    "chen": [("戊", 3.0), ("丙", 1.0), ("辛", 2.0)],
+    "hot": [("丁", 4.0), ("戊", 2.0)],
+    "xu": [("丁", 3.0), ("戊", 3.0)],
+    "shenyou": [("戊", 3.0), ("辛", 2.0), ("丁", 1.0)],
+    "cold": [("戊", 3.0), ("丁", 1.0), ("辛", 2.0)],
+    "chen": [("戊", 3.0), ("丁", 1.0), ("辛", 2.0)],
     "yinmao": [("戊", 3.0), ("丁", 2.0), ("辛", 1.0)],
 }
 
@@ -194,7 +202,7 @@ def hidden_degrees(
 
     if zhi == "戌":
         if is_liunian:
-            return [("戊", 3.0), ("辛", 2.0), ("丙", 1.0)]
+            return [("戊", 3.0), ("辛", 2.0), ("丁", 1.0)]
         if is_dayun and group == "hot":
             return list(_SHU["xu"])
         return list(_SHU[group if group in _SHU else "shenyou"])
@@ -378,11 +386,14 @@ def _muku_case(month_zhi: str, ctx: MukuCtx) -> str:
     if ctx.pure:
         return "1"
     n_chou = sum(1 for z in ctx.chong if z == "丑")     # 丑冲
-    n_hai = len(ctx.hai)                                # 子害 / 亥拱
-    if not (n_chou or n_hai):
+    # 「子害」与「亥拱」**分开数**——书 上 1088③ 是「**2子害1未 或 2亥拱1未**」、
+    # 上 1090④ 是「**1子害 或 1亥拱**」，两者是并列的两个条件，不能合成一根长度
+    # （否则「1子害＋1亥拱」会被误当成「2子害」而把 ④ 判成 ③）。
+    n_zi = sum(1 for z in ctx.hai if z == "子")          # 子害
+    n_gong = sum(1 for z in ctx.hai if z == "亥")        # 亥拱
+    if not (n_chou or n_zi or n_gong):
         return "2"
-    # ③「1个未土受丑冲（不成功）或2子害1未或2亥拱1未」；④「1个未土受1子害或1亥拱」
-    return "3" if (n_chou or n_hai >= 2) else "4"
+    return "3" if (n_chou or n_zi >= 2 or n_gong >= 2) else "4"
 
 
 def muku_month_state(wx: str, month_zhi: str,
@@ -401,8 +412,11 @@ def muku_month_state(wx: str, month_zhi: str,
     if entry is None:
         return None
     if isinstance(entry, tuple):
+        # 状态名写成「X与Y」两名并列——与 `month_coef_state` 的合化取平均同格式。
+        # 该值会进 `degrees[wx].state`，而 data-model §3 规定它是**旺相休囚死状态**
+        # （前端按 5.5em 单行列渲染），故只放状态名、不带「取平均」这类说明文字。
         coef = (COEF[entry[0]] + COEF[entry[1]]) / 2
-        return coef, f"{entry[0]}与{entry[1]}取平均"
+        return coef, f"{entry[0]}与{entry[1]}"
     # 未④ 的特例：未中丁火为 0 → 火处于临界，既不增力也不减力（上 1092）
     if month_zhi == "未" and case == "4" and wx == "火" and ctx.huo_zero:
         return 1.0, "临界（未中丁火为 0，不增不减）"
@@ -411,13 +425,20 @@ def muku_month_state(wx: str, month_zhi: str,
 
 def month_coef_state(wx: str, month_zhi: str, effective_wx: str | None = None,
                      ctx: MukuCtx | None = None) -> tuple[float, str]:
-    """五行 `wx` 在月令的 (系数, 状态说明)。
+    """五行 `wx` 在月令的 (系数, **短状态名**)。
 
     - 月令未合化：单一状态（库支走 `muku_month_state` 的分支表）。
     - **月令被合化成其他五行**：书 上 638「如果月令被合化成其他五行，则该五行在月令
       所处的状态就有两个，那么其最后的旺度就等于**这二者的平均值**」→ 取
       「原月令状态」与「化神状态」两系数的算术平均（书 上 753 亦给出等价算法
-      「先计算壬水在月令的平均系数，平均系数=（2+0.8）*0.5=1.4」）。
+      「先计算壬水在月令的平均系数，平均系数=（2+0.8）*0.5=1.4」），
+      状态名写成「X与Y」两名并列。
+
+    返回值第二项**只放状态名**：它直接进 `degrees[wx].state`，而 data-model §3 规定
+    该字段是「月令系数与旺相休囚死状态」（示例 `"state": "余气"`）。
+    此前的「X与Y（月令化Z，取平均）」是**描述句**，被前端按单字宽的列渲染时会撑爆布局；
+    完整解释由 `pipeline._build_steps` 第 3 段的 trace 另行给出（那里已经带
+    「（月令已合化为Z）」前缀）。
     """
     muku = muku_month_state(wx, month_zhi, ctx) if month_zhi else None
     if muku is None:
@@ -428,13 +449,37 @@ def month_coef_state(wx: str, month_zhi: str, effective_wx: str | None = None,
     if effective_wx and effective_wx != BRANCH_WUXING_BENQI.get(month_zhi):
         hua_state = element_state(wx, effective_wx)
         return ((base_coef + COEF[hua_state]) / 2,
-                f"{base_label}与{hua_state}（月令化{effective_wx}，取平均）")
+                f"{base_label}与{hua_state}")
     return base_coef, base_label
 
 
 # 折中（综合）状态参数表（上 918-930）
 COMPROMISE_PARAM = {"旺": 1, "余气": 2, "相": 3, "休": 4, "囚": 5, "死": 6}
 COMPROMISE_BY_PARAM = {v: k for k, v in COMPROMISE_PARAM.items()}
+
+
+def element_has_qi(wx: str, month_zhi: str, effective_wx: str | None = None,
+                   ctx: MukuCtx | None = None) -> bool:
+    """该五行在**月令**是否「有气」——书 上 353：「五行在月令或大运处于'旺、余气、相'
+    的状态，称为当令**或有气**；处于'休、囚、死'的状态，称为失令**或无气**」。
+
+    **与旺度无关**：上 990 的壬水静态 2.5 度判「有根无气」、上 551 的庚金 3 度亦然。
+    取值口径与 `month_coef_state` 完全同源（库支走分支表、月令合化取两状态的平均），
+    只把「系数」换成「旺相休囚死的**参数均值是否 ≤3**」（上 918-930 的当令线）。
+    """
+    if not month_zhi:
+        return True
+    ctx = ctx or MukuCtx()
+    muku = muku_month_state(wx, month_zhi, ctx)
+    if muku is not None:
+        # 未④ 的「临界」分支只改系数、不改状态名，故状态名回分支表取（火为「相」）。
+        entry = _MUKU_CASES[month_zhi][_muku_case(month_zhi, ctx)].get(wx)
+        states = list(entry) if isinstance(entry, tuple) else [entry or muku[1]]
+    else:
+        states = [month_state(wx, month_zhi)]
+    if effective_wx and effective_wx != BRANCH_WUXING_BENQI.get(month_zhi):
+        states.append(element_state(wx, effective_wx))
+    return sum(COMPROMISE_PARAM[s] for s in states) / len(states) <= 3
 
 
 def compromise_state(state_a: str, state_b: str) -> tuple[str, bool]:

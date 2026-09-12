@@ -245,6 +245,81 @@ def test_tier11_yinsishen_xing():
 
 
 # ---------------------------------------------------------------
+# 11. 寅巳申三刑的度数（书 下 2184-2200）
+#   构成：① 巳同时与寅申相邻 ② 寅同时与巳申相邻（**申居中不算**）
+#   度数：其他藏干变化遵守「寅巳刑 + 寅申冲 + 巳申合（不含合绊之力）」；
+#         ① 另有「申被刑掉 / 刑伤」
+# ---------------------------------------------------------------
+
+def _applied(gz):
+    """生产路径上**施加关系影响后**的逐支藏干。"""
+    from services.bazi.v2 import degrees as _d
+    from services.bazi.v2 import pipeline as _p
+    p = _chart(*gz)
+    mz = gz[1][1]
+    return _p._adjusted_hidden(relations.judge_relations(p), _d.build_cols(p), mz)
+
+
+def test_tier11_tier8_internal_chong_is_suppressed():
+    """三刑内部的**寅申冲不单独成立**——由 tier 11 统一按其组合规则施加。
+
+    > 书 下 2190 明说三刑的「其他藏干变化遵守寅巳刑、**寅申冲**、巳申合」——
+    > 若让 tier 8 的寅申冲再单独成立，既会消费掉申寅把三刑挤掉，又会把冲算两遍。
+    """
+    r = relations.judge_relations(_chart("乙卯", "甲申", "甲寅", "己巳"))
+    assert _estab(r, tier=11), "三刑应成立"
+    assert not [e for e in r["established"] if e["tier"] == 8], "内部寅申冲不应单独成立"
+
+
+def test_tier11_type2_yin_centered_matches_book_2207():
+    """② 寅居中：书 下 2207 乾 乙卯 甲申 甲寅 己巳，逐支藏干精确对上。
+
+    > 「原局寅巳申并排，寅木同时与巳申相邻，故构成寅巳申三刑——寅木受申冲，
+    >  又受巳刑，所以寅木=3-1.5-1=0.5度，寅中丙火及戊土均变为0度；巳火只受寅刑，
+    >  巳火=3+1=4度；巳中戊土变为0，巳中庚金减半变为0.5度。」
+    """
+    h = _applied(("乙卯", "甲申", "甲寅", "己巳"))
+    assert h["day"] == [("甲", 0.5), ("丙", 0.0), ("戊", 0.0)], h["day"]   # 日支寅
+    assert h["time"] == [("丙", 4.0), ("戊", 0.0), ("庚", 0.5)], h["time"]  # 时支巳
+
+
+def test_tier11_type1_si_centered_fire_dominant_kills_shen():
+    """① 巳居中 + **火当令**（巳月）→ 1寅1巳 即可完全刑掉 1申。
+
+    > 书 下 2190「a. 火处于当令之地或金处于失令之地：1寅与1巳合作可以完全刑掉1申，
+    >  此时申金的所有藏干被完全刑掉变为0」。
+    """
+    h = _applied(("甲寅", "己巳", "庚申", "庚辰"))
+    shen_index = next(i for i, k in enumerate(("year", "month", "day", "time"))
+                      if ("甲寅", "己巳", "庚申", "庚辰")[i][1] == "申")
+    key = ("year", "month", "day", "time")[shen_index]
+    assert h[key] == [("庚", 0.0), ("壬", 0.0), ("戊", 0.0)], h[key]
+
+
+def test_tier11_type1_si_centered_metal_dominant_bruises_shen():
+    """① 巳居中 + **金当令**（申月）→ 1寅1巳 只能**刑伤**：申中之金减 2/3 度。
+
+    > 书 下 2194「b. 金处于当令之地或火处于失令之地：2寅与1巳或1寅与2巳合作可以
+    >  完全刑掉1申，1寅与1巳可刑伤1申（申中之金减力2/3）」；
+    > 书 下 2251 的 2 申盘写「申金减力2/3（**平均每个申金减1/3**）」——可见 2/3 是
+    > **固定度数**、按申支数摊分，不是「降到原值的 1/3」。
+    """
+    r = relations.judge_relations(_chart("甲戌", "壬申", "丁巳", "壬寅"))
+    t11 = [e for e in r["established"] if e["tier"] == 11]
+    assert t11, [(e["tier"], e["type"]) for e in r["established"]]
+    fx = [f for f in t11[0]["effects"]
+          if f["zhi"] == "申" and f.get("delta") == -2 / 3]
+    assert fx and fx[0]["split"] is True, t11[0]["effects"]
+
+
+def test_tier11_shen_centered_does_not_constitute():
+    """**申居中**（寅申巳 / 巳申寅）不构成三刑——书只给「巳居中」「寅居中」两条条件。"""
+    for gz in (("甲寅", "壬申", "丁巳", "庚辰"), ("丁巳", "壬申", "甲寅", "庚辰")):
+        r = relations.judge_relations(_chart(*gz))
+        assert not _estab(r, tier=11), (gz, [(e["tier"], e["detail"]) for e in r["established"]])
+
+
+# ---------------------------------------------------------------
 # 12-13. 六合 / 墓地半三合
 # ---------------------------------------------------------------
 
@@ -292,35 +367,83 @@ def test_tier15_liuhai():
     assert _estab(r, tier=15), "子未六害应成立"
 
 
+def test_partially_consumed_candidate_shrinks_instead_of_yielding():
+    """**部分被占用时收窄候选、不整条让位**（书 下 2885）。
+
+    > 「此造2丑害1午，但年月丑未相冲，故年日之丑午害不成功，**只论日时之丑午害**——
+    >   午中丁火减力1半，午中己土不变；丑中癸水减力1度，丑中辛金减力1半，丑中己土增力1度。」
+
+    坤 辛未 辛丑 丙午 己丑：两个丑都与午相邻（年月丑未冲先消费了年丑），
+    故六害应**收窄到日午·时丑**继续成立，而不是整条让位。
+    这一条是并支改造（tier 8/15 把同一对的多支并成一条）之后的必要配套——
+    否则「全有或全无」会把书里留存的那些对一起丢掉。
+    """
+    from services.bazi.v2 import degrees as _d
+    from services.bazi.v2 import pipeline as _p
+    p = _chart("辛未", "辛丑", "丙午", "己丑")
+    cols = _d.build_cols(p)
+    r = relations.judge_relations(p)
+    hai = [e for e in r["established"] if e["tier"] == 15]
+    assert hai and hai[0]["cols"] == ["day", "time"], \
+        [(e["tier"], e["type"], e["cols"]) for e in r["established"]]
+    h = _p._adjusted_hidden(r, cols, "丑")
+    assert h["day"] == [("丁", 2.0), ("己", 2.0)], h["day"]      # 午丁减半、午己不变
+    assert h["time"] == [("癸", 1.0), ("辛", 1.0), ("己", 4.0)], h["time"]
+
+
+def test_dayun_acts_on_any_pillar():
+    """**岁运列不受盘面柱距约束**——岁运可作用于原局任何一柱。
+
+    引擎把 `_dayun` / `_liunian` 拼在四柱**之后**，与年/月永远相距 ≥3；
+    若按盘面柱距判相邻，岁运与原局的天克地冲/天合地合会**全部**判不出来。
+    书 下 1786「进入壬戌运，**与月天克地冲**」、下 3294「进入癸酉运，流年
+    **与月柱天克地冲**」。
+    """
+    for gz, dy in (("戊戌 丙辰 癸酉 丁巳", "壬戌"), ("甲申 丁卯 戊戌 甲寅", "癸酉")):
+        p = _chart(*gz.split())
+        p["_dayun"] = {"gan": dy[0], "zhi": dy[1]}
+        r = relations.judge_relations(p)
+        t2 = [e for e in r["established"] if e["tier"] == 2]
+        assert t2 and t2[0]["cols"] == ["month", "_dayun"], \
+            (gz, dy, [(e["tier"], e["type"], e["cols"]) for e in r["established"]])
+
+
 def test_tier15_beats_tier16():
-    """六害与拱会并见时先论六害（书解释 14）。"""
-    # 申亥六害(tier15) 与 亥丑拱会(tier16)
+    """六害与拱会并见时先论六害（书解释 14）——拱会已去除，六害照常成立。"""
+    # 申亥六害(tier15) 与 亥丑拱会(tier16，已去除)
     r = relations.judge_relations(_chart("甲申", "乙亥", "丁丑", "戊午"))
     assert _estab(r, tier=15), "申亥六害应成立"
-    assert not _estab(r, tier=16), "亥丑拱会应让位"
+    assert not _estab(r, tier=16), "拱会已去除"
 
 
 # ---------------------------------------------------------------
-# 16-18. 拱会 / 拱合 / 特殊生克
+# 16-18. 拱会 / 拱合（**已去除**） / 特殊生克
 # ---------------------------------------------------------------
+# 书 下 3186 的顺序表里 16 拱会、17 拱合确有其名，但**全书只给级名、未给成立条件与
+# 度数**；原实现只能取「第一个 X + 第一个 Y」、连柱距都不看，把不相干的支判成拱，
+# 并把 tier 18 的戌脆金/戌生金整批抢走（书 上 1430/1433/521/513 四例全跑不出）。
+# 2026-09-11 用户裁定**去除**，故以下两条由「应成立」翻转为「不产出」。
 
-def test_tier16_gonghui():
-    """亥丑拱会（tier 16）。
-
-    > 第 4 支只能取辰——亥、丑与其他支几乎都挂着更高优先级的关系（见测试说明）。
-    > 辰另与 卯 成 卯辰半会（tier 9）消耗卯辰，不影响亥丑。
-    """
+def test_tier16_gonghui_removed():
+    """亥丑拱会（tier 16）**不再产出候选**。"""
     r = relations.judge_relations(_chart("乙亥", "丁丑", "戊辰", "己卯"))
-    assert _estab(r, tier=16), "亥丑拱会应成立"
+    assert not _estab(r, tier=16), "拱会已去除"
 
 
-def test_tier17_gonghe():
-    """申辰拱合（tier 17）。
-
-    > 避开 子——否则 申子辰 三合（tier 6）先成立而消费申辰。
-    """
+def test_tier17_gonghe_removed():
+    """申辰拱合（tier 17）**不再产出候选**。"""
     r = relations.judge_relations(_chart("甲申", "戊辰", "丙午", "壬戌"))
-    assert _estab(r, tier=17), "申辰拱合应成立"
+    assert not _estab(r, tier=17), "拱合已去除"
+
+
+def test_removed_tiers_leave_no_candidates_anywhere():
+    """全量守卫：任取一批盘，established/rejected 里都不应再出现 16/17。"""
+    cases = [("乙亥", "丁丑", "戊辰", "己卯"), ("甲申", "戊辰", "丙午", "壬戌"),
+             ("寅戌", "甲子", "丙寅", "庚申"), ("巳丑", "乙丑", "丁卯", "辛丑")]
+    for gz in cases:
+        r = relations.judge_relations(_chart(*gz))
+        tiers = {e["tier"] for e in r["established"]} | {e["tier"] for e in r["rejected"]}
+        assert not (tiers & {16, 17}), (gz, sorted(tiers))
 
 
 def test_tier12_yields_to_tier8_on_shared_branch():
@@ -576,15 +699,25 @@ def _fx(fxs, zhi, gan=None, wuxing=None):
     return hit[0]
 
 
-def test_special_xu_sheng_jin_is_registered():
-    """**戌生金**（书 上 494「未戌生于申酉月…戌含土3度，含金2度，含火1度，其**不脆金反生金**
-    （使金增力1度），其中戊土减力1度，辛金、丁火不变」；亥子丑月 上 499、辰月 上 501 同）。
+def test_special_xu_pair_registered_without_the_dead_you_branch():
+    """**戌—申**注册为特殊生克；**戌—酉 是死分支，不注册**。
+
+    戌分两档（书 上 490/494/495/499/501/503）：
+    - **生金**：申酉月 上 494「戌含土3度，含金2度，含火1度，其**不脆金反生金**（使金增力1度），
+      其中戊土减力1度，辛金、丁火不变」；亥子丑月 上 499、辰月 上 501「戌无脆金之力反有生金之力」；
+    - **脆金**：巳午未月 上 490「其脆金之力是减半…这时其中之火均减力1度」、戌月 上 495 同、
+      寅卯月 上 503「其脆金之力为1/4，此时戌中丁火减力0.5度」。
 
     书 上 2300 的七条特例只列了「未克申酉、子生寅、丑生申、子克巳、辰晦巳午、巳生戌、辰克亥」，
-    **戌生金不在其中**——它出自《特殊情况三》的未戌分档，故本仓此前整条缺失。
+    **戌生金/脆金不在其中**——它出自《特殊情况三》的未戌分档。
+
+    **为何没有 ("戌","酉")**：酉戌相邻时必先成酉戌害（tier 15 < 18），tier 18 的戌酉只能进
+    `rejected`；而酉侧的数值已由 `ban.hai_effects` 的酉戌害三档完整覆盖，且与未戌分档一一对应
+    （下 3122「丁火≥3度：酉金减半」＝脆金减半、下 3124「丁火为2度：酉金减1/4」＝脆金1/4、
+    下 3126「丁火为1度：酉金增力1度」＝生金）。
     """
     assert ("戌", "申") in relations.SPECIAL_PAIRS
-    assert ("戌", "酉") in relations.SPECIAL_PAIRS
+    assert ("戌", "酉") not in relations.SPECIAL_PAIRS, "死分支不得注册"
 
 
 def test_special_xu_sheng_jin_effects():
@@ -596,13 +729,87 @@ def test_special_xu_sheng_jin_effects():
         assert not any(f["zhi"] == "戌" and f.get("gan") in ("辛", "丁") for f in fxs), fxs
 
 
-def test_special_xu_sheng_jin_applies_in_chen_and_haizichou():
-    """「戌无脆金之力反有生金之力」还见于**亥子丑月**（上 499）与**辰月**（上 501）；
-    戌月（上 495）与巳午未月、寅卯月（上 503）则不是生金之月。"""
+def test_special_xu_cui_jin_effects_by_month():
+    """戌的**脆金**档（书 上 490/495/503）——旧实现整档缺失，只补了「生金」的六个月令。
+
+    | 月令 | 脆金之力 | 戌中之火 |
+    |---|---|---|
+    | 巳午未、戌 | 减半 | 丁火 −1 度 |
+    | 寅卯 | 1/4 | 丁火 −0.5 度 |
+    | 申酉、亥子丑、辰 | **不是脆金**（反生金，见上条） | — |
+
+    > 上 490「未戌生于巳午未月：未戌土含火4度，含土2度…其脆金之力是减半（即受克者金减去
+    >   一半的力量），这时其中之火均减力1度，土不减力。」
+    > 上 495「未戌生于戌月：未戌均含土3度，含火3度…其脆金之力为减半，这时其中之火均减力1度。」
+    > 上 503「未戌生于寅卯月：…戌含土3度，含火2度，含金1度，其脆金之力为1/4，此时戌中丁火
+    >   减力0.5度，其他不变。」
+    """
+    # 巳午未月、戌月：金减半、戌中丁火 −1
+    for month in ("巳", "午", "未", "戌"):
+        fxs = relations._special_effects("戌", "申", month)
+        assert _fx(fxs, "申", wuxing="金")["scale"] == 0.5, (month, fxs)
+        assert _fx(fxs, "戌", "丁")["delta"] == -1.0, (month, fxs)
+    # 寅卯月：金减 1/4、戌中丁火 −0.5
+    for month in ("寅", "卯"):
+        fxs = relations._special_effects("戌", "申", month)
+        assert _fx(fxs, "申", wuxing="金")["scale"] == 0.75, (month, fxs)
+        assert _fx(fxs, "戌", "丁")["delta"] == -0.5, (month, fxs)
+    # 生金档的六个月令：仍 +1 / −1，绝不叠脆金
     for month in ("申", "酉", "亥", "子", "丑", "辰"):
-        assert relations._special_applies("戌", "酉", month, []), month
-    for month in ("戌", "巳", "午", "未", "寅", "卯"):
-        assert not relations._special_applies("戌", "酉", month, []), month
+        fxs = relations._special_effects("戌", "申", month)
+        assert _fx(fxs, "申", "庚")["delta"] == 1.0, (month, fxs)
+        assert not any(f.get("scale") for f in fxs), (month, fxs)
+
+
+def test_special_xu_applies_in_every_month():
+    """戌对申酉**无月不论**：生金（申酉/亥子丑/辰 上 494/499/501）与脆金（巳午未/戌/寅卯
+    上 490/495/503）互补，覆盖全部十二月令——旧实现只放行了生金的六个月的 6 个月。"""
+    for month in relations.tables.ZHI_ORDER:
+        assert relations._special_applies("戌", "申", month, []), month
+
+
+def test_special_xu_cui_jin_reaches_tier18_in_production():
+    """戌脆金在生产路径上可达（tier 18），且度数**真的**落到 `compute_strength` 上。
+
+    三盘各取一个脆金档（均需避开 tier 2 天克地冲与 tier 16 申戌拱会的抢先消费——
+    拱会取「第一个申 + 第一个戌」，故让第一个戌先在更高级别被消费，第二个戌才空出来）：
+    - 未月 `戊戌 己未 庚申 丙戌`：年戌被**未戌刑**（tier 14）消费 → 日申·时戌成 tier 18；
+      戌在未月含火4/土2 → 丁火 −1；申中庚金**减半**（书 上 490）。
+    - 戌月 `戊辰 壬戌 庚申 丙戌`：月戌被**辰戌冲**（tier 8）消费 → 日申·时戌成 tier 18；
+      戌在戌月含火3/土3 → 丁火 −1；申中庚金**减半**（书 上 495）。
+    - 寅月 `丙戌 庚寅 丙申 壬申`：日申被**寅申冲**（tier 8）消费 → 年戌·时申成 tier 18；
+      戌在寅月含火2/土3/金1 → 丁火 −0.5；申中庚金**减 1/4**（书 上 503）。
+    """
+    from services.bazi.v2 import pipeline
+
+    def _t18(*gz):
+        pillars = {k: {"gan": v[0], "zhi": v[1]}
+                   for k, v in zip(("year", "month", "day", "time"), gz)}
+        prod = pipeline.compute_strength(pillars)
+        return prod, [e for e in prod["relations"]["established"]
+                      if e["tier"] == 18 and set(e["members"]) == {"戌", "申"}]
+
+    # 未月：丁火 4 → 3，申金 ×0.5 → 生产路径上金 = 3×0.5 = 1.5（旧实现为 3.0）
+    prod, t18 = _t18("戊戌", "己未", "庚申", "丙戌")
+    assert t18, [(e["tier"], e["detail"]) for e in prod["relations"]["established"]]
+    assert _fx(t18[0]["effects"], "戌", "丁")["delta"] == -1.0, t18[0]["effects"]
+    assert _fx(t18[0]["effects"], "申", wuxing="金")["scale"] == 0.5, t18[0]["effects"]
+    assert prod["degrees"]["金"]["after_relations"] == 1.5, "戌脆金必须落到生产度数上"
+
+    # 戌月：丁火 3 → 2，申金 ×0.5（上 495）
+    prod, t18 = _t18("戊辰", "壬戌", "庚申", "丙戌")
+    assert t18, [(e["tier"], e["detail"]) for e in prod["relations"]["established"]]
+    assert _fx(t18[0]["effects"], "戌", "丁")["delta"] == -1.0, t18[0]["effects"]
+    assert _fx(t18[0]["effects"], "申", wuxing="金")["scale"] == 0.5, t18[0]["effects"]
+    assert prod["degrees"]["金"]["after_relations"] == 1.5, "戌脆金必须落到生产度数上"
+
+    # 寅月：丁火 2 → 1.5，申金 ×0.75（上 503）→ 生产路径上金 = 4.75（日申经寅申冲后 2.5，
+    # 时申 3×0.75=2.25）
+    prod, t18 = _t18("丙戌", "庚寅", "丙申", "壬申")
+    assert t18, [(e["tier"], e["detail"]) for e in prod["relations"]["established"]]
+    assert _fx(t18[0]["effects"], "戌", "丁")["delta"] == -0.5, t18[0]["effects"]
+    assert _fx(t18[0]["effects"], "申", wuxing="金")["scale"] == 0.75, t18[0]["effects"]
+    assert prod["degrees"]["金"]["after_relations"] == 4.75, "戌脆金必须落到生产度数上"
 
 
 def test_special_wei_cui_jin_effects_by_month():

@@ -42,12 +42,16 @@
   "strength": {
     "engine": "wangdu-v2",
     "contract_version": 2,
-    "day_master": "乙", "day_master_wuxing": "木",
+    "day_master": "乙", "day_master_original": "乙", "day_master_wuxing": "木",
     "input_scope": "four_pillars",
     "degradations": [],
     "relations": { "established": [ … ], "rejected": [ … ] },
     "degrees": { "木": {…}, "火": {…}, "土": {…}, "金": {…}, "水": {…} },
     "level": "偏弱",
+    "stem_groups": [ /* §2.2b 实例明细（S7） */ ],
+    "day_master_group": { /* 含日柱的那一组 */ },
+    "benqi_instances": [ /* 同柱本气藏干实例 */ ],
+    "stem_he": { /* §2.2d 天干五合的结论 */ },
     "ge_ju": { "type": "zheng", "hua_shen": null, "cong_targets": [], "neng_duli": true, "liang_qi": null, "basis": [ … ] },
     "yong_shen": { … },
     "layers": { "verdict": "…", "met": [ … ], "missing": [ … ], "penalties": [ … ], "basis": "…" },
@@ -79,6 +83,90 @@
 - **并存**：化神一致的关系**同时**出现在 `established`（FR-003）。
 - 现状对照：既有 `steps[2].traces` 只有散文串（如 `"子丑六合：隔位不论"`），无 `a`/`b`/`type`/`positions`/`expect`；本契约把它结构化。
 
+### 2.2b `strength.stem_groups` / `day_master_group` / `benqi_instances`（S7 新增）
+
+书 上 651-657：同一个五行的不同天干**旺度不等**（年干戊 5.6 vs 日干/时干戊 6.4），
+生克的对象是**那一个字**（书 上 1000 注①、书 上 1008「戌土本身 = 2.1 度」）。
+故在**不改** `static_scores`/`final_scores`/`degrees[wx]`（仍是五行合计，前端能量条
+照旧读 `degrees[wx].final`）的前提下另开三个字段：
+
+```jsonc
+"stem_groups": [
+  { "kind": "stem_group", "wx": "土", "cols": ["day","time"], "gans": ["戊","戊"],
+    "label": "日干戊、时干戊", "stem_degree": 2.0, "root": 6.0, "root_scaled": 4.8,
+    "static": 6.4, "final": 2.602, "is_day_master": true }
+],
+"day_master_group": { … 同上形状 … },
+"benqi_instances": [
+  { "kind": "benqi", "wx": "土", "col": "year", "zhi": "戌", "gan": "戊",
+    "label": "年支戌本气戊", "static": 2.1, "final": 2.1 }
+]
+```
+
+`degrees[wx].instances` 给出该五行的同一批实例（`kind` 区分两类）。
+`level` 与从格判据取 `day_master_group`；«不能独立» 的**贴身**一项取月干组／
+日支本气／时干组三个**实例**（书 下 4055 的「贴身」是位置概念）。
+口径全文与已知差异见 `research.md` 的 **C26-16**。
+
+### 2.2c `steps[].chart`（新增——逐段命盘快照）
+
+第 1–8 段各带一张**该段结束时**的命盘快照；第 9 段（格局）与第 10 段（三因素取用）
+不改变任何度数，故**不带**该字段。形状、`change` 取值与各段度数口径见
+[data-model.md](../data-model.md) §7a；实现在 `pipeline._step_chart`。
+
+要点：
+
+- 快照不是另算一份——第 1 段的藏干即 `degrees[wx].base` 剥掉天干那部分，第 3 段即
+  `after_relations`，第 6 段天干即 `stem_groups[].static`，第 8 段本气即
+  `benqi_instances[].final`（有单元测试逐条钉住）。
+- `zhi_effective_wx` 是**该支实际承载**的五行，支合化变纯后已非本气五行，前端据此上色。
+- 变纯支的 `note` 附上**原来的字**（「原藏 甲3、丙2、戊1」），使「变成了其他字」
+  一眼可见，不必回翻第 1 段比对。
+- **天干也会换字**：天干五合合化成功后，该干换成「化神五行、与本干同阴阳」的干
+  （甲→戊、丙→壬、辛→癸…，书 上 1593/1872/1990）。故 `gan` / `gan_wx` 是该段**换字
+  后**的值，`gan_original` 给出原局那个字，`gan_change` 标 `合化` 或 `合绊`；前端渲染成
+  「戊·原甲·合化」。**第 1 段（原局）只显示原字**，不换。
+- 日干被换字时根对象另有 `day_master_original`（见 §2.1），前端在强弱卡标「原甲·合化改宗」。
+- **天干栏的主数**：第 1–4 段是该字**自身**的生度数（原局 1、合绊后 0.6/0.8…）；
+  **第 5 段起换成该字所在连片组的旺度**——也就是生克算式里真正用的那个数
+  （含通根，书 上 771 与上 744 的 9.75 算例）。另给两个分量字段：`gan_own`（自身旺度）
+  与 `gan_root`（根），恒有 **主数 = 自身 + 根**。页面只把 `gan_own` 作为小字显示，
+  `gan_root` 留在数据里备查。
+- 第 7 段的逐实例快照里，主数与根都取**结算当下**的值，故会随结算逐步变化；
+  藏干的本气同样取当下值。
+- 第 7 段另有 `steps[].charts`（**逐实例快照**）：`[{label, after, chart}]`，`after` 是该次
+  结算完时依据行已产出的条数，前端据此把图插在对应算式之后；末尾一张即该段终态。
+- 换字是**真换**：连片天干分组、通根归属、静态旺度、生克对手与十神全部按新字算
+  （书 上 1593「甲己合化成功，其土的力量由原来的 1 度变成 2 度，原因是 1 度的甲木
+  变成了土」）；合而不化的**合绊减力也进静态旺度**（书 上 1638 的 9.24 度算式）。
+  口径留痕见 `research.md` 的 C26-18 / C26-19。
+
+### 2.2d `strength.stem_he`（新增——天干五合的结论）
+
+第 2 段的判定结果，就地产出、只判一次（格局层的化格判定复用它，不再各判一遍）：
+
+```jsonc
+"stem_he": {
+  "hua": { "year": ["土", "戊"], "month": ["土", "己"] },   // 柱位下标 → (化神五行, 换字后的干)
+  "ban": { "month": 0.6, "time": 0.8 },                     // 柱位下标 → 合绊后该干**自身**的度数
+  "ban_cheng": { "month": 4.0, "time": 2.0 },               // 同上，成数形式
+  "blocked": [["year", "month"]],                           // 因合而不再论生克的对（贪合忘生克）
+  "established": [
+    { "type": "天干五合", "result": "合化", "hua": "土",
+      "cols": ["year", "month"], "pair": "甲己",
+      "change": [{ "col": "year", "from": "甲", "to": "戊" }] },
+    { "type": "天干五合", "result": "合绊", "cols": ["month", "time"],
+      "pair": "甲己", "ban_cheng": { "month": 4.0, "time": 2.0 } }
+  ],
+  "traces": ["甲己合化土成功：年干甲变戊、月干己变己（书 上 1593…）"]
+}
+```
+
+- 判定依据：相邻紧贴（书 上 1575/2090）→ 争合时按底气与优先权排序（书 上 1699）→
+  合化四条件（`relations._gan_hua_one`，条件②读**地支合化改宗后**的月令）。
+- 换字与减力的口径、以及两条待确认裁定（C26-18 争合比例 / C26-19 第一节教学例）
+  见 `research.md`；`steps[]` 里对应「第 2 段 · 天干五合」。
+
 ### 2.3 `xi_yong.conclusion`（重排）
 
 ```jsonc
@@ -86,7 +174,7 @@
   "yong_shen": "金",                    // = strength.yong_shen.theoretical.element
   "practical_yong_shen": "土",          // 新增（FR-038）
   "tiaohou_yong_shen": { "element": "水", "basis": "…", "met": true, "quantified": "本气水 2 个（达标需 2 个）" },
-  "xi_shen": ["土"], "ji_shen": ["木","火"], "xian_shen": [],
+  "xi_shen": ["土"], "ji_shen": ["木","火","水"], "xian_shen": [],
   "tier": { "first": "金", "second": "土", "third": null },
   "layers": { "verdict": "小贵之命", "met": [ … ], "missing": [ … ] },
   "empty": false,

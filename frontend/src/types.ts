@@ -494,12 +494,65 @@ export interface V2Layers {
   basis: string
 }
 
+/** 藏干在**该段结束时**的度数，以及它相对**原始藏干表**的变化。 */
+export interface V2ChartHidden {
+  gan: string
+  wx: string
+  degree: number
+  /** 相对原始表的变化；第 1 段（原局）恒为 null。 */
+  change: '新增' | '归零' | '增力' | '减力' | '变纯' | null
+}
+
+export interface V2ChartPillar {
+  key: string
+  label: string
+  /** 该天干在**本段**的字——天干五合合化成功后会换成化神干支（甲→戊）。 */
+  gan: string
+  gan_wx: string
+  /** 换字前的原局那个字；未参与合化换字时为 null。 */
+  gan_original: string | null
+  /** 本段该天干发生了什么：合化换字 / 合而不化的合绊减力；无则为 null。 */
+  gan_change: '合化' | '合绊' | null
+  /** 第 1–4 段为**该字自身**的生度数（原局 1、合绊后 0.6/0.8…）；
+   *  第 5 段起改为该字所在**连片组的旺度**——生克算式里真正用的那个数（含通根）。 */
+  gan_degree: number
+  /** 该字自身的旺度（生度数 × 月令系数）；第 5 段起才有，否则为 null。 */
+  gan_own?: number | null
+  /** 该字所在组的**根**（= `gan_degree` − `gan_own`）；第 5 段起才有，否则为 null。 */
+  gan_root?: number | null
+  zhi: string
+  zhi_wx: string
+  /** 该支**实际承载**的五行——合化变纯后已非本气五行，据此上色。 */
+  zhi_effective_wx: string
+  hidden: V2ChartHidden[]
+  /** 整支变纯时的说明（含原来的字）；否则为 null。 */
+  note: string | null
+}
+
+/** 某一段**结束时**的命盘快照（第 1–8 段；格局/取用段不改度数，故不带）。 */
+export interface V2StepChart {
+  pillars: V2ChartPillar[]
+}
+
+/** 结算过程中的一张快照（第 7 段「每一柱计算完成显示当前命盘」）。
+ *
+ *  `after` = 该实例结算完时依据行已产出的条数，前端据此把图插在对应算式之后。 */
+export interface V2StepChartPoint {
+  label: string
+  after: number
+  chart: V2StepChart
+}
+
 export interface V2Step {
   key: string
   title: string
   rule: string
   /** 该段生效的**口径裁定编号**（C26-n / O-n），可在 research.md 定位（FR-056）。 */
   rulings?: string[]
+  /** 该段结束时的命盘快照——第 1–8 段有，第 9/10 段（格局/取用）无。 */
+  chart?: V2StepChart
+  /** 结算过程中的逐实例快照（仅第 7 段）。有它时前端不再重复贴段末那张。 */
+  charts?: V2StepChartPoint[]
   traces: StepTrace[]
   result: string
 }
@@ -522,7 +575,10 @@ export interface V2DayunStep {
 export interface WangduV2 {
   engine: 'wangdu-v2'
   contract_version: 2
+  /** **换字后**的日干——日干参与天干五合且化成功时已改宗（甲→戊），否则即原字。 */
   day_master: string
+  /** 原局的日干字；未换字时与 `day_master` 相同。 */
+  day_master_original?: string
   day_master_wuxing: string
   input_scope: 'four_pillars' | 'three_pillars'
   degradations: string[]

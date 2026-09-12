@@ -149,10 +149,13 @@ describe('StrengthDetail — v2 渲染路径（012）', () => {
     expect(row.text()).toContain('破格')
   })
 
-  it('判定依据含规则、口径裁定编号与算式', () => {
+  it('判定依据含规则与算式（口径裁定不在页面展示）', () => {
     const w = mountWith(withV2)
-    expect(w.findAll('[data-testid="v2-step-rulings"]').length).toBeGreaterThan(0)
-    expect(w.text()).toContain('O-5')
+    expect(w.findAll('.step-rule').length).toBeGreaterThan(0)
+    expect(w.findAll('.step-trace').length).toBeGreaterThan(0)
+    // 口径裁定只留在数据里（`s.rulings`），页面不渲染
+    expect(w.findAll('[data-testid="v2-step-rulings"]').length).toBe(0)
+    expect(w.text()).not.toContain('O-5')
   })
 
   it('命盘卡片显示各柱藏干（干 · 十神）', () => {
@@ -293,10 +296,245 @@ describe('StrengthDetail — 推演分步展示', () => {
     expect(step.find('.step-result').text()).toContain('偏弱')
   })
 
-  it('口径裁定编号直接展示在卡片内', () => {
+  it('五行速览格紧邻命盘上方（都在段尾）', () => {
+    const w = mountWith(withChart('static'))
+    const step = w.find('[data-testid="v2-step-static"]')
+    const scores = step.find('[data-testid="v2-step-scores"]')
+    const chart = step.find('[data-testid="v2-step-chart-static"]')
+    expect(scores.exists()).toBe(true)
+    expect(chart.exists()).toBe(true)
+    // 速览格在命盘之前，且两者之间只隔一个兄弟节点（相邻）
+    const kids = Array.from((step.element as HTMLElement).children)
+    const si = kids.indexOf(scores.element as HTMLElement)
+    const ci = kids.indexOf(chart.element as HTMLElement)
+    expect(ci).toBe(si + 1)            // 直接相邻，中间不夹别的节点
+    // 结果行在速览格之前
+    const ri = kids.findIndex((k) => k.classList.contains('step-result'))
+    expect(ri).toBeLessThan(si)
+  })
+})
+
+// ---------------------------------------------------------------
+// 判定依据里的逐段命盘快照（steps[].chart）
+// ---------------------------------------------------------------
+
+/** 第 2 段（关系影响）的快照：一支变纯 + 一支藏干减力，用来验标记。 */
+const CHART = {
+  pillars: [
+    { key: 'year', label: '年', gan: '戊', gan_wx: '土', gan_degree: 2,
+      gan_own: 0.8, gan_root: 1.2, gan_original: null, gan_change: null,
+      zhi: '申', zhi_wx: '金', zhi_effective_wx: '金',
+      hidden: [{ gan: '庚', wx: '金', degree: 6, change: null },
+               { gan: '壬', wx: '水', degree: 3, change: null }],
+      note: null },
+    { key: 'month', label: '月', gan: '丙', gan_wx: '火', gan_degree: 1.5,
+      gan_original: null, gan_change: null,
+      zhi: '寅', zhi_wx: '木', zhi_effective_wx: '火',
+      hidden: [{ gan: '丙', wx: '火', degree: 6, change: '变纯' }],
+      note: '合化火成功：寅变纯火 6 度（书《下》第六节 半三合）；原藏 甲3、丙2、戊1' },
+    { key: 'day', label: '日', gan: '戊', gan_wx: '土', gan_degree: 1.2,
+      gan_original: null, gan_change: null,
+      zhi: '辰', zhi_wx: '土', zhi_effective_wx: '土',
+      hidden: [{ gan: '戊', wx: '土', degree: 1, change: null },
+               { gan: '乙', wx: '木', degree: 0, change: '归零' },
+               { gan: '癸', wx: '水', degree: 4, change: '减力' }],
+      note: null },
+    { key: 'time', label: '时', gan: '庚', gan_wx: '金', gan_degree: 0.7,
+      gan_original: null, gan_change: null,
+      zhi: '午', zhi_wx: '火', zhi_effective_wx: '火',
+      hidden: [{ gan: '丁', wx: '火', degree: 4, change: null },
+               { gan: '己', wx: '土', degree: 2, change: '新增' }],
+      note: null },
+  ],
+}
+
+/** 把 `chart` 挂到指定段上（不动其他段的 fixture）。
+ *
+ *  必须**深拷贝** `v2Strength`——直接引用会让 `s.chart = …` 写回共享对象，
+ *  后跑的用例就带上前面用例挂过的图（曾经因此假红过一条）。 */
+function withChart(...keys: string[]) {
+  const result = JSON.parse(JSON.stringify(mockResult))
+  result.xi_yong.strength = JSON.parse(JSON.stringify(v2Strength))
+  for (const s of result.xi_yong.strength.steps) {
+    if (keys.includes(s.key)) s.chart = CHART
+  }
+  return result
+}
+
+describe('StrengthDetail — 判定依据的分段命盘快照（012）', () => {
+  it('带 chart 的段渲染一张快照，四柱齐全', () => {
+    const w = mountWith(withChart('relations'))
+    const chart = w.find('[data-testid="v2-step-chart-relations"]')
+    expect(chart.exists()).toBe(true)
+    expect(chart.text()).toContain('本段结束时的命盘')
+    expect(chart.findAll('[data-testid^="v2-chart-"]').length).toBeGreaterThanOrEqual(4)
+    expect(chart.find('[data-testid="v2-chart-year"]').text()).toContain('申')
+  })
+
+  it('不带 chart 的段不渲染快照（格局 / 取用段不改度数）', () => {
+    const w = mountWith(withChart('relations'))
+    expect(w.find('[data-testid="v2-step-chart-total"]').exists()).toBe(false)
+    expect(w.find('[data-testid="v2-step-chart-static"]').exists()).toBe(false)
+  })
+
+  it('每个天干与藏干都显示度数', () => {
+    const w = mountWith(withChart('relations'))
+    const year = w.find('[data-testid="v2-chart-year"]')
+    // 天干度数贴在干后面，藏干度数贴在字后面
+    expect(year.find('.pillar-deg').text()).toBe('2')
+    const rows = year.findAll('[data-testid="v2-chart-hidden-year"]')
+    expect(rows.length).toBe(2)
+    expect(rows[0].text()).toContain('庚')
+    expect(rows[0].find('.cang-deg').text()).toBe('6')
+  })
+
+  it('变纯的支改按化神五行显示并标「变X」（原字说明不展示）', () => {
+    const w = mountWith(withChart('relations'))
+    const month = w.find('[data-testid="v2-chart-month"]')
+    expect(month.find('.pillar-changed').text()).toContain('变火')
+    expect(month.find('.cang-mark').text()).toBe('变纯')
+    expect(w.findAll('[data-testid^="v2-chart-note-"]').length).toBe(0)
+  })
+
+  it('藏干的增/减/归零分别标出，归零加删除线', () => {
+    const w = mountWith(withChart('relations'))
+    const day = w.find('[data-testid="v2-chart-day"]')
+    const rows = day.findAll('[data-testid="v2-chart-hidden-day"]')
+    expect(rows[1].find('.cang-mark').text()).toBe('归零')
+    expect(rows[1].classes()).toContain('is-off')
+    expect(rows[2].find('.cang-mark').text()).toBe('减力')
+    const time = w.find('[data-testid="v2-chart-time"]')
+    expect(time.findAll('[data-testid="v2-chart-hidden-time"]')[1].find('.cang-mark').text()).toBe('新增')
+  })
+
+  it('第 5 段起天干只在小字里补「自身」，不显示「根」', () => {
+    const w = mountWith(withChart('static'))
+    const year = w.find('[data-testid="v2-chart-year"]')
+    expect(year.find('[data-testid="v2-gan-own-year"]').text()).toBe('自身 0.8')
+    expect(year.text()).not.toContain('根')
+    // 主数仍是组旺度
+    expect(year.find('.pillar-deg').text()).toBe('2')
+  })
+
+  it('天干显示该干本身的度数（生度数或乘过月令系数的旺度数），不显示通根/组合计', () => {
+    const w = mountWith(withChart('tonggen'))
+    const day = w.find('[data-testid="v2-chart-day"]')
+    // 干下不再挂「通根 X 度」小注（只在有字变时才有一行）
+    expect(day.find('.pillar-sub').exists()).toBe(false)
+    // 度数就是那个干自己的——静态旺度起已是乘过月令系数的旺度数
+    expect(day.find('.pillar-deg').text()).toBe('1.2')
+  })
+
+  it('第 7 段按结算次序逐实例贴命盘，且不再重复贴段末那张', () => {
+    const w = mountWith(withPoints())
+    const step = w.find('[data-testid="v2-step-stem_shengke"]')
+    expect(step.find('[data-testid="v2-step-chart-stem_shengke-1"]').exists()).toBe(true)
+    expect(step.find('[data-testid="v2-step-chart-stem_shengke-2"]').exists()).toBe(true)
+    expect(step.find('[data-testid="v2-step-chart-stem_shengke"]').exists()).toBe(false)
+    // 图插在算式行之后，不是全堆在段尾
+    const kids = Array.from((step.element as HTMLElement).children)
+    const chartIdx = kids.findIndex((k) => k.getAttribute('data-testid') === 'v2-step-chart-stem_shengke-1')
+    const firstTrace = kids.findIndex((k) => k.classList.contains('step-trace'))
+    const resultIdx = kids.findIndex((k) => k.classList.contains('step-result'))
+    expect(chartIdx).toBeGreaterThan(firstTrace)
+    expect(chartIdx).toBeLessThan(resultIdx)
+  })
+})
+
+// ---------------------------------------------------------------
+// 第 2 段 · 天干五合（合化换字 / 合绊减力）
+// ---------------------------------------------------------------
+
+/** 带天干五合结果的快照：月干甲己合化土 → 甲变戊；时干合而不化 → 合绊。 */
+const HE_CHART = {
+  pillars: [
+    { key: 'year', label: '年', gan: '戊', gan_wx: '土', gan_degree: 0.8,
+      gan_original: '甲', gan_change: '合化', gan_note: null,
+      zhi: '辰', zhi_wx: '土', zhi_effective_wx: '土',
+      hidden: [{ gan: '戊', wx: '土', degree: 1, change: null }], note: null },
+    { key: 'month', label: '月', gan: '戊', gan_wx: '土', gan_degree: 0.8,
+      gan_original: null, gan_change: '合绊', gan_note: null,
+      zhi: '寅', zhi_wx: '木', zhi_effective_wx: '木',
+      hidden: [{ gan: '甲', wx: '木', degree: 3, change: null }], note: null },
+    { key: 'day', label: '日', gan: '丙', gan_wx: '火', gan_degree: 1.2,
+      gan_original: null, gan_change: null, gan_note: null,
+      zhi: '午', zhi_wx: '火', zhi_effective_wx: '火',
+      hidden: [{ gan: '丁', wx: '火', degree: 4, change: null }], note: null },
+    { key: 'time', label: '时', gan: '庚', gan_wx: '金', gan_degree: 1,
+      gan_original: null, gan_change: null, gan_note: null,
+      zhi: '申', zhi_wx: '金', zhi_effective_wx: '金',
+      hidden: [{ gan: '庚', wx: '金', degree: 3, change: null }], note: null },
+  ],
+}
+
+/** 第 7 段（生克结算）带**逐实例快照**的样本。 */
+function withPoints() {
+  const result = JSON.parse(JSON.stringify(mockResult))
+  result.xi_yong.strength = v2Strength
+  result.xi_yong.strength.steps = [
+    { key: 'stem_shengke', title: '第 7 段 · 生克结算（按实例）',
+      rule: '逐实例「先受后施」', rulings: [],
+      traces: [
+        { target: '', expression: '木克土：年干甲 × 月干己 → 成数 -2/1', value: null },
+        { target: '', expression: '土受克：日干己 6 → 5.4 度', value: null },
+      ],
+      charts: [
+        { label: '同柱相 · 年支子本气癸', after: 1, chart: { pillars: HE_CHART.pillars } },
+        { label: '本段结算完成', after: 2, chart: { pillars: HE_CHART.pillars } },
+      ],
+      chart: { pillars: HE_CHART.pillars },
+      result: '实例层结算完成' },
+  ]
+  return result
+}
+
+function withStemHe() {
+  const result = JSON.parse(JSON.stringify(mockResult))
+  result.xi_yong.strength = { ...v2Strength, day_master: '丙', day_master_original: '戊' }
+  for (const s of result.xi_yong.strength.steps) {
+    if (s.key === 'stem_he' || s.key === 'relations') s.chart = HE_CHART
+  }
+  result.xi_yong.strength.steps.unshift({
+    key: 'stem_he', title: '第 2 段 · 天干五合',
+    rule: '只论相邻紧贴的天干。合化成功的换成化神干支；合而不化的以合绊论。',
+    rulings: ['C26-18（争合失败时的合绊减力比例）'],
+    traces: [{ target: '', expression: '戊甲合化土成功：年干甲变戊', value: null }],
+    result: '合化成功，换字：甲→戊',
+  })
+  return result
+}
+
+describe('StrengthDetail — 第 2 段 天干五合（012）', () => {
+  it('换字的干显示新字并标出原字与「合化」', () => {
+    const w = mountWith(withStemHe())
+    const year = w.find('[data-testid="v2-chart-year"]')
+    expect(year.find('.pillar-gan').text()).toContain('戊')
+    expect(year.find('[data-testid="v2-gan-changed-year"]').text()).toBe('原甲·合化')
+  })
+
+  it('合而不化的干标「合绊」且不减字', () => {
+    const w = mountWith(withStemHe())
+    const month = w.find('[data-testid="v2-chart-month"]')
+    expect(month.find('.pillar-gan').text()).toContain('戊')
+    expect(month.find('[data-testid="v2-gan-changed-month"]').text()).toBe('合绊')
+    expect(month.find('.pillar-deg').text()).toBe('0.8')
+  })
+
+  it('未参与合化的干不带任何标记', () => {
+    const w = mountWith(withStemHe())
+    expect(w.find('[data-testid="v2-chart-day"] [data-testid="v2-gan-changed-day"]').exists())
+      .toBe(false)
+  })
+
+  it('日主被合化改宗时在强弱卡标出原字', () => {
+    const w = mountWith(withStemHe())
+    const dm = w.find('[data-testid="v2-dm"]')
+    expect(dm.text()).toContain('丙')
+    expect(w.find('[data-testid="v2-dm-original"]').text()).toContain('原戊')
+  })
+
+  it('日主未换字时不显示原字标记', () => {
     const w = mountWith(withV2)
-    const rulings = w.findAll('[data-testid="v2-step-rulings"]')
-    expect(rulings.length).toBeGreaterThan(0)
-    expect(rulings[0].text()).toContain('O-5')
+    expect(w.find('[data-testid="v2-dm-original"]').exists()).toBe(false)
   })
 })

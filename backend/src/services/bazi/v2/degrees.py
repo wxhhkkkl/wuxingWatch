@@ -48,9 +48,71 @@ FAR_PENALTY = 2.0
 
 @dataclass
 class Col:
+    """一柱。`gan` 是**当前有效**的天干——天干五合合化成功后会被换成化神干支
+    （书 上 1593「甲木变成了戊土」），原字留在 `orig_gan`（未换字时为 None）。
+
+    故 `GAN_WUXING[c.gan]` 一律读**换字后**的五行；凡需要「原局那个字」的地方
+    （显示文案、判合化本身）取 `c.orig_gan or c.gan`，用具名属性 `src_gan` 以免
+    各处各写一遍。
+    """
+
     key: str
     gan: str | None
     zhi: str | None
+    orig_gan: str | None = None
+
+    @property
+    def src_gan(self) -> str:
+        """**原局**的天干字（未参与合化换字时即 `gan`）。"""
+        return self.orig_gan or self.gan or ""
+
+
+@dataclass
+class StemGroup:
+    """**连片天干组**——同类且柱位相邻的天干「紧贴…可以当做一个整体」（书 上 651）。
+
+    书 上 651-657（乾 戊申 庚申 戊午 戊午）：日干戊与时干戊紧贴 → 一组，
+    静态旺度 6.4；年干戊不与日时干紧贴 → 自成一组，静态旺度 5.6。
+    **同一五行的不同天干旺度不等**，生克必须按组（实例）结算。
+
+    `root` 为该组的实际通根（未乘月令系数），`root_scaled` 为乘过系数的「原局的根」
+    （书 上 1000）。两者的求法与单干版 `stem_tonggen` 同规则，唯一差别：
+    递减的参照点是「**组内任一天干**」中最近的那个（书 上 1008 例1：时干戊通根
+    时支午，因日干/时干同组，午对时干而言是同柱，2×0.7＝1.4 不减 0.5）。
+    """
+
+    wx: str
+    cols: tuple[int, ...]          # 柱位下标（连续）
+    keys: tuple[str, ...]          # year/month/day/time
+    gans: tuple[str, ...]
+    stem_degree: float             # 组内天干**度数和**；无合绊时等于干数（1 天干 = 1 度）
+    root: float                    # 组通根（未乘系数）
+    root_scaled: float
+    static: float
+    final: float = 0.0             # 生克结算后的动态旺度（由 pipeline 回填）
+    is_day_master: bool = False
+
+    @property
+    def label(self) -> str:
+        """「日干戊、时干戊」——依据行文里指代这一组。"""
+        cn = {"year": "年", "month": "月", "day": "日", "time": "时",
+              "_dayun": "运", "_liunian": "流年"}
+        return "、".join(f"{cn.get(k, k)}干{g}" for k, g in zip(self.keys, self.gans))
+
+    def as_dict(self) -> dict:
+        return {
+            "kind": "stem_group",
+            "wx": self.wx,
+            "cols": list(self.keys),
+            "gans": list(self.gans),
+            "label": self.label,
+            "stem_degree": self.stem_degree,
+            "root": self.root,
+            "root_scaled": self.root_scaled,
+            "static": self.static,
+            "final": self.final,
+            "is_day_master": self.is_day_master,
+        }
 
 
 def build_cols(pillars: dict) -> list[Col]:
@@ -165,27 +227,57 @@ def root_runs(cols: list[Col], wx: str) -> list[list[int]]:
     return runs
 
 
-def stem_tonggen(cols: list[Col], index: int, month_zhi: str | None = None) -> float:
-    """某天干的实际通根度数。
+def nearest_in_run(idxs: tuple[int, ...] | list[int], run: list[int]) -> int:
+    """根段 `run` 对「参照天干集合 `idxs`」最近的那一支（递减的参照点）。
 
-    每个**连续根段**（连成一片）当作整体：先求段内度数之和，再按「天干到该段的
-    **最近柱距**」整体递减一次；不足即归 0（FR-014）。
+    单干时 `idxs=(i,)`，与旧口径一致；连片组时取**组内任一天干**中最近者——
+    书 上 1008 例1：日干戊与时干戊同组，时支午对**时干**而言是同柱，
+    故根午 = 2×0.7 = 1.4 不减 0.5（书 上 651「紧贴…当做一个整体」）。
+    """
+    return min(run, key=lambda j: min(abs(j - i) for i in idxs))
+
+
+def group_tonggen(cols: list[Col], idxs: tuple[int, ...] | list[int],
+                  month_zhi: str | None = None) -> float:
+    """**连片天干组**的实际通根度数（参照点为组内最近的天干）。
+
+    每个**连续根段**（连成一片）当作整体：先求段内度数之和，再按「组内最近的天干到
+    该段的柱距」整体递减一次；不足即归 0（FR-014）。
 
     书 上 657：「地支有两个半本气的申金共 6 度，**两申连成一片**，按最近的通根——
     同柱通根论不用递减，总数为 7 度」——两申作整体，其**最近的一支恰为同柱**故不减。
     （对比 上 621：连片而最近一支为相邻时仍要 −0.5。书自洽，口径统一为「按最近支递减一次」。）
     """
-    col = cols[index]
-    if not col.gan:
+    if not idxs or not cols[idxs[0]].gan:
         return 0.0
-    wx = GAN_WUXING[col.gan]
+    wx = GAN_WUXING[cols[idxs[0]].gan]
     total = 0.0
     for run in root_runs(cols, wx):
         deg = sum(d for j in run
                   for g, d in hidden_of(cols, cols[j], month_zhi) if GAN_WUXING[g] == wx)
-        near = min(run, key=lambda j: abs(j - index))
-        total += max(0.0, deg - root_penalty(cols, index, near, wx))
+        near = nearest_in_run(idxs, run)
+        # 递减参照**组内最近的那个天干**；该干与 `near` 同柱时不减（书 上 1008 根午=1.4）。
+        i = min(idxs, key=lambda k: abs(k - near))
+        total += max(0.0, deg - root_penalty(cols, i, near, wx))
     return round(total, 3)
+
+
+def stem_group_indexes(cols: list[Col], wx: str) -> list[tuple[int, ...]]:
+    """某五行的全部**连片天干组**（同类且柱位相邻者为一组），按柱位先后。"""
+    out: list[tuple[int, ...]] = []
+    seen: set[int] = set()
+    for i, c in enumerate(cols):
+        if not c.gan or GAN_WUXING[c.gan] != wx or i in seen:
+            continue
+        idxs = tuple(stem_run(cols, i))
+        seen.update(idxs)
+        out.append(idxs)
+    return out
+
+
+def stem_tonggen(cols: list[Col], index: int, month_zhi: str | None = None) -> float:
+    """某**单个**天干的实际通根度数（= `group_tonggen` 的单干特例）。"""
+    return group_tonggen(cols, (index,), month_zhi)
 
 
 def stem_group_degree(cols: list[Col], index: int, month_zhi: str | None = None) -> float:
@@ -198,7 +290,7 @@ def stem_group_degree(cols: list[Col], index: int, month_zhi: str | None = None)
     run = stem_run(cols, index)
     if not run:
         return 0.0
-    return round(len(run) + stem_tonggen(cols, run[0], month_zhi), 3)
+    return round(len(run) + group_tonggen(cols, run, month_zhi), 3)
 
 
 def element_degree(cols: list[Col], wx: str, month_zhi: str | None = None) -> float:
@@ -228,7 +320,7 @@ def element_degree(cols: list[Col], wx: str, month_zhi: str | None = None) -> fl
         run = stem_run(cols, i)
         seen.update(run)
         total += len(run)                                    # 天干度数（连片合并）
-        total += stem_tonggen(cols, run[0], month_zhi)       # 该连片的通根（取组内首柱度量）
+        total += group_tonggen(cols, run, month_zhi)         # 该连片的通根（参照组内最近干）
     return round(total, 3)
 
 

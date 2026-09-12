@@ -44,6 +44,20 @@ def apply_dayun_delta(scores: dict[str, float], dayun_zhi: str,
     return out
 
 
+def shift_instance(item: dict, dayun_zhi: str, dayun_gan: str | None = None) -> dict:
+    """把**运支状态增减**施加到某个实例（日主组 / 贴身实例）的终值上。
+
+    大运层对整个五行做加减（`apply_dayun_delta`），S7 之后日主与贴身位的判据取**实例**，
+    故同一套增减要按**该实例所属的五行**施加一次，两层口径才不漂移。
+    """
+    wx = item.get("wx")
+    if not wx:
+        return item
+    out = dict(item)
+    out["final"] = apply_dayun_delta({wx: item["final"]}, dayun_zhi, dayun_gan)[wx]
+    return out
+
+
 def compromise(month_state: str, dayun_state_: str) -> tuple[str, bool]:
     """月令与大运的**折中（综合）状态**——参数平均后 ≤3 当令（书《上》第一节 五行旺衰「②月令被改变为其他状态时：取月令被改变后的状态与大运参数的平均值，再」）。"""
     return tables.compromise_state(month_state, dayun_state_)
@@ -71,13 +85,19 @@ def analyze_step(pillars: dict, dayun_ganzhi: str, *, dayun_meta: dict | None = 
     dm_wx = GAN_WUXING.get(dm or "", "")
     month_zhi = next((c.zhi for c in cols if c.key == "month"), "") or ""
 
-    root = {w: base["degrees"][w]["root"] for w in base["degrees"]}
+    root = base["root_scaled"]
     # `has_sheng` 用**该步**的「有生」判据（书 上 1598「不能独立＝太弱以下＋无生
     # （或虽有若无）＋无强根」，同 `pipeline` 的生克层）——传全 False 会把「无生」
     # 这一条静默删掉，使该步的从格判定偏向从格。
+    # 日主与贴身位的判据取**实例**（S7）：大运的增减同样施加到实例上
+    dm_group = shift_instance(base["day_master_group"] or {}, zhi, gan) or None
+    tieshen = [shift_instance(t, zhi, gan) for t in
+               geju.tieshen_instances(cols, stem_groups=base["stem_groups"],
+                                      benqi_instances=base["benqi_instances"])]
     gj = geju.judge_geju(cols=cols, final=shifted, root=root,
                          has_sheng=base["has_sheng"],
-                         rel=base["relations"], month_zhi=month_zhi)
+                         rel=base["relations"], month_zhi=month_zhi,
+                         dm_group=dm_group, tieshen=tieshen)
 
     # 用神随大运变化（书《下》第一节 用神总则「只要大家结合命主的事实，仔细去分析，就会知道"用神随大运的变化而变化」）——用**该步的**旺度重新取用
     ys = xiyong_v2.select_yongshen(day_master=dm or "", dm_wx=dm_wx, final=shifted,
@@ -88,7 +108,8 @@ def analyze_step(pillars: dict, dayun_ganzhi: str, *, dayun_meta: dict | None = 
         "ganzhi": dayun_ganzhi,
         "start_year": (dayun_meta or {}).get("start_year"),
         "start_age_xu": (dayun_meta or {}).get("start_age_xu"),
-        "level": degrees.level_of(shifted.get(dm_wx, 0.0)),
+        "level": degrees.level_of(
+            (dm_group or {}).get("final", shifted.get(dm_wx, 0.0))),
         "ge_ju": gj,
         "yong_shen": ys,
         "relations": base["relations"],   # 含本步大运的裁定（供命盘图消费）
@@ -113,13 +134,16 @@ def analyze_all(pillars: dict, steps: list[dict]) -> list[dict]:
     # 原先用 root 全 0、rel 空、has_sheng 全 False 判原局，与各步的口径不一致，
     # 成格/破格会因此误标（书 上 1598 的「不能独立」三项都须真实判定）。
     base = pipeline.compute_strength(pillars)
-    base_root = {w: base["degrees"][w]["root"] for w in base["degrees"]}
+    base_root = base["root_scaled"]
     out: list[dict] = []
-    prev_type = _geju.judge_geju(cols=cols, final=base["final_scores"], root=base_root,
-                                 has_sheng=base["has_sheng"],
-                                 rel=base["relations"],
-                                 month_zhi=next((c.zhi for c in cols if c.key == "month"), "") or ""
-                                 )["type"]
+    prev_type = _geju.judge_geju(
+        cols=cols, final=base["final_scores"], root=base_root,
+        has_sheng=base["has_sheng"], rel=base["relations"],
+        month_zhi=next((c.zhi for c in cols if c.key == "month"), "") or "",
+        dm_group=base["day_master_group"],
+        tieshen=_geju.tieshen_instances(cols, stem_groups=base["stem_groups"],
+                                        benqi_instances=base["benqi_instances"]),
+    )["type"]
     for st in steps or []:
         gz = st.get("ganzhi")
         if not gz or len(gz) < 2:

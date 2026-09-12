@@ -94,12 +94,18 @@ def _day_label(gender: str) -> str:
     return {"M": "元男", "F": "元女"}.get(gender, "日主")
 
 
-def _attach_pillar_details(pillars: dict, gender: str) -> None:
-    """为四柱附加 PillarDetail（主星/藏干/星运/自坐/空亡/纳音/神煞）。"""
+def _attach_pillar_details(pillars: dict, gender: str,
+                           day_master: str | None = None) -> None:
+    """为四柱附加 PillarDetail（主星/藏干/星运/自坐/空亡/纳音/神煞）。
+
+    `day_master` 见 `pillar_detail.build_pillar_detail`——v2 引擎里日干被五合换了字时，
+    十神/星运须按换字后的日主重算（`engine._strength` 在拿到 v2 结论后回头调一次）。
+    """
     ctx = {
         "day_ganzhi": pillars["day"]["ganzhi"],
         "year_ganzhi": pillars["year"]["ganzhi"],
         "month_zhi": pillars["month"]["zhi"],
+        "day_master": day_master,
     }
     for key in ("year", "month", "day", "time"):
         pillars[key]["detail"] = pillar_detail.build_pillar_detail(
@@ -367,6 +373,11 @@ def compute_chart(
     # 012：切换到 v2 引擎（旧 xiyong/wangdu 原封保留，见 spec C26-3）
     xi = xiyong_v2.xiyong_analysis(day_master, pillars, da_yun["steps"],
                                    hour_known=hour_known)
+    # 日干参与天干五合且化成功 → 日主已换字（甲→戊），十神/星运按新日主重算，
+    # 否则页面上会出现「日主五行=土、十神却按甲木算」的自相矛盾。
+    _dm_after = (xi.get("strength") or {}).get("day_master")
+    if _dm_after and _dm_after != day_master:
+        _attach_pillar_details(pillars, gender, day_master=_dm_after)
 
     return {
         "solar_birth": solar_birth.isoformat(),
@@ -470,6 +481,10 @@ def compute_from_pillars(pillars: dict[str, str], gender: str) -> dict:
         for y in range(current_year, current_year + LIU_NIAN_SPAN + 1)
     ]
     xi = xiyong_v2.xiyong_analysis(day_master, pillar_dicts, steps)
+    # 日干被天干五合换字时十神/星运按新日主重算（与 `compute_chart` 同一处理）
+    _dm_after = (xi.get("strength") or {}).get("day_master")
+    if _dm_after and _dm_after != day_master:
+        _attach_pillar_details(pillar_dicts, gender, day_master=_dm_after)
 
     return {
         "solar_birth": None,

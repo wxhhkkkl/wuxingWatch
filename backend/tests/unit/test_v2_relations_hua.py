@@ -290,8 +290,12 @@ def test_wuhe_condition5_too_dry_detected():
 
 
 # ---------------------------------------------------------------
-# 2.6 戊癸化土（书 上 2078/2080/2124；下 3969「戊癸化火（化土）格」）
+# 2.6 戊癸合化 —— **只取化火**（2026-09-11 用户裁定）
 # ---------------------------------------------------------------
+# ⚠️ 书内冲突留痕：书上 2078 明写「戊癸**既能合化为火，又能合化为土**」，上 2124-2135
+# 另有整节「②戊癸合化土成功的条件」（五条件俱全），下 3969 列「戊癸化火（化土）格」，
+# 下 4133/4138/2620 三例亦明判「戊癸化土格」。本实现按裁定**只认化火**——
+# 上述化土条文与三例因此判不出，差异可追溯至 `relations.GAN_HE_HUA` 的注释。
 
 def _geju(ganzhi: str):
     """走**生产路径**（pipeline → geju）判格局——与 `xiyong_analysis_v2` 同口径。"""
@@ -306,45 +310,64 @@ def _geju(ganzhi: str):
                            month_zhi=month_zhi)
 
 
-def test_wu_gui_hua_tu_case_down_4133():
-    """书 下 4133 乾 甲申 戊辰 癸酉 己未：「日主癸水与月干戊土相合，**戊癸合化土成功**，
-    故变为化气格（戊癸化土格），取生助化神的五行为用神，**化神为土**，故取火土为用」。
+def test_wu_gui_hua_only_huo_declared():
+    """戊癸**只有一个化神「火」**（裁定），五合表不再有候选元组与下标重载。
 
-    月令辰＝土的当令之地；戊癸坐支为 辰（土）与 酉（金）。「另一支为火或土」的字面
-    要求在此不满足（书 上 2127），但书自己的实例判化土成功——本实现按实例的口径
-    「至少一支坐支为土」执行（详见 `relations._gan_hua_one` 的注释）。
+    书 上 1577/2078 记作「戊癸合化火（或土）」、并单列化土五条件（上 2124-2135）——
+    本实现按裁定只取化火，故该条文不予落地；此处钉住表本身。
     """
-    gj = _geju("甲申 戊辰 癸酉 己未")
-    assert gj["type"] == "hua", gj
-    assert gj["hua_shen"] == "土", gj
+    raw = dict(relations.GAN_HE_HUA)
+    assert raw[frozenset("甲己")] == "土"
+    assert raw[frozenset("戊癸")] == "火"
+    assert relations.GAN_HE_HUA[frozenset("戊癸")] == "火"
 
 
-def test_wu_gui_hua_tu_case_down_4138():
-    """书 下 4138 坤 丁酉 丁未 戊戌 癸丑：「原局日主戊土与时干戊癸合化为土，格成
-    化气格，取火土为用，其余为忌」——坐支 戌（土）、丑（土），未月土当令。"""
-    gj = _geju("丁酉 丁未 戊戌 癸丑")
-    assert gj["type"] == "hua", gj
-    assert gj["hua_shen"] == "土", gj
+def test_wu_gui_hua_tu_cases_no_longer_hua():
+    """书里三个「戊癸化土格」实例，按裁定**不再判化格**（书内冲突，已知差异）。
 
+    | 书位 | 四柱 | 书判 | 现在 |
+    |---|---|---|---|
+    | 下 4133 | 甲申 戊辰 癸酉 己未 | 戊癸化土格 | 非化格 |
+    | 下 4138 | 丁酉 丁未 戊戌 癸丑 | 戊癸化土格 | 非化格 |
+    | 上 2620 | 乙巳 辛巳 戊子 癸丑 | 戊癸（与子丑合土）同化 | 非化格 |
 
-def test_wu_gui_hua_huo_tried_before_tu():
-    """**按序试条件**：先火（上 2080）、后土（上 2124）——书 上 2078「如果满足合化火的
-    条件就合化为火，如果满足合化土的条件就合化为土」。
-
-    书 上 2116 乾 辛卯 戊戌 癸卯 辛酉：戌月戌为**燥土**，「可以当成火看」（上 2122），
-    癸坐卯木 → 化火成功；本节（上 2116-2122、2180）同盘亦判「戊癸合化土不成功」，
-    因坐支太过干燥（条件⑤）。故化神须为**火**而非土。
+    三例的坐支都不满足**化火**的③「一支为火（燥土可当火看）、另一支为木或火」，
+    故一律落合绊。这不是实现缺陷而是裁定结果——测试在此**显式记录**该差异，
+    避免日后被当成回归误修。
     """
+    for gz, book in (("甲申 戊辰 癸酉 己未", "下 4133"),
+                     ("丁酉 丁未 戊戌 癸丑", "下 4138"),
+                     ("乙巳 辛巳 戊子 癸丑", "上 2620")):
+        gj = _geju(gz)
+        assert gj["type"] != "hua" and gj["hua_shen"] is None, (book, gz, gj)
+
+
+def test_wu_gui_hua_huo_case_shang_2116():
+    """化火仍须过全部条件。书 上 2116 乾 辛卯 戊戌 癸卯 辛酉：戌月戌为**燥土**，
+    「可以当成火看」（上 2122），癸坐卯木 → 化火成功 → 化气格，化神为**火**。"""
     gj = _geju("辛卯 戊戌 癸卯 辛酉")
     assert gj["type"] == "hua", gj
     assert gj["hua_shen"] == "火", gj
 
 
+def test_wu_gui_hua_huo_zuozhi_matrix():
+    """化火条件③：一支坐支为火（**燥土可当火看**，书 上 2122）、另一支为木或火。
+
+    本盘戊坐**戌**（戌月＝燥土 → 当火看，书 上 2116-2122 即此例），同盘只换癸的坐支：
+    坐**木**（卯）成；坐**燥土**（未）亦成（燥土当火看）；坐**湿土**（丑/辰）与
+    **金**（酉）不成——土/金既不属火也不属木。
+    """
+    for zuozhi, ok in (("卯", True), ("未", True), ("寅", True),
+                       ("丑", False), ("辰", False), ("酉", False)):
+        got = _geju(f"辛卯 戊戌 癸{zuozhi} 辛酉")
+        assert (got["type"] == "hua") is ok, (zuozhi, ok, got)
+
+
 def test_wu_gui_no_hua_when_month_not_dang_ling():
-    """月令不为化神当令之地 → 火土皆不成，以**合绊**论（书 上 2159「月令不为土的当令之地，
+    """月令不为化神当令之地 → 化火不成，以**合绊**论（书 上 2159「月令不为土的当令之地，
     没有满足第二个条件；故戊癸合而不化，以合绊论」——乾 戊子 癸亥 己亥 壬申，亥月）。
 
-    月令亥：火死于亥（折中参数 6>3）、土囚于亥（5>3），故两候选化神均失令。
+    月令亥：火死于亥（折中参数 6>3），故化火失令。
     """
     from services.bazi.v2 import relations as _rel
     from services.bazi.v2 import degrees as _d
@@ -352,17 +375,35 @@ def test_wu_gui_no_hua_when_month_not_dang_ling():
     assert _rel._gan_hua_ok(c[0].gan, c[0], c[1].gan, c[1], "亥") is False
 
 
-def test_wu_gui_hua_options_declared():
-    """戊癸是**唯一**的双化神项（书 上 1577「戊癸合化火（或土）」），候选次序为 (火, 土)。
+def _stem_layer_traces(gz):
+    """生产路径「第 6 段 · 生克结算」的判定行（`pipeline.compute_strength` → `steps`）。"""
+    from services.bazi.v2 import pipeline
+    steps = pipeline.compute_strength(_chart(*gz))["steps"]
+    return [t["expression"] for s in steps if s["key"] == "stem_shengke"
+            for t in s["traces"]]
 
-    表的值为候选元组（与 `ZHI_LIUHE` 同构）；`GAN_HE_HUA[pair]` 取「本次解析出的
-    化神」，无解析记录时退回首项（见 `_GanHeHuaTable`）。
+
+def _stem_he_traces(gz):
+    """生产路径「第 2 段 · 天干五合」的判定行。
+
+    > 2026-09-12：天干五合的判定与合绊减力从第 6 段（`stem_layer`）**前移**到第 2 段
+    > ——换字要影响连片分组/通根/静态旺度、合绊减力要喂给静态旺度（书 上 1638）。
     """
-    raw = dict(relations.GAN_HE_HUA)                  # 原始候选表（绕过下标重载）
-    assert raw[frozenset("戊癸")] == ("火", "土")
-    assert raw[frozenset("甲己")] == ("土",)
-    relations._RESOLVED_HUA.pop(frozenset("戊癸"), None)
-    assert relations.GAN_HE_HUA[frozenset("戊癸")] == "火"        # 无解析记录 → 首项
+    from services.bazi.v2 import pipeline
+    steps = pipeline.compute_strength(_chart(*gz))["steps"]
+    return [t["expression"] for s in steps if s["key"] == "stem_he"
+            for t in s["traces"]]
+
+
+def test_wu_gui_hua_huo_wood_zuozhi_ok_in_stem_layer():
+    """生产路径锚点：癸卯 戊辰 壬子 甲辰（辰月）——戊坐辰（土）、癸坐卯（木）。
+
+    化火③要求「一支为火（燥土可当火看）、另一支为木或火」：两支都不是火（辰是土、
+    卯是木），故**不化**，第 2 段应记「合而不化（合绊）」而非「合化成功」。
+    """
+    traces = _stem_he_traces(("癸卯", "戊辰", "壬子", "甲辰"))
+    assert not any("合化成功" in t for t in traces), traces
+    assert any("合而不化" in t and "戊" in t and "癸" in t for t in traces), traces
 
 
 # ---------------------------------------------------------------
@@ -437,19 +478,19 @@ def test_siku_tuju_success_is_32_degrees():
     assert len(pure) == 4 and {fx["deg"] for fx in pure} == {8.0}, sk[0]["effects"]
 
 
-def test_wu_gui_hua_tu_via_tianhedihe_down_2620():
-    """戊癸化土亦经**天合地合**（tier 1）路径判出化格。
+def test_wu_gui_tianhedihe_down_2620_no_longer_hua():
+    """书 上 2620（乾 乙巳 辛巳 戊子 癸丑）的**天合地合**路径：按裁定不再判化格。
 
-    书 上 2620（乾 乙巳 辛巳 戊子 癸丑）：「日时子丑合土…**戊癸也合化土成功，格成化气格，
-    取火土为用**」——本盘 日柱戊子·时柱癸丑 同时构成 戊癸五合 + 子丑六合（天合地合），
-    天干腿的化神须解析为**土**（化火因坐支 子水/丑土 不满足条件③而不成）。
+    书原文：「日时子丑合土…**戊癸也合化土成功，格成化气格，取火土为用**」——本盘
+    日柱戊子·时柱癸丑 同时构成 戊癸五合 + 子丑六合。天干腿原解析为**土**（化火因
+    坐支 子水/丑土 不属「火或木」而不成）；裁定只取化火后，天干腿化不成，
+    天合地合随之不成立（**不消费支位**），盘落正格。属已知差异，见本节开头的留痕。
     """
     gj = _geju("乙巳 辛巳 戊子 癸丑")
-    assert gj["type"] == "hua", gj
-    assert gj["hua_shen"] == "土", gj
+    assert gj["type"] != "hua" and gj["hua_shen"] is None, gj
     r = relations.judge_relations(_chart("乙巳", "辛巳", "戊子", "癸丑"))
-    th = [e for e in r["established"] if e["tier"] == 1]
-    assert th and th[0]["hua"] == "土", th
+    assert not [e for e in r["established"] if e["tier"] == 1], \
+        [e for e in r["established"] if e["tier"] == 1]
 
 
 def test_special_xu_sheng_jin_reaches_tier18_in_production():
@@ -465,3 +506,56 @@ def test_special_xu_sheng_jin_reaches_tier18_in_production():
     assert t18, [(e["tier"], e["detail"]) for e in r["established"]]
     assert _fx(t18[0]["effects"], "申", "庚")["delta"] == 1.0, t18[0]["effects"]
     assert _fx(t18[0]["effects"], "戌", "戊")["delta"] == -1.0, t18[0]["effects"]
+
+
+# ---------------------------------------------------------------
+# 2.6 地支特殊生克（tier 18）——书 上 2294-2330
+#
+# 通则（上 2296）：「如果地支之间**没有刑冲合害**的关系，那它们是不作用的」——
+# 例「酉金和子水，彼此之间没有刑冲合害的关系，所以酉金和子水不作用」。
+# 特例（上 2300）：「未克申酉、子生寅、丑生申、子克巳、辰晦巳午、巳生戌、辰克亥」——
+# 「就算彼此之间没有刑冲合害的关系，它们也是能作用的」。
+# 故引擎**只在关系层**接这两类，`stem_layer` 不另立支↔支通用生克。
+# ---------------------------------------------------------------
+
+def test_shang_2316_wei_crumbles_you_by_half():
+    """书 上 2316-2317（乾 丁酉 丁未 壬午 庚子）：未土当令**脆克酉金**，酉金减半剩 2.5 度。
+
+    > 上 2317：「未土当令，**脆克酉金，酉金减半剩下 2.5 度**，未中丁火减力 1 度剩下 3 度。」
+
+    未酉之间**没有刑冲合害**，正是靠 tier 18 的特例「①未克申酉」（上 2305-2307）成立，
+    且是**月度**口径：未生于巳午未戌月 → 减半。effect 落在藏干度数上，
+    酉（纯本气辛 5 度）→ 2.5。
+    """
+    from services.bazi.v2 import pipeline
+
+    r = pipeline.compute_strength(_chart("丁酉", "丁未", "壬午", "庚子"))
+    t18 = [e for e in r["relations"]["established"] if e["tier"] == 18
+           and set(e["members"]) == {"未", "酉"}]
+    assert t18, "未酉特殊生克须成立（无刑冲合害也要作用——上 2298）"
+    assert _fx(t18[0]["effects"], "酉", wuxing="金")["scale"] == 0.5, t18[0]["effects"]
+    hidden = pipeline._adjusted_hidden(r["relations"], _d_cols(_chart("丁酉", "丁未", "壬午", "庚子")),
+                                       "未")
+    assert [d for g, d in hidden["year"] if g == "辛"] == [2.5], \
+        "酉中辛 5×0.5（书 上 2317「酉金减半剩下 2.5 度」）"
+
+
+def test_special_ke_is_preempted_by_xing():
+    """书 上 510：「**未戌刑，不论未克酉**」——特例让位于刑（tier 14）。
+
+    同一未酉两个支，一旦月上多出一个戌与未成刑，未的力量被刑消费掉，
+    tier 18 的「未克申酉」不再成立。
+    """
+    from services.bazi.v2 import relations as _rel
+
+    two = _rel.judge_relations(_chart("丁酉", "丁未", "壬午", "庚子"))
+    assert any(e["tier"] == 18 for e in two["established"]), "对照组：未酉特例成立"
+    r = _rel.judge_relations(_chart("丁酉", "丁未", "庚戌", "庚子"))
+    assert not any(e["tier"] == 18 and set(e["members"]) == {"未", "酉"}
+                   for e in r["established"]), \
+        [(e["tier"], e["detail"]) for e in r["established"]]
+
+
+def _d_cols(pillars: dict):
+    from services.bazi.v2 import degrees as _deg
+    return _deg.build_cols(pillars)

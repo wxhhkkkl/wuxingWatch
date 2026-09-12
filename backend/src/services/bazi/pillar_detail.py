@@ -229,11 +229,17 @@ def shen_sha(ganzhi: str, *, day_ganzhi: str, year_ganzhi: str, month_zhi: str) 
 # ---------- 聚合 ----------
 
 def build_pillar_detail(
-    ganzhi: str, *, day_ganzhi: str, year_ganzhi: str, month_zhi: str
+    ganzhi: str, *, day_ganzhi: str, year_ganzhi: str, month_zhi: str,
+    day_master: str | None = None,
 ) -> dict:
-    """一柱（四柱/大运/流年通用）的完整明细，十神/星运以日主为基准。"""
+    """一柱（四柱/大运/流年通用）的完整明细，十神/星运以日主为基准。
+
+    `day_master` 为**日主覆盖值**——v2 引擎里日干可能被天干五合换了字（甲→戊，
+    书 上 1593），此时十神与星运须按换字后的日主算。只覆盖**以日主为基准**的字段；
+    `na_yin` / `xun_kong` / 神煞仍按该柱**真实干支**（它们是干支自身的属性）。
+    """
     gan, zhi = ganzhi[0], ganzhi[1]
-    day_master = day_ganzhi[0]
+    day_master = day_master or day_ganzhi[0]
     return {
         "gan_shishen": shishen(day_master, gan),
         "zhi_shishen": shishen(day_master, HIDDEN_STEMS[zhi][0]),  # 本气

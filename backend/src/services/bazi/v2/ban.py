@@ -1,30 +1,43 @@
 """关系减力细则：合绊之力、冲、刑、害（012 期 T019 补全）。
 
-书源：《四柱精髓（上）》3449-3451（三合合绊）、1595（天干五合合绊）、
-《四柱精髓（下）》1087-1089（三会合绊）、117+（半三合合绊）、1600+（六冲）、
-2030+（相刑）、2849+（六害）。
+书源：《四柱精髓（上）》第五节 地支三合（3427 起，合绊之力在 3458）、
+第二节 天干生克（1595 起）、《四柱精髓（下）》第六节 半三合（117 起，合绊之力在 143）、
+第七节 地支三会（1065 起，合绊之力在 1097）、第八节 六冲（1600-1946）、
+第十节 相刑（2030-2848）、第十一节 相害（2849-3178）。
 
 **统一的「合绊之力」系数**（本气 / 中气 / 余气）：
 
 | 关系 | 本气 | 中气 | 余气 | 书证 |
 |---|---|---|---|---|
-| 三合 | −0.5 | −0.25 | 不变 | 书《上》第五节 地支三合「③受到三合局的合绊之力：每个本气再减去0.5度，每个中气减力0.25」 |
-| 三会 | −0.6 | −0.3 | −0.15 | 书《下》第七节 地支三会 |
-| 半三合 | −0.25 | −0.125 | 不变 | 书《下》第六节 半三合 |
+| 三合 | −0.5 | −0.25 | 不变 | 书 上 3458「③受到三合局的合绊之力：每个本气再减去0.5度，每个中气减力0.25度，余气不变」 |
+| 三会 | −0.6 | −0.3 | −0.15 | 书 下 1097「③藏干要受到三会局的会绊之力……每个本气再减去0.6度，每个中气减力0.3度，每个余气减力0.15度」 |
+| 半三合 | −0.25 | −0.125 | 不变 | 书 下 143（亥卯半合同构条）「本气减力0.25度，中气减去0.125度，余气不减力」 |
 
 > 三合/三会的合绊之力「多一支就多减一次（若多出之支为**生助之支**则不多减）」；
-> 半三合则「**不能平摊，还会叠加**」（下 128）。
+> 半三合则「**不能平摊，还会叠加**」（下 143）。
 
 **统一的「局内生克」效果**（三合/三会/半三合 合绊时，书《上》第五节 地支三合 / 书《下》第七节 地支三会）：
 受生者本气 **+1**、主生者本气 **−1**、主克者本气 **−1**、被克者本气 **减半**；
 受克泄耗的杂气「当令减半、失令去除」，受生的杂气 **+1**。
 
-**六冲**（下 1600-1947）分三类，1:1 情形：
+**六冲**（下 1600-1946）分三类。**1:1 情形**（书 下 1605 生地冲 / 下 1651 子午卯酉冲）：
 - 寅申/巳亥（生地冲）：主克者本气 −1（受克者临月令则 −1.5、临大运 −1.25），受克者本气**减半**；
-- 子午/卯酉：主克者 −1（受克者临月令则 −2、临大运 −1.5；主克者在原局死地则 −1.8），受克者本气**减半**；
+- 子午/卯酉：主克者 −1（受克者临月令则 −2、临大运 −1.5；**主克者在原局死地**则 −1.8——
+  只认「死」，**休/囚不算死地**，见 `_si_di`），受克者本气**减半**；
 - 辰戌/丑未（墓库冲）：冲**成功**则两支变纯土、各 6 度（共 12 度）。
 
 两类冲均附带：主克者及受克者**当令的杂气减半、失令的杂气完全去除**。
+
+**多支的情形按「总量 / 摊分」**（书 下 1693「1酉冲2卯，酉金减力2度，2个卯木一共减去
+2.5度，平均每个卯木减去1.25度」、下 1684「3午冲1子……子水一共减力3.5度；午火本气共减力
+2度，平均每个午火本气减去2/3=0.67度」、下 1665「2卯冲1酉……酉金一共减力1+1.5=2.5度」、
+下 1617「2亥冲1巳，亥水本气减力1度，平均每个亥水本气减力0.5度」）：
+- 主克者**按盘上受克支数逐支累计**（每支按自己的状态贡献 1 / 1.25 / 1.5 / 1.8 / 2 度），
+  总量再按盘上主克者支数摊分；
+- 受克方与双方的杂气给的是**总量**（＝单支之值），按命中的支数摊分。
+
+摊分交给 `pipeline._adjusted_hidden` 的 `split`（按关系命中的柱数均分）。**未尽的接口缺口**
+见 `hai_effects` / `chong_effects` 的注释与交付说明。
 """
 
 from __future__ import annotations
@@ -34,9 +47,9 @@ from services.bazi.v2 import tables
 
 # 合绊之力系数：(本气, 中气, 余气)——按关系级数索引
 HUA_BAN_POWER: dict[int, tuple[float, float, float]] = {
-    6: (0.5, 0.25, 0.0),       # 三合（上 3451）
-    4: (0.6, 0.3, 0.15),       # 三会（下 1089）
-    10: (0.25, 0.125, 0.0),    # 生地半三合（下 128）
+    6: (0.5, 0.25, 0.0),       # 三合（上 3458）
+    4: (0.6, 0.3, 0.15),       # 三会（下 1097）
+    10: (0.25, 0.125, 0.0),    # 生地半三合（下 143）
     13: (0.25, 0.125, 0.0),    # 墓地半三合
 }
 
@@ -51,9 +64,25 @@ def _dang(wx: str, month_zhi: str) -> bool:
     return tables.COMPROMISE_PARAM[tables.month_state(wx, month_zhi)] <= 3
 
 
+def _si_di(wx: str, month_zhi: str) -> bool:
+    """该五行在本月令是否处于**死**地（书《下》第八节 六冲 子午/卯酉之冲 下 1651）。
+
+    ⚠️ **不可拿 `_dang` 取反**：`_dang` 的判据是「当令 ≤3」（书 上 930
+    「▲状态判断：当令≤3   失令＞3」），其补集把**休、囚、死**三档一并算进去；
+    而书 下 1651 的死地加重只针对**死**：「主克者减去l度（若受克者临月令则主克者
+    减去2度，若受克者临大运则主克者减力1.5度——**若主克者在原局处于死地则减力
+    1.8度**），受克者的本气减半…」。寅月水为**休**（上 201 起「旺相休囚死」表，
+    寅月行在 上 215：木旺、火相、土死、金囚、水休）、金为**囚**，都不该走 1.8 度。
+    水真死者是辰月、未月、戌月（同表，水列作「死」）。
+    """
+    if not month_zhi:
+        return False
+    return tables.month_state(wx, month_zhi) == "死"
+
+
 def _ban_power_effects(cand_cols: list, cols: list, tier: int,
                        month_zhi: str, n_extra: int = 0) -> list[dict]:
-    """**合绊之力**：按藏干层级逐支扣减，多一支多减一次（书《上》第五节 地支三合「③受到三合局的合绊之力：每个本气再减去0.5度，每个中气减力0.25」 / 书《下》第七节 地支三会）。"""
+    """**合绊之力**：按藏干层级逐支扣减，多一支多减一次（书 上 3458「③受到三合局的合绊之力：每个本气再减去0.5度，每个中气减力0.25度」 / 书 下 1097 三会同构）。"""
     a, b, c = HUA_BAN_POWER.get(tier, (0.0, 0.0, 0.0))
     if not (a or b or c):
         return []
@@ -71,7 +100,7 @@ def _ban_power_effects(cand_cols: list, cols: list, tier: int,
                 out.append({"zhi": col.zhi, "gan": gan, "delta": -round(amount, 3),
                             "reason": f"{tier} 级合绊之力：{col.zhi}中{gan} −{amount:g} 度"
                                       f"（{'本气' if layer == 0 else '中气' if layer == 1 else '余气'}，"
-                                      f"书 {'上 3451' if tier == 6 else '下 1089' if tier == 4 else '下 128'}）"})
+                                      f"书 {'上 3458' if tier == 6 else '下 1097' if tier == 4 else '下 143'}）"})
     return out
 
 
@@ -187,7 +216,7 @@ def _muku_fail_effects(members: list[str], cols: list,
                        month_zhi: str) -> list[dict]:
     """墓库冲**不成功**时两库藏干的变化（书《下》第八节 六冲）。
 
-    书 1731「▲辰戌、丑未若相冲不成功且两支相邻，则里面的藏干要遵照以下规则来变化：」
+    书 下 1731「▲辰戌、丑未若相冲不成功且两支相邻，则里面的藏干要遵照以下规则来变化：」
     - **通例**（①-⑤ 共有）：「杂气**当令者减半、失令者完全减力**」；
     - **本气**（四库本气即土）按生月分组，见 `_muku_benqi_delta`；
     - ④戌月另有「未戌之火减半」——**优先于**通例的「失令去除」（书 下 1839 例：
@@ -232,8 +261,12 @@ def _muku_fail_effects(members: list[str], cols: list,
 
 
 def chong_effects(members: list[str], cols: list, month_zhi: str,
-                  *, chong_ok: bool = True) -> list[dict]:
-    """六冲的藏干影响（1:1）。
+                  *, chong_ok: bool = True, keys: list[str] | None = None) -> list[dict]:
+    """六冲的藏干影响。
+
+    `keys` 为该冲**参与柱**（`relations._Cand.cols`，已按「与对方支相邻」筛过）。
+    省略则退化为「全盘同支」——那会把不参与本次冲的远隔支也算进来
+    （下 1656「日时子午相冲（年时子午不冲）」即反例），仅供无候选信息的旧调用点。
 
     **墓库冲**（辰戌/丑未）在**冲成功**时两支变纯土、各 6 度（书《下》第八节 六冲）；
     不成功则按同节 ①-⑤ 逐藏干变化（本气按生月分组、杂气当令减半/失令去除）。
@@ -261,52 +294,105 @@ def chong_effects(members: list[str], cols: list, month_zhi: str,
             return out
         return _muku_fail_effects(members, cols, month_zhi)
 
-    # 主克者本气扣减：受克者临月令/大运时加重（书《下》第八节 六冲「分析：原局寅申相冲，受克者寅临月令，主克者申金本气减半变为1.5度，」）
-    sub_col = next((x for x in cols if x.zhi == sub), None)
-    if kind == "shengdi":
-        pen = 1.0
-        note = ""
-        if sub_col and sub_col.key == "month":
-            pen, note = 1.5, "受克者临月令"
-        elif sub_col and sub_col.key in ("_dayun",):
-            pen, note = 1.25, "受克者临大运"
-    else:  # 子午 / 卯酉
-        pen = 1.0
-        note = ""
-        if sub_col and sub_col.key == "month":
-            pen, note = 2.0, "受克者临月令"
-        elif sub_col and sub_col.key in ("_dayun",):
-            pen, note = 1.5, "受克者临大运"
-        elif _dang(tables.BRANCH_WUXING_BENQI.get(main, ""), month_zhi):
-            pen, note = 1.0, ""
-        else:
-            pen, note = 1.8, "主克者在原局死地"
+    # 主克者本气扣减（书 下 1605 生地冲 / 下 1651 子午卯酉冲）：
+    # **按盘上受克支数逐支累计**——每一支受克支各按自己的状态贡献一份扣减：
+    #   下 1693 例5「1酉冲2卯，**酉金减力2度**」＝ 卯两支各 1 度；
+    #   下 1684 例4「形成3午冲1子……运支午火临大运，使子水减力1.5度；年时两支午火，
+    #   使子水减力2度，子水一共减力3.5度」＝ 1.5＋1＋1。
+    # 总量再按盘上**主克者支数**摊分（下 1617 例2「2亥冲1巳，亥水本气减力1度，
+    # 平均每个亥水本气减力0.5度」）——摊分交给 `pipeline._adjusted_hidden` 的
+    # `split`（按命中柱数均分）。当盘上只有 1 支主克者恰落在候选 `e["cols"]` 内时，
+    # `split` 的份额为 1，总量一次性落到那一支上（受克支的摊分同理，见下）。
+    src = "1605" if kind == "shengdi" else "1651"
+    main_wx = tables.BRANCH_WUXING_BENQI.get(main, "")
+    # 只数**参与本次冲**的支（`keys`），不数全盘同支
+    sub_cols = [c for c in cols
+                if c.zhi == sub and (keys is None or c.key in keys)] or [None]
+    n_sub = len(sub_cols)
+    n_main = max(1, sum(1 for c in cols
+                        if c.zhi == main and (keys is None or c.key in keys)))
+    total_pen = 0.0
+    notes: list[str] = []
+    for c in sub_cols:
+        pen, note = _chong_pen(kind, c, month_zhi, main_wx)
+        total_pen += pen
+        if note and note not in notes:
+            notes.append(note)
+    head = (f"{main}{sub}冲：主克者{main}本气 −{total_pen:g} 度" if n_sub == 1 else
+            f"{main}{sub}冲：{n_sub} 支{sub}齐冲，主克者{main}本气共 −{total_pen:g} 度"
+            f"（按受克支数逐支累计）")
+    out.append({"zhi": main, "gan": _benqi_gan(main), "delta": -round(total_pen, 3),
+                "split": True,
+                "reason": head + (f"（{'、'.join(notes)}，" if notes else "（")
+                          + f"书 下 {src}）"})
 
-    out.append({"zhi": main, "gan": _benqi_gan(main), "delta": -pen,
-                "reason": f"{main}{sub}冲：主克者{main}本气 −{pen:g} 度"
-                          + (f"（{note}，书 下 {'1606' if kind == 'shengdi' else '1652'}）" if note else
-                             f"（书 下 {'1606' if kind == 'shengdi' else '1652'}）")})
     hid_sub = tables.hidden_degrees(sub, month_zhi,
                                     dangzhong=tables.dangzhong_for(cols, sub))
-    out.append({"zhi": sub, "gan": hid_sub[0][0] if hid_sub else "",
-                "delta": None, "scale": 0.5,
-                "reason": f"{main}{sub}冲：受克者{sub}本气减半（书 下 "
-                          f"{'1606' if kind == 'shengdi' else '1652'}）"})
-    # 双方的杂气：当令减半、失令去除
+    sub_gan, sub_benqi = hid_sub[0] if hid_sub else ("", 0.0)
+    if n_sub == 1:
+        out.append({"zhi": sub, "gan": sub_gan, "delta": None, "scale": 0.5,
+                    "reason": f"{main}{sub}冲：受克者{sub}本气减半（书 下 {src}）"})
+    else:
+        # 受克方给的是**总量**：下 1693「2个卯木**一共减去2.5度，平均每个卯木减去1.25度**」
+        # （总量 2.5＝单支本气 5 度的一半，非每支各减半）；下 1684「午火本气共减力2度，
+        # 平均每个午火本气减去2/3=0.67度」。故发总量 + `split` 摊分。
+        per = round(sub_benqi * 0.5 / n_sub, 3)
+        out.append({"zhi": sub, "gan": sub_gan, "delta": -round(sub_benqi * 0.5, 3),
+                    "split": True,
+                    "reason": f"{main}{sub}冲：{n_sub} 支{sub}本气共减去 {sub_benqi * 0.5:g} 度，"
+                              f"平均每支 −{per:g} 度（书 下 {src}；算例 下 1693）"})
+
+    # 双方的杂气：当令减半、失令去除（书 下 1605 / 1651 末句）。
+    # 多支同现时同样按**总量**给：下 1684「午中己土综合状态失令，要全部去除即减去2度，
+    # 平均每个午中己土减力2/3=0.67度」——总量＝单支的杂气度数，由 `split` 摊分。
+    counts: dict[str, int] = {}
+    for c in cols:
+        if c.zhi and (keys is None or c.key in keys):
+            counts[c.zhi] = counts.get(c.zhi, 0) + 1
     for z in members:
+        n_z = counts.get(z, 1)
         hid = tables.hidden_degrees(z, month_zhi,
                                     dangzhong=tables.dangzhong_for(cols, z))
-        for idx, (gan, _deg) in enumerate(hid):
+        for idx, (gan, deg) in enumerate(hid):
             if idx == 0:
                 continue
             gw = GAN_WUXING[gan]
-            if _dang(gw, month_zhi):
+            dang = _dang(gw, month_zhi)
+            if n_z > 1:
+                total = round(deg * (0.5 if dang else 1.0), 3)
+                out.append({"zhi": z, "gan": gan, "delta": -total, "split": True,
+                            "reason": f"{main}{sub}冲：{n_z} 支{z}中杂气{gan}"
+                                      f"{'当令共减半' if dang else '失令共完全去除'} "
+                                      f"{total:g} 度，平均每支 −{round(total / n_z, 3):g} 度"
+                                      f"（书《下》第八节 六冲；多支摊分见 下 1684）"})
+                continue
+            if dang:
                 out.append({"zhi": z, "gan": gan, "delta": None, "scale": 0.5,
                             "reason": f"{main}{sub}冲：{z}中杂气{gan}当令减半（书《下》第八节 六冲「分析：原局寅申相冲，受克者寅临月令，主克者申金本气减半变为1.5度，」）"})
             else:
                 out.append({"zhi": z, "gan": gan, "remove": True,
                             "reason": f"{main}{sub}冲：{z}中杂气{gan}失令完全去除（书《下》第八节 六冲「分析：日时子午相冲（年时子午不冲），主克者子水减力1度，受克者午火本」）"})
     return out
+
+
+def _chong_pen(kind: str, sub_col, month_zhi: str,
+               main_wx: str) -> tuple[float, str]:
+    """**单个受克支**给主克者带来的本气扣减（书 下 1605 生地冲 / 下 1651 子午卯酉冲）。
+
+    - 受克者临月令 → 生地冲 1.5 / 子午卯酉冲 2.0；
+    - 受克者临大运 → 生地冲 1.25 / 子午卯酉冲 1.5；
+    - 子午卯酉冲另有「**主克者在原局处于死地** → 1.8」（仅**死**，非「失令」，见 `_si_di`）；
+    - 其余 1.0。
+    """
+    if sub_col is not None and sub_col.key == "month":
+        return (1.5, "受克者临月令") if kind == "shengdi" else (2.0, "受克者临月令")
+    # 「主克者在原局**死地** → 1.8」**优先于**「受克者临大运 → 1.5」：
+    # 书 下 1707「午火临大运，子水在原局处死地，故子水减力 **1.8** 度」——两者同时成立时取 1.8。
+    if kind == "zisi" and _si_di(main_wx, month_zhi):
+        return 1.8, "主克者在原局死地"
+    if sub_col is not None and sub_col.key == "_dayun":
+        return (1.25, "受克者临大运") if kind == "shengdi" else (1.5, "受克者临大运")
+    return 1.0, ""
 
 
 _BENQI_GAN_MAP = {"子": "癸", "丑": "己", "寅": "甲", "卯": "乙", "辰": "戊",
@@ -319,7 +405,7 @@ def _benqi_gan(zhi: str) -> str:
 
 
 # ---------------------------------------------------------------
-# 六害（下 2849-3179，1:1）
+# 六害（下 2849-3178，1:1）
 # ---------------------------------------------------------------
 
 # 丑午害「①生于亥、子、丑、申、酉月或运」的月份集（下 2863）
@@ -331,14 +417,28 @@ def _gan_deg(cols: list, zhi: str, gan: str, month_zhi: str) -> float:
     return _deg_of(_hidden_of(cols, zhi, month_zhi), gan)
 
 
-def hai_effects(members: list[str], cols: list, month_zhi: str) -> list[dict]:
+def hai_effects(members: list[str], cols: list, month_zhi: str,
+                keys: list[str] | None = None) -> list[dict]:
     """六害的藏干影响（1:1；覆盖书里给出明文度数的五组）。
 
-    ⚠️ **未覆盖**：多支的「总量 / 平摊」口径（书 3067「1申害2亥…平均每个」、
-    3137「2戌害1酉」、2986「未土不含乙木→乙木被激活为 1/2/3 度」）。
-    `relations` 的 tier 15 候选按**相邻两支**枚举，多支只会生成多个候选；
-    乙木「激活」还需要 effect 能**新增**一个藏干，现词汇（pure/remove/scale/delta/gan）
-    表达不了。
+    ⚠️ **未覆盖**（交付说明，留给接口改造）：
+    1. **多支的「总量 / 平摊」**：书 下 3067「1申害2亥…平均每个」、下 3092
+       「1申与2亥相害，亥中甲木减去2度…平均每个亥水减去1度甲木」、下 3137「2戌害1酉」。
+       `relations` 的 tier 15 候选已把同一害对的参与支**并成一条**（`cand.cols` 含全部
+       参与柱，`keys` 传进来），子未/酉戌/申亥三组已按书的总量语义处理；其余两组
+       （丑午/卯辰）的多支仍未逐条对书，
+       与书的「总量÷支数」不同。
+    2. **子未害「乙木被激活」**（书 下 2986「▲当未土不含乙木时：若1个未土被1子相害，
+       则未中原有的乙木被激活出来，即乙木的旺度变为1度；若有2子害1未…即未中乙木变为
+       2度；若有3子害1未，未中乙木变为3度…依此类推」）。触发面是**未生于巳午未月**
+       （`tables._WEI["hot"]`＝丁4/己2）**或戌月**（`_WEI["xu"]`＝丁3/己3）——这两档的
+       藏干表**根本没有乙木条目**，不是「度数为 0」。
+       现有 effect 词汇（`pure`/`remove`/`scale`/`delta`/`gan`/`wuxing`）只能**改已存在**的
+       藏干：`pipeline._adjusted_hidden` 只在 `for gan, deg in hid` 里过滤/缩放/加减，
+       对表里不存在的干直接跳过（`gan` 过滤也是「不等则原样保留」），无法新增。
+       **需要的 effect 形状**（给 `_adjusted_hidden` 加一个分支即可）：
+       `{"zhi": "未", "gan": "乙", "add": True, "delta": float(n_子), "reason": …}`
+       ——语义为「该支藏干表中若无此干则**追加** `(gan, delta)`；若已有则与 `delta` 同义」。
     """
     pair = frozenset(members)
     out: list[dict] = []
@@ -395,21 +495,26 @@ def hai_effects(members: list[str], cols: list, month_zhi: str) -> list[dict]:
         #   未中丁火减半（火当令）或完全减力（火失令）；未中乙木 +1；
         # ②未中丁火＞3度：子水 −1，未中丁火减半，未中己土不变；
         # ③水当令且 3 子害 1 未：未土所有藏干变为 0，子水每个 −0.33。
-        zi_col = next((c for c in cols if c.zhi == "子"), None)
-        n_zi = sum(1 for c in cols if c.zhi == "子")
+        zi_cols = [c for c in cols if c.zhi == "子"
+                   and (keys is None or c.key in keys)]
+        n_zi = max(1, len(zi_cols))
+        zi_col = zi_cols[0] if zi_cols else None
         ding = _gan_deg(cols, "未", "丁", month_zhi)
         if n_zi >= 3 and _dang("水", month_zhi):
+            # ②「未土所有藏干均变为0，**3子共减去1度**，平均每个子水减去0.33度」
+            # ——子侧是**总量 1 度**、按子支数摊分（`split`），不是每支各 −0.33。
             src = "书 下 2981「未土所有藏干均变为0，3子共减去1度，平均每个子水减去0.33度」"
             for gan, deg in _hidden_of(cols, "未", month_zhi):
                 if deg:
                     out.append({"zhi": "未", "gan": gan, "remove": True, "reason": src})
-            out.append({"zhi": "子", "gan": "癸", "delta": -0.33,
-                        "reason": f"子未害③：{src}"})
+            out.append({"zhi": "子", "gan": "癸", "delta": -1.0, "split": True,
+                        "reason": f"子未害②：子侧共减 1 度（{src}）"})
         elif ding > 3:
             out.append({"zhi": "子", "gan": "癸", "delta": -1.0,
-                        "reason": "子未害②（未中丁火＞3度）：子水 −1 度（书 下 2979）"})
+                        "reason": "子未害（未中丁火＞3度）：子水 −1 度（书 下 2979）"})
             out.append({"zhi": "未", "gan": "丁", "delta": None, "scale": 0.5,
-                        "reason": "子未害②：未中丁火减半（书 下 2979）"})
+                        "reason": "子未害（未中丁火＞3度）：未中丁火减半、未中己土不变"
+                                  "（书 下 2979）"})
         else:
             pen = 3.0 if (_dang("土", month_zhi) and not _dang("水", month_zhi)) else 2.5
             out.append({"zhi": "子", "gan": "癸", "delta": -pen,
@@ -421,8 +526,21 @@ def hai_effects(members: list[str], cols: list, month_zhi: str) -> list[dict]:
                                   f"「未土减力1度或减力2度（子水临月令）」）"})
             out.append(_zhaqi("未", "丁", month_zhi,
                               "书 下 2977「未中丁火减力1半（火当令）或完全减力（火失令）」"))
-            out.append({"zhi": "未", "gan": "乙", "delta": 1.0,
-                        "reason": "子未害①：未中乙木增力 1 度（书 下 2977）"})
+            # 未中乙木：藏干表里**有**乙木（申酉/亥子丑/辰/寅卯月）→ 增力 1 度；
+            # **没有**乙木（巳午未/戌月的表只有丁、己）→ 走下面的「激活」分支。
+            if any(g == "乙" for g, _ in _hidden_of(cols, "未", month_zhi)):
+                out.append({"zhi": "未", "gan": "乙", "delta": 1.0,
+                            "reason": "子未害①：未中乙木增力 1 度（书 下 2977）"})
+
+        # ▲「当未土不含乙木时：若1个未土被1子相害，则未中原有的乙木被**激活**出来，
+        #   即乙木的旺度变为1度；若有2子害1未…变为2度；3子…变为3度…依此类推」
+        #   （书 下 2986）。此分支**独立于 ①② 分档**——书把它单列为一条。
+        if not any(g == "乙" for g, _ in _hidden_of(cols, "未", month_zhi)):
+            out.append({"zhi": "未", "gan": "乙", "add": True, "delta": float(n_zi),
+                        "reason": f"子未害▲：未土不含乙木，被 {n_zi} 子激活出乙木 "
+                                  f"{n_zi} 度（书 下 2986「若1个未土被1子相害，则未中原有的"
+                                  f"乙木被激活出来，即乙木的旺度变为1度；若有2子害1未…"
+                                  f"即未中乙木变为2度」）"})
 
     elif pair == frozenset("酉戌"):
         # 书《下》第十一节 5.酉戌相害（下 3122-3126），按**戌中丁火（火）度數**分三档：
@@ -436,31 +554,64 @@ def hai_effects(members: list[str], cols: list, month_zhi: str) -> list[dict]:
         fgan = fire[0][0] if fire else ""
         you_gan = next((g for g, _ in _hidden_of(cols, "酉", month_zhi)
                         if GAN_WUXING[g] == "金"), "辛")
+        # **多支**（书 下 3130「以上数量变化均指酉戌个数比为1:1的情况」，多支见 下 3133/3138）：
+        #   酉侧**按戌数累计**——下 3133「2戌害1酉…戌含火3度，故**酉金完全减力变为0度**」
+        #   （1:1 是减半，2 戌 → 减一份半 → 全额）；下 3138「2戌害1酉——戌中丁火2度，
+        #   **酉金减力2.5度**」（1:1 是减 1/4，2 戌 → 减半 → 5×0.5=2.5）。
+        #   戌火侧**总量不变、按戌数摊**——「**每个**戌中丁火减力 0.5 度」（1:1 是 −1）。
+        n_xu = max(1, sum(1 for c in cols
+                          if c.zhi == "戌" and (keys is None or c.key in keys)))
+
+        def _you_scaled(scale_1to1: float) -> dict:
+            """酉侧按戌数放大扣减比例（封顶全额 → `remove`）。"""
+            s = 1.0 - (1.0 - scale_1to1) * n_xu
+            if s <= 0.0:
+                return {"zhi": "酉", "gan": you_gan, "remove": True,
+                        "reason": f"酉戌害（{n_xu} 戌）：酉金按戌数累计扣减已满 → 完全减力变为 0 度"}
+            return {"zhi": "酉", "gan": you_gan, "delta": None, "scale": round(s, 4),
+                    "reason": f"酉戌害（{n_xu} 戌）：酉金按戌数累计，扣减比例 {s:g}"}
+
         if fdeg >= 3:
-            out.append({"zhi": "酉", "gan": you_gan, "delta": None, "scale": 0.5,
-                        "reason": f"酉戌害①（戌火 {fdeg:g} 度≥3）：酉金减半（书 下 3122）"})
-            out.append({"zhi": "戌", "gan": fgan, "delta": -1.0,
-                        "reason": "酉戌害①：戌火减力 1 度（书 下 3122）"})
+            out.append(_you_scaled(0.5))
+            out.append({"zhi": "戌", "gan": fgan, "delta": -1.0, "split": True,
+                        "reason": f"酉戌害①（戌火 {fdeg:g} 度≥3）：戌火共减 1 度、按戌数摊"
+                                  f"（书 下 3122；多支 下 3133「每个戌中丁火减力0.5度」）"})
         elif fdeg == 2:
-            out.append({"zhi": "酉", "gan": you_gan, "delta": None, "scale": 0.75,
-                        "reason": "酉戌害②（戌火 2 度）：酉金减 1/4（书 下 3124）"})
-            out.append({"zhi": "戌", "gan": fgan, "delta": -0.5,
-                        "reason": "酉戌害②：戌火减力 0.5 度（书 下 3124）"})
+            out.append(_you_scaled(0.75))
+            out.append({"zhi": "戌", "gan": fgan, "delta": -0.5, "split": True,
+                        "reason": "酉戌害②（戌火 2 度）：戌火共减 0.5 度、按戌数摊"
+                                  "（书 下 3124；多支 下 3138「每个戌中丁火减力0.25度」）"})
         elif fdeg == 1:
-            out.append({"zhi": "酉", "gan": you_gan, "delta": 1.0,
-                        "reason": "酉戌害③（戌火 1 度）：酉金增力 1 度（书 下 3126）"})
-            out.append({"zhi": "戌", "gan": "戊", "delta": -1.0,
-                        "reason": "酉戌害③：戌土减力 1 度（书 下 3126）"})
+            out.append({"zhi": "酉", "gan": you_gan, "delta": 1.0 * n_xu,
+                        "reason": f"酉戌害③（戌火 1 度）：酉金增力 1 度 × {n_xu} 戌"
+                                  f"（书 下 3126；多支按戌数累计）"})
+            out.append({"zhi": "戌", "gan": "戊", "delta": -1.0, "split": True,
+                        "reason": "酉戌害③：戌土共减 1 度、按戌数摊（书 下 3126）"})
 
     elif pair == frozenset("申亥"):
         # ④申中庚金 −1；申中壬水戊土当令减半/失令去除；
         #   亥中壬水 +1；亥中甲木当令减半/失令去除（书《下》第十一节 4.申亥相害 下 3030-3031）
-        out.append({"zhi": "申", "gan": "庚", "delta": -1.0,
-                    "reason": "申亥害：申中庚金 −1 度（书《下》第十一节 相害）"})
-        out.append({"zhi": "亥", "gan": "壬", "delta": 1.0,
-                    "reason": "申亥害：亥中壬水 +1 度（书《下》第十一节 相害）"})
+        # **多支**（书 下 3066「原局**1申害2亥**，申中庚金**减去2度**剩下1度，申中戊土失令
+        # 全部去除变为0度；申中壬水当令，减半即减去1度，现在有2个亥水，故申中壬水**减去2度**。
+        # 亥中壬水**增力1度，平均每个壬水增力0.5度**；亥中甲木失令…**每个**亥中甲木完全减力，
+        # 不用平摊，均变为0度」）：
+        #   申侧**按亥数累计**（delta × n_亥；`remove` 本就是满值，不再放大）；
+        #   亥壬是**总量 1 度按亥数摊**（`split`）；亥甲**逐支全去**、不平摊。
+        n_hai = max(1, sum(1 for c in cols
+                           if c.zhi == "亥" and (keys is None or c.key in keys)))
+        out.append({"zhi": "申", "gan": "庚", "delta": -1.0 * n_hai,
+                    "reason": f"申亥害：申中庚金 −1 度 × {n_hai} 亥（书《下》第十一节 相害；"
+                              f"多支 下 3066「1申害2亥，申中庚金减去2度」）"})
+        out.append({"zhi": "亥", "gan": "壬", "delta": 1.0, "split": True,
+                    "reason": f"申亥害：亥中壬水共 +1 度、按亥数摊（书 下 3066"
+                              f"「亥中壬水增力1度，平均每个壬水增力0.5度」）"})
         for z, gan in (("申", "壬"), ("申", "戊"), ("亥", "甲")):
-            out.append(_zhaqi(z, gan, month_zhi, "书《下》第十一节 4.申亥相害"))
+            fx = _zhaqi(z, gan, month_zhi, "书《下》第十一节 4.申亥相害")
+            # 申侧杂气同样按亥数累计（书 下 3066「申中壬水…现在有2个亥水，故减去2度」）；
+            # 亥中甲木是「每个亥…完全减力，不用平摊」，保持逐支。
+            if z == "申" and isinstance(fx.get("delta"), (int, float)) and n_hai > 1:
+                fx = dict(fx, delta=round(fx["delta"] * n_hai, 4))
+            out.append(fx)
     return out
 
 

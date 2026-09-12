@@ -30,14 +30,14 @@ from services.bazi.v2 import shengke
 def test_four_times_limit_only_for_root_without_qi(sub_has_qi, main, expect):
     """4 倍上限**只约束「有根无气」**者（C26-9）。"""
     got = shengke.can_receive_sheng(sub_has_root=True, sub_has_qi=sub_has_qi,
-                                    main_deg=main, sub_deg=3.0, sub_has_power=True)
+                                    main_deg=main, sub_deg=3.0)
     assert got is expect
 
 
 def test_no_root_no_qi_beyond_limit_rejected():
     """无根无气者超限亦不受生。"""
     assert not shengke.can_receive_sheng(sub_has_root=False, sub_has_qi=False,
-                                         main_deg=18.0, sub_deg=3.0, sub_has_power=True)
+                                         main_deg=18.0, sub_deg=3.0)
 
 
 # ---------------------------------------------------------------

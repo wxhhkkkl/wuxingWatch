@@ -2,7 +2,8 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useChartStore } from '../stores/chart'
-import { isWangduStrength, isWangduV2, type WangduStep } from '../types'
+import { isWangduStrength, isWangduV2, type V2Step, type V2ChartPillar,
+         type StepTrace, type WangduStep } from '../types'
 import { ganZhiColor, wxColor } from '../utils/wuxing'
 
 const router = useRouter()
@@ -82,13 +83,56 @@ function stepScores(
   return WUXING.map((wx) => ({ wx, value: m.get(wx) }))
 }
 
-/** 该段的全部 trace 行。
+type StepRow =
+  | { kind: 'trace'; t: StepTrace }
+  | { kind: 'scores' }
+  | { kind: 'result' }
+  | { kind: 'chart'; label: string; pillars: V2ChartPillar[]; testid: string }
+
+/** 一段之内的渲染序列。
  *
- *  **不剔除**已进得分行的那几项——得分行只给「五行 + 数值」的速览，
- *  算式本身（天干/通根/系数的来路）必须逐行可见，否则读者看得到结论看不到过程。 */
-function stepLines(s: { traces?: { target: string; expression: string; value: number | string | null }[] }) {
-  return s.traces ?? []
+ *  顺序：算式行 →（第 7 段的**逐实例快照**插在对应算式之后）→ 结果 → 五行速览 → 段末命盘。
+ *  速览格与命盘相邻；第 7 段的命盘在过程中逐实例出（末尾那张即本段终态），段末不再重复贴。
+ *
+ *  算式行**不剔除**已进速览格的那几项——速览格只给「五行 + 数值」，算式本身
+ *  （天干/通根/系数的来路）必须逐行可见，否则读者看得到结论看不到过程。
+ */
+function stepRows(s: V2Step): StepRow[] {
+  const rows: StepRow[] = []
+  const points = s.charts ?? []
+  let ci = 0
+  const emitCharts = (rendered: number) => {
+    while (ci < points.length && points[ci].after <= rendered) {
+      rows.push({ kind: 'chart', label: `结算至此 · ${points[ci].label}`,
+                  pillars: points[ci].chart.pillars,
+                  testid: `v2-step-chart-${s.key}-${ci + 1}` })
+      ci++
+    }
+  }
+  ;(s.traces ?? []).forEach((t, i) => {
+    rows.push({ kind: 'trace', t })
+    emitCharts(i + 1)
+  })
+  emitCharts(Number.MAX_SAFE_INTEGER)        // 保险：`after` 越界时补在算式行之后
+  rows.push({ kind: 'result' })
+  if (stepScores(s).length) rows.push({ kind: 'scores' })
+  if (s.chart && !points.length) {
+    rows.push({ kind: 'chart', label: '本段结束时的命盘',
+                pillars: s.chart.pillars, testid: `v2-step-chart-${s.key}` })
+  }
+  return rows
 }
+
+/** 藏干「字变」标记 → 样式类（标记值是中文，不能直接当类名）。 */
+const CHANGE_CLASS: Record<string, string> = {
+  新增: 'is-new', 归零: 'is-zero', 增力: 'is-up', 减力: 'is-down', 变纯: 'is-pure',
+}
+
+/** 日干被天干五合换了字时的**原局那个字**（未换字则 null）。 */
+const dmOriginal = computed(() => {
+  const o = v2.value?.day_master_original
+  return o && o !== v2.value?.day_master ? o : null
+})
 
 const v2Tier = computed(() => {
   const t = v2.value?.yong_shen.tier
@@ -181,9 +225,12 @@ function stepResult(s: WangduStep) {
           <span v-if="v2.ge_ju.hua_shen" class="verdict-extra">化{{ v2.ge_ju.hua_shen }}</span>
           <span v-if="v2.ge_ju.liang_qi" class="verdict-extra">两气格</span>
         </div>
-        <p class="wx-meta">
-          日主 {{ v2.day_master }}（{{ v2.day_master_wuxing }}）· 动态旺度
-          <b>{{ v2.degrees[v2.day_master_wuxing]?.final }}</b> 度
+        <p class="wx-meta" data-testid="v2-dm">
+          日主 {{ v2.day_master }}（{{ v2.day_master_wuxing }}）
+          <span v-if="dmOriginal" class="pillar-changed" data-testid="v2-dm-original">
+            原{{ dmOriginal }}·合化改宗
+          </span>
+          · 动态旺度 <b>{{ v2.degrees[v2.day_master_wuxing]?.final }}</b> 度
         </p>
         <p v-if="v2.degradations.length" class="warn-line" data-testid="v2-degradations">
           ⚠️ {{ v2.degradations.join('；') }}
@@ -204,7 +251,7 @@ function stepResult(s: WangduStep) {
               />
             </div>
             <span class="energy-val">{{ v2.degrees[wx]?.final ?? 0 }}</span>
-            <span class="energy-state">{{ v2.degrees[wx]?.state }}</span>
+            <span class="energy-state" :title="v2.degrees[wx]?.state">{{ v2.degrees[wx]?.state }}</span>
           </div>
         </div>
         <p class="note-line">能量条以五行最大值为满格；日主一行加重显示。</p>
@@ -217,22 +264,67 @@ function stepResult(s: WangduStep) {
           <li v-for="(s, si) in v2.steps" :key="s.key" class="step-block"
               :data-testid="`v2-step-${s.key}`">
             <p class="step-title"><span class="step-no">{{ si + 1 }}</span>{{ s.title }}</p>
-            <p v-if="s.rulings?.length" class="step-rulings" data-testid="v2-step-rulings">
-              口径裁定：{{ s.rulings.join('；') }}
-            </p>
             <p class="step-rule">{{ s.rule }}</p>
-            <div v-if="stepScores(s).length" class="step-scores" data-testid="v2-step-scores">
-              <div v-for="it in stepScores(s)" :key="it.wx" class="score-cell">
-                <span class="score-wx step-score-wx" :style="{ color: wxColor(it.wx) }">{{ it.wx }}</span>
-                <span class="score-val">{{ it.value ?? '—' }}</span>
+
+            <!-- 一段之内的渲染顺序由 `stepRows` 统一决定：算式行 →（第 7 段的逐实例快照
+                 就插在对应算式之后）→ 结果 → 五行速览 → 段末命盘。速览与命盘相邻。 -->
+            <template v-for="(r, ri) in stepRows(s)" :key="ri">
+              <div v-if="r.kind === 'trace'" class="step-trace">
+                <span class="step-trace-target">{{ r.t.target }}</span>
+                <span class="step-trace-expr">{{ r.t.expression }}</span>
+                <span v-if="r.t.value !== null && r.t.value !== undefined" class="step-trace-val">{{ r.t.value }}</span>
               </div>
-            </div>
-            <div v-for="(t, i) in stepLines(s)" :key="i" class="step-trace">
-              <span class="step-trace-target">{{ t.target }}</span>
-              <span class="step-trace-expr">{{ t.expression }}</span>
-              <span v-if="t.value !== null && t.value !== undefined" class="step-trace-val">{{ t.value }}</span>
-            </div>
-            <p class="step-result">→ {{ s.result }}</p>
+
+              <div v-else-if="r.kind === 'scores'" class="step-scores" data-testid="v2-step-scores">
+                <div v-for="it in stepScores(s)" :key="it.wx" class="score-cell">
+                  <span class="score-wx step-score-wx" :style="{ color: wxColor(it.wx) }">{{ it.wx }}</span>
+                  <span class="score-val">{{ it.value ?? '—' }}</span>
+                </div>
+              </div>
+
+              <p v-else-if="r.kind === 'result'" class="step-result">→ {{ s.result }}</p>
+
+              <!-- 命盘快照：每个天干 / 藏干各多少度，变了的字标出来 -->
+              <div v-else class="step-chart" :data-testid="r.testid">
+                <p class="step-chart-caption">{{ r.label }}</p>
+                <div class="pillar-row pillar-mini">
+                  <div v-for="p in r.pillars" :key="p.key" class="pillar-col"
+                       :data-testid="`v2-chart-${p.key}`">
+                    <span class="pillar-label">{{ p.label }}</span>
+                    <span class="pillar-gan" :style="{ color: wxColor(p.gan_wx) }">
+                      {{ p.gan }}<i class="pillar-deg">{{ p.gan_degree }}</i>
+                    </span>
+                    <!-- 天干五合：合化成功会**换字**（甲→戊，书 上 1593），故标出新字来自哪个原字；
+                         合而不化的合绊只减力、不换字（书 上 1595）。 -->
+                    <span v-if="p.gan_original" class="pillar-sub pillar-changed"
+                          :data-testid="`v2-gan-changed-${p.key}`">
+                      原{{ p.gan_original }}·{{ p.gan_change }}
+                    </span>
+                    <span v-else-if="p.gan_change" class="pillar-sub"
+                          :data-testid="`v2-gan-changed-${p.key}`">{{ p.gan_change }}</span>
+                    <!-- 第 5 段起：主数（组旺度）之外，再给出「自身」「根」两个分量，
+                         三者恒有 主数 = 自身 + 根；第 7 段逐实例快照里都会随结算变。 -->
+                    <span v-if="p.gan_own !== null && p.gan_own !== undefined"
+                          class="pillar-sub" :data-testid="`v2-gan-own-${p.key}`">
+                      自身 {{ p.gan_own }}
+                    </span>
+                    <span class="pillar-zhi" :style="{ color: wxColor(p.zhi_effective_wx) }">
+                      {{ p.zhi }}<i v-if="p.zhi_effective_wx !== p.zhi_wx"
+                                    class="pillar-sub pillar-changed">变{{ p.zhi_effective_wx }}</i>
+                    </span>
+                    <span class="pillar-cang">
+                      <span v-for="h in p.hidden" :key="h.gan" class="pillar-cang-row"
+                            :class="{ 'is-off': h.change === '归零' }"
+                            :data-testid="`v2-chart-hidden-${p.key}`">
+                        <b :style="{ color: ganZhiColor(h.gan) }">{{ h.gan }}</b>
+                        <i class="cang-deg">{{ h.degree }}</i>
+                        <i v-if="h.change" class="cang-mark" :class="CHANGE_CLASS[h.change]">{{ h.change }}</i>
+                      </span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </template>
           </li>
         </ol>
       </section>
@@ -642,10 +734,17 @@ function stepResult(s: WangduStep) {
   font-size: 13px;
   font-variant-numeric: tabular-nums;
 }
+/* 状态列：值来自 `degrees[wx].state`，正常是「余气」这类短名，但月令合化取平均时
+   会是「相与旺」这种两名并列——列宽吃过窄会把整行撑成多行，故给弹性宽度 + 截断。 */
 .energy-state {
-  flex: 0 0 2.2em;
+  flex: 0 1 auto;
+  max-width: 5.5em;
+  text-align: right;
   font-size: 11px;
   color: var(--wx-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .energy-row.is-dm .energy-wx,
 .energy-row.is-dm .energy-val {
@@ -792,14 +891,6 @@ function stepResult(s: WangduStep) {
   font-size: 11px;
   font-weight: 600;
 }
-.step-rulings {
-  margin: 0 0 5px;
-  padding: 4px 7px;
-  font-size: 12px;
-  color: var(--wx-primary);
-  background: #faf3f3;
-  border-radius: 4px;
-}
 .step-rule {
   margin: 0 0 7px;
   font-size: 12px;
@@ -854,5 +945,76 @@ function stepResult(s: WangduStep) {
   font-size: 12.5px;
   font-weight: 600;
   color: var(--wx-primary);
+}
+
+/* ==== 012 v2：判定依据里的逐段命盘快照 ==== */
+.step-chart {
+  margin-top: 9px;
+  padding: 8px 8px 6px;
+  background: #faf7f1;
+  border-radius: 10px;
+}
+.step-chart-caption {
+  margin: 0 0 6px;
+  font-size: 11px;
+  color: var(--wx-muted);
+}
+.step-chart-note {
+  margin: 5px 0 0;
+  font-size: 11px;
+  line-height: 1.55;
+  color: #8a6a3a;
+}
+/* 顶层命盘卡用的是 .pillar-row 全尺寸；这里收一档，四柱多的度数才排得下 */
+.pillar-mini {
+  gap: 5px;
+  margin-bottom: 0;
+}
+.pillar-mini .pillar-col {
+  gap: 0;
+  padding: 6px 0 5px;
+  background: #fff;
+}
+.pillar-mini .pillar-gan,
+.pillar-mini .pillar-zhi {
+  font-size: 17px;
+}
+.pillar-mini .pillar-cang {
+  margin-top: 4px;
+  padding-top: 4px;
+}
+.pillar-deg {
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--wx-muted);
+  margin-left: 1px;
+  font-variant-numeric: tabular-nums;
+}
+.pillar-sub {
+  font-size: 9px;
+  color: var(--wx-muted);
+  line-height: 1.3;
+}
+.pillar-changed {
+  color: #00796b;
+}
+.cang-deg {
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.cang-mark {
+  font-size: 9px;
+  margin-left: 1px;
+}
+.cang-mark.is-new,
+.cang-mark.is-pure { color: #2f6b35; }
+.cang-mark.is-up { color: #a63431; }
+.cang-mark.is-down,
+.cang-mark.is-zero { color: var(--wx-muted); }
+.pillar-cang-row.is-off b,
+.pillar-cang-row.is-off .cang-deg {
+  text-decoration: line-through;
+  color: var(--wx-muted) !important;
 }
 </style>

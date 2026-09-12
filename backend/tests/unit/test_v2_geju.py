@@ -166,27 +166,40 @@ def test_not_cong_ruo_when_dm_has_sheng():
 def test_xiyong_analysis_v2_passes_real_has_sheng():
     """包装层 `xiyong_analysis_v2` 须把 pipeline 的**真实**「有生」判据接进格局层。
 
-    书证：书 上 1598 的「不能独立」三项都须真实判定；书 上 1537
-    「天干和地支之间只有同柱(如年干和年支为同柱)才能作用即论生克」——
-    本例 年柱 乙巳 为同柱，乙木生巳火，故**火有生**，丙火虽只有 0 度、根 2.0 度
-    （＜2.4）也不能算「不能独立」。
-    修复前包装层传 `has_sheng={全 False}` → 误判 `cong_ruo`。
+    书证：书 上 1598 的「不能独立」三项都须真实判定；书 上 980
+    「生克权＝太弱以上（静态旺度≥2.4度）或有强根（≥2.4度为强根）**或有生**」
+    ——有生本身就能授予生克权，故「有生」可沿相生链传递（本实现取**单调最小不动点**，
+    见 `pipeline.stem_layer`）。
+
+    本例 乾 乙丑 丁亥 己巳 丁卯（书 上 418）：年柱**同柱**乙木生巳火（书 上 1537
+    「天干和地支之间只有同柱…才能作用即论生克」）→ 火有生 → 丁火得生克权 → 丁火
+    （月干）紧贴生日元己土 → **土有生**，日主「不能独立」不成立 → 正格。
+    包装层若传 `has_sheng={全 False}`，这条链全断 → 误判 `cong_cai`。
+
+    > 第一轮同名测试拿 乙巳 己丑 丙子 己丑（书 上 2564）断言 `has_sheng['火'] is True`，
+    > 理由是「乙木同柱生巳火」——该造乙木静态 0.7 度、通根 0 度，按 上 982 例1
+    > **没有生克权**，连巳火都生不了；那个期望本身就是错的（书 上 982
+    > 「丙火没有生克权，丙火不能生日元己土」）。该口径已另立锚点：
+    > `test_v2_has_sheng.py::test_has_sheng_for_day_master_is_about_the_day_pillar_itself`。
     """
     from services.bazi.v2 import degrees as _deg
     from services.bazi.v2 import pipeline, xiyong_analysis_v2
 
-    pillars = {"year": {"gan": "乙", "zhi": "巳"}, "month": {"gan": "己", "zhi": "丑"},
-               "day": {"gan": "丙", "zhi": "子"}, "time": {"gan": "己", "zhi": "丑"}}
-    r = xiyong_analysis_v2("丙", pillars)
+    pillars = {"year": {"gan": "乙", "zhi": "丑"}, "month": {"gan": "丁", "zhi": "亥"},
+               "day": {"gan": "己", "zhi": "巳"}, "time": {"gan": "丁", "zhi": "卯"}}
+    r = xiyong_analysis_v2("己", pillars)
 
     base = pipeline.compute_strength(pillars)
-    assert base["has_sheng"]["火"] is True, "乙木同柱生巳火，火应有生（书 上 1537）"
+    assert base["has_sheng"]["火"] is True, "乙木同柱生巳火 → 火有生（书 上 1537）"
+    assert base["has_sheng"]["土"] is True, "丁火得生克权 → 可生日元己土（书 上 980）"
     cols = _deg.build_cols(pillars)
-    expected = geju.judge_geju(
-        cols=cols, final=base["final_scores"],
-        root={w: base["degrees"][w]["root"] for w in base["degrees"]},
-        has_sheng=base["has_sheng"], rel=base["relations"],
-        month_zhi="丑")["type"]
+    args = dict(cols=cols, final=base["final_scores"],
+                root={w: base["degrees"][w]["root"] for w in base["degrees"]},
+                rel=base["relations"], month_zhi="亥")
+    expected = geju.judge_geju(has_sheng=base["has_sheng"], **args)["type"]
+    all_false = geju.judge_geju(has_sheng={w: False for w in base["final_scores"]},
+                                **args)["type"]
+    assert expected != all_false, "该命例须能区分「真 has_sheng」与「全 False」（否则断言空转）"
     assert expected == "zheng"
     assert r["ge_ju"]["type"] == expected
 

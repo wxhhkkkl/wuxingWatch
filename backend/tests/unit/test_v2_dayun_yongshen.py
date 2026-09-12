@@ -100,11 +100,17 @@ def test_yongshen_does_not_vary_with_liunian():
     assert "liunian" not in " ".join(sig.parameters), "取用不应由流年驱动"
 
 
-# 锚点：书 上 2564（乾 乙巳 己丑 丙子 己丑）。丙火生丑月，动态 0 度、根 2.0 度
-# （＜2.4，非强根），唯**同柱**年支巳火受乙木之生（书 上 1537「天干和地支之间只有
-# 同柱(如年干和年支为同柱)才能作用即论生克」），故「火」有生——按书 上 1598
-# 「不能独立＝太弱以下＋无生（或虽有若无）＋无强根（≥2.4度）」不能算不能独立。
-HERO_PILLARS = ("乙巳", "己丑", "丙子", "己丑")
+# 锚点：书 上 418（坤 乙丑 丁亥 己巳 丁卯；运 戊子/己丑/庚寅）。日主己土动态 0 度、
+# 通根 0 度，**有生**——年柱**同柱**乙木生巳火（书 上 1537「天干和地支之间只有同柱
+# (如年干和年支为同柱)才能作用即论生克」）→ 火有生 → 丁火因「有生」得**生克权**
+# （书 上 980「生克权＝太弱以上 或有强根 **或有生**」）→ 丁火（月干）紧贴生日元己土
+# → 土有生。按 上 1598「不能独立＝太弱以下＋无生（或虽有若无）＋无强根（≥2.4度）」，
+# 有生即不能独立不成立。书对该造只给了「进入己丑运…日主静态旺度为8.8度，中和」的
+# 旺度描述，未标格局；本组测试只借它校验**大运各步把真实的 has_sheng 传进了格局层**。
+#
+# > 第一轮此处用 乙巳 己丑 丙子 己丑 并断言「乙木同柱生巳火 → 火有生」。该造乙木
+# > 静态 0.7 度、通根 0 度，按 书 上 982 例1 没有生克权，连巳火都生不了——锚点本身错。
+HERO_PILLARS = ("乙丑", "丁亥", "己巳", "丁卯")
 
 
 def _real_geju(pillars, *, dayun_ganzhi=None):
@@ -127,23 +133,24 @@ def test_analyze_step_uses_step_has_sheng():
     """每一步的格局判定须用**该步**的真实「有生」判据，而不是全 False。
 
     书证：书 上 1598「答：不能独立＝太弱以下＋无生（或虽有若无）＋无强根（≥2.4度）」
-    ——「无生」是三个合取项之一，必须真实判定；修复前 `analyze_step` 传
+    ——「无生」是三个合取项之一，必须真实判定；若 `analyze_step` 传
     `has_sheng={全 False}`，该项被静默删除，日主虽受生仍被判「不能独立」→ 误判从弱。
-    本例（书 上 2564 乾造）日主丙火受**同柱**乙木之生（书 上 1537），该步应为正格。
+    本例（书 上 418 坤造）日主己土受丁火之生，而丁火之生克权来自「有生」
+    （书 上 980；链见 HERO_PILLARS 注释），该步应为正格。
     """
     from services.bazi.v2 import degrees, geju, pipeline
     p = _pillars(*HERO_PILLARS)
-    base = pipeline.compute_strength(p, dayun_ganzhi="甲子")
-    shifted = dayun.apply_dayun_delta(base["final_scores"], "子", "甲")
+    base = pipeline.compute_strength(p, dayun_ganzhi="庚寅")
+    shifted = dayun.apply_dayun_delta(base["final_scores"], "寅", "庚")
     root = {w: base["degrees"][w]["root"] for w in base["degrees"]}
     cols = degrees.build_cols(p)
     all_false = geju.judge_geju(cols=cols, final=shifted, root=root,
                                 has_sheng={w: False for w in shifted},
-                                rel=base["relations"], month_zhi="丑")["type"]
-    real = _real_geju(p, dayun_ganzhi="甲子")
+                                rel=base["relations"], month_zhi="亥")["type"]
+    real = _real_geju(p, dayun_ganzhi="庚寅")
     assert real != all_false, "该命例须能区分「真 has_sheng」与「全 False」（否则断言空转）"
     assert real == "zheng"
-    assert dayun.analyze_step(p, "甲子")["ge_ju"]["type"] == real
+    assert dayun.analyze_step(p, "庚寅")["ge_ju"]["type"] == real
 
 
 def test_analyze_all_origin_geju_uses_same_caliber_as_analyze_step():
@@ -152,11 +159,11 @@ def test_analyze_all_origin_geju_uses_same_caliber_as_analyze_step():
     修复前 `analyze_all` 用 `root={全 0}`、`rel={"established": [], "rejected": []}`、
     `has_sheng={全 False}` 判原局，而各步用真实的通根/关系/有生——两者口径不一致，
     第一步的成格/破格标注随之失真（书 上 1598 的「不能独立」三项都须真实判定）。
-    本例（书 上 2564 乾造）原局按同口径为正格；若按全 0/全 False 判，原局会被
-    误当成从弱，第一步的成格/破格随之标错。
+    本例（书 上 418 坤造）原局按同口径为正格；若按全 0/全 False 判，原局会被
+    误当成从财，第一步的成格/破格随之标错。
     """
     p = _pillars(*HERO_PILLARS)
-    steps = [{"ganzhi": gz} for gz in ("甲子", "乙丑", "丙寅")]
+    steps = [{"ganzhi": gz} for gz in ("庚寅", "辛卯", "壬辰")]
     out = dayun.analyze_all(p, steps)
 
     origin = _real_geju(p)
