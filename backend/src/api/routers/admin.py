@@ -6,6 +6,7 @@ from fastapi import APIRouter, HTTPException, Query, Request
 from sqlalchemy import func
 
 from api.deps import AdminUser, DbDep
+from api.routers import records
 from models.bazi_chart import BaziChart
 from models.user import User
 from services.audit_service import log_audit
@@ -115,10 +116,13 @@ def chart_detail(chart_id: int, admin: AdminUser, db: DbDep, request: Request):
     if r is None:
         raise HTTPException(status_code=404, detail="记录不存在")
     log_audit(db, admin.id, "chart.detail", "bazi_chart", r.id, _client_ip(request))
+    # 与用户侧同口径：记录里存了 `_engine_version`，**版本不符就重算**——否则管理端会把
+    # 冻结的旧段序（如五合仍在第 2 段）整段打出来（`records._load_result`）。
+    result, _ = records._load_result(r, db)
     return {
         "id": r.id,
         "person_name": r.person_name,
         "relationship": r.relationship_type,
         "created_at": r.created_at.isoformat(),
-        "chart_result": json.loads(r.chart_result),
+        "chart_result": result,
     }

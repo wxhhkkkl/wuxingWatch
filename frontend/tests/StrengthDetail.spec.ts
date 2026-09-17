@@ -8,6 +8,8 @@ const push = vi.fn()
 
 vi.mock('vue-router', () => ({
   useRouter: () => ({ back, push }),
+  // 无 `record` 查询参数 → 页面走会话 store（本文件测的就是这条路）
+  useRoute: () => ({ query: {} }),
 }))
 
 import { useChartStore } from '../src/stores/chart'

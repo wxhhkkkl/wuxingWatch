@@ -1,18 +1,20 @@
-"""天干五合判定（第 2 段）：**合化换字** + **合而不化的合绊减力**。
+"""天干五合判定（**第 6 段**）：**合化换字** + **合而不化的合绊减力**。
 
 书源行号基准 `d:/tmp/newdocs/norm/四柱精髓（上）.txt`。
 
-**为什么自成一节、且排在地支关系之后、静态旺度之前**
+**为什么自成一节、且排在静态旺度之后、生克之前**（2026-09-16 段序调整）
 
 - **合化成功要换字**。书 上 1593「合化成功后**甲木变成了戊土**……▲甲己合化成功，
   **其土的力量由原来的 1 度变成 2 度，原因是 1 度的甲木变成了土**」；上 1872「丙火
   变为了壬水，辛金变为了癸水……**其水的力量由原来的 0 度变成 2 度**」；上 1990
   同构（丁→乙、壬→甲）。换了字就换了**五行**，连片天干组、通根归属、静态旺度与生克
   对手全都跟着变。
-- **合而不化要减力，且进静态旺度**。书 上 1638「甲木减力 0.2 度变为 0.8 度，己土减力
-  0.4 度变为 0.6 度，**日主静态旺度=（0.6+3+3）×1.4=9.24 度**」——减力后的 0.6 是
-  喂给静态旺度的。
-- 但必须排在**地支十八级之后**。上 1638 的化神条件②读的是地支合化改宗后的月令：
+- **合而不化要减力**。书 上 1638「甲木减力 0.2 度变为 0.8 度，己土减力 0.4 度变为
+  0.6 度，**日主静态旺度=（0.6+3+3）×1.4=9.24 度**」。**本实现按用户 2026-09-16 裁定
+  改了基数**：减的是该干所在**连片组的静态旺度**（含通根那一份，整组同缩），且契约的
+  「静态旺度」取第 5 段（原字）那一份、**不含合绊**——与书三处明文相反，属有意分歧
+  （见 research.md C26-23 附二/附三）。
+- 但必须排在**地支十八级与静态旺度之后**。上 1638 的化神条件②读的是地支合化改宗后的月令：
   「月令为土，似乎也满足第二个条件，但**辰酉合化金成功，月令变为土的休地**，这个条件
   不能满足，所以甲己合而不化」。
 
@@ -93,20 +95,32 @@ def _rank_key(item: tuple[int, int, frozenset], shared: set[int],
             _has_priority(rel, (cols[a].key, cols[b].key)))
 
 
-def judge_stem_he(cols: list, month_zhi: str, rel: dict, static: dict,
-                  effective: str | None = None) -> dict:
+def judge_stem_he(cols: list, month_zhi: str, rel: dict,
+                  effective: str | None = None,
+                  final_provider=None,
+                  force_ban: bool = False) -> dict:
     """判定原局相邻天干五合。**会就地改写 `cols[i].gan`（换字）**。
+
+    条件④「弱方不能独立」按**动态旺度**判（书 上 1588「甲必须处于不能独立的状态
+    （**指动态旺度**）」），但动态旺度要等结算完才有、而它又取决于合化是否成立
+    （换字会改一切）——先有鸡还是先有蛋。解法是**两趟**：`final_provider` 由调用方
+    给一个「把全部五合**先按合绊**算到底」的试探函数，本函数在真正判定之前惰性调用它
+    （只在真有候选对时才调，避免无谓双跑）；判成了就换字，由调用方**重头算第二趟**。
+
+    `force_ban=True` 是**试探趟**专用的：一律按合绊论、且**不写 `cols`**（不换字），
+    只为拿 `ban` / `blocked` 去跑出一份动态旺度。
 
     返回：
 
     - ``hua``       柱位下标 → (化神五行, 换字后的干)
-    - ``ban``       柱位下标 → 合绊后该干**自身**的度数（未绊者不在表内，视作 1.0）
+    - ``ban_cheng`` 柱位下标 → 减几**成**（下游按整组静态旺度缩放；`ban` 那一份逐干度数是
+  旧口径遗留，调用点一律忽略）
     - ``blocked``   因合而不再论生克的对（书 上 1595「贪合忘生克」）
     - ``established`` 结构化结论，供依据行与前端
     - ``traces``    人读的依据行
     """
     rel_mod = _rel()
-    from services.bazi.v2.relations import GAN_HE_HUA
+    from services.bazi.v2.relations import GAN_HE_HUA, _WEAK_PARTY
 
     cand: list[tuple[int, int, frozenset]] = []
     for i in range(len(cols) - 1):
@@ -135,6 +149,11 @@ def judge_stem_he(cols: list, month_zhi: str, rel: dict, static: dict,
     established: list[dict] = []
     traces: list[str] = []
 
+    # 条件④要的**动态旺度**：真有候选对时才跑试探趟（书 上 1588）。
+    final_by_col = None
+    if cand and not force_ban and final_provider is not None:
+        final_by_col = final_provider()
+
     for grp in groups:
         cnt: dict[int, int] = {}
         for a, b, _ in grp:
@@ -153,12 +172,20 @@ def judge_stem_he(cols: list, month_zhi: str, rel: dict, static: dict,
             winner, losers = (None, list(grp)) if top == second else (ranked[0], ranked[1:])
 
         is_hua = False
-        if winner is not None:
+        if winner is not None and not force_ban:
             a, b, pair = winner
             hua_wx = GAN_HE_HUA[pair]
+            # 条件④取**弱方那个字所在连片组**的动态终值——书 上 1588 说的是「甲」这个字，
+            # 不是「木」这个五行（五行合计会把同行的别的实例也算进来，实测书 上 2006
+            # 丁卯 壬子 辛丑 甲午 就因此被误判成「能独立」）。
+            weak_weak = _WEAK_PARTY.get(pair)
+            weak_deg = None
+            if final_by_col is not None and weak_weak is not None:
+                weak_deg = final_by_col.get(
+                    cols[a].key if cols[a].src_gan == weak_weak else cols[b].key)
             is_hua = rel_mod._gan_hua_one(
                 cols[a].src_gan, cols[a], cols[b].src_gan, cols[b],
-                month_zhi, hua_wx, final=static, cols=cols,
+                month_zhi, hua_wx, weak_deg=weak_deg, cols=cols,
                 effective_month=effective)
 
         if is_hua:
@@ -210,9 +237,10 @@ def judge_stem_he(cols: list, month_zhi: str, rel: dict, static: dict,
             "pair": "、".join(f"{cols[a].src_gan}{cols[b].src_gan}" for a, b, _ in grp),
             "ban_cheng": {cols[k].key: c for k, c in sorted(side4.items())},
         })
+        # 2026-09-16 起合绊减的是**该干所在组的静态旺度**（含通根那一份），
+        # 不是「1 个干本身」那个度数——故这里只报**成数**，落码在 `pipeline._layers`。
         detail = "、".join(
             f"{_PILLAR_CN.get(cols[k].key, k)}干{cols[k].src_gan} −{c:g} 成"
-            f" → {shengke.apply_change(1.0, cheng=-c):g} 度"
             for k, c in sorted(side4.items()))
         names = "".join(sorted({cols[a].src_gan + cols[b].src_gan
                                 for a, b, _ in grp}))

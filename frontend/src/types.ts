@@ -513,12 +513,13 @@ export interface V2ChartPillar {
   gan_original: string | null
   /** 本段该天干发生了什么：合化换字 / 合而不化的合绊减力；无则为 null。 */
   gan_change: '合化' | '合绊' | null
-  /** 第 1–4 段为**该字自身**的生度数（原局 1、合绊后 0.6/0.8…）；
-   *  第 5 段起改为该字所在**连片组的旺度**——生克算式里真正用的那个数（含通根）。 */
+  /** 第 1–3 段为**该字自身**的生度数（原局 1）；
+   *  第 4 段（通根递减）起改为该字所在**连片组的旺度**——生克算式里真正用的那个数（含通根）。
+   *  2026-09-16 段序：五合排在第 6 段（静态旺度之后）。 */
   gan_degree: number
-  /** 该字自身的旺度（生度数 × 月令系数）；第 5 段起才有，否则为 null。 */
+  /** 该字自身的旺度（生度数 × 月令系数）；第 4 段起才有，否则为 null。 */
   gan_own?: number | null
-  /** 该字所在组的**根**（= `gan_degree` − `gan_own`）；第 5 段起才有，否则为 null。 */
+  /** 该字所在组的**根**（= `gan_degree` − `gan_own`）；第 4 段起才有，否则为 null。 */
   gan_root?: number | null
   zhi: string
   zhi_wx: string
@@ -534,7 +535,7 @@ export interface V2StepChart {
   pillars: V2ChartPillar[]
 }
 
-/** 结算过程中的一张快照（第 7 段「每一柱计算完成显示当前命盘」）。
+/** 结算过程中的一张快照（生克结算段「每一柱计算完成显示当前命盘」）。
  *
  *  `after` = 该实例结算完时依据行已产出的条数，前端据此把图插在对应算式之后。 */
 export interface V2StepChartPoint {
@@ -551,7 +552,7 @@ export interface V2Step {
   rulings?: string[]
   /** 该段结束时的命盘快照——第 1–8 段有，第 9/10 段（格局/取用）无。 */
   chart?: V2StepChart
-  /** 结算过程中的逐实例快照（仅第 7 段）。有它时前端不再重复贴段末那张。 */
+  /** 结算过程中的逐实例快照（仅生克结算段）。有它时前端不再重复贴段末那张。 */
   charts?: V2StepChartPoint[]
   traces: StepTrace[]
   result: string

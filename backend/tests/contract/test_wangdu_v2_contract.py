@@ -75,7 +75,8 @@ def test_steps_cover_full_derivation():
     """推演链须从**关系判定**一路到**三因素取用**——喜忌结论可逐段追溯（FR-050/SC-004）。"""
     s = _predict(BASE)["xi_yong"]["strength"]
     keys = [st["key"] for st in s["steps"]]
-    assert keys == ["relations", "stem_he", "effects", "month_coef", "tonggen", "static",
+    # 2026-09-16：五合挪到静态旺度之后；只有**换过字**的盘才有 static_he 段。
+    assert keys == ["relations", "effects", "month_coef", "tonggen", "static", "stem_he",
                     "stem_shengke", "total", "geju", "yongshen"], keys
     # 每一段都必须带规则说明，且取用段要给出结论
     for st in s["steps"]:

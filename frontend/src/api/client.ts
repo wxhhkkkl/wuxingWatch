@@ -32,7 +32,20 @@ export class ApiError extends Error {
   }
 }
 
-async function tryRefresh(): Promise<boolean> {
+/** 刷新令牌是一次性轮换的：并发 401 必须共用同一次刷新，
+ * 否则后到的那次会因旧令牌已作废而 401，被误判成登录失效。 */
+let refreshInFlight: Promise<boolean> | null = null
+
+function tryRefresh(): Promise<boolean> {
+  if (!refreshInFlight) {
+    refreshInFlight = doRefresh().finally(() => {
+      refreshInFlight = null
+    })
+  }
+  return refreshInFlight
+}
+
+async function doRefresh(): Promise<boolean> {
   const resp = await fetch('/api/auth/refresh', { method: 'POST', credentials: 'same-origin' })
   if (!resp.ok) return false
   const data = await resp.json()

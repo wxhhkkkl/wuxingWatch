@@ -200,7 +200,7 @@ describe('Home', () => {
     await flush()
     vm.openPillar('day')
     expect(vm.pillarPickerKey).toBe('day')
-    expect(vm.pillarModel).toEqual(['乙', '酉'])
+    expect(vm.pillarModel).toEqual(['戊', '午'])
   })
 
   // ---------- 性别选项 ----------

@@ -5,7 +5,10 @@ import { mockResult } from './fixtures'
 
 const back = vi.fn()
 const push = vi.fn()
-vi.mock('vue-router', () => ({ useRouter: () => ({ back, push }) }))
+vi.mock('vue-router', () => ({
+  useRouter: () => ({ back, push }),
+  useRoute: () => ({ query: {} }),
+}))
 
 import { useChartStore } from '../src/stores/chart'
 import StrengthDetail from '../src/pages/StrengthDetail.vue'
@@ -76,7 +79,7 @@ const v2Strength = {
           expression: '不透天干 ＋ 地支藏干 12 度 ＝ 12 度，× 月令系数 0.5（申月水为死）＝ 6 度' },
       ],
       result: '木 0；火 5.6；土 12；金 14；水 6' },
-    { key: 'total', title: '第 7 段 · 动态旺度与定级',
+    { key: 'total', title: '第 9 段 · 动态旺度与定级',
       rule: '按十一档定级', rulings: [],
       traces: [
         { target: '木', expression: '木：动态旺度 0 度', value: 0 },
@@ -253,7 +256,7 @@ describe('StrengthDetail — 推演分步展示', () => {
     expect(w.find('[data-testid="v2-step-total"]').exists()).toBe(true)
     expect(w.text()).toContain('第 1 段 · 关系判定')
     expect(w.text()).toContain('第 4 段 · 通根递减')
-    expect(w.text()).toContain('第 7 段 · 动态旺度与定级')
+    expect(w.text()).toContain('第 9 段 · 动态旺度与定级')
     // 不得再依赖 van-collapse 才能看到内容
     expect(w.findAll('.van-collapse-item').length).toBe(0)
   })
@@ -318,7 +321,7 @@ describe('StrengthDetail — 推演分步展示', () => {
 // 判定依据里的逐段命盘快照（steps[].chart）
 // ---------------------------------------------------------------
 
-/** 第 2 段（关系影响）的快照：一支变纯 + 一支藏干减力，用来验标记。 */
+/** 第 2 段（关系对藏干度数的影响）的快照：一支变纯 + 一支藏干减力，用来验标记。 */
 const CHART = {
   pillars: [
     { key: 'year', label: '年', gan: '戊', gan_wx: '土', gan_degree: 2,
@@ -425,7 +428,7 @@ describe('StrengthDetail — 判定依据的分段命盘快照（012）', () => 
     expect(day.find('.pillar-deg').text()).toBe('1.2')
   })
 
-  it('第 7 段按结算次序逐实例贴命盘，且不再重复贴段末那张', () => {
+  it('生克结算段按次序逐实例贴命盘，且不再重复贴段末那张', () => {
     const w = mountWith(withPoints())
     const step = w.find('[data-testid="v2-step-stem_shengke"]')
     expect(step.find('[data-testid="v2-step-chart-stem_shengke-1"]').exists()).toBe(true)
@@ -442,7 +445,7 @@ describe('StrengthDetail — 判定依据的分段命盘快照（012）', () => 
 })
 
 // ---------------------------------------------------------------
-// 第 2 段 · 天干五合（合化换字 / 合绊减力）
+// 第 6 段 · 天干五合（合化换字 / 合绊减力）——2026-09-16 起排在静态旺度**之后**
 // ---------------------------------------------------------------
 
 /** 带天干五合结果的快照：月干甲己合化土 → 甲变戊；时干合而不化 → 合绊。 */
@@ -467,12 +470,12 @@ const HE_CHART = {
   ],
 }
 
-/** 第 7 段（生克结算）带**逐实例快照**的样本。 */
+/** 生克结算段（第 8 段）带**逐实例快照**的样本。 */
 function withPoints() {
   const result = JSON.parse(JSON.stringify(mockResult))
   result.xi_yong.strength = v2Strength
   result.xi_yong.strength.steps = [
-    { key: 'stem_shengke', title: '第 7 段 · 生克结算（按实例）',
+    { key: 'stem_shengke', title: '第 8 段 · 生克结算（按实例）',
       rule: '逐实例「先受后施」', rulings: [],
       traces: [
         { target: '', expression: '木克土：年干甲 × 月干己 → 成数 -2/1', value: null },
@@ -494,17 +497,20 @@ function withStemHe() {
   for (const s of result.xi_yong.strength.steps) {
     if (s.key === 'stem_he' || s.key === 'relations') s.chart = HE_CHART
   }
-  result.xi_yong.strength.steps.unshift({
-    key: 'stem_he', title: '第 2 段 · 天干五合',
+  const he = {
+    key: 'stem_he', title: '第 6 段 · 天干五合（换字 + 合绊减力）',
     rule: '只论相邻紧贴的天干。合化成功的换成化神干支；合而不化的以合绊论。',
     rulings: ['C26-18（争合失败时的合绊减力比例）'],
     traces: [{ target: '', expression: '戊甲合化土成功：年干甲变戊', value: null }],
     result: '合化成功，换字：甲→戊',
-  })
+  }
+  // 新段序：五合排在 `static`（第 5 段）**之后**，不是数组最前（旧 fixture 曾 unshift）。
+  const at = result.xi_yong.strength.steps.findIndex((s: { key: string }) => s.key === 'static')
+  result.xi_yong.strength.steps.splice(at + 1, 0, he)
   return result
 }
 
-describe('StrengthDetail — 第 2 段 天干五合（012）', () => {
+describe('StrengthDetail — 第 6 段 天干五合（012）', () => {
   it('换字的干显示新字并标出原字与「合化」', () => {
     const w = mountWith(withStemHe())
     const year = w.find('[data-testid="v2-chart-year"]')

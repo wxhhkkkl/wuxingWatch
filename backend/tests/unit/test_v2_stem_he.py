@@ -42,10 +42,17 @@ def _pillar(step, key):
 # 段落结构
 # ---------------------------------------------------------------
 
-def test_stem_he_is_the_second_step():
-    """第 2 段紧随关系判定——地支先（条件②读改宗后的月令）、天干后。"""
-    r = pipeline.compute_strength(_chart("甲子", "丙寅", "戊辰", "庚申"))
-    assert [s["key"] for s in r["steps"]][:3] == ["relations", "stem_he", "effects"]
+def test_stem_he_sits_after_static_and_before_shengke():
+    """2026-09-16 起天干五合排在**静态旺度之后、生克之前**，其后紧跟「换字后重算静态」。"""
+    # 用**有合化换字**的盘——只有换过字才会有紧随其后的「换字后重算静态」段
+    r = pipeline.compute_strength(_chart("癸亥", "己未", "甲辰", "辛未"))
+    keys = [s["key"] for s in r["steps"]]
+    i = keys.index("stem_he")
+    assert keys[:i] == ["relations", "effects", "month_coef", "tonggen", "static"], keys
+    assert keys[i:i + 3] == ["stem_he", "static_he", "stem_shengke"], keys
+    # 未换字的盘（无五合）不产生该段
+    r2 = pipeline.compute_strength(_chart("甲子", "丙寅", "戊辰", "庚申"))
+    assert "static_he" not in [s["key"] for s in r2["steps"]]
 
 
 def test_stem_he_sees_both_original_and_swapped_gan():
@@ -130,8 +137,10 @@ def test_shang_1638_heban_lands_in_static():
     r = pipeline.compute_strength(_chart("辛酉", "壬辰", "己未", "甲戌"))
     line = _he_lines(r)[0]
     assert "合而不化" in line
-    assert "日干己 −4 成 → 0.6 度" in line and "时干甲 −2 成 → 0.8 度" in line, line
-    assert r["day_master_group"]["static"] == pytest.approx(9.24)
+    assert "日干己 −4 成" in line and "时干甲 −2 成" in line, line
+    # 2026-09-16 起合绊减**整组**（含通根）→ 9.8 × 0.6 = 5.88，
+    # 与 上 1638 的「（0.6+3+3）×1.4=9.24」相反，属有意分歧。
+    assert r["day_master_group"]["static"] == pytest.approx(5.88)
 
 
 @pytest.mark.parametrize("chart,red4,red2", [
@@ -141,11 +150,11 @@ def test_shang_1638_heban_lands_in_static():
     (("丙申", "甲午", "辛酉", "丙申"), "辛", "丙"),
 ])
 def test_heban_reduces_the_stem_itself_by_cheng(chart, red4, red2):
-    """合绊减的是**那个干本身**：−4 成 → 0.6 度、−2 成 → 0.8 度（书 上 1595/1948）。"""
+    """合绊减的是**那个干本身**：−4 成、−2 成（书 上 1595/1948）。"""
     r = pipeline.compute_strength(_chart(*chart))
     line = _he_lines(r)[0]
-    assert f"{red4} −4 成 → 0.6 度" in line, line
-    assert f"{red2} −2 成 → 0.8 度" in line, line
+    assert f"{red4} −4 成" in line, line
+    assert f"{red2} −2 成" in line, line
 
 
 # ---------------------------------------------------------------
@@ -161,8 +170,8 @@ def test_zhenghe_ties_go_to_heban_by_log_count():
     r = pipeline.compute_strength(_chart("丁未", "甲辰", "己亥", "甲戌"))
     assert r["stem_he"]["ban"] == {1: pytest.approx(0.9), 2: pytest.approx(0.2),
                                    3: pytest.approx(0.9)}
-    assert "月干甲 −1 成 → 0.9 度" in _he_lines(r)[0]
-    assert "日干己 −8 成 → 0.2 度" in _he_lines(r)[0]
+    assert "月干甲 −1 成" in _he_lines(r)[0]
+    assert "日干己 −8 成" in _he_lines(r)[0]
 
 
 def test_zhenghe_one_side_total_is_two_cheng():

@@ -108,22 +108,35 @@ def _chart(y, m, d, t):
             (("year", y), ("month", m), ("day", d), ("time", t))}
 
 
-def test_multiple_ke_on_same_element_add_up():
-    """同一受克者被两路相克时，两路**成数相加**，不取最大（书 上 2325）。
+def test_same_type_on_one_unit_takes_max_not_sum():
+    """同一单位被**同类**多路作用时取**最大**（《入门》1498「抓大放小」）。
 
-    两盘**地支相同、仅年干不同**（壬 vs 甲）：
-    - A「**壬**亥 丙午 丙午 壬亥」：火被**两个**壬水克（年壬→火、时壬→火）；
-    - B「**甲**亥 丙午 丙午 壬亥」：火只被时壬克（年干换成甲后变为木生火）。
-    故 A 的火行终值应**明显低于** B。
+    壬亥 丙午 丙午 壬亥：火被年干壬、时干壬**两路**相克，两路成数都是 1.3125，
+    火只按**一路**扣（24 → 20.85），**不是**两路相加。
+
+    > 别再引 书 上 2325——那条在**第三节「地支特殊生克」**，说的是「未土克酉金」这类
+    > **地支↔地支**的两路叠加，属**关系层**（`_adjusted_hidden` 的 effects 累加），
+    > 与结算层的「天干之间多路」不是一回事。C26-1 当初把它挪用到结算层是**引错了层**。
     """
     from services.bazi.v2 import pipeline
 
-    a = pipeline.compute_strength(_chart("壬亥", "丙午", "丙午", "壬亥"))
-    b = pipeline.compute_strength(_chart("甲亥", "丙午", "丙午", "壬亥"))
-    assert a["degrees"]["火"]["final"] < b["degrees"]["火"]["final"], \
-        "两路相克应相加——只取最大会让 A 与 B 相等"
-    assert any("相克：成数相加" in x for x in a["traces"]), \
-        "依据中须说明多路相克是相加"
+    r = pipeline.compute_strength(_chart("壬亥", "丙午", "丙午", "壬亥"))
+    joined = " ".join(r["traces"])
+    assert "火受克：月干丙、日干丙 24 → 20.85 度（取消耗最大的一路 1.3125 成）" in joined, joined
+    assert r["degrees"]["火"]["final"] > 20.0, "只取一路；若相加会再低一截"
+
+
+def test_different_receivers_each_get_their_own():
+    """「**不意味着戊土只能克壬水不能克子水**，这两者是同时进行的」——两个受方各受各的。
+
+    壬亥 丙午 丙午 壬亥：两个壬水是**两个单位**，都受自己那份 ZK（各自归 0）。
+    """
+    from services.bazi.v2 import pipeline
+
+    joined = " ".join(pipeline.compute_strength(
+        _chart("壬亥", "丙午", "丙午", "壬亥"))["traces"])
+    assert "主克者年干壬受克泄耗：6.3 → 0 度" in joined, joined
+    assert "主克者时干壬受克泄耗：6.3 → 0 度" in joined, joined
 
 
 # ---------------------------------------------------------------
@@ -201,8 +214,8 @@ def test_shang_747_day_master_loses_power_after_being_ke():
     > 书 上 747：「土还要受到乙木的克制，但由于**乙木先受辛金克制，乙木受克后没有生克权
     > 不能克戊土**，所以土的动态旺度也是 **14**（＝静态）」。
 
-    资格按**五行整体的动态度数**判（`_wx_has_power`）：日干乙被两路金克到 0 之后，
-    「木」的**整体动态**＝0.0 < 2.4、无强根、无生 → 失去生克权，「木克土」这一对不再发生，
+    资格按**片**的动态度数判（`_wx_has_power`，2026-09-17 起）：日干乙那片被两路金克到 0 之后，
+    该片动态＝0.0 < 2.4、无强根、无生 → 失去生克权，「木克土」这一对不再发生，
     土停在静态 15.5 上（书该例的 14 与本引擎静态的差属第 4/5 段，不在此层）。
     """
     from services.bazi.v2 import pipeline
@@ -211,50 +224,57 @@ def test_shang_747_day_master_loses_power_after_being_ke():
     assert r["static_scores"]["木"] == pytest.approx(3.0), "木整体静态 3.0（>2.4）"
     assert r["final_scores"]["木"] == 0.0, "被克后木整体动态归 0"
     joined = " ".join(r["traces"])
-    assert "木克土：主方日干乙（木）无生克权（整体动态 0 度" in joined, joined
+    assert "木克土：主方日干乙（木）无生克权（片动态 0 度" in joined, joined
     assert r["final_scores"]["土"] == pytest.approx(r["static_scores"]["土"]), \
         "土未被乙木克（书 上 747）"
 
 
-def test_qualification_is_element_wide_and_dynamic():
-    """资格看**五行整体**（不按实例），且取**结算当下的动态值**。
+def test_qualification_is_per_pian_and_dynamic():
+    """资格看**片**（不按五行合计），且取**该片结算当下的动态值**。
 
-    - 反例（五行整体不够）：书 上 986 例1（乙卯 戊子 己酉 丙寅）「**丙火**静态旺度太弱
-      （1.5度）…所以丙火没有生克权」——「火」整体 1.5 < 2.4，按整体判同样无资格 ✓；
-      同盘「土」被木克到 0，「整体动态 0 度」亦无资格 ✓。
-    - 正例（资格随结算变）：上 747 盘「木」静态 3.0 ≥ 2.4 本有资格，日干乙被克到 0 后
-      整体动态归 0 → 资格消失（见 `test_shang_747_...`）。若按**静态**整体判则恒有资格、
+    - 反例（片本身不够）：书 上 986 例1（乙卯 戊子 己酉 丙寅）「**丙火**静态旺度太弱
+      （1.5度）…所以丙火没有生克权」——时干丙那片 1.5 < 2.4、无强根、无生 → 无资格 ✓；
+      同盘「月干戊、日干己」那片被木克到 0，「片动态 0 度」亦无资格 ✓。
+    - 正例（资格随结算变）：上 747 盘日干乙那片静态 3.0 ≥ 2.4 本有资格，被克到 0 后
+      动态归 0 → 资格消失（见 `test_shang_747_...`）。若按**静态**判则恒有资格、
       上 747 复现不出来——弹性即在此。
+
+    > 2026-09-17 用户裁定：判据从「五行全盘合计」改为「**片**」（书 上 651 分片给数、
+    > 上 1008「戌土本身」）。原测试名 `..._element_wide_...` 与断言「整体动态」随之作废——
+    > 那一版按五行合计，会让同五行两片互相顶替、结果依赖遍历次序（研究见 C26-27）。
     """
     from services.bazi.v2 import pipeline
 
     r = pipeline.compute_strength(_chart("乙卯", "戊子", "己酉", "丙寅"))
     assert r["static_scores"]["火"] == pytest.approx(1.5), "（1 丙 + 寅丙2）×0.5"
     joined = " ".join(r["traces"])
-    assert "主方时干丙（火）无生克权（整体动态 1.5 度" in joined, joined
-    # 「同柱先、天干后」：土的同柱对先判，那时木还没克过来，土整体动态仍是 1.75 < 2.4
-    assert "主方月干戊、日干己（土）无生克权（整体动态 1.75 度" in joined, joined
+    assert "主方时干丙（火）无生克权（片动态 1.5 度" in joined, joined
+    # 「月干戊、日干己」那片先受木克（27.4286 成 → 归 0），到它自己那一轮时已无资格
+    assert "主方月干戊、日干己（土）无生克权（片动态 0 度" in joined, joined
 
 
-def test_sheng_cheng_numbers_add_up_within_one_batch():
-    """**同一相、同一批内的多路来生，成数相加**（不连乘）——与克侧同构。
+def test_same_type_on_one_unit_takes_max_on_the_sheng_side_too():
+    """受方侧同样**取最大**：戊戌 辛辰 癸酉 己寅 里月干辛受**两路**生
 
-    庚子 壬辰 壬子 庚子：日主组「月干壬、日干壬」在**同一受批**里同时受 年干庚 与
-    时干庚 之生，各 +1.986 成 → 一次施加 3.972 成：2 × (1+0.3972) = **2.794**。
-    （若连乘则为 2×1.1986×1.1986 = 2.874，可据此区分。）
+    （年干戊 土生金 6.78788 成、同柱月支辰本气戊 土生金 2.90909 成），
+    只按**影响最大的一路**增：8.25 → **13.85**；两路相加则到 16.25。
 
-    > 2026-09-11：同柱对与天干对分相后（`stem_layer` 的「同柱先、天干后」），
-    > 只有**同一相**内的多路作用才会合批；跨相是逐相施加。
-    > **2026-09-12（C26-20）换盘**：原用 `庚辰 壬寅 壬辰 庚寅`，成数基数改取「结算
-    > 当下的值」后，那里的水组在同柱相已被泄耗到 0.25 度，年干庚（1.4）超过其 4 倍
-    > → **不受生**，两路生都没了。换此盘（水组当相未被泄耗、且在 4 倍以内）。
+    > 2026-09-16 用户裁定：同一单位在同一类里取最大（《入门》1498「抓大放小」）。
+    > 此前本节写作「相加」，并把 书 上 2325 当作依据——那条实是**关系层**的地支
+    > 特殊生克（见 `test_same_type_on_one_unit_takes_max_not_sum` 的说明）。
+    >
+    > **2026-09-17 换盘**（原 甲子 丙子 丙子 甲辰）：片级资格后，那两个「甲」各是一片、
+    > 各 1.5 度、无强根无生 → 无生克权，生火那两路**不再发生**，验不出本条。换盘先例
+    > 见 research.md C26-17 五次修订（庚子 壬辰 壬子 庚子 → 甲子 丙子 丙子 甲辰）。
     """
     from services.bazi.v2 import pipeline
 
-    r = pipeline.compute_strength(_chart("庚子", "壬辰", "壬子", "庚子"))
+    r = pipeline.compute_strength(_chart("戊戌", "辛辰", "癸酉", "己寅"))
     joined = " ".join(r["traces"])
-    assert joined.count("成数 +1.986/4.53172") == 2, joined
-    assert "水受生：月干壬、日干壬 2 → 2.794 度" in joined, joined
+    assert joined.count("成数 +6.78788/0.589286") == 1, joined
+    assert joined.count("成数 +2.90909/1.375") == 1, joined
+    assert "金受生：月干辛 8.25 → 13.85 度（取最大的一路 6.78788 成）" in joined, joined
+    assert r["final_scores"]["金"] < 16.0, "取最大（13.85）；两路相加会到 16.25"
 
 
 # ---------------------------------------------------------------
@@ -284,13 +304,14 @@ def test_same_batch_pairs_ordered_by_pillar():
     > 故这条只决定**依据行的次序**，不改数值——`_Pair.ord` 即柱位序
     > （年-月 0 / 月-日 1 / 日-时 2；同柱取该柱下标）。
 
-    庚子 壬辰 壬子 庚子：日主组「月干壬、日干壬」在同一受批里收到两路生
-    —— 年干庚（年-月，ord 0）在前、时干庚（日-时，ord 2）在后。
+    甲子 丙子 丙子 甲辰：日主组「月干丙、日干丙」在同一受批里收到两路生
+    —— 年干甲（年-月，ord 0）在前、时干甲（日-时，ord 2）在后。
+    （同 `test_sheng_cheng_numbers_add_up_within_one_batch` 换盘，见其说明。）
     """
     from services.bazi.v2 import pipeline
 
-    r = pipeline.compute_strength(_chart("庚子", "壬辰", "壬子", "庚子"))
-    lines = [t for t in r["traces"] if t.startswith("金生水：") ]
+    r = pipeline.compute_strength(_chart("甲子", "丙子", "丙子", "甲辰"))
+    lines = [t for t in r["traces"] if t.startswith("木生火：")]
     assert len(lines) == 2, lines
-    assert lines[0].startswith("金生水：年干庚"), lines
-    assert lines[1].startswith("金生水：时干庚"), lines
+    assert lines[0].startswith("木生火：年干甲"), lines
+    assert lines[1].startswith("木生火：时干甲"), lines

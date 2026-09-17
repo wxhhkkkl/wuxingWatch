@@ -32,7 +32,8 @@
 **关系减力细则**：集中实现在 `ban.py`——三合/三会/半三合的**合绊之力**
 （本气 −0.5/−0.6/−0.25，中气 −0.25/−0.3/−0.125，余气 0/−0.15/0）、
 局内生克、六冲三类（生地冲/子午卯酉冲/墓库冲）、相刑两支与六害四组；
-天干五合合绊（弱方 −4 成、另一方 −2 成）在 `pipeline.stem_layer`。
+天干五合合绊的减力（**阴干那一方 −4 成**、另一方 −2 成，按该干所在**组**缩放）
+在 `stem_he.judge_stem_he` 判定、由 `pipeline._layers` 落码。
 
 **已知边界**：相刑的**数量阈值分支**（如「寅≥3 个可刑掉 1 巳」）与部分
 多支情形未覆盖，见 research.md 的开放项清单。2026-09-11 补入的三条各有其**已知缺口**：
@@ -775,7 +776,8 @@ def _zuozhi_wx(zhi: str | None, month_zhi: str) -> str:
 
 def _gan_hua_one(g1: str, c1: _Col, g2: str, c2: _Col, month_zhi: str, hua: str,
                  final: dict | None = None, cols: list | None = None,
-                 effective_month: str | None = None) -> bool:
+                 effective_month: str | None = None,
+                 weak_deg: float | None = None) -> bool:
     """**指定化神**下的天干五合化成功判定（书《上》第二节 天干生克 等五节同构模板）。
 
     各节条件（下表为书里逐条原文的归纳）：
@@ -816,12 +818,15 @@ def _gan_hua_one(g1: str, c1: _Col, g2: str, c2: _Col, month_zhi: str, hua: str,
             or (z2 == hua and z1 in (sheng_hua, hua))):
         return False
     # ④ 弱方不能独立
+    # 书 上 1588：「4. **甲**必须处于不能独立的状态（指**动态旺度**）」——说的是**那个字**。
+    # `weak_deg` 由调用方按**弱方所在实例（连片天干组）的动态终值**解析好传进来
+    # （`stem_he.judge_stem_he` 走这条路）；不给时才回落到 `final` 的**五行合计**
+    # （`geju._day_master_he_hua` 仍走回落，见 research C26-22 的遗留项）。
     weak_gan = _WEAK_PARTY.get(pair)
-    if final is not None and weak_gan:
-        weak_wx = GAN_WUXING.get(weak_gan, "")
-        weak_deg = final.get(weak_wx, 0.0)
-        if weak_deg >= WEAK_LINE:
-            return False                      # 弱方能独立 → 不合化
+    if weak_deg is None and final is not None and weak_gan:
+        weak_deg = final.get(GAN_WUXING.get(weak_gan, ""), 0.0)
+    if weak_deg is not None and weak_deg >= WEAK_LINE:
+        return False                          # 弱方能独立 → 不合化
     # ⑤ 燥湿（只甲己一组）——须判**全盘**，故由调用方传入完整 `cols`；未传则跳过该条件。
     if cols and pair == frozenset("甲己"):
         if _too_wet(cols=cols, month_zhi=month_zhi) or _too_dry(

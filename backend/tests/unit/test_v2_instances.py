@@ -164,24 +164,24 @@ def test_shang_1008_dm_root_is_day_group_root():
     assert gj["type"] == "zheng", "有强根 → 不从弱"
 
 
-def test_shang_1008_xu_earth_degree_but_power_follows_element():
-    """戌土本身 = 3×0.7 = **2.1** 度 ✓（书 上 1008），**但生克权按「土」整体判 → 与书有意分歧**。
+def test_shang_1008_xu_earth_itself_has_no_power():
+    """书 上 1008 例1：**戌土本身** = 3×0.7 = **2.1 度** → **无生克权** → 不能克壬水。
 
-    > 书 上 1008 例1：「**戌土本身**=3×0.7=2.1度，**无生克权**，所以不能克壬水，戌土不受壬水耗」
-    > ——书按**该支自己**的度数判资格。
+    > 书 上 1008 例1：「**戌土本身**=3×0.7=2.1度，**无生克权**，所以不能克壬水，
+    > 戌土不受壬水耗」
 
-    本引擎依 2026-09-11 口径：**生克权看五行全盘静态合计**（此处「土」= (1 戊 + 戌戊3 + 午己2)
-    ×0.7 = **4.2** ≥ 2.4 → 有生克权），成数仍按**戌土本身 2.1 度**算。故「戌土克壬水」会发生，
-    与书该例相反——**已登记为有意分歧**（research.md C26-17 修订）。
+    生克权自 2026-09-17 起**按片判**（不再按五行全盘合计，见 `_wx_has_power`），
+    故本例与书一致——原「按「土」整体 4.2 度判 → 有资格 → 与书有意分歧」的口径已废
+    （research.md C26-27 落码）。
     """
     r = pipeline.compute_strength(_pillars("壬戌", "壬子", "戊辰", "戊午"))
     inst = r["degrees"]["土"]["instances"]
     xu = next(i for i in inst if i["kind"] == "benqi" and i["col"] == "year")
     assert xu["gan"] == "戊"
     assert xu["static"] == pytest.approx(2.1), "3×0.7（书 上 1008）"
-    assert r["static_scores"]["土"] == pytest.approx(4.2), "五行整体静态（资格判据）"
+    assert r["static_scores"]["土"] == pytest.approx(4.2), "五行整体静态（契约口径，仍照给）"
     tr = " ".join(t["expression"] for t in _step(r, "stem_shengke")["traces"])
-    assert "同柱土克水：年支戌本气戊（2.1 度）" in tr, tr
+    assert "同柱土克水：主方年支戌本气戊（土）无生克权（片动态 2.1 度" in tr, tr
     assert r["final_scores"]["土"] >= 0
 
 

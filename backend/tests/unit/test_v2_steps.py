@@ -28,16 +28,27 @@ def _step(r, key):
     return None
 
 
+def _pillar(chart: dict, key: str) -> dict:
+    """命盘快照里某一柱的字（`chart["pillars"]` 按柱位取）。"""
+    return next(p for p in chart["pillars"] if p["key"] == key)
+
+
 # ---------------------------------------------------------------
 # 段落结构
 # ---------------------------------------------------------------
 
 def test_steps_have_fixed_order():
     """`steps` 键序列固定（FR-058）——顺序即管线顺序。"""
-    r = pipeline.compute_strength(_chart("甲子", "丙寅", "戊辰", "庚申"))
+    # 2026-09-16：天干五合从第 2 段挪到静态旺度**之后**；**只有真的换过字**才另立
+    # 「换字后重算静态」（static_he）一段——合化不成功（全是合绊或无五合）时不产生。
+    r = pipeline.compute_strength(_chart("甲子", "丙寅", "戊辰", "庚申"))   # 无五合
     assert [s["key"] for s in r["steps"]] == [
-        "relations", "stem_he", "effects", "month_coef", "tonggen",
-        "static", "stem_shengke", "total"]
+        "relations", "effects", "month_coef", "tonggen", "static",
+        "stem_he", "stem_shengke", "total"]
+    r2 = pipeline.compute_strength(_chart("癸亥", "己未", "甲辰", "辛未"))  # 甲己合化土
+    assert [s["key"] for s in r2["steps"]] == [
+        "relations", "effects", "month_coef", "tonggen", "static",
+        "stem_he", "static_he", "stem_shengke", "total"]
 
 
 def test_every_step_has_required_fields():
@@ -234,430 +245,43 @@ def test_tonggen_connected_run_matches_degrees():
 
     书 上 621（乾 戊寅 乙丑 庚寅 己卯）：乙木在日、时支（寅+卯连成一片 8 度）
     按**最近的那一支**递减 0.5 → 7.5 度；加年支寅的 2.5 度，实际通根 = 10 度，
-    静态旺度 =（1＋10）×0.7 = 7.7。
+    静态旺度 =（1＋10）×0.7 = **7.7**。
 
-    **本盘另有乙庚合绊**：月干乙与日干庚相邻五合，化金条件③要求「一支为金、另一支
-    为土或金」——乙坐丑（土）可以，但庚坐寅（木）不行，故不化，以合绊论（书 上 1595
-    「乙木减去 4 成的力量即 1 个乙木减去 0.4 度变为 0.6 度」）。2026-09-12 起合绊减力
-    进静态旺度，故木 =（0.6＋10）×0.7 = **7.42**，不再是书 上 621 的 7.7。
-
-    > 上 621 是**第一节**的通根教学例（书里自标「人造八字」），成文早于第四节的
-    > 天干五合，故按「天干乙木本身 1 度」算——同 C26-19 的简化口径。
+    > 2026-09-16 起该盘另有乙庚合绊（乙减 4 成、庚减 2 成），且**减力按「整组的
+    > 静态旺度」计**——故书的 7.7 落在**第 5 段（原字）**，第 7 段（合绊后）为
+    > `7.7 × 0.6 = 4.62`；`degrees[木].root` 也随之整组缩放为 `10 × 0.6 = 6`。
     """
     from services.bazi.v2 import degrees
 
-    chart = _chart("戊寅", "乙丑", "庚寅", "己卯")
-    r = pipeline.compute_strength(chart)
-    assert r["degrees"]["木"]["root"] == 10.0
-    assert r["static_scores"]["木"] == 7.42
-    c = degrees.build_cols(chart)
-    assert degrees.stem_tonggen(c, 1, "丑") == 10.0, "degrees 路径同值"
-
-
-def test_month_coef_trace_shows_muku_branch_state():
-    """四库临月令时，`month_coef` 段须给出**分支表**判定后的状态（上 1044-1107）。
-
-    `辛酉 戊戌 丁卯 庚戌`：戌月未见辰冲、丑刑 → 书 上 1062 ② 档，**火以相论（1.5）、
-    金以死论（0.5）**；原实现在基础表写死火休（0.8）、金相（1.5），是 ③ 档。
-    """
-    r = pipeline.compute_strength(_chart("辛酉", "戊戌", "丁卯", "庚戌"))
-    tr = " ".join(t["expression"] for t in _step(r, "month_coef")["traces"])
-    assert "火在戌月为相（系数 1.5）" in tr, tr
-    assert "金在戌月为死（系数 0.5）" in tr, tr
-    assert r["degrees"]["火"]["coef"] == 1.5
-    assert r["degrees"]["金"]["coef"] == 0.5
-    assert r["static_scores"]["火"] == 11.25   # 书 883：(1+6+1−0.5)×1.5
-
-
-@pytest.mark.parametrize("chart,fire,metal", [
-    # 戌月②「戌土没有受到辰冲或丑刑：火…以相论，金…以死论」（上 1062）——默认档
-    (("甲子", "甲戌", "戊寅", "庚申"), 1.5, 0.5),
-    # 戌月③/①：戌受辰冲 → 「火…以休论，金…以相论」（上 1060 / 上 1064）
-    (("甲辰", "甲戌", "戊寅", "庚申"), 0.8, 1.5),
-    # 戌月④b：1 戌受 1 丑刑、火党众 1.5 < 3 → 火休、金相（上 1066）
-    (("乙丑", "甲戌", "丁丑", "庚申"), 0.8, 1.5),
-    # 辰月受戌冲：木取「余气与囚」平均（1.15）、火休、金相（上 1049/1055）
-    (("甲戌", "甲辰", "戊寅", "庚申"), 0.8, 1.5),
-    # 未月④「1个未土受1子害：火…一般以相论」（上 1092）
-    (("甲子", "辛未", "戊寅", "庚申"), 1.5, 0.5),
-])
-def test_muku_branch_reaches_production_path(chart, fire, metal):
-    """生产路径（`pipeline.compute_strength`）确实按墓库分支表取月令系数（上 1044-1107）。
-
-    这些用例覆盖「戌月默认档取错」这一缺陷（S3）：原实现在基础表写死火休（0.8）、
-    金相（1.5），是**要辰冲或 2 丑刑 1 戌**才成立的 ③ 档。
-    """
-    r = pipeline.compute_strength(_chart(*chart))
-    assert r["degrees"]["火"]["coef"] == fire, r["degrees"]["火"]["state"]
-    assert r["degrees"]["金"]["coef"] == metal, r["degrees"]["金"]["state"]
-
-
-def test_muku_ctx_reads_wei_fire_zero():
-    """未④ 的「未中丁火变为 0」由**施加关系影响后**的月支藏干推出（上 1092）。
-
-    书 上 1092：「1个未土受1子害或1亥拱：火生于此月或大运一般以相论
-    （**若未中丁火变为0**，则火处于临界状态，既不当令也不失令，既不增力也不减力）」。
-    """
-    from services.bazi.v2 import degrees
-    from services.bazi.v2.pipeline import _muku_ctx
-
-    cols = degrees.build_cols(_chart("甲子", "辛未", "戊寅", "庚申"))
-    rel = {"established": [], "rejected": []}
-    assert _muku_ctx(rel, cols, "未", {"month": [("己", 3.0), ("丁", 0.0)]}).huo_zero is True
-    assert _muku_ctx(rel, cols, "未", {"month": [("己", 3.0), ("丁", 2.0)]}).huo_zero is False
-    # 非未月不带此标记
-    assert _muku_ctx(rel, cols, "戌", {"month": [("戊", 3.0)]}).huo_zero is False
-
-
-@pytest.mark.parametrize("tier", [4, 6, 10, 12, 13])
-def test_all_hua_tiers_can_change_month_wuxing(tier):
-    """**层级表不得漏 tier**：4/6/10/12/13 任一层的化成功都须能改月令五行。
-
-    踩过两次同一个坑（`hua` 置空表、`_month_effective_wx` 表都漏过 10 生地半三合），
-    故对每一层各造一例断言。
-    """
-    cases = {
-        4: ("丙子", "丙子", "戊丑", "庚亥"),     # 亥子丑会水（月支子入局）
-        6: ("丙子", "丙子", "戊辰", "庚申"),     # 申子辰合水（月支子入局）
-        10: ("丙子", "丙子", "戊子", "庚申"),    # 申子半合水（月支子入局）
-        12: ("丙子", "丙子", "戊子", "庚丑"),    # 子丑六合（月支子入局）
-        13: ("丙子", "丙子", "戊子", "庚辰"),    # 子辰墓地半合水（月支子入局）
-    }
-    r = pipeline.compute_strength(_chart(*cases[tier]))
-    hua = [e for e in r["relations"]["established"]
-           if e["tier"] == tier and e.get("hua") and "month" in e["cols"]]
-    assert hua, f"该例应构成 tier {tier} 的含月支合化"
-    assert r["month_effective_wx"] == hua[0]["hua"]
-
-
-# ---------------------------------------------------------------
-# 文案可读性：判定依据不得出现引擎内部术语
-# ---------------------------------------------------------------
-
-# 这些词对「读判定依据的人」毫无意义：
-#   - `tier N` 是引擎内部的十八级编号；
-#   - delta / scale / remove 是 effects 的内部模式名；
-#   - `**` 是 Markdown 记号，页面按纯文本渲染，会原样显示出来；
-#   - `[` / `]` 一般是 Python 列表字面量漏进了文案。
-_JARGON = ("tier ", "effects", "delta", "scale", "remove", "**", "{", "}", "[", "]")
-
-
-def _texts(node, path=""):
-    """递归取出 payload 里所有**面向读者的字符串**及其路径。
-
-    跳过 `.key` / `.type` 等机读字段——它们是枚举标识，不是文案。
-    """
-    if isinstance(node, str):
-        if not (path.endswith(".key") or path.endswith(".type")):
-            yield path, node
-    elif isinstance(node, dict):
-        for k, v in node.items():
-            yield from _texts(v, f"{path}.{k}")
-    elif isinstance(node, list):
-        for i, v in enumerate(node):
-            yield from _texts(v, f"{path}[{i}]")
-
-
-@pytest.mark.parametrize("chart", [
-    ("甲子", "丙寅", "戊辰", "庚申"),
-    ("壬申", "戊申", "戊午", "壬子"),
-    ("丙子", "庚午", "辛未", "己巳"),
-    ("戊申", "庚申", "戊午", "戊午"),
-    ("癸亥", "甲子", "丁酉", "辛亥"),
-])
-def test_xiyong_output_is_free_of_engine_jargon(chart):
-    """整份喜忌结论是给人读的文案，不得夹带引擎内部术语。
-
-    覆盖 `steps` 六段与 `ge_ju` / `yong_shen` / `layers` 的说明文字——它们在页面上
-    与判定依据同屏展示，同样要求可读。
-    """
-    r = xiyong_analysis_v2(chart[2][0], _chart(*chart))
-    for path, text in _texts(r):
-        for bad in _JARGON:
-            assert bad not in text, f"{path} 含内部术语「{bad}」：{text}"
-
-
-@pytest.mark.parametrize("chart", [
-    ("甲子", "丙寅", "戊辰", "庚申"),
-    ("丙子", "庚午", "辛未", "己巳"),
-])
-def test_rejected_reasons_are_self_contained(chart):
-    """未论（rejected）的理由要能独立读懂——不能只剩一个内部编号。
-
-    `reason` 同时被命盘图汇总直接渲染，故它自己就得点出是哪个字、被谁占了。
-    """
-    r = pipeline.compute_strength(_chart(*chart))
-    for e in r["relations"]["rejected"]:
-        assert "tier" not in e["reason"], e["reason"]
-        assert any(c in e["reason"] for c in "子丑寅卯辰巳午未申酉戌亥"), e["reason"]
-
-
-# ---------------------------------------------------------------
-# degrees 契约（data-model §3）
-# ---------------------------------------------------------------
-
-@pytest.mark.parametrize("field", ["base", "after_relations", "root", "static", "final", "coef", "state"])
-def test_degrees_contract_fields(field):
-    """`degrees[wx]` 须含 data-model §3 的全部字段。"""
-    r = pipeline.compute_strength(_chart("甲子", "丙寅", "戊辰", "庚申"))
-    for wx in r["degrees"]:
-        assert field in r["degrees"][wx], (wx, field)
-
-
-def test_degrees_non_negative():
-    """校验规则 R-6：各阶段度数均 ≥ 0。"""
-    r = pipeline.compute_strength(_chart("甲子", "丙寅", "戊辰", "庚申"))
-    for wx, d in r["degrees"].items():
-        for f in ("base", "after_relations", "root", "static", "final"):
-            assert d[f] >= 0, (wx, f, d[f])
-
-
-def test_final_not_greater_than_reasonable():
-    """校验规则 R-7 的弱化版：动态不应超过静态的极大倍数（出现数倍膨胀即疑似结算 bug）。
-
-    生克只会小幅增减；出现数倍膨胀说明结算有 bug。
-    """
-    r = pipeline.compute_strength(_chart("甲子", "丙寅", "戊辰", "庚申"))
-    for wx, d in r["degrees"].items():
-        if d["static"] > 0:
-            assert d["final"] <= d["static"] * 3, f"{wx} 动态 {d['final']} 远超静态 {d['static']}"
-
-
-# ---------------------------------------------------------------
-# T036 · 依据条目引用口径裁定编号（FR-056）
-# ---------------------------------------------------------------
-
-def test_steps_carry_rulings_field():
-    """每段须含 `rulings` 列表（可为空），列出该段生效的口径裁定编号。"""
-    r = pipeline.compute_strength(_chart("甲子", "丙寅", "戊辰", "庚申"))
-    for s in r["steps"]:
-        assert "rulings" in s, s["key"]
-        assert isinstance(s["rulings"], list)
-
-
-def test_ruling_ids_are_locatable():
-    """`rulings` 中的编号须符合 `C26-n` / `O-n` 形式，可在 research.md 定位。"""
-    import io as _io
-    import re
-    from pathlib import Path
-
-    r = pipeline.compute_strength(_chart("甲子", "丙寅", "戊辰", "庚申"))
-    ids = [rid.split("（")[0] for s in r["steps"] for rid in s["rulings"]]
-    assert ids, "至少应有一条裁定被引用"
-    for rid in ids:
-        assert re.fullmatch(r"(C26-\d+|O-\d+|C\d+)", rid), f"编号格式异常：{rid}"
-
-    doc = Path(__file__).resolve().parents[3] / "specs" / "012-rebuild-wangdu-xiyong" / "research.md"
-    text = _io.open(doc, encoding="utf-8").read()
-    for rid in ids:
-        assert rid in text, f"{rid} 无法在 research.md 定位"
-
-
-def test_key_rulings_are_referenced():
-    """关键裁定须出现在对应段落：O-5 在关系段、C26-7 在静态段、C26-9 在生克段。"""
-    r = pipeline.compute_strength(_chart("甲子", "丙寅", "戊辰", "庚申"))
-    joined = " ".join(" ".join(s["rulings"]) for s in r["steps"])
-    for rid in ("O-5", "C26-7", "C26-8", "C26-9"):
-        assert rid in joined, f"{rid} 未被任何段落引用"
-
-
-# ---------------------------------------------------------------
-# 喜忌推演的两段（格局判定 + 三因素取用）
-# ---------------------------------------------------------------
-
-def _wrapper_chart(y, m, d, t):
-    return {k: (None if v is None else {"gan": v[0], "zhi": v[1]})
-            for k, v in (("year", y), ("month", m), ("day", d), ("time", t))}
-
-
-def test_xiyong_derivation_steps_present():
-    """喜忌结论（格局/用神）必须有自己的推演段落——否则不可追溯（SC-004）。
-
-    这两段发生在**包装层**（`pipeline` 的 steps 只到「动态旺度与定级」）。
-    """
-    from services.bazi.v2 import xiyong_analysis_v2
-
-    r = xiyong_analysis_v2("戊", _wrapper_chart("戊申", "庚申", "戊午", "戊午"))
-    keys = [s["key"] for s in r["steps"]]
-    assert keys[-2:] == ["geju", "yongshen"], keys
-
-
-def test_geju_step_cites_rulings_and_basis():
-    """格局段须给出判定依据并引用口径裁定编号（FR-056）。"""
-    from services.bazi.v2 import xiyong_analysis_v2
-
-    r = xiyong_analysis_v2("戊", _wrapper_chart("戊申", "庚申", "戊午", "戊午"))
-    step = next(s for s in r["steps"] if s["key"] == "geju")
-    assert step["traces"], "格局段须有判定依据"
-    assert any("C26-5" in x for x in step["rulings"]), "应引用从格判据的裁定编号"
-    assert "格局" in step["result"]
-
-
-def test_yongshen_step_shows_three_factors():
-    """取用段须体现三因素（格局方向 / 日干之性 / 暖湿燥）并给出喜忌与层次。
-
-    > 2026-09-11：原用例「戊申 庚申 戊午 戊午」在撤销「抓大放小」后，
-    > 三路**土生金**（年干-月干、月干-日干、日柱同柱）各自结算，土被抽干至 0，
-    > 取用改走「太弱」分支，不再出现日干之性排序。改用「戊戌 甲寅 戊午 丙辰」。
-    """
-    from services.bazi.v2 import xiyong_analysis_v2
-
-    r = xiyong_analysis_v2("戊", _wrapper_chart("戊戌", "甲寅", "戊午", "丙辰"))
-    step = next(s for s in r["steps"] if s["key"] == "yongshen")
-    text = " ".join(t["expression"] for t in step["traces"])
-    # 三因素写在该段的 `rule` 里（恒在）；`traces` 只看**实际走到**的那条分支——
-    # 本盘日主 30.24 度已太旺，走「太旺不能从强只取泄」，不经日干之性的候选排序，
-    # 故不能在 traces 里强求「之性」字样。
-    assert "格局" in step["rule"] and "日干五行之性" in step["rule"]
-    assert "寒暖湿燥" in step["rule"]
-    assert "调候" in text, "取用段须含调候判定"
-    assert "用神层次" in step["result"]
-
-
-def test_steps_cover_full_derivation_from_relations_to_yongshen():
-    """整条推演链：关系 → 影响 → 月令 → 通根 → 静态 → 生克 → 动态 → 格局 → 取用。"""
-    from services.bazi.v2 import xiyong_analysis_v2
-
-    r = xiyong_analysis_v2("戊", _wrapper_chart("戊申", "庚申", "戊午", "戊午"))
-    assert [s["key"] for s in r["steps"]] == [
-        "relations", "stem_he", "effects", "month_coef", "tonggen",
-        "static", "stem_shengke", "total", "geju", "yongshen"]
-
-
-# ---------------------------------------------------------------
-# 逐段命盘快照（`steps[].chart`）——每一段结束时每个字是多少度、哪几个字变了
-# ---------------------------------------------------------------
-
-_WANGDU_KEYS = ("relations", "stem_he", "effects", "month_coef", "tonggen",
-                "static", "stem_shengke", "total")
-
-
-def _pillar(chart: dict, key: str) -> dict:
-    return next(p for p in chart["pillars"] if p["key"] == key)
-
-
-def _wx_hidden_sum(chart: dict, wx: str) -> float:
-    return round(sum(h["degree"] for p in chart["pillars"]
-                     for h in p["hidden"] if h["wx"] == wx), 3)
-
-
-def test_wangdu_steps_carry_a_chart_and_downstream_do_not():
-    """第 1–7 段各带一张命盘快照；第 8/9 段（格局 / 取用）不改变度数，故不带。"""
-    r = xiyong_analysis_v2("戊", _wrapper_chart("甲子", "丙寅", "戊辰", "庚申"))
-    for s in r["steps"]:
-        if s["key"] in _WANGDU_KEYS:
-            assert [p["key"] for p in s["chart"]["pillars"]] == \
-                ["year", "month", "day", "time"], s["key"]
-        else:
-            assert "chart" not in s, s["key"]
-
-
-def test_chart_of_three_pillar_chart_has_three_columns():
-    """缺时柱时快照只出三柱（不补占位柱）。"""
-    r = pipeline.compute_strength(_chart("甲子", "丙寅", "戊辰", None))
-    assert [p["key"] for p in _step(r, "relations")["chart"]["pillars"]] == \
-        ["year", "month", "day"]
-
-
-@pytest.mark.parametrize("ps", [
-    ("甲子", "丙寅", "戊辰", "庚申"),
-    ("甲子", "丙寅", "戊寅", "戊午"),      # 寅午半合化火：三支变纯
-])
-def test_chart_step1_is_the_untouched_table_and_step2_carries_the_effects(ps):
-    """第 1 段的藏干合计 = `degrees[wx].base` 剥掉天干那部分；第 2 段 = `after_relations`。
-
-    这两条把快照钉在契约上——快照不是另算一份，就是管线里那两张表本身。
-    """
-    from services.bazi.constants import GAN_WUXING
-
-    r = pipeline.compute_strength(_chart(*ps))
-    c1 = _step(r, "relations")["chart"]
-    c2 = _step(r, "effects")["chart"]
-    cols = [(k, v) for k, v in zip(("year", "month", "day", "time"), ps)]
-
-    for wx, d in r["degrees"].items():
-        n_stem = sum(1 for _, v in cols if GAN_WUXING[v[0]] == wx)
-        assert _wx_hidden_sum(c1, wx) == pytest.approx(d["base"] - n_stem, abs=1e-6), wx
-        assert _wx_hidden_sum(c2, wx) == pytest.approx(d["after_relations"], abs=1e-6), wx
-    # 第 1 段是原局：天干各 1 度，且没有任何「字变」标记
-    for p in c1["pillars"]:
-        assert p["gan_degree"] == 1.0
-        assert all(h["change"] is None for h in p["hidden"]), p["key"]
-
-
-def test_chart_marks_a_whole_branch_that_became_pure():
-    """整支合化成功 → 藏干只剩纯化神一条、标「变纯」、支的有效五行改为化神，note 带原字。"""
-    r = pipeline.compute_strength(_chart("甲子", "丙寅", "戊寅", "戊午"))
-    for step_key in ("effects", "total"):
-        c = _step(r, step_key)["chart"]
-        for key in ("month", "day", "time"):
-            p = _pillar(c, key)
-            assert p["zhi_effective_wx"] == "火", (step_key, key)
-            assert len(p["hidden"]) == 1 and p["hidden"][0]["change"] == "变纯"
-            assert p["hidden"][0]["wx"] == "火"
-            assert "原藏" in p["note"], p["note"]
-        # 未参与合化的年支不动
-        assert _pillar(c, "year")["zhi_effective_wx"] == "水"
-        assert _pillar(c, "year")["note"] is None
-
-
-def test_chart_marks_hidden_stem_gain_and_loss():
-    """藏干被关系增力/减力时标出来（比较基准是原始表，故各段标记一致）。"""
-    r = pipeline.compute_strength(_chart("甲子", "丙寅", "戊辰", "庚申"))
-    c2 = _step(r, "effects")["chart"]
-    marks = {(p["key"], h["gan"]): h["change"]
-             for p in c2["pillars"] for h in p["hidden"] if h["change"]}
-    assert marks, "本盘应有被关系改动的藏干"
-    assert all(m in ("增力", "减力", "新增", "归零", "变纯") for m in marks.values())
-    # 标记在各段一致（第 2 段与第 7 段逐位相同）
-    c7 = _step(r, "total")["chart"]
-    marks7 = {(p["key"], h["gan"]): h["change"]
-              for p in c7["pillars"] for h in p["hidden"] if h["change"]}
-    assert marks == marks7
-
-
-def test_chart_static_stage_shows_group_own_and_root():
-    """第 5 段起：天干主数 = 该干所在**连片组**的旺度（生克算式里真正用的那个数），
-    另给 `gan_own`（自身旺度）与 `gan_root`（根），三者恒有 主数 = 自身 + 根。
-
-    藏干度 = 第 3 段原值 × 月令系数（与主数无关）。
-    """
-    r = pipeline.compute_strength(_chart("戊申", "庚申", "戊午", "戊午"))
-    c2 = _step(r, "effects")["chart"]
-    c5 = _step(r, "static")["chart"]
-    grp_of = {k: g for g in r["stem_groups"] for k in g["cols"]}
-    for p in c5["pillars"]:
-        assert p["gan_degree"] == pytest.approx(grp_of[p["key"]]["static"]), p["key"]
-        assert p["gan_own"] + p["gan_root"] == pytest.approx(p["gan_degree"]), p["key"]
-        # 自身旺度 = 1 个干 × 月令系数（无合绊）；根 = 主数 − 自身
-        assert p["gan_own"] == pytest.approx(r["degrees"][p["gan_wx"]]["coef"]), p["key"]
-        src = {h["gan"]: h["degree"] for h in _pillar(c2, p["key"])["hidden"]}
-        for h in p["hidden"]:
-            assert h["degree"] == pytest.approx(src[h["gan"]] * r["degrees"][h["wx"]]["coef"],
-                                                abs=1e-3)
-    # 书 上 651：日干戊、时干戊连成一片 → 同一组、同一个主数；年干戊另算
-    assert _pillar(c5, "day")["gan_degree"] == 6.4
-    assert _pillar(c5, "time")["gan_degree"] == 6.4
-    assert _pillar(c5, "year")["gan_degree"] == 5.6
-
-
-def test_chart_degree_keeps_the_ban_mark():
-    """合绊标记看的是**生度数**（`gan_own` 里的那一份），不是主数。
-
-    `甲子 己卯 戊午 庚申`：年甲合绊 0.8 → 自身 0.8×卯月木旺 2.0 = 1.6，仍是「合绊」；
-    时庚未参与合绊，主数 2.8、自身 0.7（1×卯月金囚），不带标记。
+    r = pipeline.compute_strength(_chart("戊寅", "乙丑", "庚寅", "己卯"))
+    st = _step(r, "static")
+    assert dict((t["target"], t["value"]) for t in st["traces"])["木"] == pytest.approx(7.7),         "第 5 段按原字——正是书 上 621 的 7.7"
+    # 本盘**只有合绊、没有合化换字** → 不产生「换字后重算静态」段；
+    # 缩放后的值（7.7 × 0.6 = 4.62）挂在第 6 段的结论行里。
+    assert "static_he" not in [x["key"] for x in r["steps"]]
+    res6 = _step(r, "stem_he")["result"]
+    assert "木 4.62" in res6, res6
+    assert r["degrees"]["木"]["root"] == pytest.approx(10), "契约通根＝第 4 段（原字）"
+
+
+def test_heban_scales_the_whole_group():
+    """合绊的减力按**整组的静态旺度**计（2026-09-16 用户裁定，与 上 1595/1638/1948 相反）。
+
+    `甲子 己卯 戊午 庚申`：甲减 2 成、己减 4 成。第 5 段（原字）木 14 土 2.5；
+    第 7 段（合绊后）木 `14×0.8=11.2`、土 `2.5×0.6=1.5`——**整组一起缩**，
+    含各自那一组的天干与通根。
     """
     r = pipeline.compute_strength(_chart("甲子", "己卯", "戊午", "庚申"))
-    c5 = _step(r, "static")["chart"]
-    year, time_ = _pillar(c5, "year"), _pillar(c5, "time")
-    assert year["gan"] == "甲" and year["gan_change"] == "合绊"
-    assert year["gan_own"] == pytest.approx(1.6) and year["gan_root"] == pytest.approx(12.0)
-    assert time_["gan_change"] is None
-    assert time_["gan_own"] == pytest.approx(0.7)
-    # 月干己与日干戊同组（连片）→ 同一个主数，但各自的自身旺度不同
-    assert _pillar(c5, "month")["gan_degree"] == _pillar(c5, "day")["gan_degree"] == 2.3
-    assert _pillar(c5, "month")["gan_own"] == pytest.approx(0.3)
-    assert _pillar(c5, "day")["gan_own"] == pytest.approx(0.5)
+    assert r["stem_he"]["ban_cheng"] == {0: 2.0, 1: 4.0}
+    s5 = dict((t["target"], t["value"]) for t in _step(r, "static")["traces"])
+    # 本盘只有合绊、没有合化换字 → **不产生「换字后重算静态」段**，
+    # 缩放后的值挂在第 6 段的结论行里（`_he_result`）。
+    assert "static_he" not in [s["key"] for s in r["steps"]]
+    res6 = _step(r, "stem_he")["result"]
+    assert "合绊后静态" in res6, res6
+    assert s5["木"] == pytest.approx(14), "第 5 段是原字静态"
+    assert s5["土"] == pytest.approx(2.5), "第 5 段是原字静态"
+    assert "木 11.2" in res6 and "土 1.5" in res6, res6
 
 
 def test_chart_has_no_stem_root_note():
@@ -703,12 +327,91 @@ def test_chart_points_cover_the_settlement_order():
 
 
 def test_chart_group_degree_tracks_settlement():
-    """第 7 段逐实例快照：主数与根取**结算当下**的值，逐张变化；自身只在组被抽干时才跟着见底。"""
+    """第 7 段快照：现在是**两个阶段**（生批完成 / 克批完成），主数与根随之变化。"""
     r = pipeline.compute_strength(_chart("甲子", "丙寅", "戊寅", "戊午"))
     pts = _step(r, "stem_shengke")["charts"]
+    assert [c["label"] for c in pts] == ["生批完成", "克批完成"], \
+        [c["label"] for c in pts]
     year = [_pillar(c["chart"], "year") for c in pts]
-    assert [p["gan_degree"] for p in year] == [1.4, 1.4, 2.15, 2.15, 0.0]
-    # 根随主数走，且恒有 主数 = 自身 + 根、根 ≥ 0
+    # 年干甲：生批里被「木生火」泄耗 16.25 成 → 0
+    assert [p["gan_degree"] for p in year][-1] == pytest.approx(0.0)
+    # 不变量：主数 = 自身 + 根，且两者非负
     for p in year:
         assert p["gan_own"] + p["gan_root"] == pytest.approx(p["gan_degree"])
         assert p["gan_root"] >= 0 and p["gan_own"] >= 0
+
+
+def test_static_stage_snapshot_matches_its_own_result():
+    """**第 5 段（静态旺度·原字）的命盘快照必须与同段 `result` 同口径**——都不含合绊。
+
+    丁卯 乙巳 庚辰 丁亥：乙庚合而不化（乙 −4 成、庚 −2 成）。第 5 段还没走到五合，
+    故 result 是原字（木 7.2 / 金 1.0）、快照也该是原字（乙 7.2 / 庚 1.0）。
+    旧实现把 `ban` 一路传进快照，于是同段里 result 说 7.2、快照标着「合绊」显示 4.32。
+
+    不变量：**透天干的那几个五行，快照里主数汇总 == `static_scores`**
+    （不透干者其合计来自地支，快照的天干栏本就没有它）。
+    """
+    from services.bazi.constants import GAN_WUXING
+
+    for chart in (("丁卯", "乙巳", "庚辰", "丁亥"), ("癸亥", "己未", "甲辰", "辛未")):
+        r = pipeline.compute_strength(_chart(*chart))
+        st = _step(r, "static")
+        assert not any(p["gan_change"] for p in st["chart"]["pillars"]),             f"{chart}：第 5 段未到五合，不该有合绊/换字标记"
+        by_wx: dict[str, float] = {}
+        for p in st["chart"]["pillars"]:
+            by_wx[GAN_WUXING[p["gan"]]] =                 by_wx.get(GAN_WUXING[p["gan"]], 0.0) + p["gan_degree"]
+        # 只核**透天干**的五行——不透干者其合计来自地支（快照的天干栏本就没有它）。
+        for wx, val in by_wx.items():
+            assert val == pytest.approx(r["static_scores"][wx]),                 f"{chart}：{wx} 快照汇总 {val} ≠ static_scores {r['static_scores'][wx]}"
+
+
+def test_no_heban_in_any_snapshot_before_the_wuhe_stage():
+    """**整类**不变量：五合（第 6 段）之前**每一段**的快照都不得带合绊/换字。
+
+    合绊是第 6 段的产物。第 1–5 段的快照必须是**原字视图**（干=原局、未合绊），否则同一段
+    的 `result` 与 `chart` 会给出两个不同的数（曾出现「第 2 段 result 说原字、快照标着合绊」，
+    逐个补了三次都没堵住——故此处按**段序切一刀**，而不是逐段点名）。
+    """
+    for chart in (("丁卯", "乙巳", "庚辰", "丁亥"),     # 合绊（乙庚）
+                  ("癸亥", "己未", "甲辰", "辛未"),     # 合化（甲己）
+                  ("甲子", "丙寅", "戊辰", "庚申")):    # 无五合
+        r = pipeline.compute_strength(_chart(*chart))
+        keys = [s["key"] for s in r["steps"]]
+        i_he = keys.index("stem_he")
+        for st in r["steps"][:i_he]:
+            marks = [p for p in st["chart"]["pillars"] if p.get("gan_change")]
+            assert not marks, f"{chart}｜{st['title']}：五合之前不该有合绊/换字标记：{marks}"
+            for p in st["chart"]["pillars"]:
+                assert p["gan"] == p.get("gan_original") or p.get("gan_original") is None,                     f"{chart}｜{st['title']}：五合之前不该换字"
+        # 第 6 段（五合）**起**才允许出现
+        he = r["steps"][i_he]
+        if r["stem_he"]["established"]:
+            assert any(p.get("gan_change") for p in he["chart"]["pillars"]),                 f"{chart}：有合绊/合化却没在第 6 段快照里标出来"
+
+
+def test_wuhe_stage_snapshot_shows_the_group_static():
+    """第 6 段（天干五合）的快照主数＝**上一段（第 5 段）的组静态旺度**经整组缩放。
+
+    丁卯 乙巳 庚辰 丁亥（乙庚合绊：乙 −4 成、庚 −2 成）：
+
+    | 段 | 乙组主数 | 自身 | 根 |
+    |---|---|---|---|
+    | 第 5 段（原字） | 7.2 | 0.8 | 6.4 |
+    | 第 6 段（合绊后） | **4.32** = 7.2×0.6 | 0.48 | 3.84 |
+
+    合绊作用的对象是**上一段的组静态旺度**（含通根那一份）。旧实现把逐干度数（乙 0.6、
+    庚 0.8）塞进主数——乙 0.6 既不是「1 个干」也不是「组值」（组值 7.2×0.6 = 4.32），
+    与该段结论行的「合绊后静态：木 4.32」自相矛盾。
+    """
+    r = pipeline.compute_strength(_chart("丁卯", "乙巳", "庚辰", "丁亥"))
+    s5 = {p["key"]: p for p in _step(r, "static")["chart"]["pillars"]}
+    s6 = {p["key"]: p for p in _step(r, "stem_he")["chart"]["pillars"]}
+
+    assert s5["month"]["gan_degree"] == pytest.approx(7.2), "第 5 段：乙组原字静态"
+    assert s6["month"]["gan_degree"] == pytest.approx(7.2 * 0.6),         "第 6 段：乙组 = 上一段组静态 × 0.6（减 4 成），不是「1 个干」的 0.6"
+    assert s6["day"]["gan_degree"] == pytest.approx(1.0 * 0.8), "庚组 = 1.0 × 0.8"
+    # 组缩了，组的「自身」也要同缩，`主数 = 自身 + 根` 才与组的实际根一致
+    assert s6["month"]["gan_own"] == pytest.approx(0.8 * 0.6)
+    assert s6["month"]["gan_root"] == pytest.approx(6.4 * 0.6)
+    for p in s6.values():
+        assert p["gan_own"] + p["gan_root"] == pytest.approx(p["gan_degree"])

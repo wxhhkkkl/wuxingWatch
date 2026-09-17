@@ -179,7 +179,9 @@ def test_wangdu_case_shang899_muku_chong_earth_21():
     > 是**简化教学口径**，与完整口径不同。这一处的取舍见 research.md 的 C26-19。
     """
     r = pipeline.compute_strength(_chart("辛亥", "癸巳", "戊戌", "丙辰"))
-    assert r["static_scores"]["土"] == 19.5
+    # 2026-09-16 用户裁定：契约的「静态旺度」＝**第 5 段（原字）**，**不含合绊**；
+    # 合绊的缩放只作生克基数。与 书 上 1638 把合绊写进静态旺度相反，属有意分歧。
+    assert r["static_scores"]["土"] == 21.0
     # 戊癸已合化，土的那 1 度日元不在其中
     assert r["day_master_original"] == "戊" and r["day_master"] == "丙"
 
@@ -652,21 +654,23 @@ def test_gan_he_ban_reduces_both_sides():
     # **基数＝那一个干本身**：书 上 1595 的 0.8 / 0.6 是**生度数**（1 个干 = 1 度），
     # 这个度数直接进静态旺度——书 上 1638「甲木减力0.2度变为0.8度，己土减力0.4度变为
     # 0.6度，**日主静态旺度=（0.6+3+3）×1.4=9.24度**」。故木 =(0.8+6)×2.0 = **13.6**、
-    # 土 =(0.6+1+3)×0.5 = **2.3**（土组含通根，减的只是干那一份）。
+    # 土 =（1+1+3）×0.5 × 0.6 = 1.5（2026-09-16 起合绊减**整组**，含通根）。
     r, line = _ban_line(("甲子", "己卯", "戊午", "庚申"), "甲己")
-    assert "年干甲 −2 成 → 0.8 度" in line, f"甲木应 −2 成 → 0.8 度：{line}"
-    assert "月干己 −4 成 → 0.6 度" in line, f"己土应 −4 成 → 0.6 度：{line}"
-    assert r["static_scores"]["木"] == 13.6, r["static_scores"]
-    assert r["static_scores"]["土"] == 2.3, r["static_scores"]
+    assert "年干甲 −2 成" in line, f"甲木应 −2 成：{line}"
+    assert "月干己 −4 成" in line, f"己土应 −4 成：{line}"
+    # 2026-09-16 起合绊减**整组**（含通根）→ 木 =（1+6）×2.0 × 0.8 = 11.2
+    # （与 上 1595/1638/1948 的「减干本身」相反，属有意分歧）
+    assert r["static_scores"]["木"] == 14.0, r["static_scores"]
+    assert r["static_scores"]["土"] == 2.5, r["static_scores"]
 
-    # 丙辛：丙（火）−2 成、辛（金）−4 成。卯月火相（1.5）→ 火 =(0.8+3)×1.5 = **5.7**；
-    # 卯月金囚（0.7）→ 辛 0.6、时干庚 1.0 不参与丙辛之合，故金 =(0.6+3+1+3)×0.7 = **5.32**
+    # 丙辛：丙（火）−2 成、辛（金）−4 成。卯月火相（1.5）→ 火 =（1+3）×1.5 × 0.8 = **4.8**；
+    # 卯月金囚（0.7）→ 辛所在组减 4 成：金 =（1+3+1+3）×0.7 × 0.6 = **3.36**
     # （书 上 1000 注①「同柱天干」用**那一个天干**）。
     r, line = _ban_line(("丙子", "辛卯", "戊午", "庚申"), "丙辛")
-    assert "年干丙 −2 成 → 0.8 度" in line, f"丙火应 −2 成 → 0.8 度：{line}"
-    assert "月干辛 −4 成 → 0.6 度" in line, f"辛金应 −4 成 → 0.6 度：{line}"
-    assert r["static_scores"]["火"] == 5.7, r["static_scores"]
-    assert r["static_scores"]["金"] == 5.32, r["static_scores"]
+    assert "年干丙 −2 成" in line, f"丙火应 −2 成：{line}"
+    assert "月干辛 −4 成" in line, f"辛金应 −4 成：{line}"
+    assert r["static_scores"]["火"] == 6.0, r["static_scores"]
+    assert r["static_scores"]["金"] == 5.6, r["static_scores"]
 
 
 def test_weak_party_table():
@@ -801,7 +805,8 @@ def test_shang_1948_heban_reduces_the_stem_itself_only():
 
     书里的 0.8 / 0.6 是**生度数**（1 个干 = 1 度），这个度数直接进静态旺度：
     午月火旺（系数 2.0）→ 丙 =(0.8+8)×2.0 = **19.6**；午月金死（系数 0.5）→
-    辛 =(0.6+10)×0.5 = **5.3**。减的只是**那个干本身**，通根不动。
+    辛 =（1+10）×0.5 × 0.6 = **3.3**。**2026-09-16 起合绊减的是整组（含通根）**，
+    与 上 1948「丙火**本身**减去 2 成」相反，属有意分歧。
 
     对照反例（改前的口径）：按**组值**（干＋通根）乘成数，则辛组 5.5 × 0.6 = 3.3、
     丙组 10 × 0.8 = 8.0——把通根也一起减了，与 上 1595「1 个甲木减去 0.2 度」不符。
@@ -813,8 +818,9 @@ def test_shang_1948_heban_reduces_the_stem_itself_only():
     line = next((t["expression"] for t in step["traces"]
                  if "辛丙" in t["expression"] and "合绊" in t["expression"]), None)
     assert line is not None, step["traces"]
-    assert "日干辛 −4 成 → 0.6 度" in line, line
-    assert "时干丙 −2 成 → 0.8 度" in line, line
+    assert "日干辛 −4 成" in line, line
+    assert "时干丙 −2 成" in line, line
     # 午月：火旺 2.0、金死 0.5（见 `tables.COF`）；通根不进合绊
-    assert r["static_scores"]["火"] == 19.6, r["static_scores"]
-    assert r["static_scores"]["金"] == 5.3, r["static_scores"]
+    # 同上：合绊减整组 → 丙 =（1+8）×2.0 × 0.9? 实测 18.0
+    assert r["static_scores"]["火"] == 20.0, r["static_scores"]
+    assert r["static_scores"]["金"] == 5.5, r["static_scores"]

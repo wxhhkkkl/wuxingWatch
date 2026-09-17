@@ -56,7 +56,7 @@ onMounted(async () => {
     <van-action-sheet v-model:show="showMenu" :actions="menuActions" @select="onEdit" />
     <van-loading v-if="loading" class="loading" />
     <template v-else-if="record">
-      <ChartDisplay :result="record.chart_result" />
+      <ChartDisplay :result="record.chart_result" :record-id="record.id" />
     </template>
   </div>
 </template>

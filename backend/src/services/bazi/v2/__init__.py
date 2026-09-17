@@ -98,8 +98,11 @@ def xiyong_analysis_v2(day_master: str, pillars: dict, da_yun: list | None = Non
 
     # 喜忌推演的两段——`pipeline` 的 steps 只到「动态旺度与定级」，
     # 格局判定与三因素取用发生在包装层，故在此追加，使**喜忌结论也可追溯**。
+    # 追加两段的**段号接在旺度段之后**——旺度段数是动态的（8 段，有合化换字时 9 段），
+    # 写死「第 8/9 段」会与旺度段撞号（曾出现两个「第 8 段」并排显示）。
     r["steps"] = list(r["steps"]) + _xiyong_steps(
-        gj=gj, ys=ys, tiaohou=ys.get("tiaohou"), dm=day_master, dm_wx=dm_wx)
+        gj=gj, ys=ys, tiaohou=ys.get("tiaohou"), dm=day_master, dm_wx=dm_wx,
+        first_no=len(r["steps"]) + 1)
 
     return {
         "engine": "wangdu-v2",
@@ -204,8 +207,12 @@ def xiyong_analysis(day_master: str, pillars: dict, da_yun: list | None = None,
 
 
 def _xiyong_steps(*, gj: dict, ys: dict, tiaohou: dict | None,
-                  dm: str, dm_wx: str) -> list[dict]:
-    """喜忌推演的追加段落：**格局判定** + **三因素取用**（FR-050 / SC-004）。"""
+                  dm: str, dm_wx: str, first_no: int = 9) -> list[dict]:
+    """喜忌推演的追加段落：**格局判定** + **三因素取用**（FR-050 / SC-004）。
+
+    `first_no` 为这两段在**整条 steps 里**的起始段号——旺度段的段数是动态的
+    （8 段；有合化换字时 9 段），故由调用方按实际长度传入，不写死。
+    """
     def _tr(target, expr, value=None):
         return {"target": target, "expression": expr, "value": value}
 
@@ -236,7 +243,7 @@ def _xiyong_steps(*, gj: dict, ys: dict, tiaohou: dict | None,
                         (("第一", tier.get("first")), ("第二", tier.get("second")),
                          ("第三", tier.get("third"))) if v) or "无")
     return [
-        {"key": "geju", "title": "第 8 段 · 格局判定",
+        {"key": "geju", "title": f"第 {first_no} 段 · 格局判定",
          "rule": "按化格 → 从强 → 从印 → 从弱 → 正格的顺序逐项判定，先满足者即为本命格局；"
                  "如果都不满足，就是正格。判从格时一律以「动态旺度」为准；"
                  "所谓「不能独立」指该五行同时满足三条：旺度在太弱以下、没有强根（不足 2.4 度）、"
@@ -248,7 +255,7 @@ def _xiyong_steps(*, gj: dict, ys: dict, tiaohou: dict | None,
                    + (f"（化{gj['hua_shen']}）" if gj.get("hua_shen") else "")
                    + (f"，所从之神 {'、'.join(gj['cong_targets'])}" if gj.get("cong_targets") else "")
                    + f"；日主{'能' if gj.get('neng_duli') else '不能'}独立"},
-        {"key": "yongshen", "title": "第 9 段 · 三因素取用",
+        {"key": "yongshen", "title": f"第 {first_no + 1} 段 · 三因素取用",
          "rule": "取用神看三个方面：① 格局定方向（正格扶抑 / 从格从势 / 化格从化神）；"
                  "② 日干五行之性排优先次序；③ 寒暖湿燥（调候）必要时改取。"
                  "候选只看紧贴日主的三个位置——月干、日支、时干（书《下》第一节 用神总则）。",
@@ -279,3 +286,42 @@ def _direction_readout(r: dict) -> dict:
         "health": {},
         "note": "方向解读为算法生成的参考信息，仅供参考",
     }
+
+
+# ---------------------------------------------------------------
+# 引擎口径版本
+# ---------------------------------------------------------------
+
+# 参与版本哈希的模块——**改了旺度口径就会变**的那几个。
+_VERSION_MODULES = (
+    "pipeline.py", "stem_he.py", "shengke.py", "degrees.py",
+    "relations.py", "tables.py", "geju.py", "xiyong_v2.py", "ban.py",
+)
+_version_cache: str | None = None
+
+
+def engine_version() -> str:
+    """**引擎口径版本**——核心模块源码的 sha1 前 12 位。
+
+    用来判断一条**已保存的排盘记录**还算不算数：记录里存了当时的版本号，读的时候
+    版本不符就重算（见 `api/routers/records.py`）。
+
+    > **为什么用源码哈希而不是手写常量**：口径一改（改结算次序、改合绊基数、改段序），
+    > 手写常量极容易忘记 bump，而「库里存着旧口径的结果、界面显示旧段号」正是要防的
+    > 那个失败模式。源码变了哈希就变，不需要人记得。
+    > 代价：改注释也会触发重算——无害，只是多跑一次纯函数。
+    """
+    import hashlib
+    import pathlib
+
+    global _version_cache
+    if _version_cache is None:
+        v2_dir = pathlib.Path(__file__).resolve().parent
+        h = hashlib.sha1()
+        for name in _VERSION_MODULES:
+            try:
+                h.update((v2_dir / name).read_bytes())
+            except OSError:                      # 缺文件（打包/裁剪部署）就跳过
+                continue
+        _version_cache = h.hexdigest()[:12]
+    return _version_cache

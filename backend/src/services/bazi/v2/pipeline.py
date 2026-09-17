@@ -41,6 +41,7 @@ effects 落到各支**藏干度数**上（`_adjusted_hidden`），再由 `_stati
 from __future__ import annotations
 
 from dataclasses import dataclass
+import re
 from typing import TYPE_CHECKING
 
 from services.bazi.constants import GAN_WUXING, GAN_YIN_YANG, KE, SHENG, ZHI_WUXING
@@ -173,7 +174,8 @@ def _static_scores(cols: list[degrees.Col], hidden: dict[str, list[tuple[str, fl
     月令系数一律经 `tables.month_coef_state`：库支按刑冲害分支取状态（上 1044-1107），
     月令被合化成功时取「原月令状态」与「化神状态」的**平均**（上 638）。
 
-    `ban` 为天干五合**合绊**后各干自身的度数（柱位下标 → 度数）；书 上 1638
+    `ban` 为天干五合**合绊**后各干自身的度数（柱位下标 → 度数，**已废弃**——
+    现按整组缩放，调用点一律传 None）；书 上 1638
     「甲木减力0.2度变为0.8度，己土减力0.4度变为0.6度，**日主静态旺度=
     （0.6+3+3）×1.4=9.24度**」——减力后就该喂给静态旺度。
     """
@@ -547,6 +549,8 @@ def _node_static(node) -> float:
 
 
 def _node_final(node) -> float:
+    if _batch_frame is not None and _batch_frame.owns(node):
+        return _batch_frame.read(node)
     return node.final if isinstance(node, degrees.StemGroup) else node["final"]
 
 
@@ -555,43 +559,85 @@ def _node_wx(node) -> str:
 
 
 def _set_node_final(node, value: float) -> None:
+    if _batch_frame is not None and _batch_frame.owns(node):
+        _batch_frame.write(node, value)        # 环族批内：先进缓冲，`commit()` 才落盘
+        return
     if isinstance(node, degrees.StemGroup):
         node.final = round(value, 3)
     else:
         node["final"] = round(value, 3)
 
 
-def _root_of(node) -> float:
-    """该实例的**乘系数通根**——本气藏干实例本身就是地支里的根，不另计通根。"""
-    return node.root_scaled if isinstance(node, degrees.StemGroup) else 0.0
+_batch_frame: "_BatchFrame | None" = None
 
 
-def _wx_has_power(wx: str, *, final_deg: float, root_scaled: dict[str, float],
-                  fed: set[str]) -> bool:
-    """生克权（书 上 980）——**按该五行「当前的整体动态度数」判**，不按实例。
+class _BatchFrame:
+    """环族整块结算期间的读写缓冲（`_phase_order` 给出多于一个节点的批时启用）。
+
+    批内每个节点都以**进入本批时**的值起算，彼此看不见对方本批的改动——《入门》1499
+    「这两者没有先后顺序，是**同时进行的**」。自己的改动对自己可见（「先受后施」：
+    受完再拿受后的值去施——书 上 747 / 1502），故 `read` 按**本节点**区分：
+    只有正在结算的那个节点看得到自己未提交的值，看别人一律是进入本批时的值。
+
+    节点的真实值在 `commit()` 之前**不动**，故批内读到的也自然是进入本批的快照
+    ——与「段内同一快照」同义。
+    """
+
+    def __init__(self, nodes: list):
+        self.nodes = {id(n): n for n in nodes}
+        self.entry = {id(n): _node_final(n) for n in nodes}
+        self.pending: dict[int, float] = {}
+        self.current: int | None = None
+
+    def owns(self, node) -> bool:
+        return id(node) in self.nodes
+
+    def read(self, node) -> float:
+        i = id(node)
+        if i == self.current and i in self.pending:
+            return self.pending[i]              # 本节点自己的改动可见
+        return self.entry[i]                    # 其余一律看进入本批时的值
+
+    def write(self, node, value: float) -> None:
+        self.pending[id(node)] = round(value, 3)
+
+    def commit(self) -> None:
+        for i, n in self.nodes.items():
+            v = self.pending.get(i)
+            if v is not None:
+                _set_node_final(n, v)
+
+
+def _wx_has_power(*, degree: float, root_scaled: float, fed: bool) -> bool:
+    """生克权（书 上 980）——**按「片」判**：紧贴连成一片的那一串天干，或同柱本气。
 
     书 上 980：「生克权＝太弱以上（静态旺度≥2.4度）**或**有强根（≥2.4度为强根）
-    **或**有生」。三条一律取**该五行**的量：
+    **或**有生」。三条一律取**这一片**的量：
 
-    - 第一条＝**全盘合计的动态旺度** `final_deg`（＝该五行全部实例的当前终值之和，
-      结算中随实例被生克而变——见 `stem_layer._wx_final`）；
-    - 第二条＝**乘月令系数**的总根 `root_scaled[wx]`（书 上 1000「原局的根」，不随结算变）；
-    - 第三条＝「有生」`fed`（书 上 982「无生（或虽有若无）」）。
+    - 第一条＝该片的**当前动态终值**（结算中随它被生克而变，故「先受后施」的时序真正
+      生效——书 上 747「乙木先受辛金克制，**乙木受克后没有生克权**不能克戊土」）；
+    - 第二条＝该片**乘月令系数**的总根（书 上 1000「原局的根」，不随结算变）；
+    - 第三条＝该片**有生**（书 上 982「无生（或虽有若无）」）。
 
-    **「整体判资格、本身算成数」的分工**（2026-09-11 口径）：生克权看五行整体的**动态**值，
-    成数则按**当前那个天干／地支自身**的度数算（`shengke.cheng` 的 `main_deg`/`sub_deg`）。
-
-    > 与 上 980 公式字面的「静态旺度」有出入：这里取**动态**，好让「先受后施」的时序
-    > 真正生效——书 上 747「乙木先受辛金克制，**乙木受克后没有生克权不能克戊土**」正是
-    > 「受完再生克」的算法；若用静态，木整体恒 ≥2.4，该例复现不出来。
-    >
-    > **仍与书有意分歧的一处**（登记于 `research.md` C26-17 修订）：书 上 1008 例1
-    > 「**戌土本身** = 3×0.7 = 2.1 度，无生克权，所以不能克壬水」按**该支自己**的度数判；
-    > 本口径按五行整体判，该例的资格会翻转。
+    > **为什么判「片」而不是「五行全盘合计」**（2026-09-17 用户裁定，**已落码**）：
+    > 书给旺度是**按片**给的——上 651 同一个「土」**分两片给数**（日/时干戊土 6.4、
+    > 年干戊土 5.6），两数并存、**不合并**；上 1008 更直接写「**戌土本身** = 3×0.7
+    > = 2.1 度，无生克权」。按全盘合计判会让同五行的两片**互相顶替**：一片借另一片的
+    > 度数凑够 2.4 出手，泄力后又把对方否掉——谁先谁后决定谁被否，结算结果因此依赖
+    > 遍历次序（实测 300 随机盘打乱次序有 7~12 盘终值改变）。改按片后 **0/300**。
     """
-    return (final_deg >= shengke.WEAK_LINE
-            or root_scaled.get(wx, 0.0) >= shengke.STRONG_ROOT
-            or wx in fed)
+    return (degree >= shengke.WEAK_LINE
+            or root_scaled >= shengke.STRONG_ROOT
+            or fed)
+
+
+def _node_root_scaled(node) -> float:
+    """该**片**乘月令系数的总根（书 上 1000「原局的根」）——生克权第二条比的是它。
+
+    天干组取组通根×系数；**同柱本气本身就是地支里的根**，故取它自己的度数
+    （书 上 1008「戌土本身 = 3×0.7 = **2.1 度**」——那个数已含月令系数）。
+    """
+    return node.root_scaled if isinstance(node, degrees.StemGroup) else node["static"]
 
 
 def _node_has_root(node) -> bool:
@@ -616,10 +662,19 @@ def _node_qi_state(node, qi_by_wx: dict[str, bool]) -> str:
 
 @dataclass
 class _Pair:
-    """一对「主方 → 受方」的生克——**整场结算里只结算一次**。
+    """一对「主方 → 受方」的生克——**整场结算里只结算一次**，且拆成两段施加。
 
-    结算的时刻由 `stem_layer` 的实例次序决定：先轮到的那个端点负责它——
-    端点作**受方**时走「受批」，作**主方**时走「施生批 / 施克批」。
+    | 段 | 由谁做 | 做什么 |
+    |---|---|---|
+    | **定档** | **主方**当轮（`_settle_giving`） | 按当下度数算好本对的成数、**当场自负减力**（ZS／ZK） |
+    | **施加** | **受方**当轮（`_settle_receiving`） | 把本相各路入边的成数**相加后一次施加** |
+
+    为什么必须拆开（2026-09-11，C26-17 五次修订）：相内依赖序要求「主方先轮到」，
+    于是主方必然早于受方。若让主方当轮就把成数施加给受方，同一受方的多路入边会被
+    **逐个**施加（连乘），破坏书 上 2325「酉金一共减去 2.5+1.25=3.75 度」的**相加**；
+    若改为让主方整对推迟，则主方当轮的泄耗不入账，后一轮的克会用未耗的值，
+    破坏《入门》1498「戊土生完庚辛金之后，还有余力，才能去克壬水」的**先生后克**。
+    拆成「主方定档自负 + 受方一次施加」后，两条同时成立。
     """
 
     main: object
@@ -629,7 +684,12 @@ class _Pair:
     mgan: str                      # 与对方**紧贴**的那个干（比阴阳用）
     sgan: str
     ord: int = 0                   # 柱位序（年-月 0、月-日 1、日-时 2；同柱取该柱下标）
-    settled: bool = False
+    settled: bool = False          # 主方已**定档**（成数已算、主方减力已施加）
+    sub_c: float = 0.0             # 本对给受方的**有符号**成数（生 + / 克 −），待受方受批施加
+    main_c: float = 0.0            # 本对给主方的减力成数（留痕用）
+    mdeg_at: float = 0.0           # 定档时主方的度数（依据行要用它）
+    sdeg_at: float = 0.0           # 定档时受方的度数（受方在受批前不变，故与受批时同值）
+    applied: bool = False          # 受方侧已施加
 
     # 注：`mgan`/`sgan` 取的是「**紧贴处**的那一个干」，不是「该五行的第一个干」——
     # 一对相邻柱 (i, i+1) 的阴阳比的就是 `cols[i].gan` 与 `cols[i+1].gan`；同柱对取该柱的干。
@@ -664,142 +724,292 @@ def _settlement_order(cols: list[degrees.Col], grps: list[degrees.StemGroup],
     return picked
 
 
-def _settle_receiving(node, pairs: list[_Pair], *, tag: str, static: dict[str, float],
-                      has_power, wx_final, qi_by_wx: dict[str, bool],
-                      traces: list[str]) -> None:
-    """① **受批**：本实例作为受方的全部未结算对——生入与克入**同时**结算。
+def _reach(adj: dict[int, list[int]], src: int) -> set[int]:
+    """`src` 在 `adj` 里可达的节点集（**含 src 自身**）。节点数 ≤10，BFS 足够。"""
+    seen, stack = {src}, [src]
+    while stack:
+        for v in adj.get(stack.pop(), ()):
+            if v not in seen:
+                seen.add(v)
+                stack.append(v)
+    return seen
 
-    成数按双方**结算当下的度数**比（C26-20）——《四柱预测学入门》第二节 生克循环法则的
-    两道算例都取当下值而非静态：入门 1498「戊土生完庚辛金之后，**还有余力（13.2 度）**，
-    还能去克壬水和子水……戊土减去=3.25/**13.2**×3=0.74 成」；入门 1506「乙木……变为
-    **9.9 度**……戊土静态旺度为 2.5 度，**被 9.9 度的乙木克制**，要减去 9.9/2.5×4=15.84 成」。
-    同一个受方把各路成数**相加后一次施加**——书 上 2325「酉金一共减去 2.5+1.25=3.75 度」；
-    主方的减力同样按主方汇总、一次施加。
-    主方**有没有生克权**看的是它所属**五行**（`power`，书 上 980 的整体口径）。
+
+def _cycle_batches(rest: list, outs: dict[int, list[int]], pos: dict[int, int]) -> list[list]:
+    """环族（Kahn 卡住后剩下的节点）→ **按强连通分量整块分批**。
+
+    互相依赖的字分不出先后，唯一自洽的解是**同一快照同时结算**——《入门》1499
+    「这两者没有先后顺序，是**同时进行的**」。分量**之间**仍有依赖，故在分量图上
+    再跑一遍 Kahn，保证「作用于我者先」（法则③）。
+
+    不用「把剩余节点整块当一个分量」的省事写法：那样会把**环的下游**（依赖环、
+    但自身不在环里）也拉进同一批，它便读不到环结算后的值。
     """
-    # 同批内**同生/同克**按柱位序排：先年对月、后月对日、再日对时（2026-09-11 定）。
-    # 成数按静态、且本批求和后一次施加，故这只是**依据行的次序**，不改数值。
-    recv = sorted((p for p in pairs
-                   if not p.settled and p.sub is node and p.tag == tag),
-                  key=lambda p: p.ord)
+    import bisect
+
+    ids = {id(n) for n in rest}
+    adj = {id(n): [b for b in outs[id(n)] if b in ids] for n in rest}
+    reach = {id(n): _reach(adj, id(n)) for n in rest}
+    comp_of: dict[int, int] = {}
+    comps: list[list] = []
+    for n in rest:                                     # rest 已按 base 序
+        if id(n) in comp_of:
+            continue
+        mem = [m for m in rest
+               if id(m) in reach[id(n)] and id(n) in reach[id(m)]]
+        ci = len(comps)
+        comps.append(mem)
+        for m in mem:
+            comp_of[id(m)] = ci
+    # 分量图上跑 Kahn，tie-break 仍用 `base` 位置（取分量内最小者）
+    key = [min(pos[id(m)] for m in mem) for mem in comps]
+    indeg = [0] * len(comps)
+    edges: dict[int, list[int]] = {}
+    for n in rest:
+        for b in adj[id(n)]:
+            if comp_of[b] != comp_of[id(n)]:
+                edges.setdefault(comp_of[id(n)], []).append(comp_of[b])
+                indeg[comp_of[b]] += 1
+    ready = sorted((c for c in range(len(comps)) if indeg[c] == 0), key=lambda c: key[c])
+    out: list[list] = []
+    while ready:
+        c = ready.pop(0)
+        out.append(comps[c])
+        for d in edges.get(c, ()):
+            indeg[d] -= 1
+            if indeg[d] == 0:
+                bisect.insort(ready, d, key=lambda x: key[x])
+    return out
+
+
+def _phase_order(base: list, pairs: list[_Pair], tag: str) -> list[list]:
+    """**相内依赖序，按批返回**：能定先后的节点各自一批，环族整块一批。
+
+    凡作用于我的对，其主方都要先轮到（《入门》1486-1488 法则③）。
+
+    书 1504：「要计算乙木克制戊土，我们就要看**乙木有没有受到克制**，正所谓
+    『克者有克则不克』」——主方要先受完，才谈得上施；而主方受完的度数正是它施出时
+    用的分子（C26-20 取当下值）。故**每个对 `(主方→受方)` 都建一条边，生边也要**
+    ——只建克边会让无入边的实例插队：例3 的天干相里时干辛无入边，会抢在年干辛之前
+    拿走「戊生辛」，而那时的戊还没被乙克制过。
+
+    `base`（`_settlement_order`，距日主远近）只作 **tie-break**：稳定 Kahn，
+    尽量少动既有次序。边**限于本相**（`p.tag == tag`），不跨相。
+
+    相图是「4 片天干连片组串成的路径 + 每片挂一个同柱本气叶子」——**无环**
+    （书 上 1537「异柱之间不能作用」把边限制在相邻柱），故正常路径下**每个节点各自
+    一批**，与旧实现逐字一致。环只在**规则放松**时才会出现（大运/流年进结算、异柱
+    可作用、同五行非连片也当整体…），届时按强连通分量整块同批（`_cycle_batches`），
+    **不再静默排出一个假的先后**——「谁先」会改数值（同类实例互抢生克权）。
+    """
+    import bisect
+
+    in_base = {id(n) for n in base}
+    pos = {id(n): k for k, n in enumerate(base)}
+    by_id = {id(n): n for n in base}
+    outs: dict[int, list[int]] = {id(n): [] for n in base}
+    indeg: dict[int, int] = {id(n): 0 for n in base}
+    for p in pairs:
+        if tag is not None and p.tag != tag:
+            continue
+        a, b = id(p.main), id(p.sub)
+        if a == b or a not in in_base or b not in in_base:
+            continue
+        outs[a].append(b)
+        indeg[b] += 1
+
+    ready = sorted((n for n in base if indeg[id(n)] == 0), key=lambda n: pos[id(n)])
+    out: list = []
+    while ready:
+        n = ready.pop(0)
+        out.append(n)
+        for b in outs[id(n)]:
+            indeg[b] -= 1
+            if indeg[b] == 0:
+                bisect.insort(ready, by_id[b], key=lambda x: pos[id(x)])
+    if len(out) == len(base):                      # 无环：每节点各自一批（与旧实现同）
+        return [[n] for n in out]
+    seen = {id(n) for n in out}
+    rest = [n for n in base if id(n) not in seen]
+    return [[n] for n in out] + _cycle_batches(rest, outs, pos)
+
+
+def _settle_receiving(node, pairs: list[_Pair], *, has_power,
+                      traces: list[str], acc: dict[int, dict]) -> None:
+    """**受批**：本实例作为**受方**、尚未结算的入边——**同类取最大**后一次施加。
+
+    每个字的三步是 **受 → 施生 → 施克**。「受」是前提，故排在最前：书 上 747（乾 己丑
+    戊辰 乙酉 辛巳）「乙木**先受**辛金克制，乙木受克后没有生克权不能克戊土」——逐字序是
+    年→月→日→时，日干乙排在时干辛**之前**，若没有独立的「受」批，辛克乙就落到乙克戊
+    之后，该例复现不出来。
+
+    **同类取最大**（《入门》1498「抓大放小」）：同一受方的多路同类入边只按**影响最大**
+    的那一路扣；相等的只扣一次。主方的减力按主方汇总后施加（它自己那一轮也会取最大）。
+    """
+    # 取**本实例为受方、尚未施加**的全部对——不管主方轮到了没有：
+    #   · 主方已轮到（`p.settled`）→ 成数已定档，直接用 `p.sub_c`；
+    #   · 主方还没轮到 → 在此就地算成数（主方那一轮会发现该对已结算而跳过）。
+    # 漏掉前一种会把**受方那一份静默丢掉**（`_settle_unit` 只存不施）。
+    recv = sorted((p for p in pairs if not p.applied and p.sub is node),
+                  key=lambda p: (p.kind, p.ord))
     if not recv:
         return
-    sdeg, slab = _node_final(node), _node_label(node)
-    sub_total = 0.0                                  # 受方自身的有符号成数（生 + / 克 −）
-    mains: dict[int, list] = {}                      # id(主方) → [节点, 减力成数和]
-    ke_hits: list[tuple[str, float]] = []            # (主方标签, 成数) —— 供「成数相加」行
-    for p in recv:
-        p.settled = True
-        mlab = _node_label(p.main)
-        mdeg = _node_final(p.main)
-        if not has_power(_node_wx(p.main)):
-            traces.append(f"{p.tag}{_node_wx(p.main)}{p.kind}{_node_wx(p.sub)}：主方{mlab}"
-                          f"（{_node_wx(p.main)}）无生克权（整体动态 "
-                          f"{wx_final(_node_wx(p.main)):g} 度、乘系数根 "
-                          f"{_root_of(p.main):g} 度、无生），不{p.kind}")
-            continue
-        if p.kind == "生":
-            limit_deg = static.get(_node_wx(p.main), mdeg)
-            if not shengke.can_receive_sheng(sub_has_root=_node_has_root(node),
-                                             sub_has_qi=_node_has_qi(node, qi_by_wx),
-                                             main_deg=limit_deg, sub_deg=sdeg):
-                traces.append(f"{_node_wx(p.main)}生{_node_wx(p.sub)}：{slab}"
-                              f"{_node_qi_state(node, qi_by_wx)}，"
-                              f"而主生者{mlab}超过其 4 倍，不受生")
-                continue
-        same = GAN_YIN_YANG[p.mgan] == GAN_YIN_YANG[p.sgan]
-        sub_c = shengke.cheng(p.kind, same=same, main_deg=mdeg, sub_deg=sdeg, party="sub")
-        main_c = shengke.cheng(p.kind, same=same, main_deg=mdeg, sub_deg=sdeg, party="main")
-        sub_total += sub_c if p.kind == "生" else -sub_c
-        acc = mains.setdefault(id(p.main), [p.main, 0.0])
-        acc[1] += main_c
-        if p.kind == "克":
-            ke_hits.append((("同柱" if p.tag else "") + mlab, sub_c))
-        signed = sub_c if p.kind == "生" else -sub_c
-        traces.append(f"{p.tag}{_node_wx(p.main)}{p.kind}{_node_wx(p.sub)}：{mlab}（{mdeg:g} 度）"
-                      f"×{slab}（{sdeg:g} 度）→ 成数 {signed:+g}/{main_c:g}")
+    slab = _node_label(node)
     before = _node_final(node)
+    mains: dict[int, list] = {}                      # id(主方) → [节点, 减力成数和]
+    ke_hits: list[tuple[str, float]] = []
+    d = acc.setdefault(id(node), {})                 # 先建条目——全被闸门拦掉时也要在
+    for p in recv:
+        p.applied = True
+        p.mdeg_at = _node_static(p.main)
+        p.sdeg_at = _node_static(p.sub)
+        mlab = _node_label(p.main)
+        if not p.settled:                            # 主方还没轮到：就地定档
+            # ⚠️ 资格闸门**只在「就地定档」这条路上跑**。主方已经轮到过的对，成数在那时按
+            #    主方**当时的**度数定档、主方的损耗也一并扣了（`_settle_unit`）——这里再拿
+            #    主方**施完之后**的值复查一遍，就会把已付代价的一路生/克整条扔掉：
+            #    实测 丙寅 乙未 己未 己巳 的 月干乙（2.45→0）生 年干丙——乙付了 18.2857 成、
+            #    丙一度没收到；300 随机盘里 14 盘有这模式。书 上 754 例4「日干泄寅木…变为 0 度」
+            #    也是「主方被自己的泄拖到 0、受方照受」，不回撤受方增益。
+            #    （主方已轮到但**被闸门拦掉**的对，`_settle_unit` 已把 `applied` 置 True，
+            #      根本进不了上面的 `recv`，故不会漏判。）
+            if not has_power(p.main):
+                p.settled = True
+                traces.append(f"{p.tag}{_node_wx(p.main)}{p.kind}{_node_wx(p.sub)}：主方{mlab}"
+                              f"（{_node_wx(p.main)}）无生克权（片动态 "
+                              f"{_node_final(p.main):g} 度、无强根、无生），不{p.kind}")
+                continue
+            same = GAN_YIN_YANG[p.mgan] == GAN_YIN_YANG[p.sgan]
+            p.sub_c = shengke.cheng(p.kind, same=same, main_deg=p.mdeg_at,
+                                    sub_deg=p.sdeg_at, party="sub")
+            if p.kind == "克":
+                p.sub_c = -p.sub_c
+            p.main_c = shengke.cheng(p.kind, same=same, main_deg=p.mdeg_at,
+                                     sub_deg=p.sdeg_at, party="main")
+            p.settled = True
+            # ⚠️ **只有「就地定档」的这一对**才由这里替主方扣损耗。主方已经轮到过的对，
+            #    它的减力已在主方自己那一轮按「同类取最大」扣过（`_settle_unit`），
+            #    这里再扣就是**第二次**：实测 入门1502 年干辛 6.05→2.45→**0.992**、
+            #    入门1496 年支丑本气己 6→4.2→**2.94**，且第二次**没有依据行**，账对不上。
+            #    书 1498「抓大放小」只取一路，故一个主方在一类里只扣一次。
+            if p.main_c:
+                accs = mains.setdefault(id(p.main), [p.main, 0.0])
+                accs[1] += p.main_c
+        if not p.sub_c and not p.main_c:
+            continue
+        d[p.kind] = max(d.get(p.kind, 0.0), abs(p.sub_c))
+        if p.kind == "克":
+            ke_hits.append((("同柱" if p.tag else "") + mlab, abs(p.sub_c)))
+    s_c = d.get("生", 0.0)
+    k_c = d.get("克", 0.0)
+    sub_total = s_c - k_c
     if sub_total:
         _set_node_final(node, shengke.apply_change(before, cheng=sub_total))
-    if len(ke_hits) > 1:
-        traces.append(f"{_node_wx(node)}同时被 "
-                      f"{'、'.join(w for w, _ in ke_hits)} 相克：成数相加"
-                      f"（{'+'.join(f'{c:g}' for _, c in ke_hits)}），{slab} "
-                      f"{before:g} → {_node_final(node):g} 度（书 上 2325 同类多作用相加）")
-    elif ke_hits:
-        traces.append(f"{_node_wx(node)}受克：{slab} {before:g} → {_node_final(node):g} 度")
-    elif sub_total:
-        traces.append(f"{_node_wx(node)}受生：{slab} {before:g} → {_node_final(node):g} 度")
     for mnode, loss in mains.values():
-        m_before = _node_final(mnode)
-        _set_node_final(mnode, shengke.apply_change(m_before, cheng=-loss))
+        _set_node_final(mnode, shengke.apply_change(_node_final(mnode), cheng=-loss))
+    if not sub_total:
+        return
+    if k_c and s_c:
+        traces.append(f"{_node_wx(node)}受生与受克：{slab} {before:g} → "
+                      f"{_node_final(node):g} 度（生取最大 {s_c:g} 成、克取最大 {k_c:g} 成"
+                      f"——《入门》1498「抓大放小」）")
+    elif k_c:
+        extra = ("，被 " + "、".join(w for w, _ in ke_hits) + " 同时克"
+                 if len(ke_hits) > 1 else "")
+        pick = ("取消耗最大的一路" if len(ke_hits) > 1 else "减力")
+        traces.append(f"{_node_wx(node)}受克：{slab} {before:g} → {_node_final(node):g} 度"
+                      f"（{pick} {k_c:g} 成{extra}）")
+    else:
+        pick = ("取最大的一路" if len(ke_hits) > 1 or s_c else "增力")
+        traces.append(f"{_node_wx(node)}受生：{slab} {before:g} → {_node_final(node):g} 度"
+                      f"（{pick} {s_c:g} 成）")
+    return
+def _settle_unit(node, pairs: list[_Pair], *, kind: str,
+                 static: dict[str, float], has_power,
+                 qi_by_wx: dict[str, bool], traces: list[str],
+                 root_scaled: dict[str, float], fed: set[str]) -> None:
+    """**一个单位的一轮**：结算它作为**主方**、指向 `kind`（生／克）的出边。
 
+    2026-09-16 用户规格：生克结算**逐字**——按天干字顺序 **年 → 月 → 日 → 时**，每个字
+    内部**先生后克**（「第一轮为生，看他生其他干或支；第二轮为克，看他克其他干或支」）。
 
-def _settle_giving(node, pairs: list[_Pair], *, kind: str, tag: str,
-                   static: dict[str, float], has_power, wx_final,
-                   qi_by_wx: dict[str, bool], traces: list[str]) -> None:
-    """③/⑤ **施批**：本实例作为**主方**、指向 `kind` 的未结算对。
-
-    生批与克批分两次调用（先施生、后施克），成数按主方**结算当下**的度数比算（C26-20）；
-    主方有没有生克权看它所属**五行**（`power`）——无生克权者「不能主动对其他五行
-    行使作用力」（书 上 969），整批不作。
-
-    > 生克权取**静态整体**（`_power_wx`），故生批与克批之间的「重判」结果相同；
-    > 分批的意义在于**成数乘在哪个当前值上**，以及「日主先受后施」的先后。
+    - **主方自身的损耗取最大的一路**（《入门》1498「抓大放小」：「戊土克壬水和戊土克子水，
+      都是克水，所以我们只能选其中一个来计算**戊土**的动态旺度」），相等只取一次。
+    - 一个单位的**不同受方各算各的**（同书：「**不意味着戊土只能克壬水不能克子水**」）。
+    - **闸门**（法则③后半）：受完之后失去生克权、或由有度被打散到 0 者，本批不施。
+    - 受方那一份**不在此处施加**——留给受方的「受批」按**同类取最大**一次做
+      （见 `_settle_receiving`）。
     """
-    # 同批内**同生/同克**按柱位序排（先年对月、后月对日、再日对时，2026-09-11 定）。
     give = sorted((p for p in pairs if not p.settled and p.main is node
-                   and p.kind == kind and p.tag == tag),
-                  key=lambda p: p.ord)
+                   and p.kind == kind), key=lambda p: p.ord)
     if not give:
         return
+    mlab = _node_label(node)
+    # **生轮用「合后值」（＝静态旺度，五合已并入），克轮用「生完之后」的当下值**
+    # ——《入门》1498「戊土生完庚辛金之后，**还有余力（13.2 度）**，才能去克壬水」。
+    cur = _node_final(node)
+    mstat = _node_static(node) if kind == "生" else cur
+    powered = has_power(node)
+    drained = _node_static(node) > 0 and cur <= 0
+    if not powered or drained:
+        for p in give:
+            p.settled = p.applied = True
+        for p in give:
+            if not powered:
+                traces.append(f"{p.tag}{_node_wx(node)}{kind}{_node_wx(p.sub)}：主方{mlab}"
+                              f"（{_node_wx(node)}）无生克权（片动态 "
+                              f"{_node_final(node):g} 度、无强根、无生），不{kind}")
+            else:
+                traces.append(f"{p.tag}{_node_wx(node)}{kind}{_node_wx(p.sub)}：主方{mlab}"
+                              f"（{_node_wx(node)}）由 {mstat:g} 度被打散到 {cur:g} 度、"
+                              f"已无余力，不{kind}"
+                              f"（《入门》1486-1488「生者有克则不生／克者有克则不克」）")
+        return
+    best_c = None
+    _n_eff = 0
     for p in give:
         p.settled = True
-    mlab = _node_label(node)
-    if not has_power(_node_wx(node)):
-        for p in give:
-            traces.append(f"{p.tag}{_node_wx(node)}{kind}{_node_wx(p.sub)}：主方{mlab}"
-                          f"（{_node_wx(node)}）无生克权（整体动态 "
-                          f"{wx_final(_node_wx(node)):g} 度、无强根、无生），不{kind}")
-        return
-    mdeg = _node_final(node)
-    subs: dict[int, list] = {}                       # id(受方) → [节点, 增/减力成数和]
-    total = 0.0                                      # 主方自身按 ZS／ZK 的减力成数
-    for p in give:
-        sdeg, slab = _node_final(p.sub), _node_label(p.sub)
+        p.mdeg_at = mstat
+        slab = _node_label(p.sub)
+        sstat = _node_static(p.sub)
+        p.sdeg_at = sstat
         if kind == "生":
-            limit_deg = static.get(_node_wx(node), mdeg)
+            limit_deg = static.get(_node_wx(node), mstat)
             if not shengke.can_receive_sheng(sub_has_root=_node_has_root(p.sub),
                                              sub_has_qi=_node_has_qi(p.sub, qi_by_wx),
-                                             main_deg=limit_deg, sub_deg=sdeg):
-                traces.append(f"{_node_wx(node)}生{_node_wx(p.sub)}：{slab}"
+                                             main_deg=limit_deg, sub_deg=sstat):
+                p.applied = True
+                traces.append(f"{p.tag}{_node_wx(node)}生{_node_wx(p.sub)}：{slab}"
                               f"{_node_qi_state(p.sub, qi_by_wx)}，"
                               f"而主生者{mlab}超过其 4 倍，不受生")
                 continue
         same = GAN_YIN_YANG[p.mgan] == GAN_YIN_YANG[p.sgan]
-        sub_c = shengke.cheng(kind, same=same, main_deg=mdeg, sub_deg=sdeg, party="sub")
-        main_c = shengke.cheng(kind, same=same, main_deg=mdeg, sub_deg=sdeg, party="main")
-        acc = subs.setdefault(id(p.sub), [p.sub, 0.0])
-        acc[1] += sub_c if kind == "生" else -sub_c
-        total += main_c
-        signed = sub_c if kind == "生" else -sub_c
-        traces.append(f"{p.tag}{_node_wx(node)}{kind}{_node_wx(p.sub)}：{mlab}（{mdeg:g} 度）"
-                      f"×{slab}（{sdeg:g} 度）→ 成数 {signed:+g}/{main_c:g}")
-    for snode, delta in subs.values():
-        s_before = _node_final(snode)
-        _set_node_final(snode, shengke.apply_change(s_before, cheng=delta))
-    before = _node_final(node)
-    _set_node_final(node, shengke.apply_change(before, cheng=-total))
-    if kind == "克":
-        # **主克者同样减力**（ZK）——书 上 700-708/717-722 的 `ZK=3×(S/Z)`／`2×(S/Z)`，
-        # 算例 上 730-731「戊土15.6度、癸水5.3度…戊土减力=2×(S/Z)=0.68成」；
-        # 上 744「辛金克乙木损耗 0.99 成 → 辛金损耗 0.97 度，变为 8.78 度」。
-        traces.append(f"主克者{mlab}受克泄耗：{before:g} → {_node_final(node):g} 度"
-                      f"（ZK 共 {total:g} 成，书 上 730-731「戊土减力=2×(S/Z)」／上 744"
-                      f"「辛金损耗0.97度，变为8.78度」）")
-    else:
-        traces.append(f"主生者{mlab}受泄耗：{before:g} → {_node_final(node):g} 度"
-                      f"（ZS 共 {total:g} 成，书 上 700-708 `ZS=3×(S/Z)`）")
+        sub_c = shengke.cheng(kind, same=same, main_deg=mstat, sub_deg=sstat, party="sub")
+        main_c = shengke.cheng(kind, same=same, main_deg=mstat, sub_deg=sstat, party="main")
+        p.sub_c = sub_c if kind == "生" else -sub_c
+        p.main_c = main_c
+        # ⚠️ **不置 `applied`**——受方那一份要留给它的「受批」施加；置了它受批就捡不到，
+        # 受方的增减会被静默丢掉。
+        if not p.sub_c and not main_c:
+            p.applied = True
+            continue                      # 空转对（任一方 0 度）：不出依据行
+        traces.append(f"{p.tag}{_node_wx(node)}{kind}{_node_wx(p.sub)}：{mlab}（{mstat:g} 度）"
+                      f"×{slab}（{sstat:g} 度）→ 成数 {p.sub_c:+g}/{main_c:g}")
+        if best_c is None or main_c > best_c:
+            best_c = main_c
+        _n_eff += 1
+    if best_c:
+        before = _node_final(node)
+        _set_node_final(node, shengke.apply_change(before, cheng=-best_c))
+        who = "主克者" if kind == "克" else "主生者"
+        book = ("书 上 730-731「戊土减力=2×(S/Z)」／上 744「辛金损耗0.97度，变为8.78度」"
+                if kind == "克" else "书 上 700-708 `ZS=3×(S/Z)`")
+        # 「取最大」只对**多路同类**才有意义（《入门》1498「抓大放小」：戊土克壬水与克子水
+        # 都是克水，才只能选一路）。只有一路时打这句话会误导读者去找那不存在的第二路。
+        pick = (f"，{_n_eff} 路同类只取影响最大的一路——《入门》1498「抓大放小」"
+                if _n_eff > 1 else "")
+        traces.append(f"{who}{mlab}受泄耗：{before:g} → {_node_final(node):g} 度"
+                      f"（{kind} 共 {best_c:g} 成{pick}；{book}）")
 
 
 def stem_layer(cols: list[degrees.Col], static: dict[str, float],
@@ -831,41 +1041,41 @@ def stem_layer(cols: list[degrees.Col], static: dict[str, float],
     `同柱本气藏干`（书 上 1008）。结算完再汇总回五行（`final_scores[wx]` =
     该五行各组终值之和；不透天干者取地支整体），**契约与前端不受影响**。
 
-    ### 结算次序（「先受后施」，全盘逐实例）
+    ### 结算次序：**合 → 生 → 克 三段**（2026-09-16 用户规格，C26-23）
 
-    ① **合**优先——`blocked` 里的对（天干五合，无论合化还是合绊）「贪合忘生克」，
-    不再出结算对（书 上 1595 等）。五合的**判定与减力已在第 2 段完成**，此处只消费；
-    ② 其余分**两相**：**先「同柱」（干 ↔ 本柱本气）的对全部算完，再算「天干」之间
-    （异柱相邻天干组）的对**（2026-09-11 定）。相内**逐个实例**结算，
-    实例次序 = 日主组 → 月干组 → 时干组 → 日支本气 → 其余；每个实例内分三步：
+    ① **合**——`blocked` 里的对（天干五合，无论合化还是合绊）「贪合忘生克」，不再出结算对
+    （书 上 1595）。五合的**判定与减力已在第 6 段完成**且已进生克基数，此处只消费。
+    ② **生批 → 克批**：每批算完得出一个新值供下一批使用——《入门》1498「戊土生完庚辛金
+    之后，**还有余力（13.2 度）**，才能去克壬水和子水」。**批内不分先后、取同一快照**
+    （同书「这两者没有先后顺序，是同时进行的」），故每批只施加一次。
+    ③ 每批内部**先受后施**：先算各单位受到的生克，用它判生克权与「余力/归 0」，再扣它
+    施出的损耗——书 上 747「乙木**先受**辛金克制，乙木受克后没有生克权不能克戊土」。
 
-    | 步 | 内容 |
-    |---|---|
-    | **受** | 它作为受方的全部对：生入 ＋ 克入，**同一快照、同时施加** |
-    | **施生** | 它作为主方的相生对（该主方**五行**有生克权才作） |
-    | **施克** | 它作为主方的相克对（同上） |
+    **同类取最大**（《入门》1498 的「抓大放小」）：同一单位在同一类里只取**影响最大**
+    的那一路——「由于戊土克壬水和戊土克子水，都是克水，所以我们只能选其中一个来计算
+    **戊土**的动态旺度，取 0.74 成」；相等则只取一次。
+    **不同单位各算各的**：「**不意味着戊土只能克壬水不能克子水**，这两者是同时进行的」
+    ——壬水、子水是两个单位，各自受自己那份。
 
-    每批内出现**同生 / 同克**时，各对按**柱位序**排（先年对月、后月对日、再日对时）——
-    见 `_Pair.ord`；因批内成数相加后一次施加，这只决定依据行的次序。
+    > 书 上 2325「酉金一共减去 2.5+1.25=3.75 度」在**第三节「地支特殊生克」**，说的是
+    > 「未土克酉金」这类**地支↔地支**的两路叠加，属**关系层**（`_adjusted_hidden` 的
+    > effects 累加，本层未动）；**不是**结算层的「多路相加」。
 
-    **生克权按「整体」、成数按「本身」**（2026-09-11 口径）：资格看该主方所属**五行在全盘的
-    合计旺度**（`_wx_has_power`，书 上 980），且取**结算当下的动态值**（`_wx_final`）——
-    故「先受后施」的时序真正生效（书 上 747「乙木受克后没有生克权不能克戊土」）；
-    成数的分子分母取**当前那个天干／地支自身**的静态度数（`shengke.cheng`）。
+    **生克权按「片」、成数按「双方本批起点」**：资格看**主方那一片自己**的当下终值
+    （`_wx_has_power`，书 上 980 + 上 651/1008）——故「先受后施」的时序生效（书 上 747）；
+    成数的分子分母取双方在**本批起点**的度数（生批＝静态，克批＝生后值）。
 
-    每一对只在**先轮到的那个端点**结算一次。批内各路成数**相加后一次施加**——书 上
-    2325 的同类多作用算例是**相加**（「酉金一共减去 2.5+1.25=3.75 度」）；批与批之间
-    则是逐批施加（上一批的结果进入下一批的判据）。
+    **闸门**（法则③的后半）：单位在「受」之后若**失去生克权**（书 上 969「不能主动对其他
+    五行行使作用力」）或**由有度被打散到 0**（书 1506「戊土变为 0 度……已经没有生克权，
+    也没有余力再去生时干辛金了」），则它本批不施，其对应的受方增益一并取消。
 
-    书源：书《初级答疑》L2072-2073「从日主的角度来看…**先看生日干和克日干（这是同时
-    进行的）**，然后才是看日干生它干，最后是日干克它干」——本层把它从日主推广到**每个
-    实例**；《四柱预测学入门》第二节 生克循环「生克循环法则」①先合后生 ②先生后克
+    书源：《四柱预测学入门》第二节 生克循环「生克循环法则」①先合后生 ②先生后克
     ③**生者有克则不生，克者有克则不克**，还有余力者可再行驶生克权（入门 1486-1488）。
 
     ### 三个接口口径
 
-    - **生克权**：见 `_power_wx`——**按五行整体的静态合计**判（书 上 980），与下面两条的
-      「本身」口径成对；
+    - **生克权**：见 `_wx_has_power`——**按「片」判**（书 上 980 + 上 651/1008：片自己的动态
+      终值、片自己的乘系数根、片自己有无受生）；
     - **受生范围**（书 上 689「受生者必须在受生范围内」）：「主生者力量」
       取**该五行的旺度**（不是实例）——书 上 1601 把这一条写成「**寅木的力量是丙火的
       7 倍**」（10.5 ÷ 1.5），那 10.5 正是「木」这一行的静态旺度；受生者的「有根」＝
@@ -900,7 +1110,7 @@ def stem_layer(cols: list[degrees.Col], static: dict[str, float],
     inst_of_col = {n["idx"]: n for n in insts}
 
     # ---------------------------------------------------------------
-    # 节点收集：相邻天干组对 + 同柱（干 ↔ 本气）
+    # 节点收集：相邻天干组对 + **同柱（干 ↔ 本支本气）**
     # ---------------------------------------------------------------
     stem_pairs: list[tuple[int, int, degrees.StemGroup, degrees.StemGroup]] = []
     for i in range(len(cols) - 1):
@@ -940,7 +1150,7 @@ def stem_layer(cols: list[degrees.Col], static: dict[str, float],
 
     traces: list[str] = []
 
-    # ① 合：天干五合已由**第 2 段**（`stem_he.judge_stem_he`）判定完毕——合化者已换字、
+    # ① 合：天干五合已由**第 6 段**（`stem_he.judge_stem_he`）判定完毕——合化者已换字、
     #    合绊者已减力且已计入静态旺度。此处只消费它的 `blocked`：合了的对
     #    **贪合忘生克**（书 上 1595），不再出结算对。
     #    合化成功的一对换字后必然同类（甲己→戊己…），`_ke_or_sheng` 本就返回 None；
@@ -983,9 +1193,9 @@ def stem_layer(cols: list[degrees.Col], static: dict[str, float],
     # 整条丢掉（书 上 1000「原局的根=…**−或+同柱天干对该根的生克泄耗**」——根侧的增减
     # 同属旺度，不能只记天干侧）。
     #
-    # 生克权的第一条就用它——**结算中随实例被生克而变**，故「先受后施」的时序真正生效
-    # （书 上 747「乙木受克后没有生克权不能克戊土」）；这也正是最终 `final[wx]` 的定义，
-    # 两者共用同一支算式，不得漂移。
+    # 这支算式是**最终 `final[wx]` 的定义**（契约口径），也是 `_wx_final` 的唯一用途。
+    # ⚠️ **生克权不再用它**（2026-09-17 改按片，见 `_wx_has_power`）：判资格的是「片」，
+    #    不是五行合计——否则同五行两片会互相顶替，结果依赖遍历次序。
     # ---------------------------------------------------------------
     def _wx_final(wx: str) -> float:
         gs = [g for g in grps if g.wx == wx]
@@ -993,44 +1203,97 @@ def stem_layer(cols: list[degrees.Col], static: dict[str, float],
         delta = sum(n["final"] - n["static"] for n in insts if n["wx"] == wx)
         return max(0.0, base + delta)
 
-    def _has_power(wx: str) -> bool:
-        return _wx_has_power(wx, final_deg=_wx_final(wx), root_scaled=_root, fed=_fed)
+    def _fed_pian(node) -> bool:
+        """该**片**是否「有生」（书 上 982「无生（或虽有若无）」）——`_fed_objs` 记的是
+        `(柱位, 干或支字)`，按片自己的柱位与字去查（天干组可能横跨两柱）。"""
+        if isinstance(node, degrees.StemGroup):
+            return any((k, g) in _fed_objs for k, g in zip(node.keys, node.gans))
+        return (node["col"], node["zhi"]) in _fed_objs
 
-    # ③ 分**两相**结算：**先同柱对（干 ↔ 本柱本气）全部算完，再算异柱相邻天干组之间的对**
-    #    （2026-09-11 定）。相内仍按「逐实例、受 → 施生 → 施克」，每一对只在**先轮到的
-    #    那个端点**结算一次，故绝不会算两遍。次序与理由见 `_settlement_order` /
-    #    `_settle_receiving` / `_settle_giving`。
-    # 结算过程中**逐实例**留一张命盘快照（第 7 段「每一柱计算完成显示当前命盘」）：
-    # 每次实例走完「受 → 施生 → 施克」三步后记一次各本气实例的终值；该次若一行依据
-    # 都没产出（该实例在两个相里都不参与）则跳过，免得出一堆重复图。
+    def _has_power(node) -> bool:
+        """**片级**生克权（书 上 980 三条件）——判的是这一片，不是五行全盘。"""
+        return _wx_has_power(degree=_node_final(node),
+                             root_scaled=_node_root_scaled(node),
+                             fed=_fed_pian(node))
+
+    # ③ **相内依赖序**结算（克我者先轮到，《入门》1486-1488 法则③）。
+    #    2026-09-16 规格：不再分「同柱相／天干相」（地支的气不参与生克结算），
+    #    每个天干组走「生批 → 克批」，成数一律取静态旺度。
+    base_order = _settlement_order(cols, grps, insts)
+    # 结算过程中**逐组**留一张命盘快照（第 7 段「每一柱计算完成显示当前命盘」）：
+    # 每组走完「生 → 克」两步后记一次各本气实例的终值；该次若一行依据都没产出则跳过。
     checkpoints: list[dict] = []
-    for _tag in ("同柱", ""):
-        for node in _settlement_order(cols, grps, insts):
-            _before = len(traces)
-            _settle_receiving(node, pairs, tag=_tag, static=static, has_power=_has_power,
-                              wx_final=_wx_final, qi_by_wx=qi_by_wx, traces=traces)
-            _settle_giving(node, pairs, kind="生", tag=_tag, static=static,
-                           has_power=_has_power, wx_final=_wx_final,
-                           qi_by_wx=qi_by_wx, traces=traces)
-            _settle_giving(node, pairs, kind="克", tag=_tag, static=static,
-                           has_power=_has_power, wx_final=_wx_final,
-                           qi_by_wx=qi_by_wx, traces=traces)
-            if len(traces) > _before:
+    # **结算次序＝「克我者先」的依赖序**（`_phase_order`）——书 上 747「乙木**先受**辛金
+    # 克制，乙木受克后没有生克权不能克戊土」靠它；逐字的「年→月→日→时」复现不出来
+    # （该盘 土组在年、乙木在日、辛金在时，按柱位序 土会先被乙克）。
+    #
+    # **展示结构**（2026-09-16 用户规格）：按**字**分段，每个字——
+    #   ① 先给一行「现在判断生克的字是「X」」；
+    #   ② 再依次走**受 → 生 → 克**三步（三步里没有内容的**不显示**）；
+    #   ③ 每步**先列它与谁的关系**，**最后给该字动态旺度的变化**（X：a → b 度）；
+    #   ④ 有内容的那一步各出一张命盘快照（本气实例不单独出图）。
+    base_order = _settlement_order(cols, grps, insts)
+    acc: dict[int, dict] = {}
+    global _batch_frame
+    for _batch in _phase_order(base_order, pairs, None):
+        # 多于一个节点的批 = 环族：**整块同批同时结算**（`_BatchFrame` 挡住互相干扰）。
+        # 无环时每批恰好一个节点，走的就是原来那条路。
+        _frame = None
+        if len(_batch) > 1:
+            _frame = _BatchFrame(_batch)
+            _batch_frame = _frame
+            traces.append("环内同批：「" + "」「".join(_node_label(n) for n in _batch)
+                          + "」互相作用、分不出先后，**同批同时**结算"
+                            "（《入门》1499「这两者没有先后顺序，是同时进行的」）")
+        for _u in _batch:
+            if _frame is not None:
+                _frame.current = id(_u)   # 本节点自己的改动对自己可见（先受后施）
+            _is_grp = isinstance(_u, degrees.StemGroup)
+            _lab = _node_label(_u)
+            _hdr = False
+            for _step in ("受", "生", "克"):
+                _buf: list[str] = []
+                _before = _node_final(_u)
+                if _step == "受":
+                    _settle_receiving(_u, pairs, has_power=_has_power,
+                                      traces=_buf, acc=acc)
+                else:
+                    _settle_unit(_u, pairs, kind=_step, static=static,
+                                 has_power=_has_power,
+                                 qi_by_wx=qi_by_wx, traces=_buf,
+                                 root_scaled=_root, fed=_fed)
+                if not _buf:
+                    continue                  # 该步没有内容 → 不显示
+                if not _hdr:                  # 本字第一次出内容时才给标题行
+                    traces.append(f"现在判断生克的字是「{_lab}」")
+                    _hdr = True
+                traces.extend(_buf)
+                traces.append(f"　→ {_lab} 动态旺度 {_before:g} → {_node_final(_u):g} 度")
+                if not _is_grp or _frame is not None:
+                    continue      # 本气实例 / 环族批内不逐字出图，批末补一张
                 checkpoints.append({
-                    "label": ("同柱相 · " if _tag else "天干相 · ") + _node_label(node),
+                    "label": f"{_lab} · {_step}",
                     "after": len(traces),
                     "inst_finals": [n["final"] for n in insts],
                     "grp_finals": [g.final for g in grps],
                 })
-    # 收尾快照：末尾若不是「最后一行依据产出时」的状态，就补一张，保证逐实例序列
-    # 的最末即本段终态（前端据此不必再单独贴段末图）。若末尾那张已是终态则**不再补**，
-    # 免得最后连着两张一模一样的图。
+        if _frame is not None:
+            _batch_frame = None
+            _frame.commit()               # 批末统一落盘：批内所有字看到的是同一快照
+            checkpoints.append({
+                "label": "环内同批结算完成",
+                "after": len(traces),
+                "inst_finals": [n["final"] for n in insts],
+                "grp_finals": [g.final for g in grps],
+            })
+    # 收尾快照：末尾若不是「最后一行依据产出时」的状态，就补一张
     if not checkpoints or checkpoints[-1]["after"] != len(traces):
         checkpoints.append({"label": "本段结算完成", "after": len(traces),
                             "inst_finals": [n["final"] for n in insts],
                             "grp_finals": [g.final for g in grps]})
 
-    # 汇回五行：`final[wx]` 即上面那支算式（与生克权第一条共用，见 `_wx_final` 的说明）。
+    # 汇回五行：`final[wx]` 即上面那支算式。**它只是契约口径的汇总，不再参与资格判定**
+    # （生克权已改按片，见 `_wx_has_power`）。
     dm_group = next((g for g in grps if g.is_day_master), None)
     final = {wx: round(_wx_final(wx), 2) for wx in tables.WUXING_ORDER}
 
@@ -1104,8 +1367,16 @@ def _muku_ctx(rel: dict, cols: list[degrees.Col], month_zhi: str,
         elif e["type"] == "六害":
             # **按参与柱数计**（书 上 1088③「**2子害1未**」按子支个数分档）——
             # `e["members"]` 是去重后的两个字，直接拿它只能得到 1 个，该分支永远走不到。
+            #
+            # ⚠️ `e["cols"]` 可能含 `_dayun` / `_liunian` **伪列**（FR-042 的大运维度，
+            # 由 `_with_extras` 挂上），它们不在 `cols` 里——直接 `_by[k]` 会 KeyError
+            # （2026-09-16 修：月支四库 + 大运与之成六害即崩，如 `甲子 乙未 丙寅 丁酉`
+            # 走 `甲子` 运）。本分支与下面的「亥拱未」一样**只按原局四柱计**，故跳过未知键。
             _by = {c.key: c.zhi for c in cols}
-            hai += [_by[k] for k in e["cols"] if _by.get(k) != month_zhi]
+            for k in e["cols"]:
+                z = _by.get(k)
+                if z is not None and z != month_zhi:
+                    hai.append(z)
         # 刑/冲成功 → 该支被置为**中性纯土**（书 上 1049「辰土被刑、冲成功变为中性土」）
         if e["type"] in ("六冲", "两支刑", "丑未戌刑") and any(
                 fx.get("pure") == "土" for fx in e.get("effects", [])):
@@ -1196,6 +1467,94 @@ def _degradations(cols: list[degrees.Col]) -> list[str]:
     ]
 
 
+def _layers(cols: list[degrees.Col], rel: dict, month_zhi: str,
+            effective: str | None, pure: frozenset[str], ban: dict[int, float] | None):
+    """第 2-5 段的一串中间产物：藏干 → 月令系数 → 静态旺度 → 通根 → 实例。
+
+    `ban` 是**合绊的成数**（柱位下标 → 减几成），不是度数——**减的是该干所在组的
+    静态旺度**（含通根那一份），故在此对整组缩放。
+
+    抽出来供**两处**复用：`compute_strength` 的定案趟，与天干五合条件④的**试探趟**
+    （见 `_stem_he_trial`）——两者只差一个 `ban`，其余口径必须逐字一致。
+    """
+    import services.bazi.v2.tables as _t
+
+    hidden = _adjusted_hidden(rel, cols, month_zhi)
+    # 月支为四库时的刑冲害背景——决定它在书 上 1044-1107 分支表里取哪一档。
+    muku = _muku_ctx(rel, cols, month_zhi, hidden)
+    # 静态旺度按**原字**算（每个干 1 度、通根照旧）；**合绊的减力另算**——见下。
+    static = _static_scores(cols, hidden, month_zhi, effective, pure, muku, None)
+    # 通根先行算出——生克权（书《上》第一节 五行旺衰）的「有强根」要用，而它必须在
+    # `stem_layer` **之前**就位（`final` 由 `stem_layer` 产出，不能反过来依赖）。
+    root = _roots(cols, hidden, month_zhi, pure, None)
+    # **乘过月令系数**的根（书 上 1000 的「原局的根」）——「有强根 ≥2.4」比的是它。
+    coef_by_wx = {wx: _tables_month_coef_state(wx, month_zhi, effective, muku)[0]
+                  for wx in _t.WUXING_ORDER}
+    root_scaled = _roots_scaled(root, coef_by_wx)
+    # 「有气」——书 上 353 按**月令状态**（旺/余气/相）判，与旺度无关；受生范围（上 3859
+    # 「有根无气只能接受 4 倍以下之生」）用它，故与 `coef_by_wx` 同批算出。
+    qi_by_wx = {wx: _t.element_has_qi(wx, month_zhi, effective, muku)
+                for wx in _t.WUXING_ORDER}
+    # 生克层按**实例**（连片天干组 + 同柱本气）结算（S7 / 书 上 651、1008）。
+    grps = stem_groups(cols, hidden, coef_by_wx, pure, None)
+    # **合绊减的是「该干所在组的静态旺度」（含通根那一份）**——2026-09-16 用户裁定。
+    # `ban` 是柱位下标 → 减几**成**；组按 `组静态 × (1 − 成数/10)` 整体缩放，
+    # 组通根与乘系数根**同步缩**（否则「根 ≤ 静态」不变量会破）。一组内多个干都合绊时成数相加。
+    _ban = ban or {}
+    if _ban:
+        _hit: set[str] = set()
+        for g in grps:
+            c = sum(_ban.get(i, 0.0) for i in g.cols)
+            if not c:
+                continue
+            k = max(0.0, 1.0 - min(c, 10.0) / 10.0)
+            _old_root = g.root
+            g.static = round(g.static * k, 3)
+            g.root = round(g.root * k, 3)
+            g.root_scaled = round(g.root_scaled * k, 3)
+            # ⚠️ **`final` 必须一起改**——生克结算读的是 `_node_final`（＝`final`），
+            # 漏了这一行，第 7 段的成数用五合后值、主方损耗却扣在**第 5 段的原字静态**上
+            # （实测 月干乙 成数按 4.32、损耗扣在 7.2），两个数打架。
+            g.final = g.static
+            root[g.wx] = round(root.get(g.wx, 0.0) - _old_root + g.root, 3)
+            _hit.add(g.wx)
+        for wx in _hit:
+            static[wx] = round(sum(g.static for g in grps if g.wx == wx), 2)
+        root_scaled = _roots_scaled(root, coef_by_wx)
+    insts = _benqi_instances(cols, hidden, coef_by_wx)
+    return {"hidden": hidden, "muku": muku, "static": static, "root": root,
+            "coef_by_wx": coef_by_wx, "root_scaled": root_scaled, "qi_by_wx": qi_by_wx,
+            "grps": grps, "insts": insts}
+
+
+def _stem_he_trial(cols: list[degrees.Col], rel: dict, month_zhi: str,
+                   effective: str | None, pure: frozenset[str]) -> dict[str, float]:
+    """天干五合条件④的**试探趟**：全部五合先按**合绊**算到底，取**逐柱动态旺度**。
+
+    书 上 1588：「4. 甲必须处于不能独立的状态（**指动态旺度**）」——动态旺度要结算完
+    才有，而结算又取决于合化是否成立（换字会改一切），先有鸡还是先有蛋。书的解法就是
+    本函数：**先按合绊算到底**，拿这份动态旺度去判条件④；判成了再换字**重头算第二趟**
+    （`compute_strength` 里 `judge_stem_he` 之后的定案趟）。
+
+    **不写 `cols`**（`force_ban=True`），故对定案趟无副作用；`grps`/`insts` 都是新造的
+    对象，试探趟里被 `stem_layer` 改写也不影响调用方。
+
+    返回**柱位 key → 该柱天干所在连片组的动态终值**（不是五行合计）——条件④问的是
+    「**甲**能不能独立」（书 上 1588 指的是那个字），同五行的其它实例不算数。
+    """
+    he0 = stem_he.judge_stem_he(cols, month_zhi, rel, effective=effective, force_ban=True)
+    lay = _layers(cols, rel, month_zhi, effective, pure, he0["ban_cheng"])
+    stem_layer(cols, lay["static"], lay["root_scaled"],
+               blocked=frozenset(he0["blocked"]), hidden=lay["hidden"],
+               coef_by_wx=lay["coef_by_wx"], pure=pure,
+               grps=lay["grps"], insts=lay["insts"], qi_by_wx=lay["qi_by_wx"])
+    out: dict[str, float] = {}
+    for g in lay["grps"]:
+        for k in g.keys:
+            out[k] = g.final
+    return out
+
+
 def compute_strength(pillars: dict, *, dayun_ganzhi: str | None = None,
                      liunian_ganzhi: str | None = None) -> dict:
     """跑完整管线。
@@ -1222,7 +1581,7 @@ def compute_strength(pillars: dict, *, dayun_ganzhi: str | None = None,
                      if fx.get("pure") for k in e["cols"])
 
     # ---------------------------------------------------------------
-    # 第 2 段 · 天干五合（合化换字 + 合而不化的合绊减力）
+    # 第 6 段 · 天干五合（合化换字 + 合而不化的合绊减力）
     #
     # 排在地支十八级之后、其余一切旺度计算之前——两条依据：
     #   · 上 1638 的化神条件②读的是**地支合化改宗后**的月令（「辰酉合化金成功，月令
@@ -1230,40 +1589,33 @@ def compute_strength(pillars: dict, *, dayun_ganzhi: str | None = None,
     #   · 上 1593/1872/1990 合化成功要**换字**，换了字就换五行，连片分组、通根、
     #     静态旺度全跟着变，故必须排在它们之前。
     #
-    # `static0` 是**换字前**的静态旺度，只供条件④「弱方不能独立」用——书 上 1637
-    # 判的是**原局**的甲木能不能独立，那时还没换字。换字后 `hidden`（四库党众分档读
-    # 天干）与 `static` 都要重算一遍。
+    # 条件④「弱方不能独立」按**动态旺度**判（书 上 1588），故 `judge_stem_he` 会**惰性**
+    # 调 `_stem_he_trial` 跑一趟「全按合绊」的试探。换字后 `hidden`（四库党众分档读
+    # 天干）、`static`、`grps`、`insts` 都要按定案的 `ban` 重算一遍——这就是**第二趟**。
     # ---------------------------------------------------------------
-    hidden0 = _adjusted_hidden(rel, cols, month_zhi)
-    static0 = _static_scores(cols, hidden0, month_zhi, effective, pure,
-                             _muku_ctx(rel, cols, month_zhi, hidden0))
-    he = stem_he.judge_stem_he(cols, month_zhi, rel, static0, effective)
+    he = stem_he.judge_stem_he(
+        cols, month_zhi, rel, effective=effective,
+        final_provider=lambda: _stem_he_trial(cols, rel, month_zhi, effective, pure))
     ban = he["ban"]
 
-    hidden = _adjusted_hidden(rel, cols, month_zhi)
-    # 月支为四库时的刑冲害背景——决定它在书 上 1044-1107 分支表里取哪一档。
-    muku = _muku_ctx(rel, cols, month_zhi, hidden)
-    static = _static_scores(cols, hidden, month_zhi, effective, pure, muku, ban)
-    # 通根先行算出——生克权（书《上》第一节 五行旺衰）的「有强根」要用，而它必须在
-    # `stem_layer` **之前**就位（`final` 由 `stem_layer` 产出，不能反过来依赖）。
-    import services.bazi.v2.tables as _t
+    # 「原字」视图（`src_gan` 还原合化换过的干）——五合现在排在**静态旺度之后**
+    # （2026-09-16 用户规格），故第 5 段先按原字算一遍，换字后再重算（第 7 段）。
+    cols0 = [degrees.Col(key=c.key, gan=c.src_gan, zhi=c.zhi, orig_gan=None) for c in cols]
+    lay0 = _layers(cols0, rel, month_zhi, effective, pure, None)
+    lay0["deg_detail"] = {wx: {"root": r} for wx, r in lay0["root"].items()}
 
-    root = _roots(cols, hidden, month_zhi, pure, ban)
-    # **乘过月令系数**的根（书 上 1000 的「原局的根」）——「有强根 ≥2.4」比的是它。
-    coef_by_wx = {wx: _tables_month_coef_state(wx, month_zhi, effective, muku)[0]
-                  for wx in _t.WUXING_ORDER}
-    root_scaled = _roots_scaled(root, coef_by_wx)
-    # 「有气」——书 上 353 按**月令状态**（旺/余气/相）判，与旺度无关；受生范围（上 3859
-    # 「有根无气只能接受 4 倍以下之生」）用它，故与 `coef_by_wx` 同批算出。
-    qi_by_wx = {wx: _t.element_has_qi(wx, month_zhi, effective, muku)
-                for wx in _t.WUXING_ORDER}
-    # 生克层按**实例**（连片天干组 + 同柱本气）结算（S7 / 书 上 651、1008）。
-    grps = stem_groups(cols, hidden, coef_by_wx, pure, ban)
-    insts = _benqi_instances(cols, hidden, coef_by_wx)
+    lay = _layers(cols, rel, month_zhi, effective, pure, he["ban_cheng"])
+    hidden, muku = lay["hidden"], lay["muku"]
+    static, coef_by_wx = lay["static"], lay["coef_by_wx"]
+    root_scaled, qi_by_wx = lay["root_scaled"], lay["qi_by_wx"]
+    grps, insts = lay["grps"], lay["insts"]
     final, traces, has_sheng, checkpoints = stem_layer(
         cols, static, root_scaled, blocked=frozenset(he["blocked"]),
         hidden=hidden, coef_by_wx=coef_by_wx, pure=pure, grps=grps, insts=insts,
         qi_by_wx=qi_by_wx)
+    import services.bazi.v2.tables as _t
+
+    root = lay["root"]
     dm = next((c.gan for c in cols if c.key == "day"), None)
     dm_wx = GAN_WUXING[dm] if dm else None
     # 档位与从格判据一律取**日主那一组**（书 上 651「这个 6.4 度就是日干戊土的静态
@@ -1280,13 +1632,18 @@ def compute_strength(pillars: dict, *, dayun_ganzhi: str | None = None,
     for n in insts:
         inst_by_wx[n["wx"]].append(dict(n))
 
-    deg_detail = {wx: _deg_detail(cols, hidden, wx, month_zhi, static, final,
-                                  effective, root[wx], muku, root_scaled[wx],
+    # 契约的「静态旺度」＝**第 5 段（原字）**那一份，**不含合绊**——五合排在第 6 段，
+    # 合绊的缩放只作**生克基数**（`stem_layer` 拿 `lay["static"]`）。2026-09-16 用户裁定：
+    # 「静态部分不应算合绊」（与 书 上 1638 把合绊写进静态旺度相反，属有意分歧）。
+    _static0 = lay0["static"]
+    deg_detail = {wx: _deg_detail(cols0, lay0["hidden"], wx, month_zhi, _static0, final,
+                                  effective, lay0["root"].get(wx, 0.0), lay0["muku"],
+                                  lay0["root_scaled"].get(wx, 0.0),
                                   instances=inst_by_wx[wx])
                   for wx in _t.WUXING_ORDER}
 
     return {
-        "static_scores": static,
+        "static_scores": _static0,
         "final_scores": final,
         "has_sheng": has_sheng,
         "root_scaled": root_scaled,
@@ -1302,7 +1659,7 @@ def compute_strength(pillars: dict, *, dayun_ganzhi: str | None = None,
         "input_scope": "three_pillars" if len(cols) < 4 else "four_pillars",
         "degradations": _degradations(cols),
         "month_effective_wx": effective,
-        # 天干五合（第 2 段）的结论：格局层判化格与「依据行」都消费它，只判一次。
+        # 天干五合（第 6 段）的结论：格局层判化格与「依据行」都消费它，只判一次。
         "stem_he": he,
         # 日干可能被合化换字（甲→戊），故**必须**把换字后的 cols 交出去——调用方
         # 若自行 `degrees.build_cols(pillars)` 会拿到未换字的那一份，与这里的旺度
@@ -1313,7 +1670,8 @@ def compute_strength(pillars: dict, *, dayun_ganzhi: str | None = None,
         "steps": _build_steps(cols, rel, hidden, deg_detail, static, final,
                               month_zhi, effective, traces, pure, muku,
                               grps=grps, insts=insts, dm_group=dm_group,
-                              he=he, ban=ban, checkpoints=checkpoints),
+                              he=he, ban=ban, checkpoints=checkpoints,
+                              cols0=cols0, lay0=lay0),
     }
 
 
@@ -1351,7 +1709,7 @@ def _rel_name(e: dict) -> str:
 
 
 def _fx_brief(effects: list[dict]) -> str:
-    """该关系的**度数影响速览**（逐条明细与书证见第 2 段）。
+    """该关系的**度数影响速览**（逐条明细与书证见第 6 段）。
 
     `split` 的项是**总量**、由第 2 段按参与柱数均分，故此处标「共」以示区别。
     """
@@ -1376,29 +1734,38 @@ def _fx_brief(effects: list[dict]) -> str:
     return "；".join(toks)
 
 
-# 「字变」标记（`steps[].chart`）——比较基准恒为**原始藏干表**，故同一支在第 2–7 段
-# 的标记一致，不随各段的度数口径漂移。
+# 「字变」标记（`steps[].chart`）——比较基准恒为**原始藏干表**，故**出标记的各段**
+# （第 2–5 段与第 7 段起；第 1 段「原局」与第 6 段「五合」不出）之间一致，
+# 不随各段的度数口径漂移。
 _CHANGE_NEW = "新增"        # 原始表里没有这个干（如未中乙木被激活）
 _CHANGE_ZERO = "归零"       # 原有藏干被关系去掉
 _CHANGE_UP = "增力"
 _CHANGE_DOWN = "减力"
 _CHANGE_PURE = "变纯"       # 整支合化成功，换成纯化神
 
-# 天干五合（第 2 段）的两种结果——与藏干的 `change` 分开，因为天干换的是**字**（甲→戊）
+# 天干五合（第 6 段）的两种结果——与藏干的 `change` 分开，因为天干换的是**字**（甲→戊）
 _GAN_CHANGE_HUA = "合化"     # 合化成功，本干换成了化神干支
 _GAN_CHANGE_BAN = "合绊"     # 合而不化，本干减力
 
 # 各段的「度数」口径（`_step_chart` 的 `stage`）——与 `_build_steps` 的段序一一对应
 _STAGE_OF: dict[str, str] = {
     "relations": "origin",       # 第 1 段：原局，未受关系影响
-    "stem_he": "he",             # 第 2 段：天干五合换字 + 合绊减力（藏干尚未受关系影响）
-    "effects": "adjusted",       # 第 3 段：关系影响后
-    "month_coef": "adjusted",    # 第 4 段：系数本身不落到字上
-    "tonggen": "adjusted",       # 第 5 段
-    "static": "static",          # 第 6 段：起乘月令系数
-    "stem_shengke": "dynamic",   # 第 7 段：生克结算后
-    "total": "dynamic",          # 第 8 段：动态旺度与定级
+    "effects": "adjusted",       # 第 2 段：关系影响后
+    "month_coef": "adjusted",    # 第 3 段：系数本身不落到字上
+    "tonggen": "adjusted",       # 第 4 段
+    "static": "static",          # 第 5 段：静态旺度（**原字**，尚无合绊）
+    "stem_he": "he",             # 第 6 段：天干五合换字 + 合绊减力
+    "static_he": "static_he",    # 第 7 段：换字后重算静态
+    "stem_shengke": "dynamic",   # 第 8 段：生克结算后
+    "total": "dynamic",          # 第 9 段：动态旺度与定级
 }
+
+# **快照是否带上天干五合的减力（合绊）**——单一事实来源。
+#
+# 只有**第 6 段（天干五合）及其后**才带：第 1–5 段的快照必须与各自的 result 同口径
+# （那时还没走到五合）。原先这个判断散在各调用点，结果第 1/2/3/4 段的快照一直带着
+# 合绊（同段 result 是原字、快照却标「合绊」，两个数打架），补了三次都没堵住。
+_STAGE_WITH_BAN = frozenset({"he", "static_he", "dynamic"})
 
 
 def _pure_branch_notes(rel: dict, cols: list[degrees.Col],
@@ -1433,8 +1800,14 @@ def _orig_brief(orig: list[tuple[str, float]]) -> str:
     return "、".join(f"{g}{d:g}" for g, d in orig if d > 0)
 
 
-def _he_result(he: dict, ban: dict[int, float]) -> str:
-    """第 2 段的结果行——合化/合绊各几对、减了哪几个干。"""
+def _he_result(he: dict, ban: dict[int, float], ban_cheng: dict[int, float] | None,
+               static: dict[str, float] | None = None) -> str:
+    """第 6 段的结果行——合化换字 / 合绊减力，以及**合绊后**的静态旺度。
+
+    合绊减的是「该干所在组的静态旺度」（含通根那一份，2026-09-16 用户裁定），故本段
+    要把缩放后的值写出来——**只合绊不换字**时「换字后重算静态」段不产生，那份值就
+    只挂在这里。
+    """
     est = he.get("established") or []
     if not est:
         return "无相邻天干五合，本段不改变任何天干"
@@ -1442,8 +1815,14 @@ def _he_result(he: dict, ban: dict[int, float]) -> str:
     changed = [c for e in est if e.get("result") == "合化" for c in e.get("change", [])]
     if changed:
         parts.append("合化成功，换字：" + "、".join(f"{c['from']}→{c['to']}" for c in changed))
-    if ban:
-        parts.append(f"合绊 {len(ban)} 个干，合绊后度数和 {sum(ban.values()):g}")
+    if ban_cheng:
+        import services.bazi.v2.tables as _t
+        parts.append(f"合绊 {len(ban_cheng)} 个干（减 "
+                     + "、".join(f"{c:g} 成" for _, c in sorted(ban_cheng.items()))
+                     + "），减的是该干所在「组的静态旺度」（含通根那一份）")
+        if static is not None:
+            parts.append("合绊后静态：" + "；".join(
+                f"{wx} {static.get(wx, 0.0):g}" for wx in _t.WUXING_ORDER))
     return "；".join(parts) or "无相邻天干五合，本段不改变任何天干"
 
 
@@ -1452,6 +1831,7 @@ def _step_chart(cols: list[degrees.Col], hidden: dict, month_zhi: str,
                 grps: list[degrees.StemGroup], insts: list[dict],
                 *, stage: str, group_value: bool = False,
                 ban: dict[int, float] | None = None,
+                ban_cheng: dict[int, float] | None = None,
                 inst_finals: list[float] | None = None,
                 grp_finals: list[float] | None = None) -> dict:
     """某一段**结束时**的命盘快照（data-model §7 的 `steps[].chart`）。
@@ -1461,8 +1841,8 @@ def _step_chart(cols: list[degrees.Col], hidden: dict, month_zhi: str,
 
     `stage` 四态，与各段的度数口径一一对应（见 `_STAGE_OF`）。
 
-    **天干栏的度数**：第 1–5 段是该干**自身**的生度数（原局 1，合绊后 0.6/0.8…）；
-    **第 6 段（静态旺度）起换成「该干所在连片组的旺度」**——也就是生克算式里真正用的
+    **天干栏的度数**：第 1–3 段是该干**自身**的生度数（原局 1）；
+    **第 4 段（通根递减）起换成「该干所在连片组的旺度」**——也就是生克算式里真正用的
     那个数（`组 = 自身 + 根`，含通根），另给小字 `gan_own`（自身旺度）与 `gan_root`
     （根）。第 7 段逐实例快照里主数与根都取**结算当下的值**，故会逐步变化。
 
@@ -1477,7 +1857,7 @@ def _step_chart(cols: list[degrees.Col], hidden: dict, month_zhi: str,
     终值，从而得到「结算到一半」的命盘，而不是最后一锤定音的状态。
 
     ⚠️ **已知简化**：通根的「按最近一支递减一次」（`_run_split`）是整段扣减，归不到
-    单个藏干头上，故第 5 段起各藏干度数之和会略大于 `degrees[wx].root × 系数`。
+    单个藏干头上，故第 5 段（静态旺度）起各藏干度数之和会略大于 `degrees[wx].root × 系数`。
     本快照不给该合计，`degrees` 契约亦不受影响。
     """
     import services.bazi.v2.tables as tables
@@ -1511,7 +1891,7 @@ def _step_chart(cols: list[degrees.Col], hidden: dict, month_zhi: str,
                 val = (inst_final_of.get(c.key, 0.0)
                        if nd is not None and nd["gan"] == gan
                        else round(deg * coef.get(wx, 1.0), 3))
-            elif stage == "static":
+            elif stage in ("static", "static_he"):
                 val = round(deg * coef.get(wx, 1.0), 3)
             else:
                 val = round(deg, 3)
@@ -1531,15 +1911,21 @@ def _step_chart(cols: list[degrees.Col], hidden: dict, month_zhi: str,
             hidden_out.append({"gan": gan, "wx": wx, "degree": val, "change": mark})
 
         # 天干栏的度数：
-        #   · 第 1–5 段：该干**自身**的生度数（原局 1；合绊后 0.6/0.8…）
+        #   · 第 1–3 段：该干**自身**的生度数（原局 1）
         #   · 第 6 段起：换成该干所在**连片组的旺度**——生克算式里真正用的那个数
         #     （`组 = 自身 + 根`）。第 7 段逐实例快照里取**结算当下**的值，故会逐步变。
         # 另附两个小字：`gan_own` 自身旺度、`gan_root` 根（= 主数 − 自身）。
         gan_base = 1.0 if stage == "origin" else (ban or {}).get(idx, 1.0)
         g = grp_by_key.get(c.key)
-        show_grp = group_value or stage in ("static", "dynamic")
+        # **第 4 段（通根递减）起**一律出「该干所在连片组的旺度」——第 6 段（五合）尤其
+        # 必须如此：合绊作用的对象是**上一段（第 5 段）的组静态旺度**，不是「1 个干本身」。
+        show_grp = group_value or stage in ("static", "he", "static_he", "dynamic")
         if show_grp and g is not None:
-            own = round(gan_base * coef.get(GAN_WUXING.get(c.gan or "", ""), 1.0), 3)
+            # 该组的合绊成数（按整组缩放）——「自身」要跟着同缩，否则 `主数 = 自身 + 根`
+            # 虽仍成立，但「根」会不等于组的实际根。
+            _c = sum((ban_cheng or {}).get(i, 0.0) for i in g.cols)
+            _k = max(0.0, 1.0 - min(_c, 10.0) / 10.0)
+            own = round(1.0 * coef.get(GAN_WUXING.get(c.gan or "", ""), 1.0) * _k, 3)
             grp_deg = (grp_final_of.get(id(g), g.final) if stage == "dynamic"
                        else g.static)
             # 组被抽到比「字自己」还低时，字自己也跟着见底——保证
@@ -1551,8 +1937,8 @@ def _step_chart(cols: list[degrees.Col], hidden: dict, month_zhi: str,
 
         # 天干也换字（合化成功）：`origin` 段要显示**原局那个字**，其余段显示换字后的字，
         # 并标出原字（书 上 1593「甲木变成了戊土」）。
-        # 合绊标记看的是**生度数**（`gan_base`）——乘过系数后 1.0 会变成 2.0 之类，
-        # 不能拿 `gan_degree` 判有没有合绊。
+        # 合绊标记看**成数表**（`ban_cheng`）——逐干度数那套已废弃；乘过系数后 1.0 会
+        # 变成 2.0 之类，也不能拿 `gan_degree` 判有没有合绊。
         src = c.src_gan
         if stage == "origin":
             gan_char, gan_wx = src, GAN_WUXING.get(src, "")
@@ -1560,7 +1946,8 @@ def _step_chart(cols: list[degrees.Col], hidden: dict, month_zhi: str,
         else:
             gan_char, gan_wx = (c.gan or ""), GAN_WUXING.get(c.gan or "", "")
             gan_change = (_GAN_CHANGE_HUA if c.orig_gan
-                          else (_GAN_CHANGE_BAN if gan_base != 1.0 else None))
+                          else (_GAN_CHANGE_BAN if (ban_cheng or {}).get(idx)
+                                else None))
 
         zhi_wx = ZHI_WUXING.get(c.zhi or "", "")
         pillars.append({
@@ -1587,46 +1974,24 @@ def _step_chart(cols: list[degrees.Col], hidden: dict, month_zhi: str,
     return {"pillars": pillars}
 
 
-def _build_steps(cols: list[degrees.Col], rel: dict, hidden: dict, deg_detail: dict,
-                 static: dict, final: dict, month_zhi: str,
-                 effective: str | None, traces: list[str],
-                 pure: frozenset[str] = frozenset(),
-                 muku: tables.MukuCtx | None = None,
-                 grps: list[degrees.StemGroup] | None = None,
-                 insts: list[dict] | None = None,
-                 dm_group: degrees.StemGroup | None = None,
-                 he: dict | None = None,
-                 ban: dict[int, float] | None = None,
-                 checkpoints: list[dict] | None = None) -> list[dict]:
-    """逐段判定依据（data-model §7、FR-050）。
+def _tonggen_static_traces(cols: list[degrees.Col], hidden: dict, deg_detail: dict,
+                           static: dict[str, float], ban: dict[int, float] | None,
+                           month_zhi: str, effective: str | None,
+                           muku, pure: frozenset[str]) -> tuple[list[dict], list[dict]]:
+    """第 4/5 段（通根递减、静态旺度）的依据行。
 
-    每一段给出 `key` / `title` / `rule` / `rulings` / `traces` / `result`，顺序固定
-    （FR-058），使任一结论都能回溯到对应的规则与算式（SC-004）。
-
-    `rulings` 列出该段生效的**口径裁定编号**（C26-n / O-n），落实 FR-056 的
-    「每一条已生效的口径裁定 MUST 能从引擎输出的判定依据反向追溯」——编号可在
-    `specs/012-rebuild-wangdu-xiyong/research.md` 定位到对应条目。
+    2026-09-16 起抽成函数，供**两处**复用：**原字视图**（换字前）与**换字后**的重算视图
+    ——「天干五合」现在排在静态旺度**之后**，两套值要能对照着看。
     """
     import services.bazi.v2.tables as _t
 
     def _tr(target, expr, value=None):
         return {"target": target, "expression": expr, "value": value}
 
-    # 关系逐条摊开成「**哪几个字**（柱位+干支）→ 判什么 → 成不成 → 有什么影响」。
-    # 只给柱位读者看不到是哪几个字（天干五合的字在天干上）；只给支则分不清同名关系
-    # 的哪一条（`甲子 丙寅 戊寅 戊午` 有两条子寅特殊生克）。
-    rel_tr = [_tr(_rel_chars(cols, e["cols"]),
-                  f"【成立】{_rel_name(e)}"
-                  f"｜影响：{_fx_brief(e.get('effects', []))}", None)
-              for e in rel["established"]]
-    rej_tr = [_tr(_rel_chars(cols, e["cols"]),
-                  f"【让位】{e['type']}：{e['reason']}｜无数值影响", None)
-              for e in rel["rejected"]]
-
     # 通根递减：每一段根都摊开（哪一支、距几柱、减多少），最后给该五行的合计。
     # 明细与合计同出 `_tonggen_runs_with_hidden`，与 `degrees[wx].root` 恒等。
     tg_tr: list[dict] = []
-    tg_brief: dict[str, list[str]] = {}      # wx → ["卯 5−2=3", …]，供第 5 段引用
+    tg_brief: dict[str, list[str]] = {}      # wx → ["卯 5−2=3", …]，供第 4/5 段引用
     for wx in _t.WUXING_ORDER:
         stem_pos = [i for i, c in enumerate(cols) if c.gan and GAN_WUXING[c.gan] == wx]
         runs = _tonggen_runs_with_hidden(cols, hidden, wx)
@@ -1698,6 +2063,59 @@ def _build_steps(cols: list[degrees.Col], rel: dict, hidden: dict, deg_detail: d
                  else f"{month_zhi}月{wx}为{state}")
         deg_tr.append(_tr(wx, f"{stem_txt} ＋ {root_txt} ＝ {stem_n + root:g} 度，"
                               f"× 月令系数 {coef:g}（{basis}）＝ {st:g} 度", st))
+    return tg_tr, deg_tr
+
+
+def _build_steps(cols: list[degrees.Col], rel: dict, hidden: dict, deg_detail: dict,
+                 static: dict, final: dict, month_zhi: str,
+                 effective: str | None, traces: list[str],
+                 pure: frozenset[str] = frozenset(),
+                 muku: tables.MukuCtx | None = None,
+                 grps: list[degrees.StemGroup] | None = None,
+                 insts: list[dict] | None = None,
+                 dm_group: degrees.StemGroup | None = None,
+                 he: dict | None = None,
+                 ban: dict[int, float] | None = None,
+                 checkpoints: list[dict] | None = None,
+                 cols0: list[degrees.Col] | None = None,
+                 lay0: dict | None = None) -> list[dict]:
+    """逐段判定依据（data-model §7、FR-050）。
+
+    每一段给出 `key` / `title` / `rule` / `rulings` / `traces` / `result`，顺序固定
+    （FR-058），使任一结论都能回溯到对应的规则与算式（SC-004）。
+
+    `rulings` 列出该段生效的**口径裁定编号**（C26-n / O-n），落实 FR-056 的
+    「每一条已生效的口径裁定 MUST 能从引擎输出的判定依据反向追溯」——编号可在
+    `specs/012-rebuild-wangdu-xiyong/research.md` 定位到对应条目。
+    """
+    import services.bazi.v2.tables as _t
+
+    def _tr(target, expr, value=None):
+        return {"target": target, "expression": expr, "value": value}
+
+    # 关系逐条摊开成「**哪几个字**（柱位+干支）→ 判什么 → 成不成 → 有什么影响」。
+    # 只给柱位读者看不到是哪几个字（天干五合的字在天干上）；只给支则分不清同名关系
+    # 的哪一条（`甲子 丙寅 戊寅 戊午` 有两条子寅特殊生克）。
+    rel_tr = [_tr(_rel_chars(cols, e["cols"]),
+                  f"【成立】{_rel_name(e)}"
+                  f"｜影响：{_fx_brief(e.get('effects', []))}", None)
+              for e in rel["established"]]
+    rej_tr = [_tr(_rel_chars(cols, e["cols"]),
+                  f"【让位】{e['type']}：{e['reason']}｜无数值影响", None)
+              for e in rel["rejected"]]
+
+    # 第 4/5 段（通根递减、静态旺度）——**原字视图**（换字前）与**换字后**各出一套。
+    # 「天干五合」现在排在静态旺度**之后**（2026-09-16 用户规格）：先按原字算静态，
+    # 五合换字后再重算一次，故两套值要能对照。
+    _c0 = cols0 if cols0 is not None else cols
+    _l0 = lay0 or {}
+    tg_tr0, deg_tr0 = _tonggen_static_traces(
+        _c0, _l0.get("hidden", hidden), _l0.get("deg_detail", deg_detail),
+        _l0.get("static", static), None, month_zhi, effective, muku, pure)
+    tg_tr, deg_tr = _tonggen_static_traces(
+        cols, hidden, deg_detail, static, None, month_zhi, effective, muku, pure)
+    _swapped = _c0 is not cols and any(c.orig_gan for c in cols)
+
     fin_tr = [_tr(wx, f"{wx}：动态旺度 {final.get(wx, 0.0):g} 度", final.get(wx, 0.0))
               for wx in _t.WUXING_ORDER]
     # 实例明细（S7）——同一个五行的各天干/本气实例的终值，逐条列出供复算。
@@ -1718,24 +2136,42 @@ def _build_steps(cols: list[degrees.Col], rel: dict, hidden: dict, deg_detail: d
     # 逐段命盘快照（data-model §7 的 `steps[].chart`）——只有 4 种状态，算一次复用给 7 段。
     # 必须在此处生成：`grps[].final` / `insts[].final` 已由 `stem_layer` 结算完毕，
     # 而 `static` / `root` 全程不被改写（见 `pipeline.stem_layer`）。
+    _ban_cheng = (he or {}).get("ban_cheng")
+
     def _chart(stage: str, *, group_value: bool = False,
                inst_finals: list[float] | None = None,
                grp_finals: list[float] | None = None) -> dict:
-        return _step_chart(cols, hidden, month_zhi, effective, muku, rel,
-                           grps or [], insts or [], stage=stage, ban=ban,
+        """命盘快照。**带不带合绊由 `_STAGE_WITH_BAN` 决定**（按 stage，不按调用点）——
+        第 6 段（五合）之前的各段一律用**原字视图**（未换字、未合绊），否则同段的
+        result 与快照会给出两个不同的数。"""
+        if stage in _STAGE_WITH_BAN:
+            return _step_chart(cols, hidden, month_zhi, effective, muku, rel,
+                               grps or [], insts or [], stage=stage, ban=ban,
+                               ban_cheng=_ban_cheng,
+                               group_value=group_value,
+                               inst_finals=inst_finals, grp_finals=grp_finals)
+        return _step_chart(_c0, _l0.get("hidden", hidden), month_zhi, effective,
+                           _l0.get("muku", muku), rel,
+                           _l0.get("grps", grps) or [], _l0.get("insts", insts) or [],
+                           stage=stage, ban=None, ban_cheng=None,
                            group_value=group_value,
                            inst_finals=inst_finals, grp_finals=grp_finals)
 
     chart_origin = _chart("origin")
     chart_he = _chart("he")
     chart_adjusted = _chart("adjusted")
-    # 第 5 段（通根递减）起就带上「组旺度 + 自身 + 根」三个数
+    # 第 4 段（通根递减）起就带上「组旺度 + 自身 + 根」三个数
     chart_tonggen = _chart("adjusted", group_value=True)
-    chart_static = _chart("static")
+    chart_static = _chart("static")          # 第 5 段：原字视图（`_STAGE_WITH_BAN` 决定）
+    chart_static_he = _chart("static_he")    # 第 7 段：含换字 + 合绊
     chart_dynamic = _chart("dynamic")
 
-    return [
-        {"key": "relations", "title": "第 1 段 · 关系判定（十八级顺序）",
+    _STEP_NAMES = {'relations': '关系判定（十八级顺序）', 'effects': '关系对藏干度数的影响', 'month_coef': '月令系数', 'tonggen': '通根递减', 'static': '静态旺度（原字）', 'stem_he': '天干五合（换字 + 合绊减力）', 'static_he': '换字后重算静态', 'stem_shengke': '生克结算（按实例）', 'total': '动态旺度与定级'}
+    def _renumber(it: dict, n: int, nm: str) -> dict:
+        it["title"] = f"第 {n} 段 · {nm}"
+        return it
+    _STEP_ITEMS = {
+        'relations':         {"key": "relations", "title": "第 1 段 · 关系判定（十八级顺序）",
          "chart": chart_origin,
          "rulings": ["O-5（严格让位：被消费支位对下级关系即失效）", "C26-6（同级按柱位先后取先者）"],
          "rule": "地支之间的关系按《四柱精髓》的先后顺序逐级论：高一级的关系成立后，"
@@ -1744,23 +2180,7 @@ def _build_steps(cols: list[degrees.Col], rel: dict, hidden: dict, deg_detail: d
                  "若两级关系的化神相同，则两者并存、不互相让位。",
          "traces": rel_tr + rej_tr,
          "result": f"成立 {len(rel['established'])} 条、让位 {len(rel['rejected'])} 条"},
-        {"key": "stem_he", "title": "第 2 段 · 天干五合",
-         "chart": chart_he,
-         "rulings": ["C26-18（争合失败时的合绊减力比例：−4 成侧按对数累加、−2 成侧总量恒 2 成）"],
-         "rule": "只论相邻紧贴的天干（书 上 1575 总则；不紧贴者「既不论合化，也不论合绊，"
-                 "它们之间不作用」，上 2090）。合化成功的，两个干都换成「化神五行、与本干"
-                 "同阴阳」的那个干——甲己化土则甲变戊、己仍己，丙辛化水则丙变壬、辛变癸"
-                 "（书 上 1593/1872/1990）；换字后五行归属就变了，后面的连片分组、通根、"
-                 "静态旺度都按新字算。合而不化的以合绊论：阴干那一方减 4 成（变为 0.6 度）、"
-                 "另一方减 2 成（变为 0.8 度），减的是这个干本身、不含通根（书 上 1595/1948），"
-                 "减后的度数直接进静态旺度（书 上 1638「日主静态旺度=（0.6+3+3）×1.4=9.24 度」）。"
-                 "一个干同时与两个干相合为争合：坐支为土者底气最足、为火者次之、其余相等"
-                 "（书 上 1699），底气足者得合、其余让位；底气与优先权（是否天合地合）都相当者"
-                 "互不相让、一律按合绊（书 上 1692）。合了的对贪合忘生克（书 上 1595），"
-                 "后面不再论生克。",
-         "traces": [_tr("", t, None) for t in (he or {}).get("traces", [])],
-         "result": _he_result(he or {}, ban or {})},
-        {"key": "effects", "title": "第 3 段 · 关系对藏干度数的影响",
+        'effects':         {"key": "effects", "title": "第 2 段 · 关系对藏干度数的影响",
          "chart": chart_adjusted,
          "rulings": [],
          "rule": "第 1 段成立的关系，会改变参与地支的藏干度数。改变方式有三种："
@@ -1768,7 +2188,7 @@ def _build_steps(cols: list[degrees.Col], rel: dict, hidden: dict, deg_detail: d
          "traces": [_tr(fx["zhi"], fx["reason"], fx.get("delta")) for e in rel["established"]
                     for fx in e.get("effects", [])],
          "result": "藏干度数已按关系影响调整"},
-        {"key": "month_coef", "title": "第 4 段 · 月令系数",
+        'month_coef':         {"key": "month_coef", "title": "第 3 段 · 月令系数",
          "chart": chart_adjusted,
          "rulings": [],
          "rule": "以月令的有效五行为基准，判断每个五行处于旺 / 相 / 休 / 囚 / 死中的哪一档，"
@@ -1782,47 +2202,86 @@ def _build_steps(cols: list[degrees.Col], rel: dict, hidden: dict, deg_detail: d
                          _tables_month_coef_state(wx, month_zhi, effective, muku)[0])
                     for wx in _t.WUXING_ORDER],
          "result": f"月令有效五行 = {effective or _t.BRANCH_WUXING_BENQI.get(month_zhi, '')}"},
-        {"key": "tonggen", "title": "第 5 段 · 通根递减",
+        'tonggen':         {"key": "tonggen", "title": "第 4 段 · 通根递减",
          "chart": chart_tonggen,
          "rulings": [],
          "rule": "天干在地支中找到同类藏干即为「通根」，按柱距递减：同柱不减、相邻 −0.5 度、"
                  "相隔 −1 度、远隔 −2 度，不足即归 0。两条例外：通根月令的一律视同同柱；"
                  "相邻的多个根「连成一片」时当作一个整体，只按最近的那一支递减一次。",
-         "traces": tg_tr,
-         "result": f"五行的实际通根 = "
+         "traces": tg_tr0,
+         "result": f"五行的实际通根（原字）= "
                    + "；".join(f"{wx} {deg_detail.get(wx, {}).get('root', 0.0):g}"
                                for wx in _t.WUXING_ORDER)},
-        {"key": "static", "title": "第 6 段 · 静态旺度",
+        'static':         {"key": "static", "title": "第 5 段 · 静态旺度（原字）",
          "chart": chart_static,
          "rulings": ["C26-7（2.4 归比弱侧：≥2.4 即有生克权、算强根、不从弱）",
                      "C26-16（度数是长在实例上的：连片天干组／同柱本气）"],
-         "rule": "静态旺度 =（天干度数 + 实际通根度数）× 月令系数。天干每透出一个算 1 度"
+         "rule": "静态旺度 =（天干度数 + 实际通根度数）× 月令系数。本段按「原字」算（合化换字排在下一段，故此处尚未换字）。天干每透出一个算 1 度"
                  "（同类且相邻的天干「连成一片」当做一个整体，合并计算——书 上 651）；"
                  "实际通根度数取自第 4 段；月令系数取自第 3 段。"
                  "同一个五行的不同天干旺度未必相等：年干戊土不与日时干紧贴，"
                  "在书 上 651-657 中另算为 5.6 度，而日干/时干戊土为 6.4 度。",
+         "traces": deg_tr0,
+         "result": "；".join(f"{wx} {_l0.get('static', static).get(wx, 0.0):g}"
+                             for wx in _t.WUXING_ORDER)},
+        'stem_he':         {"key": "stem_he", "title": "第 6 段 · 天干五合（换字 + 合绊减力）",
+         "chart": chart_he,
+         "rulings": ["C26-18（争合失败时的合绊减力比例：−4 成侧按对数累加、−2 成侧总量恒 2 成）",
+                     "C26-22（条件④「弱方不能独立」取动态旺度：先按合绊算到底取弱方所在组的"
+                     "终值，判成再换字重算——书 上 1588「甲必须处于不能独立的状态（指动态旺度）」）"],
+         "rule": "只论相邻紧贴的天干（书 上 1575 总则；不紧贴者「既不论合化，也不论合绊，"
+                 "它们之间不作用」，上 2090）。合化的五个条件：相邻、月令为化神当令之地"
+                 "（月令被地支合化改宗时按化神后的月令）、坐支本气满足、弱方不能独立、"
+                 "甲己另加燥湿一条。第四条按动态旺度判：先把这个五合按合绊试算到底，"
+                 "看弱方那个字所在的那一片天干结算后还剩多少度，不足 2.4 度即为不能独立，"
+                 "此时才换字、再从头算一遍；否则以合绊论。合化成功的，两个干都换成「化神五行、"
+                 "与本干同阴阳」的那个干——甲己化土则甲变戊、己仍己，丙辛化水则丙变壬、辛变癸"
+                 "（书 上 1593/1872/1990）；换字后五行归属就变了，后面的连片分组、通根、"
+                 "静态旺度都按新字算。合而不化的以合绊论：阴干那一方减 4 成（变为 0.6 度）、"
+                 "另一方减 2 成，"
+                 "**减的是该干所在连片组的静态旺度**（含通根那一份，整组同缩）——本实现按用户"
+                 "2026-09-16 裁定，与 书 上 1595「1 个甲木减去 0.2 度」／上 1638／上 1948「本身」"
+                 "三处明文相反（有意分歧）；换字者按新字另起一段重算静态。"
+                 "一个干同时与两个干相合为争合：坐支为土者底气最足、为火者次之、其余相等"
+                 "（书 上 1699），底气足者得合、其余让位；底气与优先权（是否天合地合）都相当者"
+                 "互不相让、一律按合绊（书 上 1692）。合了的对贪合忘生克（书 上 1595），"
+                 "后面不再论生克。",
+         "traces": [_tr("", t, None) for t in (he or {}).get("traces", [])],
+         "result": _he_result(he or {}, ban or {}, (he or {}).get("ban_cheng"), static)},
+        'static_he':         {"key": "static_he", "title": "第 7 段 · 换字后重算静态",
+         "chart": chart_static,
+         "rulings": ["C26-16（度数是长在实例上的：连片天干组／同柱本气）",
+                     "C26-23（五合排在静态旺度之后：换字后按新字重算静态）"],
+         "rule": "合化成功换过字的天干，五行归属变了——连片分组、通根归属与静态旺度都要"
+                 "按新字重算一遍（书 上 1593「甲己合化成功，其土的力量由原来的 1 度变成 2 度，"
+                 "原因是 1 度的甲木变成了土」）。合而不化者不换字，此处与上一段同值；"
+                 "合绊的减力也在这一段并入（书 上 1638「日主静态旺度=（0.6+3+3）×1.4=9.24 度」）。",
          "traces": deg_tr,
          "result": "；".join(f"{wx} {static.get(wx, 0.0):g}" for wx in _t.WUXING_ORDER)},
-        {"key": "stem_shengke", "title": "第 7 段 · 生克结算（按实例）",
+        'stem_shengke':         {"key": "stem_shengke", "title": "第 8 段 · 生克结算（按实例）",
          "chart": chart_dynamic,
          "rulings": ["C26-8（有生 = 隔壁紧贴的五行来生且该主生者自身有生克权）",
                      "C26-9（4 倍受生上限只约束「有根无气」；「有气」＝月令处旺/余气/相，书 上 353）",
                      "C26-5（同柱生克进入度数）",
                      "C26-16（按实例结算：连片组／同柱本气；组通根按组内最近干递减）",
-                     "C26-17（生克权按五行整体动态、成数按自身度数；逐实例「先受后施」；同柱先、天干后）"],
+                     "C26-17（生克权按五行整体动态判）",
+                     "C26-21（受后失去生克权、或由有度被打散到 0 者，本阶段不施）",
+                     "C26-23（合 → 生 → 克 三段、段间更新；段内同一快照、同类取最大；不同单位各算各的）"],
          "rule": "结算的对象是「实到的那个字」而不是「五行合计」：同类且柱位相邻的天干连成"
                  "一片为一组（书 上 651「紧贴…可以当做一个整体」），同柱的另一头是本支的"
-                 "本气藏干（书 上 1008「戌土本身=3×0.7=2.1 度」）。相邻的两组、以及一组与"
-                 "其同柱本气之间论生克，成数按双方的静态度数比算（书 上 673-722 四公式、"
-                 "上 771）；「先合 → 再生克」。次序为全盘逐实例「先受后施」：每个实例先"
-                 "结算它受到的（生入＋克入，同一快照、同时施加），再结算它施出的生、最后它"
-                 "施出的克。生克权按 上 980 三条件取该五行在全盘的合计度数判，且用结算当下的"
-                 "动态度值——书 上 747「乙木先受辛金克制，乙木受克后没有生克权不能克戊土」；"
-                 "成数则按当前那个字自身的度数算。同一批内多路作用"
-                 "成数相加（书 上 2325「酉金一共减去 2.5+1.25=3.75 度」）。受生范围的"
-                 "「主生者力量」取该五行的旺度（书 上 1601「寅木的力量是丙火的 7 倍」）；"
-                 "受生者的动态旺度归 0 时该生「虽有若无」（书 下 4263「己土变为 0 度不再受"
-                 "丙火之生」）。",
+                 "本气藏干（书 上 1008「戌土本身=3×0.7=2.1 度」）。按「合 → 生 → 克」三段"
+                 "结算：合已在第 6 段完成（换字 + 合绊按整组缩放，已进生克基数），再依次走生批、"
+                 "克批，每批算完得出一个新值供下一批使用——《入门》1498「戊土生完庚辛金之后，"
+                 "还有余力（13.2 度），才能去克壬水和子水」。批内不分先后、取同一快照"
+                 "（同书「这两者没有先后顺序，是同时进行的」）；同一单位在同一类里"
+                 "取影响最大的一路（同书「只能选其中一个来计算戊土的动态旺度——抓大放小」），"
+                 "而不同单位各算各的（「不意味着戊土只能克壬水不能克子水」）。批内次序为"
+                 "先受后施：先算各单位受到的生克，用它判生克权与「余力」，再扣它施出的损耗"
+                 "（书 上 747「乙木先受辛金克制，乙木受克后没有生克权不能克戊土」）。"
+                 "生克权按 上 980 三条件取该五行在全盘的合计度数判；成数按双方本批起点的"
+                 "度数比算（书 上 673-722 四公式）。受生范围的「主生者力量」取该五行的旺度"
+                 "（书 上 1601「寅木的力量是丙火的 7 倍」）；受生者的旺度归 0 时该生"
+                 "「虽有若无」（书 下 4263「己土变为 0 度不再受丙火之生」）。",
          "traces": [_tr("", t, None) for t in traces],
          # 逐实例快照：`after` = 该实例结算完时依据行已产出的条数，前端据此把图**插在**
          # 对应算式的后面（不是全堆在段尾）。
@@ -1831,16 +2290,24 @@ def _build_steps(cols: list[degrees.Col], rel: dict, hidden: dict, deg_detail: d
                                      grp_finals=cp["grp_finals"])}
                     for cp in (checkpoints or [])],
          "result": "实例层结算完成"},
-        {"key": "total", "title": "第 8 段 · 动态旺度与定级",
+        'total':         {"key": "total", "title": "第 9 段 · 动态旺度与定级",
          "chart": chart_dynamic,
          "rulings": ["C26-16（日主的档位取日主所在那一组的终值）"],
-         "rule": "动态旺度 = 静态旺度经第 6 段结算后的终值。五行的合计数 = 该五行各组终值"
+         "rule": "动态旺度 = 静态旺度经生克结算后的终值。五行的合计数 = 该五行各组终值"
                  "之和（不透天干者取地支整体）；日主的档位取「日主所在那一组」的终值按十一档"
                  "定级（书 上 651「这个 6.4 度就是日干戊土的静态旺度」）。",
          "traces": fin_tr + inst_tr,
          "result": f"日主 {dm}（{dm_wx}）所在组 {dm_label} 动态 {dm_final:g} 度 → "
                    f"{degrees.level_of(dm_final)}"},
-    ]
+    }
+    # 段序（2026-09-16）：五合排在静态旺度**之后**；**只有真的换过字**才另立
+    # 「换字后重算静态」一段——合化不成功（全是合绊或无五合）时不产生该段。
+    _order = ["relations", "effects", "month_coef", "tonggen", "static", "stem_he"]
+    if (he or {}).get("hua"):
+        _order.append("static_he")
+    _order += ["stem_shengke", "total"]
+    _items = {k: v for k, v in _STEP_ITEMS.items() if k in _order}
+    return [_renumber(_items[k], i, _STEP_NAMES[k]) for i, k in enumerate(_order, 1)]
 
 
 def _tables_month_coef_state(wx: str, month_zhi: str, effective: str | None,

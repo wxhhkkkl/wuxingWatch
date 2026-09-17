@@ -141,3 +141,35 @@ def test_dayun_column_does_not_change_original_scores():
     b = pipeline.compute_strength(p, dayun_ganzhi="丙辰")
     assert a["final_scores"] == b["final_scores"]
     assert a["degrees"]["土"]["root"] == b["degrees"]["土"]["root"]
+
+
+def test_muku_month_with_dayun_liuhai_does_not_crash():
+    """月支**四库** + 大运与之成**六害**：`_muku_ctx` 不得因 `_dayun` 伪列 KeyError。
+
+    `_muku_ctx` 的六害分支按**参与柱数**计（书 上 1088③「2子害1未」），故要读 `e["cols"]`
+    的**柱位键**；而大运/流年是 `_with_extras` 挂上的**伪列**（`_dayun`/`_liunian`），
+    不在原局 `cols` 里——直接取值即 KeyError（2026-09-16 修，见下）。本分支与同函数的
+    「亥拱未」一样**只按原局四柱计**，跳过未知键。
+
+    修复前：`甲子 乙未 丙寅 丁酉` 走 `甲子` 运 → `KeyError: '_dayun'`，
+    `POST /api/charts/predict` 直接 500（大运逐运调用 `compute_strength`）。
+    """
+    from services.bazi.v2 import pipeline
+
+    p = _pillars("甲子", "乙未", "丙寅", "丁酉")
+    r = pipeline.compute_strength(p, dayun_ganzhi="甲子")   # 子未害
+    assert r["final_scores"], "应正常出结果，不得抛 KeyError"
+
+    # 流年列走同一条分支
+    r2 = pipeline.compute_strength(p, liunian_ganzhi="甲子")
+    assert r2["final_scores"]
+
+
+def test_dayun_column_scores_without_extra_columns():
+    """带大运的整条链路（`dayun.analyze_all`）在四库月 + 六害下不得崩。"""
+    from services.bazi.v2 import dayun as _dayun
+
+    p = _pillars("甲子", "乙未", "丙寅", "丁酉")
+    steps = [{"ganzhi": "甲子", "start_age": 8}, {"ganzhi": "丙寅", "start_age": 28}]
+    items = _dayun.analyze_all(p, steps)
+    assert [i["ganzhi"] for i in items] == ["甲子", "丙寅"]

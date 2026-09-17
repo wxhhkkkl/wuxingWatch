@@ -399,9 +399,13 @@ def test_book_case_xia_4261_production_xiyong_layer():
     #      「日主静态旺度=（0.6+3+3）×1.4=9.24 度」）→ 静态 13.0 → 12.2；
     #   ② C26-20 成数基数改取「结算当下的值」→ 动态 9.541 → 9.377 → **8.96**。
     # 格局/用神/喜忌与书同向，均未变。
-    assert r["day_master_group"]["static"] == pytest.approx(12.2)
-    assert r["day_master_group"]["final"] == pytest.approx(8.96)
-    assert r["level"] == "中和"
+    #   ③ 2026-09-16「合 → 生 → 克 三段 + 同类取最大」重设计 → 动态 **10.4**。
+    # 格局/用神/喜忌与书同向，均未变（下面几条不断言具体度数，只断言方向）。
+    assert r["day_master_group"]["static"] == pytest.approx(7.8)
+    assert r["day_master_group"]["final"] == pytest.approx(11.2)
+    # 2026-09-16（合绊减整组）后日主组动态 11.2 → 档位由「中和」升到「偏旺」；
+    # 书的「乙木偏旺」正与「偏旺」同向。
+    assert r["level"] == "偏旺"
     assert ys["theoretical"]["element"] == "火", "偏旺取克泄耗，按乙之性首取火（书「首取丙火」）"
     assert ys["practical"]["element"] == "土", "火克金相战 → 首取土通关为用（书 下 4261）"
     assert ys["xi_shen"] == ["火"], "生土者火为喜神"

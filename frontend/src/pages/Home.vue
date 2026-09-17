@@ -55,7 +55,7 @@ const geoSearching = ref(false)
 let geoDebounce: number | undefined
 
 // 四柱输入
-const pillars = ref<Record<PillarKey, string>>({ year: '庚午', month: '辛巳', day: '乙酉', time: '辛巳' })
+const pillars = ref<Record<PillarKey, string>>({ year: '戊申', month: '庚申', day: '戊午', time: '戊午' })
 const pillarPickerKey = ref<PillarKey | null>(null)
 const pillarModel = ref<[string, string]>(['甲', '子'])
 const pillarColumns = [

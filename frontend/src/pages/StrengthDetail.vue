@@ -1,26 +1,44 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { getRecord } from '../api/records'
 import { useChartStore } from '../stores/chart'
-import { isWangduStrength, isWangduV2, type V2Step, type V2ChartPillar,
-         type StepTrace, type WangduStep } from '../types'
+import { isWangduStrength, isWangduV2, type ChartResult, type V2Step,
+         type V2ChartPillar, type StepTrace, type WangduStep } from '../types'
 import { ganZhiColor, wxColor } from '../utils/wuxing'
 
 const router = useRouter()
+const route = useRoute()
 const chartStore = useChartStore()
 
+// **来源**：带 `?record=<id>` 时取**那条记录**的结果；否则取当前会话 store 里的排盘。
+// 不带来源参数时，从「记录详情」点进来会显示上一次排盘的那张盘（或整页空）——故
+// `ChartDisplay` 在记录页会把 id 带过来。
+const recordResult = ref<ChartResult | null>(null)
+const source = computed(() => recordResult.value ?? chartStore.result)
+
+onMounted(async () => {
+  const rid = Number(route.query.record)
+  if (!rid) return
+  try {
+    recordResult.value = (await getRecord(rid)).chart_result
+  } catch {
+    /* 取不到就退回会话 store（compute 里已兜底为 null） */
+  }
+})
+
 const strength = computed(() => {
-  const s = chartStore.result?.xi_yong.strength
+  const s = source.value?.xi_yong.strength
   return isWangduStrength(s) ? s : null
 })
 const hasLegacy = computed(() => {
-  const s = chartStore.result?.xi_yong.strength
+  const s = source.value?.xi_yong.strength
   return !!s && !isWangduStrength(s) && !isWangduV2(s)
 })
 
 // ---- 012 v2 契约（engine === 'wangdu-v2'）与旧契约**独立渲染路径**（FR-053/054）----
 const v2 = computed(() => {
-  const s = chartStore.result?.xi_yong.strength
+  const s = source.value?.xi_yong.strength
   return isWangduV2(s) ? s : null
 })
 const WUXING_SET = new Set(['木', '火', '土', '金', '水'])

@@ -17,7 +17,9 @@ import RelationDiagram from './RelationDiagram.vue'
 import { isWangduStrength, isWangduV2 } from '../types'
 import { useChartStore } from '../stores/chart'
 
-const props = defineProps<{ result: ChartResult }>()
+// `recordId` 由「记录详情」传入——不带它时 `/strength` 会去读**会话 store**，
+// 从一条记录点进去就会串成上一次排盘的那张盘（或整页空）。
+const props = defineProps<{ result: ChartResult; recordId?: number }>()
 
 const router = useRouter()
 const chartStore = useChartStore()
@@ -302,7 +304,9 @@ function fmtDateTime(s: string): string {
           v-if="isWangduStrength(xi.strength) || isWangduV2(xi.strength)"
           class="strength-link"
           data-testid="strength-link"
-          @click="router.push('/strength')"
+          @click="router.push(props.recordId != null
+            ? { path: '/strength', query: { record: String(props.recordId) } }
+            : '/strength')"
         >
           {{ xi.conclusion.summary }} · 查看计算过程<van-icon name="arrow" size="12" />
         </span>

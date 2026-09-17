@@ -48,6 +48,53 @@ describe('request 401 鉴权失败跳转登录', () => {
   })
 })
 
+describe('并发 401 共用同一次刷新', () => {
+  const replace = vi.fn()
+  const originalLocation = window.location
+
+  beforeEach(() => {
+    localStorage.clear()
+    replace.mockClear()
+    Object.defineProperty(window, 'location', {
+      value: { pathname: '/', search: '', replace },
+      writable: true,
+    })
+  })
+
+  afterEach(() => {
+    Object.defineProperty(window, 'location', { value: originalLocation, writable: true })
+    vi.unstubAllGlobals()
+  })
+
+  it('两个请求同时 401 只刷新一次，且不误跳登录页', async () => {
+    // 刷新令牌是一次性轮换的：第一次 refresh 成功、第二次（并发）用旧令牌必然 401
+    let refreshCalls = 0
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL, init: RequestInit = {}) => {
+        if (String(input) === '/api/auth/refresh') {
+          refreshCalls += 1
+          return refreshCalls === 1
+            ? new Response('{"access_token":"fresh"}', { status: 200 })
+            : new Response('{}', { status: 401 })
+        }
+        const auth = new Headers(init.headers).get('Authorization')
+        return auth === 'Bearer fresh'
+          ? new Response('{"ok":true}', { status: 200 })
+          : new Response('{"detail":"Not authenticated"}', { status: 401 })
+      }),
+    )
+    setAccessToken('stale')
+
+    const results = await Promise.all([request('/api/records'), request('/api/records')])
+
+    expect(refreshCalls).toBe(1)
+    expect(results).toEqual([{ ok: true }, { ok: true }])
+    expect(localStorage.getItem('auth')).toBeNull()
+    expect(replace).not.toHaveBeenCalled()
+  })
+})
+
 describe('accessToken 持久化', () => {
   it('setAccessToken 写入 localStorage，清空时移除', () => {
     localStorage.clear()
