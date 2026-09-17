@@ -31,7 +31,7 @@ def get_current_user(
     user = db.get(User, int(payload["sub"]))
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
-    # 单活跃会话：access token 携带会话 sid，若该会话已被（他人重新登录）清除则立即失效
+    # access token 携带会话 sid；该会话被登出/轮换清除后立即失效（多端并存，互不影响）
     sid = payload.get("sid")
     if sid is not None:
         sess = db.get(RefreshSession, sid)

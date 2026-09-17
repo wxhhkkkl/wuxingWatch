@@ -1,4 +1,4 @@
-"""单活跃会话：token 长期有效不过期；同一账号他人重新登录后，旧 access token 立即失效。"""
+"""多端共存：同一账号可在多设备登录，各会话互不影响；伪造 sid 仍被拒。"""
 
 PHONE = "13800001234"
 
@@ -7,15 +7,29 @@ def _auth(token: str) -> dict:
     return {"Authorization": f"Bearer {token}"}
 
 
-def test_relogin_invalidates_old_token(client, login_user):
-    # 第一次登录
+def test_relogin_keeps_other_sessions(client, login_user):
+    """多端共存：同一账号再次登录不再清除旧会话，旧 access token 仍有效。"""
     token1 = login_user(PHONE)
     assert client.get("/api/records", headers=_auth(token1)).status_code == 200
-    # 同一账号再次登录 → 新会话接管，旧会话被清除
     token2 = login_user(PHONE)
     assert client.get("/api/records", headers=_auth(token2)).status_code == 200
-    # 旧 access token 立即失效（401）
-    assert client.get("/api/records", headers=_auth(token1)).status_code == 401
+    assert client.get("/api/records", headers=_auth(token1)).status_code == 200
+
+
+def test_refresh_keeps_other_sessions(client, login_user):
+    """刷新只轮换自己那行，不清除其它设备的会话。"""
+    other = login_user(PHONE)
+    login_user(PHONE)  # cookie 现属于后登录的这台设备
+    assert client.post("/api/auth/refresh").status_code == 200
+    assert client.get("/api/records", headers=_auth(other)).status_code == 200
+
+
+def test_logout_only_revokes_current_session(client, login_user):
+    """登出只吊销当前会话，其它设备仍在线。"""
+    other = login_user(PHONE)
+    login_user(PHONE)
+    assert client.post("/api/auth/logout").status_code == 204
+    assert client.get("/api/records", headers=_auth(other)).status_code == 200
 
 
 def test_access_token_has_long_lifetime():

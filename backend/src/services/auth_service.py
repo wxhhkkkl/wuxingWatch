@@ -114,13 +114,11 @@ def _utcnow_naive() -> datetime.datetime:
 
 
 def create_refresh_session(db: Session, user_id: int) -> tuple[str, int]:
-    """创建新会话（单活跃会话：先清除该用户所有旧会话，旧 token 随之失效）。
+    """创建新会话（多端共存：不影响该账号的其它会话）。
 
     Returns (refresh_token, session_id). session_id 用于 access token 的 sid 校验。
     """
     settings = get_settings()
-    # 新登录/刷新会使该账号的其它会话全部失效
-    db.query(RefreshSession).filter_by(user_id=user_id).delete()
     token = security.new_refresh_token()
     sess = RefreshSession(
         user_id=user_id,
@@ -134,7 +132,7 @@ def create_refresh_session(db: Session, user_id: int) -> tuple[str, int]:
 
 
 def _issue_tokens(db: Session, user: User) -> tuple[str, str]:
-    """签发 access(带会话 sid) + refresh，单活跃会话。"""
+    """签发 access(带会话 sid) + refresh（新建一条会话，不影响该账号其它会话）。"""
     refresh, sid = create_refresh_session(db, user.id)
     access = security.create_access_token(user.id, user.phone, sid)
     return access, refresh
