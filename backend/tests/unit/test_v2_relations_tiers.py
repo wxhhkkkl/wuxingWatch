@@ -430,20 +430,46 @@ def test_tier16_gonghui_removed():
     assert not _estab(r, tier=16), "拱会已去除"
 
 
-def test_tier17_gonghe_removed():
-    """申辰拱合（tier 17）**不再产出候选**。"""
+def test_tier17_shenchen_gonghe_forms():
+    """申辰拱合（tier 17）**中神水透干时成立**（2026-09-17 用户裁定加回）。
+
+    甲申 戊辰 丙午 壬戌 —— 申(年)辰(月) **相邻**、中神「子」**不在盘**、天干见 **壬**（水透）
+    → 成立。依据：《入门》708「若亥未、寅戌、巳丑、申辰相见不为半三合，称之为拱合」；
+    中神透干这一条为书四例所共（见 `test_gonghe_requires_zhongshen_to_tou_gan`）。
+    """
     r = relations.judge_relations(_chart("甲申", "戊辰", "丙午", "壬戌"))
-    assert not _estab(r, tier=17), "拱合已去除"
+    t17 = _estab(r, tier=17)
+    assert t17, "申辰拱合应成立"
+    assert set(t17[0]["members"]) == {"申", "辰"}, t17[0]
 
 
-def test_removed_tiers_leave_no_candidates_anywhere():
-    """全量守卫：任取一批盘，established/rejected 里都不应再出现 16/17。"""
-    cases = [("乙亥", "丁丑", "戊辰", "己卯"), ("甲申", "戊辰", "丙午", "壬戌"),
-             ("寅戌", "甲子", "丙寅", "庚申"), ("巳丑", "乙丑", "丁卯", "辛丑")]
-    for gz in cases:
-        r = relations.judge_relations(_chart(*gz))
-        tiers = {e["tier"] for e in r["established"]} | {e["tier"] for e in r["rejected"]}
-        assert not (tiers & {16, 17}), (gz, sorted(tiers))
+def test_gonghe_requires_zhongshen_to_tou_gan():
+    """**中神不透干则不成立**（2026-09-17 裁定）——书里四个有效例子的中神**全部透干**：
+    上 1685 甲、下 2614 壬、下 2656 甲、答疑 1950 丁。
+
+    乙亥 丁丑 戊辰 己卯：亥(年)丑(月) 相邻、中神「子」不在盘，但天干 乙丁戊己 里
+    **没有壬癸** → 水不透 → 不论拱合（tier 16/17 都不出候选）。
+    """
+    r = relations.judge_relations(_chart("乙亥", "丁丑", "戊辰", "己卯"))
+    assert not (_estab(r, tier=16) or _estab(r, tier=17)), \
+        [(e["tier"], e.get("detail")) for e in r["established"]]
+
+
+def test_shenxu_gonghui_yields_to_tier18():
+    """**申戌让给 tier 18 的「戌脆金／戌生金」**（2026-09-17）。
+
+    书上凡涉申戌皆以「脆金／生金」称呼（上 521「两戌脆一申，申金被脆尽」、上 513
+    「其不但不脆金反生金」…共四例），而《入门》717 的「申戌拱会」**无任何算例**；
+    《入门》同句又定义「拱会者，**其中藏干互相生克**」——申戌的"藏干互相生克"正是那一套。
+    两者是同一效果的两个名字，取有算例的那个。若让 tier 16 抢走，tier 18 整批不可达
+    （当年旧实现的毛病）。
+    """
+    # 书 上 521 那盘（乾 丙子 戊戌 戊戌 庚申）：戌申相邻、金透（庚）、酉不在
+    # → 本可成「申戌拱会」，但按本裁定让给 tier 18；书对它的原话是
+    # 「两戌脆一申，申金被脆尽，申乃骨骼…故有严重的软骨病」。
+    r = relations.judge_relations(_chart("丙子", "戊戌", "戊戌", "庚申"))
+    assert not _estab(r, tier=16), "申戌不应走拱会"
+    assert _estab(r, tier=18), "戌申特殊生克应成立（书 上 521 的脆金）"
 
 
 def test_tier12_yields_to_tier8_on_shared_branch():

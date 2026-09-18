@@ -186,6 +186,9 @@ ZHI_HAI = [frozenset("子未"), frozenset("丑午"), frozenset("寅巳"),
 # 三刑（书 第十节）
 XING_SAN = [("寅", "巳", "申"), ("丑", "戌", "未")]
 XING_ER = [frozenset("子卯"), frozenset("寅巳"), frozenset("丑戌"), frozenset("未戌")]
+
+# 拱合／拱会拱出的**中神**（书《入门》708/717：三合局／三会局缺中神时的两端支）
+_ZHONGSHEN_ZHI = {"木": "卯", "水": "子", "火": "午", "金": "酉"}
 ZIXING = ("辰", "午", "酉", "亥")
 
 # 三会（书 第七节）
@@ -1503,21 +1506,45 @@ def _candidates(tier: int, st: _State) -> list[_Cand]:
                              sorted(dict.fromkeys(keys), key=st.idx),
                              detail=f"{z1}{z2}害"))
 
-    # 16 拱会 / 17 拱合：**已去除**（2026-09-11 用户裁定；**属已知的有意偏离**）。
-    #
-    # 书里并非「只有级名」——**如实记录**这条偏离丢掉了什么：
-    #   · 上 1685 给了拱合的**度数效果**：「亥未拱合，木失令，**亥中甲木完全去除**」；
-    #   · 下 2614「故辰辰自刑不成功，此时不再论辰辰自刑，而应论**申辰拱合**」、
-    #     下 2656「现在有寅辰拱会介入，故最终论**寅辰拱会**」——拱合/拱会可作**最终结论关系**；
-    #   · 上 1088③/1090④ 把「2亥拱1未」「1亥拱」当作**未月火/金状态的分档判据**。
-    # 原实现的毛病是：只能取「第一个 X + 第一个 Y」、连柱距都不看，把不相干的支判成拱，
-    # 且无任何度数效果（死效果），还把 tier 18 的戌脆金/戌生金整批抢走
-    # （书 上 1430/1433/521/513 四例全跑不出）。裁定在「按书补成立条件与度数」与
-    # 「整体去除」之间选了后者——故上述上 1685 的度数、下 2614/2656 的结论
-    # **本实现不复现**。级位保留在 `TIERS` 里以维持十八级的编号与书一致。
-    #
-    # 「亥拱未」改由 `pipeline._muku_ctx` 直接判定（严格相邻 + 排除已被占用的亥），
-    # 不经关系层。
+    elif tier in (16, 17):   # 拱会 / 拱合（2026-09-17 用户裁定加回）
+        # **成立条件**（四条，缺一不可）：
+        #   ① 两支为该局**首尾两端**（`ban.GONG_WX` 的八对）；
+        #   ② **中神支不在盘上**——在场就是完整的三合／三会，走 tier 4/6；
+        #   ③ **中神五行透干**（同五行即算透：拱木见甲乙、水见壬癸、火见丙丁、金见庚辛）
+        #      —— 书里四个有效例子全部满足：上 1685 甲、下 2614 壬、下 2656 甲、
+        #      答疑 1950 丁（唯一例外 答疑 2329 出自已撤销书源且原文缺字）；
+        #   ④ 两支**相邻**——书三例（亥未 年-月、申辰 日-时、寅辰 月-日）皆相邻，
+        #      与全书两两关系同规（上 1537）。
+        # 「不为半三合／半会」由 ① 天然满足：首尾两端＝生支+墓支，与半三合（生+中／中+墓）
+        # 不重叠。
+        #
+        # ⚠️ 2026-09-11 曾**整体去除**（旧实现不看柱距、不分中神，把不相干的支判成拱、
+        # 无度数、还抢走 tier 18）；此次是按上述四条重写，tier 18 逐对核过无重叠。
+        from services.bazi.v2 import ban as _ban       # 八对与「被拱五行」的定义在 ban 那边
+
+        for a, b in _pairs(st):
+            if not (a.zhi and b.zhi):
+                continue
+            pair = frozenset((a.zhi, b.zhi))
+            wx = _ban.GONG_WX.get(pair)
+            if not wx or not _adjacent(st, a, b):
+                continue
+            if (pair in _ban.GONG_HUI_PAIRS) != (tier == 16):
+                continue
+            if pair == frozenset(("戌", "申")):
+                # **申戌让给 tier 18**：《入门》717 的「申戌拱会」在书里**无任何算例**，
+                # 而书上凡涉申戌皆以「戌脆金／戌生金」称呼（上 521「两戌脆一申，申金被脆尽」、
+                # 上 513「其不但不脆金反生金」…共四例）。《入门》同句又定义「拱会者，
+                # **其中藏干互相生克**」——申戌的"藏干互相生克"正是那一套，两者是同一效果的
+                # 两个名字，取**有算例的那个**。否则申戌拱会会把 tier 18 整批抢走（当年旧实现
+                # 的毛病，见 2026-09-11 的去除裁定）。
+                continue
+            if _ZHONGSHEN_ZHI[wx] in [c.zhi for c in st.cols if c.zhi]:
+                continue                                  # ② 中神在场
+            if not any(GAN_WUXING.get(c.gan) == wx for c in st.cols if c.gan):
+                continue                                  # ③ 中神不透
+            out.append(_Cand(tier, tname, _ordered.sort_zhis([a.zhi, b.zhi]),
+                             [a.key, b.key], detail=f"{a.zhi}{b.zhi}拱{wx}"))
 
     elif tier == 18:   # 特殊生克（书 第三节 2294-2458，七条特例）
         for z1, z2 in SPECIAL_PAIRS:
@@ -1879,6 +1906,13 @@ def _effects_for(cand: _Cand, hua_succeeded: bool = False) -> list[dict]:
         else:
             out.extend(_ban.xing_effects(list(cand.members), cols_of(_MONTH_CTX),
                                          _MONTH_CTX["zhi"]))
+        return out
+
+    if cand.tier in (16, 17):
+        # 拱合／拱会：两端支里**被拱那一行**的藏干——失令去除、当令 +1（见 `ban.gong_effects`）
+        from services.bazi.v2 import ban as _ban
+        out.extend(_ban.gong_effects(list(cand.members), cols_of(_MONTH_CTX),
+                                     _MONTH_CTX["zhi"]))
         return out
 
     if cand.tier == 18:

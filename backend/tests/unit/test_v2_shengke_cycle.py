@@ -128,7 +128,9 @@ def test_settled_pair_is_not_regated_after_main_drained_itself():
     r = pipeline.compute_strength(_chart("丙寅", "乙未", "己未", "己巳"))
     joined = _joined(r)
     assert "主生者月干乙受泄耗：2.45 → 0 度" in joined, joined
-    assert "火受生：年干丙 22.4 → 22.89 度（取最大的一路 0.21875 成）" in joined, \
+    # 数字随拱会上调（该盘日未·时巳成「巳未拱会」火当令 → 火通根 +2 度 → 丙 22.4 → 25.6；
+    # 2026-09-17 加回拱合/拱会），**机制不变**：乙付了代价、丙照样收到那一路生。
+    assert "火受生：年干丙 25.6 → 26.09 度（取最大的一路 0.191406 成）" in joined, \
         "已定档的对不得因主方施后归零而拒收"
 
 

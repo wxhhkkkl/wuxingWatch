@@ -1604,14 +1604,30 @@ def compute_strength(pillars: dict, *, dayun_ganzhi: str | None = None,
     lay0 = _layers(cols0, rel, month_zhi, effective, pure, None)
     lay0["deg_detail"] = {wx: {"root": r} for wx, r in lay0["root"].items()}
 
-    lay = _layers(cols, rel, month_zhi, effective, pure, he["ban_cheng"])
+    # **换字后重判地支**（2026-09-17 用户裁定）：合化成功的字换了五行，地支合会的
+    # 「化神透干」条件必须以**新字**重判——实测 辛亥 丙申 丙戌 丁酉：丙辛化水后辛（金）变癸，
+    # 金不再透，申酉戌会金由「化成」降为「不化，按合绊」。**只走这一趟**（单方向，不回看天干）。
+    # 第 1 段的依据行仍按**原字**呈现（`result["relations"]`），重判结果另存
+    # `relations_after_he` 并在第 7 段留一行说明。
+    rel_after, eff_after, pure_after = rel, effective, pure
+    if he["hua"]:
+        _p2 = {c.key: {"gan": c.gan, "zhi": c.zhi}
+               for c in cols if c.key in ("year", "month", "day", "time")}
+        rel_after = relations.judge_relations(
+            _with_extras(_p2, dayun_ganzhi, liunian_ganzhi))
+        eff_after = _month_effective_wx(rel_after, cols)
+        pure_after = frozenset(k for e in rel_after["established"]
+                               for fx in e.get("effects", []) if fx.get("pure")
+                               for k in e["cols"])
+
+    lay = _layers(cols, rel_after, month_zhi, eff_after, pure_after, he["ban_cheng"])
     hidden, muku = lay["hidden"], lay["muku"]
     static, coef_by_wx = lay["static"], lay["coef_by_wx"]
     root_scaled, qi_by_wx = lay["root_scaled"], lay["qi_by_wx"]
     grps, insts = lay["grps"], lay["insts"]
     final, traces, has_sheng, checkpoints = stem_layer(
         cols, static, root_scaled, blocked=frozenset(he["blocked"]),
-        hidden=hidden, coef_by_wx=coef_by_wx, pure=pure, grps=grps, insts=insts,
+        hidden=hidden, coef_by_wx=coef_by_wx, pure=pure_after, grps=grps, insts=insts,
         qi_by_wx=qi_by_wx)
     import services.bazi.v2.tables as _t
 
@@ -1649,6 +1665,9 @@ def compute_strength(pillars: dict, *, dayun_ganzhi: str | None = None,
         "root_scaled": root_scaled,
         "level": level,
         "relations": rel,
+        # **换字后重判的地支关系**（2026-09-17 用户裁定）——只在五合换字时另算一份；
+        # 度数走的是它（`lay`），第 1 段的依据行仍按原字呈现上面那份 `relations`。
+        "relations_after_he": rel_after,
         "traces": traces,
         "degrees": deg_detail,
         # **实例明细**（S7）——`static_scores`/`final_scores`/`degrees[wx]` 仍是五行合计，
@@ -1668,10 +1687,10 @@ def compute_strength(pillars: dict, *, dayun_ganzhi: str | None = None,
         "day_master": dm,
         "day_master_original": (next((c.src_gan for c in cols if c.key == "day"), None)),
         "steps": _build_steps(cols, rel, hidden, deg_detail, static, final,
-                              month_zhi, effective, traces, pure, muku,
+                              month_zhi, eff_after, traces, pure_after, muku,
                               grps=grps, insts=insts, dm_group=dm_group,
                               he=he, ban=ban, checkpoints=checkpoints,
-                              cols0=cols0, lay0=lay0),
+                              cols0=cols0, lay0=lay0, rel_after=rel_after),
     }
 
 
@@ -2075,6 +2094,7 @@ def _build_steps(cols: list[degrees.Col], rel: dict, hidden: dict, deg_detail: d
                  insts: list[dict] | None = None,
                  dm_group: degrees.StemGroup | None = None,
                  he: dict | None = None,
+                 rel_after: dict | None = None,
                  ban: dict[int, float] | None = None,
                  checkpoints: list[dict] | None = None,
                  cols0: list[degrees.Col] | None = None,
@@ -2092,6 +2112,42 @@ def _build_steps(cols: list[degrees.Col], rel: dict, hidden: dict, deg_detail: d
 
     def _tr(target, expr, value=None):
         return {"target": target, "expression": expr, "value": value}
+
+    def _rejudge_tr() -> list[dict]:
+        """**换字后重判地支**留下的说明行——只在结果与第 1 段（原字）不同时出。
+
+        2026-09-17 用户裁定：合化换字让「化神透干」条件翻转（辛亥 丙申 丙戌 丁酉：
+        丙辛化水后金不再透，申酉戌会金由化成降为不化）。度数已按重判结果算，
+        这里把那几处变化点名列出来，免得读者对着第 1 段的清单找不着北。
+        """
+        if not rel_after or rel_after is rel:
+            return []
+
+        def lines(r: dict) -> dict[str, tuple[str, str | None]]:
+            """关系 → (detail, 化神)。**化神必须一起带上**：`detail` 在"合化成功"时
+            是不带后缀的（只有不化才写「（不化，按合绊）」），单印 detail 会让
+            「（不化） → 光秃秃」读起来像没变、或像仍不化。"""
+            return {f"{'、'.join(e.get('members') or [])}·{e.get('type')}":
+                    (e.get("detail") or "", e.get("hua"))
+                    for e in r.get("established", [])}
+
+        def _st(v: tuple[str, str | None]) -> str:
+            d, hua = v
+            return f"{d}（化{hua}）" if hua else d
+
+        a, b = lines(rel), lines(rel_after)
+        if a == b:
+            return []
+        out = [_tr("", "【换字后按新字重判地支】天干五合的化神透干条件随字而变：", None)]
+        for k in sorted(a):
+            if k not in b:
+                out.append(_tr("", f"　· 「{k}」{_st(a[k])} → 重判后不再成立", None))
+        for k in sorted(b):
+            if k not in a:
+                out.append(_tr("", f"　· 「{k}」原未成立 → 重判后成立：{_st(b[k])}", None))
+            elif a[k] != b[k]:
+                out.append(_tr("", f"　· 「{k}」：{_st(a[k])} → {_st(b[k])}", None))
+        return out
 
     # 关系逐条摊开成「**哪几个字**（柱位+干支）→ 判什么 → 成不成 → 有什么影响」。
     # 只给柱位读者看不到是哪几个字（天干五合的字在天干上）；只给支则分不清同名关系
@@ -2166,6 +2222,7 @@ def _build_steps(cols: list[degrees.Col], rel: dict, hidden: dict, deg_detail: d
     chart_static_he = _chart("static_he")    # 第 7 段：含换字 + 合绊
     chart_dynamic = _chart("dynamic")
 
+    _rj = _rejudge_tr()          # 换字后重判地支的说明行（无变化则为空）
     _STEP_NAMES = {'relations': '关系判定（十八级顺序）', 'effects': '关系对藏干度数的影响', 'month_coef': '月令系数', 'tonggen': '通根递减', 'static': '静态旺度（原字）', 'stem_he': '天干五合（换字 + 合绊减力）', 'static_he': '换字后重算静态', 'stem_shengke': '生克结算（按实例）', 'total': '动态旺度与定级'}
     def _renumber(it: dict, n: int, nm: str) -> dict:
         it["title"] = f"第 {n} 段 · {nm}"
@@ -2255,8 +2312,10 @@ def _build_steps(cols: list[degrees.Col], rel: dict, hidden: dict, deg_detail: d
          "rule": "合化成功换过字的天干，五行归属变了——连片分组、通根归属与静态旺度都要"
                  "按新字重算一遍（书 上 1593「甲己合化成功，其土的力量由原来的 1 度变成 2 度，"
                  "原因是 1 度的甲木变成了土」）。合而不化者不换字，此处与上一段同值；"
-                 "合绊的减力也在这一段并入（书 上 1638「日主静态旺度=（0.6+3+3）×1.4=9.24 度」）。",
-         "traces": deg_tr,
+                 "合绊的减力也在这一段并入（书 上 1638「日主静态旺度=（0.6+3+3）×1.4=9.24 度」）。"
+                 "**换字还会让地支合会的「化神透干」条件翻转**（2026-09-17 用户裁定）——"
+                 "换字后按新字**重判一趟地支**，本节所列的度数即按重判结果算。",
+         "traces": _rj + deg_tr if _rj else deg_tr,
          "result": "；".join(f"{wx} {static.get(wx, 0.0):g}" for wx in _t.WUXING_ORDER)},
         'stem_shengke':         {"key": "stem_shengke", "title": "第 8 段 · 生克结算（按实例）",
          "chart": chart_dynamic,
@@ -2264,7 +2323,8 @@ def _build_steps(cols: list[degrees.Col], rel: dict, hidden: dict, deg_detail: d
                      "C26-9（4 倍受生上限只约束「有根无气」；「有气」＝月令处旺/余气/相，书 上 353）",
                      "C26-5（同柱生克进入度数）",
                      "C26-16（按实例结算：连片组／同柱本气；组通根按组内最近干递减）",
-                     "C26-17（生克权按五行整体动态判）",
+                     "C26-27（生克权按**片**判：片自己的终值／片自己的乘系数根／片自己有无受生，"
+                     "不按五行全盘合计）",
                      "C26-21（受后失去生克权、或由有度被打散到 0 者，本阶段不施）",
                      "C26-23（合 → 生 → 克 三段、段间更新；段内同一快照、同类取最大；不同单位各算各的）"],
          "rule": "结算的对象是「实到的那个字」而不是「五行合计」：同类且柱位相邻的天干连成"

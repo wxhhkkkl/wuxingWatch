@@ -755,6 +755,57 @@ def _chouxu_effects(out: list[dict], cols: list, month_zhi: str) -> None:
             out.append(_zhaqi(z, gan, month_zhi, src))
 
 
+# ---------------------------------------------------------------
+# 拱合 / 拱会（书《入门》708/717 定义；度数沿用 书 上 1685 的形状）
+# ---------------------------------------------------------------
+# 拱合 = 三合局**首尾两端**（中神缺席）：亥未(木)、申辰(水)、寅戌(火)、巳丑(金)
+# 拱会 = 三会局**首尾两端**（中神缺席）：寅辰(木)、巳未(火)、申戌(金)、亥丑(水)
+# 《入门》708/717：这些「相见不为半三合／半会」，称拱合／拱会，「其中藏干互相生克，
+# **不存在合化之说**」。成立还须**中神透干**（书四例全满足：上 1685 甲透、下 2614 壬透、
+# 下 2656 甲透、答疑 1950 丁透），判定在 `relations` 的 tier 16/17 候选里做。
+GONG_WX: dict[frozenset, str] = {
+    frozenset(("亥", "未")): "木", frozenset(("申", "辰")): "水",
+    frozenset(("寅", "戌")): "火", frozenset(("巳", "丑")): "金",
+    frozenset(("寅", "辰")): "木", frozenset(("巳", "未")): "火",
+    frozenset(("申", "戌")): "金", frozenset(("亥", "丑")): "水",
+}
+GONG_HUI_PAIRS = frozenset(map(frozenset, (("寅", "辰"), ("巳", "未"),
+                                           ("申", "戌"), ("亥", "丑"))))
+
+
+def gong_effects(members: list[str], cols: list, month_zhi: str) -> list[dict]:
+    """拱合／拱会的藏干影响——**按月令状态分两档**（2026-09-17 用户裁定两档都开）。
+
+    - **失令**（休/囚/死）：两端支里该五行的藏干**完全去除**——**书证**是 上 1685
+      「亥未拱合，**木失令，亥中甲木完全去除**」：该盘（坤 癸亥 己未 甲辰 辛未）月令未、
+      木为**囚**，而「未」在未月的藏干表里**没有乙木**，故目标只剩「亥中甲」——
+      与本规则的「两端支里该五行的藏干」**逐字吻合**。
+    - **当令**（旺/余气/相）：两端支里该五行的藏干 **+1 度**——**无书证**，按失令档
+      对称外推（同族的特殊生克里「丑生申 +1」「戌生金 +1」都是这个量级）。
+    """
+    wx = GONG_WX.get(frozenset(members))
+    if not wx:
+        return []
+    dang = tables.COMPROMISE_PARAM[tables.month_state(wx, month_zhi)] <= 3
+    out: list[dict] = []
+    for z in members:
+        for gan, _deg in tables.hidden_degrees(z, month_zhi):
+            if GAN_WUXING.get(gan) != wx:
+                continue
+            if dang:
+                out.append({
+                    "zhi": z, "gan": gan, "delta": 1.0,
+                    "reason": f"拱{wx}：{wx}在{month_zhi}月当令、拱得出来 → {z}中{gan}"
+                              f"增力 1 度（**无书证**，按 书 上 1685 失令档对称外推；"
+                              f"2026-09-17 用户裁定开此档）"})
+            else:
+                out.append({
+                    "zhi": z, "gan": gan, "remove": True,
+                    "reason": f"拱{wx}：{wx}在{month_zhi}月失令、拱不出来 → {z}中{gan}"
+                              f"完全去除（书 上 1685「亥未拱合，木失令，亥中甲木完全去除」）"})
+    return out
+
+
 def _weixu_effects(out: list[dict], cols: list, month_zhi: str) -> None:
     """未戌刑**不成功**时两库藏干的变化（书《下》第十节 相刑 ①②，下 2444-2446）。
 

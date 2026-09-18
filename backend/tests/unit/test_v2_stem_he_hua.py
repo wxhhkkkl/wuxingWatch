@@ -26,11 +26,16 @@ def _hua(r) -> dict:
 
 
 def test_condition4_uses_dynamic_degree_not_static():
-    """书 上 1680（坤 癸亥 己未 甲辰 辛未）：甲木**合绊前静态 2.8 度**看似能独立，
+    """书 上 1680/1685（坤 癸亥 己未 甲辰 辛未）：**甲己合化土成功**——书给的链条是
 
-    但书 上 1685 的原文是「亥未拱合，木失令，亥中甲木完全去除，**甲木太弱无强根**，
-    满足第四个条件……故**甲己合化土成功**」——先按合绊算到底后日干甲只剩 **0.86 度**。
-    按旧口径（合绊前静态 2.8 ≥ 2.4）会判「能独立 → 不合化」，与书相反。
+    「**亥未拱合，木失令，亥中甲木完全去除**，甲木太弱无强根，满足第四个条件……
+    故**甲己合化土成功**」。
+
+    2026-09-17 加回拱合后，这条链在本引擎里**逐环可验**：
+    ① 亥未拱合成立（相邻、中神卯不在盘、**甲透**）→ 亥中甲木去除；
+    ② 合绊前静态 木 = **2.1** 度（只余辰中乙木 2 度通根）< 2.4、无强根 → 条件④成立；
+    ③ 试探趟日干甲 = **1.68** 度；
+    ④ 五合结论 = 合化土成功（甲→戊）。
     """
     r = pipeline.compute_strength(_chart("癸亥", "己未", "甲辰", "辛未"))
     assert _hua(r), "甲己合化土应成功（书 上 1685）"
@@ -38,15 +43,44 @@ def test_condition4_uses_dynamic_degree_not_static():
                       next(s for s in r["steps"] if s["key"] == "stem_he")["traces"])
     assert "合化土成功" in joined, joined
 
-    # 旧口径喂的是**合绊前**的静态（不含 ban），此处复刻它：弱方甲木 2.8 ≥ 2.4 → 会判反。
-    cols = degrees.build_cols(_chart("癸亥", "己未", "甲辰", "辛未"))
-    rel = relations.judge_relations(_chart("癸亥", "己未", "甲辰", "辛未"))
+    c = _chart("癸亥", "己未", "甲辰", "辛未")
+    rel = relations.judge_relations(c)
+    t17 = [e for e in rel["established"] if e["tier"] == 17]
+    assert t17 and set(t17[0]["members"]) == {"亥", "未"}, "亥未拱合应成立（书 上 1685）"
+    cols = degrees.build_cols(c)
     h0 = pipeline._adjusted_hidden(rel, cols, "未")
     static0 = pipeline._static_scores(cols, h0, "未", None, frozenset(),
                                       pipeline._muku_ctx(rel, cols, "未", h0))
     trial = pipeline._stem_he_trial(cols, rel, "未", None, frozenset())
-    assert static0["木"] == pytest.approx(2.8), "旧口径的静态确实 ≥2.4"
-    assert trial["day"] == pytest.approx(1.0), "先按合绊算到底后日干甲只剩 1.0 度"
+    assert static0["木"] == pytest.approx(2.1), "拱合去掉亥中甲后，木只剩辰的 2 度通根"
+    assert trial["day"] == pytest.approx(1.68), "先按合绊算到底后日干甲剩 1.68 度"
+
+
+def test_shang_2053_just_enough_is_not_zhenghe():
+    """书 上 2053（乾 丁亥 壬寅 丁亥 壬寅）：**「刚刚够」不成争合** → 两对丁壬各自合化木。
+
+    书 上 1690：「1甲与1己合为1个对1个，**刚刚够**，犹如一夫一妻，这样的合为『正常之合』；
+    若出现1甲与2己、3己…**不是刚刚够**的甲己合，则为甲己争合。」本盘 **2 丁 : 2 壬**
+    正好够，故书 上 2053 说「年月、日时丁壬合木，**两两相合，不存在争合现象**」。
+    此前引擎按「共享柱位即同组」把三个相邻对并成一个争合组、势均力敌 → 全判合绊，与书相反。
+    """
+    r = pipeline.compute_strength(_chart("丁亥", "壬寅", "丁亥", "壬寅"))
+    hua = _hua(r)
+    assert len(hua) == 4, f"两对（四个干）都应换字：{hua}"
+    assert set(hua.values()) == {("木", "乙"), ("木", "甲")}, hua
+
+
+def test_shang_2053_yin_hai_becomes_hua_after_swapping():
+    """接上：换字后（丁→乙、壬→甲）木透 → **C26-29 的重判**把「寅亥」由合绊改判为**化木**——
+
+    书 上 2053：「年月合化成功，**寅亥亦合化成功（年月变为木可以充当化神）**，
+    多出的一支亥、寅亦加入其中合化的行列」。两处改动（刚刚够 + 换字后重判）合起来才复现。
+    """
+    r = pipeline.compute_strength(_chart("丁亥", "壬寅", "丁亥", "壬寅"))
+    effs = [f.get("reason", "") for e in r["relations_after_he"]["established"]
+            if e["tier"] == 12 and set(e.get("members") or []) == {"寅", "亥"}
+            for f in e.get("effects", [])]
+    assert any("合化木成功" in x for x in effs), effs or "重判后寅亥未化"
 
 
 def test_condition4_uses_weak_party_instance_not_element_total():

@@ -136,12 +136,36 @@ def judge_stem_he(cols: list, month_zhi: str, rel: dict,
     # 共享柱位的相邻对归为一组 = 一组争合（`甲己甲` 的 (0,1) 与 (1,2) 共享柱 1）。
     # 五合是十天干的一个对合（甲己/乙庚/丙辛/丁壬/戊癸），一个干只属一组，
     # 故共享柱位必然同组，不必再按化神归并。
+    #
+    # ⚠️ **但「刚刚够」的不成争合**（书 上 1690）：「1甲与1己合为1个对1个，**刚刚够**，
+    # 犹如一夫一妻，这样的合为『正常之合』；若出现1甲与2己、3己…或1己与2甲、3甲…
+    # 诸如此类，**不是刚刚够**的甲己合，则为甲己争合。」
+    # 判据＝该五合**两个五行在盘上全部天干里的个数**：
+    #   · **相等**（刚刚够）→ **不并组**，改成**从左到右贪心配对**（每干只用一次）：
+    #     `丁壬丁壬` → (年丁,月壬)、(日丁,时壬) —— 书 上 2053「年月、日时丁壬合木，
+    #     **两两相合，不存在争合现象**」✓（2026-09-17：此前被误并成一组争合、全判合绊）；
+    #   · **不等**（如 甲己甲 的 2:1）→ 并组按争合论（上 1692「底气足者…势均力敌者
+    #     自然谁也不让谁」；上 1711「年日2甲争合1己」）。
+    _all_gans = [c.src_gan for c in cols if c.src_gan]
     groups: list[list[tuple[int, int, frozenset]]] = []
+    _paired: set[int] = set()             # 「刚刚够」路径下已配走的柱位
+    _chain: list | None = None            # 正在并的「不刚刚够」组
     for item in cand:
-        if groups and groups[-1][-1][1] == item[0]:
-            groups[-1].append(item)
-        else:
+        _i, _j, _pair = item
+        _ga, _gb = tuple(_pair)
+        _just = (sum(1 for g in _all_gans if g == _ga)
+                 == sum(1 for g in _all_gans if g == _gb))
+        if _just:
+            _chain = None
+            if _i in _paired or _j in _paired:
+                continue                  # 该干已配对 → 这一对不成（书 2053）
             groups.append([item])
+            _paired |= {_i, _j}
+        elif _chain is not None and _chain[-1][1] == _i:
+            _chain.append(item)
+        else:
+            _chain = [item]
+            groups.append(_chain)
 
     hua: dict[int, tuple[str, str]] = {}
     ban_cheng: dict[int, float] = {}
