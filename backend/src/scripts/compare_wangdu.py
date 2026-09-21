@@ -57,6 +57,24 @@ RULING_DIFFS = {
                           "（第三节「地支特殊生克」的未土克酉金，属关系层）挪用到结算层是引错了层",
 }
 
+# **逐例**裁定（非缺陷）。与 `RULING_DIFFS` 的区别：那条是全局口径、挂到每一条差异上；
+# 这条只对**指定样本 id** 生效，用于「本例的书中结论含**岁运**、而对拍只跑原局」这类
+# 基准不适用。**不放在 fixtures 的 `note` 里**——`extract_book_cases.py` 每次重生成都写死
+# `"note": ""`，放那儿会被静默抹掉。
+CASE_RULINGS = {
+    "jingsui-xia-0196":
+        "**书中结论是「运」层面的，对拍按原局跑，基准不适用。** 书 下 1912："
+        "「进入辛丑运，辰戌丑未四库逢冲……所以辰戌丑未四库逢冲成功」——**丑来自大运**，"
+        "四库齐了才成局；适用的条文是**四库土局**（书 下 1860，条件③「**不一定**在本柱上」"
+        "透出）。原局只有戌辰未三库，四库土局不成，适用的是**墓库冲**（书 下 1720，"
+        "条件③写「**本柱上**」透出）——原局年干壬、月干甲皆非土，全局地支土 18 度 < 26，"
+        "故按书原局判「不成功」（即新引擎现判）。改前新引擎用全盘透土，**恰好**对上了带运的"
+        "四库结论，故与旧引擎一致。差异性质与口径见 research.md O-9。",
+    "jingsui-xia-0329":
+        "同一四柱的复出（书 下 4126 与 下 1912 为同一盘 壬戌 甲辰 己未 乙亥），"
+        "书中结论同样以「进入辛丑运，辰戌丑未四库逢冲成功」立论。理由同 `jingsui-xia-0196`。",
+}
+
 
 def load_cases(path: Path) -> list[dict]:
     """读样本集并做最小结构校验（`cases` 必须是数组）。"""
@@ -127,6 +145,7 @@ def classify(rec: dict) -> dict:
         diffs.append("用神方向翻转")
     return {"id": rec.get("id"), "categories": diffs, "old": rec["old"], "new": rec["new"],
             "book_conclusion": rec.get("book_conclusion", {}).get("raw", ""),
+            "case_ruling": CASE_RULINGS.get(rec.get("id"), ""),
             "rules": [] if not diffs else list(RULING_DIFFS)}
 
 
@@ -185,6 +204,12 @@ def render(report: dict, out: Path) -> None:
             d["old"]["level"], d["old"]["ge_ju"], d["old"]["yong_shen"],
             d["new"]["level"], d["new"]["ge_ju"], d["new"]["yong_shen"],
             _raw_conclusion(d)[:60].replace("|", "｜")))
+    # 逐例裁定：本例差异已解释，不作为待修项（见 `CASE_RULINGS`）
+    ruled = [d for d in report["diff"] if d.get("case_ruling")]
+    if ruled:
+        lines += ["", "## 逐例裁定（基准不适用，非缺陷）", ""]
+        for d in ruled:
+            lines.append(f"- **`{d['id']}`**（{'、'.join(d['categories'])}）：{d['case_ruling']}")
     if report["errors"]:
         lines += ["", "## 执行异常", ""]
         for e in report["errors"][:30]:
