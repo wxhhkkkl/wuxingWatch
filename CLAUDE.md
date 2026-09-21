@@ -1,7 +1,9 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan:
-`specs/012-rebuild-wangdu-xiyong/plan.md`
+`specs/013-dayun-liunian-judgment/plan.md`
+上期（旺度与喜忌引擎 v2 的建成过程与领域口径）见 `specs/012-rebuild-wangdu-xiyong/`——
+其 research.md 的 O-1~O-9 / C26-* 仍是本引擎的领域口径来源。
 (Backend: Python FastAPI · Frontend: Vue 3 (mobile) + admin · Tencent MySQL + pwdlib password auth + admin RBAC · TDD with pytest / Vitest)
 <!-- SPECKIT END -->
 

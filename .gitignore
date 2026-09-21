@@ -33,3 +33,6 @@ doc/book_data/
 
 # 一次性审计产物（引擎对拍 H5 等，可由 output/*/gen.py 重新生成，不入库）
 output/
+
+# Word 锁文件（doc/ 下用 Word COM 处理 .doc 时会生成）
+~$*
