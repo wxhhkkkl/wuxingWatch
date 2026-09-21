@@ -2344,6 +2344,26 @@ def _effects_for(cand: _Cand, hua_succeeded: bool = False) -> list[dict]:
     return out
 
 
+# 来源阶段标注（013/T045①；data-model §2；FR-024 / SC-008）：
+# 每条关系按**由哪个阶段引入**标一个来源，且**只标一个**——
+#   · 条目自身牵涉流年之支 → `liunian`；牵涉大运之支 → `dayun`；两者都不牵涉 → `yuanju`；
+#   · **被让位者**随**抢占者**走（见 `_source_of` 的第二处调用）——一条因流年介入而让位的
+#     原局关系，若不标流年就成了「三个来源说不清」的那一类，正是 FR-024 要禁的。
+# ⚠️ `_liunian` 优先于 `_dayun`：伪列次序是 …年,月,日,时,大运,流年，直接取首个命中会
+# 让「同时牵涉大运与流年」的关系（如运支与流年之支构成的合）被标成大运。
+_SY_COL_SOURCE = {"_liunian": "liunian", "_dayun": "dayun"}
+
+
+def _source_of(cols) -> str:
+    """该组柱位对应的**来源阶段**（`yuanju` / `dayun` / `liunian` 之一）。"""
+    keys = set(cols)
+    if "_liunian" in keys:
+        return "liunian"
+    if "_dayun" in keys:
+        return "dayun"
+    return "yuanju"
+
+
 def _entry(cand: _Cand, hua_succeeded: bool = False) -> dict:
     return {
         "tier": cand.tier,
@@ -2352,6 +2372,7 @@ def _entry(cand: _Cand, hua_succeeded: bool = False) -> dict:
         "cols": list(cand.cols),
         "hua": cand.hua,
         "detail": cand.detail,
+        "source": _source_of(cand.cols),
         "effects": _effects_for(cand, hua_succeeded),
     }
 
@@ -2467,6 +2488,11 @@ def _judge_pass(pillars: dict) -> dict:
                     ent["blocked_by"] = {
                         "tier": blk["tier"], "type": blk["type"], "cols": blk["cols"],
                     }
+                    # 来源随**抢占者**走（见 `_source_of` 的说明）——只有抢占者确属岁运时才改，
+                    # 否则保留本条自己的来源，避免把原局内的让位误标成岁运。
+                    _blk_src = _source_of(blk["cols"])
+                    if _blk_src != "yuanju":
+                        ent["source"] = _blk_src
                     rejected.append(ent)
                     continue
 

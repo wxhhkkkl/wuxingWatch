@@ -430,6 +430,9 @@ export interface V2Relation {
   cols: string[]
   hua: string | null
   detail: string
+  /** 来源阶段（013 FR-024 / data-model §2）——**只标一个**。
+   *  因让位而不成立者，来源随**抢占者**走。 */
+  source?: 'yuanju' | 'dayun' | 'liunian'
   effects: V2RelationEffect[]
   reason?: string       // rejected 时的不成立原因
   blocked_by?: { tier: number; type: string; cols: string[] } | null

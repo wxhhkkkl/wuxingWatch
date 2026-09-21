@@ -20,6 +20,8 @@ const GEJU_LABEL: Record<string, string> = {
   cong_sha: '从杀格', cong_cai: '从财格', hua: '化格',
 }
 const SOURCE_LABEL = { dayun: '属大运', liunian: '属流年' } as const
+/** 每条关系自己的来源阶段（FR-024）——同一阶段内也可能混有属原局的关系。 */
+const REL_SRC = { yuanju: '属原局', dayun: '属大运', liunian: '属流年' } as const
 
 /** 该阶段额外参与的干支（阶段 2 为大运，阶段 3 另有流年）。 */
 const context = computed(() => {
@@ -141,10 +143,14 @@ const rejected = computed<V2Relation[]>(
     <div class="rel-block" :data-testid="`sy-${phase}-relations`">
       <p class="rel-head">关系裁定</p>
       <p v-for="(r, i) in established" :key="`e${i}`" class="rel-line">
-        <span class="rel-ok">成立</span>{{ r.type }} · {{ r.detail || r.members.join('') }}
+        <span class="rel-ok">成立</span>
+        <em v-if="r.source" class="rel-src">{{ REL_SRC[r.source] }}</em>
+        {{ r.type }} · {{ r.detail || r.members.join('') }}
       </p>
       <p v-for="(r, i) in rejected" :key="`r${i}`" class="rel-line rel-off">
-        <span class="rel-no">未成立</span>{{ r.type }} · {{ r.reason || r.detail }}
+        <span class="rel-no">未成立</span>
+        <em v-if="r.source" class="rel-src">{{ REL_SRC[r.source] }}</em>
+        {{ r.type }} · {{ r.reason || r.detail }}
       </p>
       <p v-if="!established.length && !rejected.length" class="xi-note">本阶段无关系裁定</p>
     </div>
@@ -315,6 +321,18 @@ const rejected = computed<V2Relation[]>(
 }
 .rel-ok { background: #eef7ee; color: #2f6b35; }
 .rel-no { background: #faf0f0; color: #a63431; }
+/* 每条关系自己的来源阶段（013 FR-024）——比「成立/未成立」徽标更淡一档 */
+.rel-src {
+  display: inline-block;
+  min-width: auto;
+  margin-right: 4px;
+  padding: 0 5px;
+  border-radius: 5px;
+  font-size: 10.5px;
+  font-style: normal;
+  background: #f1ece1;
+  color: #6b6b6b;
+}
 .rel-off { color: var(--wx-muted); }
 .step-list {
   list-style: none;

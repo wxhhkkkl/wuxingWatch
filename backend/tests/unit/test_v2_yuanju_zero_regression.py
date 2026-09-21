@@ -62,6 +62,34 @@ def test_yuanju_conclusions_are_bit_identical_to_baseline():
         % (data.get("engine_commit") or "?", len(bad), "\n  ".join(bad)))
 
 
+def test_dayun_row_is_not_locked_into_the_baseline():
+    """**反向断言**（FR-022a）：基准只守**原局**，不得把 `strength.dayun[]` 一并锁进来。
+
+    「用神随大运变化」那一行**属岁运结论**、**允许**与原快照不同——把它误当「原局部分」
+    锁进基准，会把本期唯一允许变的字段冻住，日后任何一次合规的岁运改动都会被判成回归。
+    """
+    data = _load()
+    one = next(iter(data["cases"].values()))
+    leaked = sorted(k for k in one if "dayun" in k.lower())
+    assert not leaked, "基准里出现了岁运派生的字段 %r——它属 FR-022a 允许变的那一行" % leaked
+
+
+def test_dayun_row_actually_varies_with_the_step():
+    """上面那条的另一半：该行**确实**会随大运步变。
+
+    若它恒定不变，说明岁运根本没接进判定——那时「不锁进基准」就成了空话
+    （锁了一个恒量，当然不会冲突）。
+    """
+    from services.bazi.v2 import dayun
+
+    pillars = _pillars("甲子 丙寅 戊午 辛酉")
+    seen = {(st["level"], (st["yong_shen"].get("theoretical") or {}).get("element"))
+            for st in (dayun.analyze_step(pillars, gz)
+                       for gz in ("壬申", "癸酉", "甲戌", "乙亥", "丙子", "丁丑"))}
+    assert len(seen) > 1, \
+        "同盘多步大运的档位与用神全同——岁运没有真正参与判定，该行还不是「会变的那一行」"
+
+
 def test_baseline_covers_both_book_cases_and_sweep():
     """基准本身要够宽——只覆盖书例会漏掉盘面空间里的大片区域。"""
     data = _load()
