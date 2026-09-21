@@ -25,7 +25,7 @@ description: "Task list for 岁运判定（大运与流年加入后的推导）"
 |---|---|---|---|
 | 后端（全量） | `cd backend && uv run pytest tests` | **1255 例 / 1246 passed / 9 failed** | **1467 例 / 1458 passed / 9 failed** |
 | 后端（仅单元） | `cd backend && uv run pytest tests/unit` | **1190 例 / 1181 passed / 9 failed** | 随全量同向（红与全量同一批 9 条） |
-| 前端 | `cd frontend && npx vitest run` | **18 文件 / 197 passed / 0 failed** | **19 文件 / 214 passed / 0 failed** |
+| 前端 | `cd frontend && npx vitest run` | **18 文件 / 197 passed / 0 failed** | **19 文件 / 215 passed / 0 failed** |
 
 **收尾实测的红**与开头的「9 红清单」**逐条相同**（012 期遗留 `4d8dd9d`）——无新增红。
 
@@ -261,7 +261,7 @@ test_v2_xi_ji::test_book_case_xia_4261_production_xiyong_layer
 - [X] T051 前端全量 `npx vitest run` + 后端全量 `uv run pytest tests`：确认**无新增红**（基线记于 `specs/013-dayun-liunian-judgment/tasks.md` 开头的「基线」表），红数变化须能逐条解释
   > **2026-09-21 完成**：后端 **1458 passed / 9 failed**（1467 例，基线 1255 例 / 9 红）——
   > 红数与**清单逐条相同**（012 期遗留 `4d8dd9d`，见开头「9 红清单」）；净增 212 例全绿。
-  > 前端 **214 passed / 0 failed**（基线 197 全绿）；`vue-tsc --noEmit` 通过。
+  > 前端 **215 passed / 0 failed**（基线 197 全绿）；`vue-tsc --noEmit` 通过。
 
 ---
 
