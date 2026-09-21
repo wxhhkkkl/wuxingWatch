@@ -21,11 +21,13 @@ description: "Task list for 岁运判定（大运与流年加入后的推导）"
 
 > **两个后端命令的数字不同，须分别记**——先前把 `tests/unit` 的数当成全量，会导致「无新增红」不可验证。
 
-| 命令 | 命令 | 基线 |
-|---|---|---|
-| 后端（全量） | `cd backend && uv run pytest tests` | **1255 例 / 1246 passed / 9 failed** |
-| 后端（仅单元） | `cd backend && uv run pytest tests/unit` | **1190 例 / 1181 passed / 9 failed** |
-| 前端 | `cd frontend && npx vitest run` | **18 文件 / 197 passed / 0 failed** |
+| 命令 | 命令 | 基线 | 收尾实测（T051） |
+|---|---|---|---|
+| 后端（全量） | `cd backend && uv run pytest tests` | **1255 例 / 1246 passed / 9 failed** | **1467 例 / 1458 passed / 9 failed** |
+| 后端（仅单元） | `cd backend && uv run pytest tests/unit` | **1190 例 / 1181 passed / 9 failed** | 随全量同向（红与全量同一批 9 条） |
+| 前端 | `cd frontend && npx vitest run` | **18 文件 / 197 passed / 0 failed** | **19 文件 / 214 passed / 0 failed** |
+
+**收尾实测的红**与开头的「9 红清单」**逐条相同**（012 期遗留 `4d8dd9d`）——无新增红。
 
 **9 红清单**（两个后端命令下相同，均为 012 期遗留 `4d8dd9d`，与 HEAD 逐条一致）：
 
@@ -188,7 +190,7 @@ test_v2_xi_ji::test_book_case_xia_4261_production_xiyong_layer
 - [X] T041 [US3] 前端类型：`frontend/src/types.ts` 增补岁运结论与 `pairs` 的类型——依赖 T034
   > **2026-09-21 完成**：新增 `SuiyunResponse` / `V2Pair` / `V2PairSide`；`V2DayunStep` 增补 `source` / `liunian` / `tiaohou` / `layers` / `steps`。
 - [X] T042 [US3] 降级路径：无出生日期 / 尚未起运 / 时辰不详三类命盘在两个新页面上的提示（FR-025），前端 `DayunDetail.vue` / `LiunianDetail.vue` + 后端 `degradations` 字段——依赖 T034
-  > **2026-09-21 完成**：两页共用 `frontend/src/utils/suiyun.ts` 的降级判定——**无出生日期**（四柱输入）与**尚未起运**两类**阻断**推导、直接明示原因且**不发请求**（端点此时也没有合法大运步可传，故不靠 422 表达）；**时辰不详**不阻断，仅明示缺时柱那一维。后端的 `degradations`（含门控说明）另在选步卡片下逐条展示。
+  > **2026-09-21 完成**：两页共用 `frontend/src/utils/suiyun.ts` 的降级判定。**三类盘分得比原设想细**——实现时发现**四柱输入模式其实排得出大运干支**（步序与起运无关，只是 `start_year` 为 null），故一刀切降级会把一个**能算**的结论挡掉。最终口径：**尚未起运**（无步）→ 两页都降级；**无出生日期**（有步、无年份）→ 「加入大运」页**照常可用**（按干支选步、不显示年份），「加入流年」页降级（定不出年份）；**时辰不详** → 不阻断，仅明示缺时柱那一维。后端的 `degradations`（含门控说明）另在选步卡片下逐条展示。契约 §2 R-4 已按此修订。
 
 **Checkpoint**: 三页可用、来源标注无歧义、命盘图不再本地重判岁运
 
@@ -220,11 +222,36 @@ test_v2_xi_ji::test_book_case_xia_4261_production_xiyong_layer
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T047 跑全量 **12⁴ 影响面**（`backend/src/scripts/sweep_impact.py`），把六个指标的变动盘数与占比写入 `specs/013-dayun-liunian-judgment/research.md`（沿 012 期 O-6~O-9 的格式）
-- [ ] T048 跑**岁运对拍**（`backend/src/scripts/compare_wangdu.py` + T003 的清单），产出逐条一致/差异清单并更新 `specs/013-dayun-liunian-judgment/diff-report.md`；差异须能从依据解释（SC-001）
-- [ ] T049 复核三处与书/既有澄清的**登记项**是否都落进了 research.md：书 下 4207 用神通则、书 下 4418 判读总则、流年太岁生克权例外（012 起遗留）
-- [ ] T050 文档同步复核：`specs/013-dayun-liunian-judgment/data-model.md` 与 `contracts/suiyun-v2.md` 是否与实际实现一致；`CLAUDE.md` 的 SPECKIT 锚点已指向本期 plan（plan 阶段已改，此处复核）
-- [ ] T051 前端全量 `npx vitest run` + 后端全量 `uv run pytest tests`：确认**无新增红**（基线记于 `specs/013-dayun-liunian-judgment/tasks.md` 开头的「基线」表），红数变化须能逐条解释
+- [X] T047 跑全量 **12⁴ 影响面**（`backend/src/scripts/sweep_impact.py`），把六个指标的变动盘数与占比写入 `specs/013-dayun-liunian-judgment/research.md`（沿 012 期 O-6~O-9 的格式）
+  > **2026-09-21 完成**：`before.jsonl`（动引擎之前）→ `final-yuanju.jsonl`（本期全部改动之后），
+  > **阶段 1 原局：0 / 41472（0.00%）**，六个指标各 0——这是 FR-023 / SC-003 在 12⁴ 尺度的验证。
+  > 表已写入 research.md 的「12⁴ 全量影响面」节，并**显式写明该表只覆盖阶段 1**：
+  > 12⁴ 的取样是「固定天干、全枚举地支」，**没有岁运之支**，测不到本期功能的作用面——
+  > 沿 R10 的教训，**取样的可达性决定这张表能说明什么**，不能把 0% 当成「无影响」。
+- [X] T048 跑**岁运对拍**（`backend/src/scripts/compare_wangdu.py` + T003 的清单），产出逐条一致/差异清单并更新 `specs/013-dayun-liunian-judgment/diff-report.md`；差异须能从依据解释（SC-001）
+  > **2026-09-21 完成**，但**另起了 `backend/src/scripts/compare_suiyun.py`**（而不是改 `compare_wangdu.py`）——
+  > 后者是 012 的**原局**对拍（旧引擎 vs v2），岁运对拍要的是「**阶段 2** vs 书中结论」，
+  > 目标与样本都不同，改它会污染 012 那条既有基准。198 例中 126 例可对拍，抽到 55 条
+  > 关键词级断言（一致 11 / 差异 44），逐类归入处置（含「不设通过门槛」的声明与
+  > 「一致 11 不等于三分之一正确」的分母说明）。**重要发现**：书里论岁运的度数是
+  > **藏干级或书中自算**，与我们的全局合计不是同一个量——29 条「X度」断言 0 条能对应上，
+  > 故**放弃数值对拍、改用关键词层**（理由已写进脚本与 research.md R11，免得后人重走）。
+  > 最优先的未决项是 **8 例「化气格未成立」**，已登记为 R11 并附三例的可复现线索。
+- [X] T049 复核三处与书/既有澄清的**登记项**是否都落进了 research.md：书 下 4207 用神通则、书 下 4418 判读总则、流年太岁生克权例外（012 起遗留）
+  > **2026-09-21 完成**：三处**都已在 spec.md 逐条写明**（有行号），但**没进 research.md**——
+  > 而 research.md 才是「口径裁定与开放项」的台账。已在 research.md 补 **R12** 汇总指向
+  > spec 的行号，并标明 ③ 是**唯一仍开着的未尽项**（①② 均为已裁定的分歧：有明确口径、只是与书不同）。
+- [X] T050 文档同步复核：`specs/013-dayun-liunian-judgment/data-model.md` 与 `contracts/suiyun-v2.md` 是否与实际实现一致；`CLAUDE.md` 的 SPECKIT 锚点已指向本期 plan（plan 阶段已改，此处复核）
+  > **2026-09-21 完成**，改了两处**不一致**：
+  > ① `data-model.md` §1 原称「三个阶段产出**同构**的结论对象」并给出一个 `ganzhi_context` 根形状——
+  > 实际是**两种根形状**（阶段 1 为 012 的 `strength` 子树，阶段 2/3 为 `dayun.analyze_step` 的条目，
+  > 且后者没有 `ganzhi_context`，是扁平的 `ganzhi` / `liunian`），已按实现改写并补上阶段 2/3 的真实形状；
+  > ② 契约 §2 R-4 的降级口径按实现修订（详见 T042 注）。
+  > `CLAUDE.md` 的 SPECKIT 锚点已指向本期 plan ✓。
+- [X] T051 前端全量 `npx vitest run` + 后端全量 `uv run pytest tests`：确认**无新增红**（基线记于 `specs/013-dayun-liunian-judgment/tasks.md` 开头的「基线」表），红数变化须能逐条解释
+  > **2026-09-21 完成**：后端 **1458 passed / 9 failed**（1467 例，基线 1255 例 / 9 红）——
+  > 红数与**清单逐条相同**（012 期遗留 `4d8dd9d`，见开头「9 红清单」）；净增 212 例全绿。
+  > 前端 **214 passed / 0 failed**（基线 197 全绿）；`vue-tsc --noEmit` 通过。
 
 ---
 

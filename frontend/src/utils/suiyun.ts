@@ -69,20 +69,37 @@ export function useSuiyun(opts: { withLiunian?: boolean } = {}) {
   }
 
   // ---- 降级（FR-025）----
-  /** 四柱输入模式：无出生日期 → 算不出起运，岁运推导不可用。 */
-  const noBirth = computed(() => !!chart.value && !chart.value.solar_birth)
-  /** 尚未起运：无大运步。 */
+  //
+  // 三类盘要分开对待，不能一刀切：
+  //   · **尚未起运**（无大运步）→ 两页都降级——**没有步可选**，阶段 2 无从谈起；
+  //   · **无出生日期**（四柱输入）→ 大运**步仍然排得出**（干支序列与起运无关），
+  //     但**排不出年份**：定不了「当前所处大运」，也定不了某一步覆盖哪些流年。
+  //     故「加入大运」页**照常可用**（按干支选步、不显示年份），只有「加入流年」页降级。
+  //   · **时辰不详** → 不阻断，仅明示缺时柱那一维。
   const noSteps = computed(() => !!chart.value && steps.value.length === 0)
-  const blocked = computed(() => noBirth.value || noSteps.value)
+  /** 四柱输入模式：排得出大运干支，排不出年份。 */
+  const noBirth = computed(() => !!chart.value && !chart.value.solar_birth)
+  /** 该步能不能定出年份——「加入流年」页的前提。 */
+  const canPickYear = computed(() => currentStep.value?.start_year != null)
+  const blocked = computed(() =>
+    noSteps.value || (opts.withLiunian === true && !canPickYear.value))
   const degradeReason = computed(() => {
-    if (noBirth.value) return '该盘由四柱输入排出，没有出生日期，推算不出起运，岁运推导不可用'
     if (noSteps.value) return '该盘尚未起运，暂无大运可推导'
+    if (opts.withLiunian === true && !canPickYear.value) {
+      return '该盘由四柱输入排出，没有出生日期，推算不出起运，定不出流年所属的年份'
+    }
     return ''
   })
-  /** 时辰不详**不阻断**推导（时柱缺失只影响时柱那一维），仅明示。 */
-  const notes = computed(() =>
-    chart.value?.missing_parts?.includes('hour_pillar')
-      ? ['时辰不详：缺时柱，岁运结论不含时柱那一维'] : [])
+  const notes = computed(() => {
+    const out: string[] = []
+    if (chart.value?.missing_parts?.includes('hour_pillar')) {
+      out.push('时辰不详：缺时柱，岁运结论不含时柱那一维')
+    }
+    if (noBirth.value && !noSteps.value) {
+      out.push('无出生日期：排不出年份，仅按干支选步')
+    }
+    return out
+  })
 
   // ---- 按需请求 ----
   const conclusion = ref<SuiyunResponse | null>(null)

@@ -153,16 +153,22 @@ describe('DayunDetail（加入大运）', () => {
     expect(fetchSuiyun.mock.calls.at(-1)![0].dayun_ganzhi).toBe('甲午')
   })
 
-  it('无出生日期（四柱输入）→ 降级提示，且**不发请求**（FR-025）', async () => {
-    setActivePinia(createPinia())
-    const store = useChartStore()
-    store.set({ ...structuredClone(mockResult), solar_birth: null,
-                da_yun: { start_age: 0, start_month: 0, steps: [] } } as never,
-              { ...mockInputs })
-    const w = mount(DayunDetail)
+  it('四柱输入（无出生日期）→ 本页**照常可用**：按干支选步、不显示年份（FR-025）', async () => {
+    // 四柱模式**排得出**大运干支（与起运无关），只是定不出年份——
+    // 故「加入大运」页没有理由降级，只有「加入流年」页要。
+    const w = mountPage(DayunDetail, {
+      solar_birth: null,
+      da_yun: { start_age: null, start_month: null, steps: [
+        { ganzhi: '丙戌', start_year: null, end_year: null },
+        { ganzhi: '乙酉', start_year: null, end_year: null },
+      ] },
+    })
     await flushPromises()
-    expect(fetchSuiyun).not.toHaveBeenCalled()
-    expect(w.get('[data-testid="sy-degrade"]').text()).toContain('出生')
+    expect(fetchSuiyun).toHaveBeenCalledTimes(1)
+    expect(fetchSuiyun.mock.calls[0][0].dayun_ganzhi).toBe('丙戌')
+    expect(w.find('[data-testid="sy-degrade"]').exists()).toBe(false)
+    expect(w.get('[data-testid="sy-dayun-select"]').text()).not.toContain('年')
+    expect(w.text()).toContain('无出生日期')
   })
 
   it('尚未起运（无大运步）→ 降级提示，且**不发请求**（FR-025）', async () => {
@@ -247,6 +253,18 @@ describe('LiunianDetail（加入流年）', () => {
     await w.get('[data-testid="sy-year-select"]').setValue('2000')
     await flushPromises()
     expect(fetchSuiyun.mock.calls.at(-1)![0]).toMatchObject({ liunian_year: 2000 })
+  })
+
+  it('四柱输入（无年份可定）→ 降级并明示「定不出年份」，且不发请求（FR-025）', async () => {
+    const w = mountPage(LiunianDetail, {
+      solar_birth: null,
+      da_yun: { start_age: null, start_month: null, steps: [
+        { ganzhi: '丙戌', start_year: null, end_year: null },
+      ] },
+    })
+    await flushPromises()
+    expect(fetchSuiyun).not.toHaveBeenCalled()
+    expect(w.get('[data-testid="sy-degrade"]').text()).toContain('出生')
   })
 
   it('记录路径：带 ?record=<id> 时走记录端点', async () => {

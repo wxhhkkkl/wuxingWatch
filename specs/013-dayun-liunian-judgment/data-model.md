@@ -21,34 +21,42 @@
 
 ## 1. 三阶段结论的根形状
 
-三个阶段产出**同构**的结论对象，叶子字段完全一致，仅 `source` 与参与项不同：
+三个阶段产出**同构**的结论对象，但**根形状有两种**（2026-09-21 实现后修订）：
+
+| 阶段 | 产出函数 | 根形状 |
+|---|---|---|
+| 1 原局 | `xiyong_analysis_v2(dm, pillars)` | 012 契约的 `strength` 子树（`degrees` / `static_scores` / `final_scores` / `day_master_group` / `benqi_instances` / `level` / `ge_ju` / `yong_shen` / `layers` / `steps` / `dayun[]`） |
+| 2 加入大运 | `dayun.analyze_step(pillars, gz)` | 见 [contracts/suiyun-v2.md](contracts/suiyun-v2.md) §3 |
+| 3 加入流年 | `dayun.analyze_step(pillars, gz, liunian_ganzhi=ln)` | 同阶段 2，`source` 为 `"liunian"`、另带 `liunian`（该年干支） |
 
 ```jsonc
-// 同构体：三个阶段各自的结论都是这个形状
+// 阶段 2/3 的条目（`dayun.analyze_step`）——**这是「三阶段同构」的落地形状**
 {
-  "source": "yuanju" | "dayun" | "liunian",   // 来源阶段（FR-024：三项不得混同）
-  "ganzhi_context": {                          // 该阶段额外参与判定的干支
-    "dayun":   { "gan": "辛", "zhi": "丑" } | null,
-    "liunian": { "gan": "癸", "zhi": "未", "year": 2003 } | null
-  },
+  "source": "dayun" | "liunian",     // 来源阶段（FR-024：只标一个，SC-008）
+  "ganzhi": "辛丑",                   // 该步大运
+  "liunian": "癸未" | null,           // 阶段 3 才有：该年流年干支
+  "level": "偏弱",                    // 十一档之一
+  "ge_ju":   { "type": "zheng" | "cong_ruo" | ..., ... },
+  "yong_shen": { "theoretical": {...}, "tiaohou": {...}, ... },
+  "tiaohou": { ... },                 // 调候量化（FR-021b：按该阶段同口径重判）
+  "layers":  { ... },                 // 格局层次（同上）
   "relations": { "established": [...], "rejected": [...] },  // 每条形如 012 契约 §2，另加 "source"
-  "degrees":   { "木": {...}, "火": {...}, ... },             // 012 契约 §3
-  "static_scores": { ... }, "final_scores": { ... },          // 五行合计（前端能量条照旧）
-  "level": "偏弱",                                            // 十一档之一
-  "day_master_group": {...}, "benqi_instances": [...],        // S7 实例明细
-  "ge_ju":   { "type": "zheng" | "cong_ruo" | ..., ... },     // 012 契约 §4
-  "yong_shen": { "theoretical": {...}, ... },                 // 012 契约 §5
-  "tiaohou": { ... },                                         // 调候量化
-  "layers":  { ... },                                         // 格局层次（贵气等级，012 契约 §6）
-  "steps":   [ ... ]                                          // 判定依据（012 契约 §7），可按阶段追加段
+  "deltas": [ ... ], "scores_after": { "木": 7.6, ... },      // 运支状态增减后的五行静态旺度
+  "steps": [ ... ]                    // 判定依据（`pipeline` 交出的同一份），可按阶段追加段
 }
 ```
 
 **校验规则**：
-- `source` 必为三者之一，且**每项结论只标一个来源**（SC-008；不得同时标两个、不得不明）。
+- `source` 必为三者之一，且**每项结论只标一个来源**——阶段条目本身，以及 `relations` 里
+  **每一条**关系（`yuanju` / `dayun` / `liunian`；因让位而不成立者随**抢占者**走，见 §2）（SC-008）。
 - **不得出现 `verdict` / `jixiong` / `ji` / `xiong` 之类的吉凶字段**——FR-016a 禁止引擎合成吉凶。
+  （注：`layers.verdict` 是**格局层次**的评定，属契约内正常字段。）
 - 同一命盘、同一阶段、同一上下文下，两次计算的结论与依据文本顺序**逐位一致**（沿 012 的 FR-058 确定性要求）。
-- 阶段 2 的 `degrees`/`level`/`ge_ju`/`yong_shen` **不得等于**阶段 1 的对应项而「看起来没算」——若确实相等，须在 `steps` 里留下「本步大运未改变该项」的依据行。
+- 阶段 2 的 `level`/`ge_ju`/`yong_shen` **不得等于**阶段 1 的对应项而「看起来没算」——若确实相等，
+  须在 `steps` 里留下「本步大运未改变该项」的依据行。
+
+> **流年的年份**（`year`）**不进条目**——它是调用方的请求参数（`liunian_year`），
+> 由端点回显在响应层；条目里只带干支。
 
 ## 2. `source` —— 来源阶段标注
 
@@ -76,8 +84,12 @@
 
 ## 4. 阶段 3 —— 加入流年
 
-阶段 3 是**该年流年参与判定之后**的完整结论，形状同 §1，`source` 为 `"liunian"`，
+阶段 3 是**该年流年参与判定之后**的完整结论，形状同 §1 的「阶段 2/3 条目」，
+`source` 为 `"liunian"`、另带 `liunian`（该年干支，`year` 由调用方持有），
 其 `relations` 中因流年而成立/让位/被桥接者标 `liunian`，其余沿用前两阶段的标注。
+
+**实现**：与阶段 2 **同一个函数**（`dayun.analyze_step`），只多一个 `liunian_ganzhi` 参数
+——阶段独立性由**结构**保证，不靠两处实现对齐（research R5）。
 
 **参与与不参与（本期口径的要点）**：
 
