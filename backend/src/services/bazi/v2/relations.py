@@ -111,7 +111,8 @@ _XING_CHONG = frozenset((2, 5, 7, 8, 11, 14))          # 天克地冲 / 丑未�
 _ALLOWED = _HE_HUI | _XING_CHONG
 
 
-def _chong_hua(tier: int, members: list[str], cols: list) -> str | None:
+def _chong_hua(tier: int, members: list[str], cols: list,
+               keys: list[str] | None = None) -> str | None:
     """某条关系可用的「化神」——六冲**只有墓库冲成功时**才有。
 
     书《下》第八节 六冲「辰戌、丑未冲的实质就是湿土和燥土互相冲撞中和、并激起土旺，所以与其他」：辰戌 / 丑未 冲成功则两支变纯土，故视同化土。
@@ -121,7 +122,7 @@ def _chong_hua(tier: int, members: list[str], cols: list) -> str | None:
     """
     if tier != 8 or frozenset(members) not in (frozenset("辰戌"), frozenset("丑未")):
         return None
-    return "土" if _muku_chong_ok(members, cols) else None
+    return "土" if _muku_chong_ok(members, cols, keys) else None
 
 
 def may_coexist(cand: _Cand, blocking: list[tuple[str, dict]], cols: list) -> bool:
@@ -133,10 +134,11 @@ def may_coexist(cand: _Cand, blocking: list[tuple[str, dict]], cols: list) -> bo
     - 普通六冲无化神 → 与任何合会都不并存，十八级顺序照常决定谁让位。
     - 墓库冲成功（化土）与子丑合 / 午未合（化土）→ 并存。
     """
-    cand_hua = cand.hua or _chong_hua(cand.tier, cand.members, cols)
+    cand_hua = cand.hua or _chong_hua(cand.tier, cand.members, cols, list(cand.cols))
     for _, e in blocking:
         bt = e["tier"]
-        bt_hua = e.get("hua") or _chong_hua(bt, e.get("members", []), cols)
+        bt_hua = e.get("hua") or _chong_hua(bt, e.get("members", []), cols,
+                                           list(e["cols"]) if e.get("cols") else None)
         both_hehui = cand.tier in _HE_HUI and bt in _HE_HUI
         one_xc = ((cand.tier in _XING_CHONG) != (bt in _XING_CHONG)) and                  (cand.tier in _HE_HUI_ANY or bt in _HE_HUI_ANY)
         if not (both_hehui or one_xc):
@@ -1743,19 +1745,44 @@ def _candidates(tier: int, st: _State) -> list[_Cand]:
 # 判定主流程
 # ===============================================================
 
-def _muku_chong_ok(members: list[str], cols: list) -> bool:
-    """墓库冲（辰戌/丑未）是否**冲成功**：透土 或 全局地支土 ≥26（书《下》第八节 六冲）。"""
+def _muku_chong_ok(members: list[str], cols: list, keys: list[str] | None = None) -> bool:
+    """墓库冲（辰戌/丑未）是否**冲成功**（书 下 1716-1722 四条件）。
+
+    ① 相邻紧贴——由候选枚举承担；④ 主冲之支不能被合住——由 `_jie_reason`（O-8）承担。
+    此处实现 ②③：
+
+    - ② 月令须为化神土的当令之地（`COMPROMISE_PARAM > 3` 即失令）。
+      > 书 下 1718 的 ② 还有半句「**且辰丑的原始含土量不能为 0**」——**未实现**：
+      > 实测（12 个月令 × 党众 1/2/3）辰、丑的含土量**只在子月与亥月为 0**，而这两月
+      > 土为「囚」（失令 >3），②-a 必先否决，故该半句**永不改变结论**，不写死代码。
+      > **书例仍以「辰丑的原始含土量不能为 0」作正面表述**（下 1772/1785/1795 逐例都列
+      > 它为「满足第一个条件」的一部分），日后若度数口径改动使亥子月的辰丑含土变 0 而
+      > 月令判定放宽，须重新评估。
+    - ③ 其中一支的**本柱上**透出化神土；不透则**全局地支**土的**静态**旺度 ≥26
+      （书 下 1720）。
+
+    **「本柱上」的作用域**：书是分条立法的——墓库冲 下 1720 写「本柱上」，四库土局
+    下 1860 写「**不一定**在本柱上」，自刑 下 2574 写「两支须本柱上、三支以上不必」。
+    故此处按 `keys`（参与柱位）判，与 `_generic_hua_ok`（合会）、`_zixing_ok`（自刑）
+    同一口径。下 1012 的否证是正面书证：「化神癸水透出，**但不是在参与相合的子辰上
+    透出**」故第三个条件不满足。
+
+    改前用**全盘天干**判透土并 `return True` 早退，同时跳过了 ② 的当令门与 ③ 的度数门。
+    """
     if frozenset(members) not in (frozenset("辰戌"), frozenset("丑未")):
         return True                       # 非墓库冲不适用
-    if any(c.gan and GAN_WUXING[c.gan] == "土" for c in cols):
+    mz = _MONTH_CTX.get("zhi", "")
+
+    # ② 月令必须是化神土的当令之地（书 下 1718；同条「辰丑含土量不为0」见 docstring）
+    if mz and tables.COMPROMISE_PARAM[tables.month_state("土", mz)] > 3:
+        return False
+
+    # ③ 本柱透土；不透则全局地支土的静态旺度 ≥26
+    if keys is None:                      # 调用点未给参与柱位时退化为「该支所在各柱」
+        keys = [c.key for c in cols if c.zhi in members]
+    if _tou_gan(cols, "土", list(keys)):
         return True
-    mz = _MONTH_CTX["zhi"]
-    tu = sum(d for c in cols if c.zhi
-             for g, d in tables.hidden_degrees(c.zhi, mz,
-                                               dangzhong=tables.dangzhong_for(cols, c.zhi))
-             if GAN_WUXING[g] == "土")
-    coef = tables.COEF[tables.month_state("土", mz)] if mz else 1.0
-    return tu * coef >= 26.0
+    return _zhi_degrees(cols, mz).get("土", 0.0) >= 26.0
 
 
 # 火局类合会**不化时的「互助」**（书《上》第五节 地支三合 / 书《下》第六节 半三合 / 书《下》第八节 六冲）：
@@ -1996,7 +2023,8 @@ def _effects_for(cand: _Cand, hua_succeeded: bool = False) -> list[dict]:
         from services.bazi.v2 import ban as _ban
         out.extend(_ban.chong_effects(list(cand.members), cols_of(_MONTH_CTX),
                                       _MONTH_CTX["zhi"],
-                                      chong_ok=_muku_chong_ok(cand.members, cols_of(_MONTH_CTX)),
+                                      chong_ok=_muku_chong_ok(cand.members, cols_of(_MONTH_CTX),
+                                                              list(cand.cols)),
                                       keys=list(cand.cols)))
         return out
 
