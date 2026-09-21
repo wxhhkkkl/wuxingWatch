@@ -97,11 +97,18 @@ def _bansanhe_ban_power(cand_cols: list, cols: list, tier: int, month_zhi: str,
     0.25度，中气减去0.125度，余气不减力，合绊之力不能平摊，还会叠加」。
     「本气/中气」按**实际度数**定（书 上 3344「戌土生于巳月…本气实际上是火不是土」）——
     故未土生于巳月（含火4/含土2）时己土算**中气**、拿 0.125 而非 0.25（下 265 例）。
+
+    **条目内型（子辰/申子/寅午）的守卫须看在 1:1 还是多支**：那三个局把 0.25/0.125
+    写在 `_BANSHANHE_1TO1` 的条目里，故 1:1 时不能再另加（否则重复扣一次）。但多支时
+    条目**根本没被用上**（`_bansanhe_effects` 遇重复支即回落通用模型），此时若照旧
+    `return []` 就等于把那 0.25 **无声丢掉**——书 下 993 ③ 明写「辰中戊土减去1度的
+    生克之力，**同时还要再减去0.25度合绊之力**」。故多支时回落通则系数。
     """
     coef = HUA_BAN_POWER.get(tier, (0.0, 0.0, 0.0))
     zhis = [c.zhi for c in cols if c.key in cand_cols and c.zhi]
-    if frozenset(zhis) not in _GENERIC_BAN_PAIRS:
-        return []          # 该局把合绊之力写在条目内（子辰/申子/寅午）→ 不再另加
+    if frozenset(zhis) not in _GENERIC_BAN_PAIRS and len(zhis) == len(set(zhis)):
+        return []          # 条目内型且 **1:1**：0.25/0.125 已在条目里 → 不再另加
+    # 多支的条目内型（子辰/申子/寅午）落到这里：条目未生效，按下方通则系数另加
     sk = _ju_shengke_effects(zhis, cols, month_zhi, "半三合", keys=list(cand_cols))
     reduced = {(fx["zhi"], fx.get("gan")) for fx in sk
                if fx.get("remove") or (fx.get("scale") is not None and fx["scale"] < 1)

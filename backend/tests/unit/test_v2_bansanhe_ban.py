@@ -14,6 +14,13 @@
 > **未覆盖**：书各局按**参与支个数**分档的 ①/② 档（如「3 个卯合绊 1 未 → 未中丁火完全
 > 去除」「1 个酉金被 3 个丑土合绊 → 酉金变为 0」）——那些档本实现**不套 1:1 表**，
 > 仍回落通用模型（见 `ban._bansanhe_effects` 的 docstring）。
+>
+> **多支时的合绊之力已补回**（012 期 O-9，见文件末两条）：条目内型（子辰/申子/寅午）
+> 的 0.25/0.125 写在 1:1 条目里，故 1:1 时 `_bansanhe_ban_power` 须 `return []` 防重复；
+> 但**多支时条目根本没被用上**，那时若照旧 `return []` 就等于把合绊之力**无声丢掉**
+> （书 下 1003 ③ 明写「辰中戊土减去1度的生克之力，**同时还要再减去0.25度合绊之力**」）。
+> 现按「仅 1:1 才跳过」处理。**分档本身仍未转写**——多支的局内生克档位依旧回落通用模型，
+> 与书的 ①② 档不符（如 子辰 ②「3子以上合绊1辰 → 子水不变」）。
 """
 
 from services.bazi.v2 import ban, degrees, relations, tables
@@ -212,3 +219,49 @@ def test_shenzi_main():
     assert _net(eff, "申", "庚", base_geng) == round(base_geng - 1.25, 4), "申中庚金 −1.25"
     assert not [f for f in eff if f["zhi"] == "申" and f.get("gan") == "壬"], "申中壬水不变"
     assert _net(eff, "子", "癸", 5.0) == 6.0, "子中癸水 +1"
+
+
+# ---------------------------------------------------------------
+# 多支时的合绊之力（012 期 O-9）
+# ---------------------------------------------------------------
+# 条目内型（子辰/申子/寅午）把 0.25/0.125 写在 `_BANSHANHE_1TO1` 的条目里，故 1:1 时
+# `_bansanhe_ban_power` 必须 `return []` 以免重复扣。但**多支**时 `_bansanhe_effects`
+# 遇重复支即回落通用模型、条目根本没生效——那时若仍 `return []`，合绊之力就整条丢失。
+
+def _ban_power_of(eff):
+    return [f for f in eff if "级合绊之力" in f.get("reason", "")]
+
+
+def test_zichen_multi_branch_keeps_the_ban_power():
+    """多支的子辰**仍要**扣合绊之力（书 下 1003 ③）。
+
+    `甲子 甲辰 甲辰 甲子`：子、辰、辰、子 连成一段 → 4 个参与支的多支局，辰月水**死**
+    故不化。书 ③：「辰中戊土减去1度的生克之力，**同时还要再减去0.25度合绊之力**」。
+    改前该盘**一条合绊之力都没有**（守卫按「条目内已有」直接 return []）。
+    """
+    r = relations.judge_relations(_chart("甲子", "甲辰", "甲辰", "甲子"))
+    e = _ju(r, ["子", "辰"])
+    assert e and e["hua"] is None, "该盘子辰应成立且不化（辰月水死于月令）"
+    eff = e["effects"]
+
+    pw = _ban_power_of(eff)
+    assert pw, "多支时合绊之力不应为空（O-9 修复前此处为 0 条）"
+    assert any(f["zhi"] == "子" and f.get("gan") == "癸" and f["delta"] == -0.25
+               for f in pw), "子中癸应扣 −0.25（本气）"
+    assert any(f["zhi"] == "辰" and f.get("gan") == "戊" and f["delta"] == -0.25
+               for f in pw), "辰中戊应扣 −0.25（本气）"
+
+
+def test_zichen_one_to_one_does_not_double_count_ban_power():
+    """1:1 的子辰**不另加**合绊之力——0.25 已在条目内（防重复扣的那一半）。
+
+    `甲子 甲辰 甲辰 乙卯`：月辰日辰成自刑、消费掉日辰，子辰半合只剩年子+月辰（1:1），
+    走 ③其他情况档，条目自带「辰中戊土…再 −0.25」。此处再补一次就变成 −0.5。
+    """
+    r = relations.judge_relations(_chart("甲子", "甲辰", "甲辰", "乙卯"))
+    e = _ju(r, ["子", "辰"])
+    assert e and e["cols"] == ["year", "month"], "应只余 1:1 的年月子辰"
+    assert not _ban_power_of(e["effects"]), \
+        "1:1 时合绊之力已在条目内，不得由 _bansanhe_ban_power 再补一次"
+    # 条目自带的 0.25 仍在（且只有一次）
+    assert _net(e["effects"], "辰", "戊", 3.0) == 1.75, "辰中戊土 −1（生克）−0.25（合绊之力）"
