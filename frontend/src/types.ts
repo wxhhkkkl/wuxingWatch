@@ -559,7 +559,11 @@ export interface V2Step {
 }
 
 export interface V2DayunStep {
+  /** 来源阶段（013 FR-024）——阶段 2 为 `"dayun"`，阶段 3 为 `"liunian"`。 */
+  source?: 'dayun' | 'liunian'
   ganzhi: string
+  /** 阶段 3 才有：该年流年干支。 */
+  liunian?: string | null
   start_year: number | null
   start_age_xu: number | null
   level: string
@@ -570,6 +574,44 @@ export interface V2DayunStep {
   transition: '成格' | '破格' | null
   deltas: StepTrace[]
   scores_after: Record<string, number>
+  /** 该步的调候量化（013 T035；FR-021b）——按该步同口径重判。 */
+  tiaohou?: V2Tiaohou | null
+  /** 该步的格局层次（013 T035；FR-021b）——按该步同口径重判。 */
+  layers?: V2Layers | null
+  /** 该阶段的判定依据段（data-model §1）——逐段可读，供页面「依据可追溯」用。 */
+  steps?: V2Step[]
+}
+
+/** 成对呈现的一侧：值 + 来源阶段（013 FR-016c / FR-024）。 */
+export interface V2PairSide {
+  value: unknown
+  source: 'dayun' | 'liunian'
+}
+
+/** 「加入流年」页的**同名判断成对**条目（013 FR-016c / SC-009）。
+ *
+ *  `changed` 只提示两侧取值不同，**不是吉凶结论**（FR-016a）。 */
+export interface V2Pair {
+  key: string
+  label: string
+  dayun: V2PairSide
+  liunian: V2PairSide
+  changed: boolean
+}
+
+/** `POST /api/charts/suiyun` 与 `GET /api/records/{id}/suiyun` 的响应
+ *  （013 T034；contracts/suiyun-v2.md §2）。**按需实时算、不落库**（FR-026）。 */
+export interface SuiyunResponse {
+  engine: 'wangdu-v2'
+  contract_version: number
+  /** 2 = 只加了大运；3 = 另加流年（`liunian`/`pairs` 非空）。 */
+  stage: 2 | 3
+  input_scope?: 'four_pillars' | 'three_pillars'
+  /** 该盘在岁运阶段的降级说明（FR-025）；无降级时为空数组。 */
+  degradations: string[]
+  dayun: V2DayunStep
+  liunian: V2DayunStep | null
+  pairs: V2Pair[] | null
 }
 
 /** 012 期 v2 结论（engine === 'wangdu-v2'）。 */

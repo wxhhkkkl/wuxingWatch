@@ -101,6 +101,95 @@ describe('RelationDiagram 消费后端 v2 裁定', () => {
   })
 })
 
+// ---------------------------------------------------------------
+// 013 T033 / T040 —— 岁运维度**只消费后端产出**：流年那一维改由岁运端点供给，
+// 前端 `relations.ts` 的流年本地判定副本退役（方案 A 续，013 research R7 / FR-024 / SC-008）。
+//
+// 判据方法：先用**不带** `suiyun` 的对照盘看清本地判定的产物（`寅亥合化木` 等），
+// 再断言带上后端裁定后这些本地产物**消失**、后端条目**出现**。
+// ---------------------------------------------------------------
+
+/** 年甲子 月己亥 日乙酉 时庚巳——本地判定对「寅」流年有一串产物。 */
+function suiyunResult(strength: unknown) {
+  const r = JSON.parse(JSON.stringify(mockResult))
+  r.pillars = {
+    year: { ganzhi: '甲子', gan: '甲', zhi: '子', gan_wuxing: '木', zhi_wuxing: '水', shishen: '比肩' },
+    month: { ganzhi: '己亥', gan: '己', zhi: '亥', gan_wuxing: '土', zhi_wuxing: '水', shishen: '正财' },
+    day: { ganzhi: '乙酉', gan: '乙', zhi: '酉', gan_wuxing: '木', zhi_wuxing: '金', shishen: '日主' },
+    time: { ganzhi: '庚巳', gan: '庚', zhi: '巳', gan_wuxing: '金', zhi_wuxing: '火', shishen: '正官' },
+  }
+  r.xi_yong.strength = strength
+  return r
+}
+
+const V2_SHELL = {
+  engine: 'wangdu-v2', contract_version: 2,
+  // 原局裁定：留空即可（本测试只看岁运维度）
+  relations: {
+    established: [{ tier: 8, type: '六冲', members: ['子', '午'], cols: ['year', 'time'],
+                    hua: null, detail: '', effects: [] }],
+    rejected: [],
+  },
+}
+
+const DAYUN = { ganzhi: '庚午', start_year: 2020, end_year: 2029, gan: '庚', zhi: '午' }
+const LIUNIAN = { year: 2026, gan: '甲', zhi: '寅', ganzhi: '甲寅' }
+
+function mountSuiyun(suiyun?: unknown) {
+  setActivePinia(createPinia())
+  return mount(RelationDiagram, {
+    props: { result: suiyunResult(V2_SHELL) as never,
+             selectedDayun: DAYUN as never, selectedLiunian: LIUNIAN as never,
+             ...(suiyun === undefined ? {} : { suiyun: suiyun as never }) },
+  })
+}
+
+const BACKEND_LN = {
+  tier: 3, type: '六合', members: ['寅', '亥'], cols: ['_liunian', 'month'],
+  hua: null, detail: '合绊〔后端流年裁定〕', effects: [],
+}
+
+describe('命盘图的岁运维度只消费后端产出（013 T040）', () => {
+  it('对照：v2 结果选中共岁运、却**没给**后端裁定时，不再本地补判流年（副本已退役）', () => {
+    // 旧实现（T040 之前）在此会把 `local` 里牵涉流年的条目并进后端原局列表，
+    // 于是「寅亥合化木」「子酉破」会出现；退役后只剩后端原局裁定。
+    const text = mountSuiyun().text()
+    expect(text).not.toContain('寅亥合化木')
+    expect(text).not.toContain('子酉破')
+    expect(text).toContain('子午')      // 后端原局裁定仍在
+  })
+
+  it('给了**匹配**的后端阶段 3 裁定 → 后端条目出现，本地流年产物消失', () => {
+    const w = mountSuiyun({ ganzhi: '庚午', year: 2026,
+                            relations: { established: [BACKEND_LN], rejected: [] } })
+    const text = w.text()
+    expect(text).toContain('合绊〔后端流年裁定〕')
+    expect(text).not.toContain('寅亥合化木')
+    expect(text).not.toContain('子酉破')
+  })
+
+  it('**自校验**：后端裁定与当前选中的步/年不符时不予采用（不显示别年的结论）', () => {
+    // ganzhi 不符
+    const a = mountSuiyun({ ganzhi: '甲子', year: 2026,
+                            relations: { established: [BACKEND_LN], rejected: [] } })
+    expect(a.text()).not.toContain('合绊〔后端流年裁定〕')
+    // year 不符
+    const b = mountSuiyun({ ganzhi: '庚午', year: 2031,
+                            relations: { established: [BACKEND_LN], rejected: [] } })
+    expect(b.text()).not.toContain('合绊〔后端流年裁定〕')
+  })
+
+  it('非 v2 结果（旧记录）仍走本地判定，不报错', () => {
+    setActivePinia(createPinia())
+    const w = mount(RelationDiagram, {
+      props: { result: suiyunResult({ method: 'sizhu-jingsui', level: '较弱' }) as never,
+               selectedDayun: DAYUN as never, selectedLiunian: LIUNIAN as never },
+    })
+    expect(w.exists()).toBe(true)
+    expect(w.text()).toContain('寅亥合化木')
+  })
+})
+
 describe('后端类型名 → 前端 RelType 映射', () => {
   it('书里的十八级名映射到前端筛选器的 12 类', () => {
     expect(toFrontendType('六冲')).toBe('相冲')

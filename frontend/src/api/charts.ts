@@ -6,10 +6,22 @@ import type {
   LiuShiRequest,
   LiuShiResponse,
   LiuYueResponse,
+  SuiyunResponse,
 } from '../types'
 
 export function predictChart(input: BirthInput): Promise<ChartResult> {
   return request<ChartResult>('/api/charts/predict', { method: 'POST', body: JSON.stringify(input) })
+}
+
+/** 岁运推导（013 T034；FR-021a）——**按需实时算、不落库**（FR-026）。
+ *
+ *  给 `liunian_year` 即得**阶段 3**（另含 `pairs`），不给只算**阶段 2**。 */
+export function fetchSuiyun(
+  input: BirthInput & { dayun_ganzhi: string; liunian_year?: number },
+): Promise<SuiyunResponse> {
+  return request<SuiyunResponse>('/api/charts/suiyun', {
+    method: 'POST', body: JSON.stringify(input),
+  })
 }
 
 /** 流月/流日/流时下钻（level=month → LiuYueResponse，day → LiuRiResponse，hour → LiuShiResponse）。 */

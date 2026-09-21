@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import type { ChartResult, LiuRiItem, LiuShiContext, LiuShiItem, LiuYueItem } from '../types'
-import { fetchLiuShi } from '../api/charts'
+import type { ChartResult, LiuRiItem, LiuShiContext, LiuShiItem, LiuYueItem, V2Relation } from '../types'
+import { fetchLiuShi, fetchSuiyun } from '../api/charts'
+import { getRecordSuiyun } from '../api/records'
 import { wxColor } from '../utils/wuxing'
 import {
   defaultDayunIndex,
@@ -160,6 +161,45 @@ const birthYear = computed(() =>
   props.result.solar_birth ? new Date(props.result.solar_birth).getFullYear() : null,
 )
 
+/** 进「加入大运」/「加入流年」页（013 FR-021a）——从记录进入时带上 id，
+ *  使那两页按记录的输入**当场重推**岁运（岁运结论不落库，FR-026）。 */
+function gotoStage(path: string) {
+  router.push(props.recordId != null ? { path, query: { record: String(props.recordId) } } : path)
+}
+
+// ---- 阶段 3（加入流年）的后端关系裁定：命盘图的岁运维度**只消费后端产出**（013 T040）----
+//
+// 013 起流年的本地判定副本退役（方案 A）——否则同一命盘同一年份会在「加入流年」页
+// 与命盘图上显示不同结论（违 FR-024 / SC-008）。取不到时传 null，命盘图退回
+// 「该步大运」的后端裁定（仍非本地判定）。
+const suiyun = ref<{
+  ganzhi: string; year: number
+  relations: { established: V2Relation[]; rejected: V2Relation[] }
+} | null>(null)
+let suiyunToken = 0
+
+watch(
+  [() => selectedStep.value?.ganzhi, selectedLiunianYear] as const,
+  async ([gz, year]) => {
+    suiyun.value = null                       // 换步 / 换年即失效，避免显示别年结论
+    if (!hasYears.value || !gz || year == null) return
+    if (!isWangduV2(xi.value.strength)) return // 非 v2：命盘图本就走本地兜底，无须请求
+    const t = ++suiyunToken
+    try {
+      const res = props.recordId != null
+        ? await getRecordSuiyun(props.recordId, gz, year)
+        : chartStore.inputs
+          ? await fetchSuiyun({ ...chartStore.inputs, dayun_ganzhi: gz, liunian_year: year })
+          : null
+      if (t !== suiyunToken || !res?.liunian) return
+      suiyun.value = { ganzhi: gz, year, relations: res.liunian.relations }
+    } catch {
+      /* 取不到（未登录 / 无出生日期等）就退回该步大运的后端裁定 */
+    }
+  },
+  { immediate: true },
+)
+
 function fmtDateTime(s: string): string {
   const d = new Date(s)
   if (isNaN(d.getTime())) return s
@@ -245,6 +285,7 @@ function fmtDateTime(s: string): string {
       :result="result"
       :selected-dayun="hasYears ? selectedStep : null"
       :selected-liunian="hasYears ? selectedLiunian : null"
+      :suiyun="suiyun"
     />
 
     <!-- 大运 · 流年联动 -->
@@ -273,6 +314,22 @@ function fmtDateTime(s: string): string {
         @select-liuri="selectedLiuriDate = $event"
         @select-liushi="selectedLiushiZhi = $event"
       />
+    </section>
+
+    <!-- 岁运推导（013 三阶段）：原局 → 加入大运 → 加入流年，各成一页 -->
+    <section class="wx-card">
+      <p class="wx-card-title">岁运推导</p>
+      <div class="stage-links">
+        <span class="stage-link" data-testid="dayun-link" @click="gotoStage('/dayun')">
+          加入大运<van-icon name="arrow" size="12" />
+        </span>
+        <span class="stage-link" data-testid="liunian-link" @click="gotoStage('/liunian')">
+          加入流年<van-icon name="arrow" size="12" />
+        </span>
+      </div>
+      <p class="muted">
+        在原局之上逐步加入大运与流年重判；两阶段的同名判断并列罗列，引擎不合成吉凶。
+      </p>
     </section>
 
     <!-- 人元司令与宫位 -->
@@ -479,6 +536,24 @@ function fmtDateTime(s: string): string {
 .muted {
   color: var(--wx-muted);
   font-size: 13px;
+}
+/* 岁运推导两个入口（013） */
+.stage-links {
+  display: flex;
+  gap: 10px;
+  margin: 6px 0;
+}
+.stage-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--wx-primary-2, #a63431);
+  background: #fbf3f3;
+  border-radius: 12px;
+  padding: 4px 12px;
+  cursor: pointer;
 }
 .warn {
   color: #b8860b;

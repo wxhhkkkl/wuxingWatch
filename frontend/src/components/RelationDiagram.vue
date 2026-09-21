@@ -19,11 +19,16 @@ import {
 import { GAN_WUXING, wxColor, ZHI_WUXING } from '../utils/wuxing'
 import { v2RelationsToJudgments } from '../utils/v2relations'
 import { isWangduV2 } from '../types'
+import type { V2Relation } from '../types'
 
 const props = defineProps<{
   result: ChartResult
   selectedDayun?: DaYunStep | null
   selectedLiunian?: LiuNianStep | null
+  /** 阶段 3（加入流年）的**后端裁定**（013 T040；FR-021a）。父组件从岁运端点取回后传入；
+   *  `ganzhi`/`year` 用于**自校验**——与当前选中不符时视为不可用，避免显示别步的结论。 */
+  suiyun?: { ganzhi: string; year: number;
+             relations: { established: V2Relation[]; rejected: V2Relation[] } } | null
 }>()
 
 type TabKey = 'guanxi' | 'liutong' | 'gongwei' | 'liuqin'
@@ -111,17 +116,23 @@ const backendDayunJudgments = computed(() => {
   return step ? v2RelationsToJudgments(step.relations) : null
 })
 
-/** 该判定是否牵涉大运/流年列。 */
-function touchesJu(j: Judgment): boolean {
-  const cols = [j.aColId, j.bColId, ...(j.memberColIds ?? [])]
-  return cols.includes('dayun') || cols.includes('liunian')
-}
+/** 阶段 3（含流年）的后端裁定——**自校验**：与当前选中的步/年不符时视为不可用。 */
+const suiyunJudgments = computed(() => {
+  const s = props.suiyun
+  if (!s) return null
+  if (props.selectedDayun?.ganzhi !== s.ganzhi) return null
+  if (props.selectedLiunian?.year !== s.year) return null
+  return v2RelationsToJudgments(s.relations)
+})
 
 // 008：条件判定（成立/未成立）→ 连线只画成立关系
 //
-// 012 方案 A 之后的取数：**原局关系取自后端裁定**（唯一口径来源）；
-// **大运/流年维度后端暂无对应物**（`compute_strength` 只算原局），
-// 故这一部分仍由本地判定补充——混合来源是临时状态，见 research R7。
+// **013 方案 A（续）**：命盘图的岁运维度**只消费后端产出**，三个阶段的来源各自唯一——
+//   · 阶段 1 原局：`strength.relations`；
+//   · 阶段 2 加入大运：`strength.dayun[]` 中该步的 `relations`；
+//   · 阶段 3 加入流年：`suiyun` 属性（父组件从岁运端点取回，FR-021a）。
+// 本地判定**只在后端裁定不可用**（非 v2 旧记录）时兜底。**流年的本地判定副本自 013 起退役**
+// ——否则同一命盘同一年份会在「加入流年」页与命盘图上显示不同结论（违 FR-024 / SC-008）。
 const relJudgments = computed(() => {
   const back = backendJudgments.value
   const local = buildRelationJudgments(relCols.value, {
@@ -129,22 +140,7 @@ const relJudgments = computed(() => {
   })
   if (!back) return local
   if (!includeDayunLiunian.value) return back
-
-  // 选中大运时**优先用后端该步的裁定**（已含该步干支）；
-  // 流年维度后端暂未按年返回，仍需本地补充——混合来源是临时状态（research R7）。
-  const stepBack = backendDayunJudgments.value
-  const juOnly = (list: Judgment[]) =>
-    list.filter((j) => touchesJu(j) && !(j.aColId === 'dayun' || j.bColId === 'dayun'))
-  if (stepBack) {
-    return {
-      established: [...stepBack.established, ...juOnly(local.established)],
-      rejected: [...stepBack.rejected, ...juOnly(local.rejected)],
-    }
-  }
-  return {
-    established: [...back.established, ...local.established.filter(touchesJu)],
-    rejected: [...back.rejected, ...local.rejected.filter(touchesJu)],
-  }
+  return suiyunJudgments.value ?? backendDayunJudgments.value ?? back
 })
 
 /** 判定条目 → 连线/汇总用的 RelPair（显示文案在此组装）。 */

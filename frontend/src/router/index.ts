@@ -24,6 +24,18 @@ const router = createRouter({
       name: 'strength',
       component: () => import('../pages/StrengthDetail.vue'),
     },
+    // ---------- 岁运推导三阶段（013-dayun-liunian-judgment）----------
+    // 原局 → 加入大运 → 加入流年，各成一页（FR-021）；`?record=<id>` 时从记录进入
+    {
+      path: '/dayun',
+      name: 'dayun-detail',
+      component: () => import('../pages/DayunDetail.vue'),
+    },
+    {
+      path: '/liunian',
+      name: 'liunian-detail',
+      component: () => import('../pages/LiunianDetail.vue'),
+    },
     {
       path: '/login',
       name: 'login',
