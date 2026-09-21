@@ -415,3 +415,23 @@ def test_wuhe_stage_snapshot_shows_the_group_static():
     assert s6["month"]["gan_root"] == pytest.approx(6.4 * 0.6)
     for p in s6.values():
         assert p["gan_own"] + p["gan_root"] == pytest.approx(p["gan_degree"])
+
+
+# ---------------------------------------------------------------
+# 记录存储：chart_result 的列类型（2026-09-18）
+# ---------------------------------------------------------------
+
+def test_chart_result_is_mediumtext_on_mysql():
+    """判定依据整份 JSON 已超 MySQL `TEXT` 的 64KB 上限 → MySQL 上须是 MEDIUMTEXT。
+
+    超限时 MySQL 会截断并**劈开多字节汉字**，报的却是 1366「Incorrect string value」，
+    字符集看着完全正常、极难定位；故用列类型把它钉住。
+    """
+    from sqlalchemy.dialects import mysql
+
+    import models  # noqa: F401  (注册 ORM 模型)
+    from db.session import Base
+
+    col = Base.metadata.tables["bazi_charts"].c.chart_result
+    assert col.type.compile(dialect=mysql.dialect()).upper() == "MEDIUMTEXT"
+    assert col.type.compile().upper() == "TEXT", "非 MySQL（dev 用 SQLite）仍是 TEXT"
