@@ -399,6 +399,18 @@ describe('StrengthDetail — 判定依据的分段命盘快照（012）', () => 
     expect(w.findAll('[data-testid^="v2-chart-note-"]').length).toBe(0)
   })
 
+  it('五行被合化改变的支也套化神五行的框与底色', () => {
+    const w = mountWith(withChart('relations'))
+    const month = w.find('[data-testid="v2-chart-month"]')
+    const box = month.find('[data-testid="v2-zhi-hua-month"]')
+    expect(box.exists()).toBe(true)
+    expect(box.text()).toBe('寅')                       // 支字仍是原字
+    expect(box.attributes('style')).toContain('var(--wx-huo)')   // 合化后五行＝火
+    // 未改变五行的支不套框
+    expect(w.find('[data-testid="v2-chart-year"]')
+      .find('[data-testid="v2-zhi-hua-year"]').exists()).toBe(false)
+  })
+
   it('藏干的增/减/归零分别标出，归零加删除线', () => {
     const w = mountWith(withChart('relations'))
     const day = w.find('[data-testid="v2-chart-day"]')
@@ -511,11 +523,17 @@ function withStemHe() {
 }
 
 describe('StrengthDetail — 第 6 段 天干五合（012）', () => {
-  it('换字的干显示新字并标出原字与「合化」', () => {
+  it('换字的干显示**原字**，另用化神五行的框与底色标出（不换字显示）', () => {
     const w = mountWith(withStemHe())
     const year = w.find('[data-testid="v2-chart-year"]')
-    expect(year.find('.pillar-gan').text()).toContain('戊')
-    expect(year.find('[data-testid="v2-gan-changed-year"]').text()).toBe('原甲·合化')
+    // 主字仍是原局的「甲」——不再把换字后的「戊」当正字显示
+    expect(year.find('.pillar-gan').text()).toContain('甲')
+    expect(year.find('.pillar-gan').text()).not.toContain('戊')
+    // 合化后的五行（土）以框 + 底色标出；新字在后随小字里
+    const box = year.find('[data-testid="v2-gan-hua-year"]')
+    expect(box.exists()).toBe(true)
+    expect(box.attributes('style')).toContain('var(--wx-tu)')
+    expect(year.find('[data-testid="v2-gan-changed-year"]').text()).toBe('合化→戊')
   })
 
   it('合而不化的干标「合绊」且不减字', () => {

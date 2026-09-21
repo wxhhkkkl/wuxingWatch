@@ -13,6 +13,11 @@
    `寅寅午` 这类共用一支的同层级半三合只成立一条（O-5。「化神一致即并存」的宽口径
    会让两条双双成立，违反 O-5）。
 4. 输出必须**确定性**——候选枚举与输出顺序一律按柱位序（FR-058）。
+5. **两遍迭代**（2026-09-18）：条件③「化神的力量必须达到太旺以上（指全局地支 X 的
+   静态旺度）」用的是 书 上 764-771 五步算法里的**静态旺度**——关系增减之后的量，
+   **与谁先成立无关**（子克巳是 tier 18、子辰合是 tier 13，调级序解决不了）。故判完
+   一遍后把关系集施回地支度数、重判 `hua`，迭代到不再变；只动 `hua`/effects，
+   **不动关系集**。细节与书证见 `judge_relations` 的 docstring。
 
 **已裁定的口径**（`research.md` C26-n 裁定结果）：
 - **C26-6**：同支被两对**同级**关系命中时，按**柱位先后**取先者（年>月>日>时），
@@ -51,7 +56,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from services.bazi.constants import GAN_WUXING, KE, SHENG, ZHI_WUXING
-from services.bazi.v2 import _ordered, tables
+from services.bazi.v2 import _ordered, degrees, tables
 
 
 # ===============================================================
@@ -227,6 +232,12 @@ WEAK_LINE = 2.4
 # 判定期间的上下文（judge_relations 内设置；_effects_for 读取）
 _MONTH_CTX: dict[str, str] = {"zhi": ""}
 _COLS_CTX: dict[str, list] = {"cols": []}
+# 两遍管线（2026-09-18）：`_REL_CTX` = 上一轮已成立关系集（判定期非 None 时 `_zhi_degrees`
+# 走「计入其它关系 effects」的口径）；`_SELF_CTX` = 本轮正在判定的那条（(tier, cols)）。
+_REL_CTX: dict[str, list | None] = {"established": None}
+_SELF_CTX: dict[str, tuple | None] = {"self": None}
+# 重判轮上限：实测（12^4 全量）20597 盘 1 轮稳定、138 盘 2 轮、1 盘 3 轮、0 盘振荡。
+_MAX_REFINE_ROUNDS = 3
 
 
 def cols_of(ctx: dict) -> list:
@@ -665,6 +676,9 @@ class _Cand:
     members: list[str]
     cols: list[str]
     hua: str | None = None
+    # **合解冲**（书 下 1966-1976）：该冲对的主冲之支被合住 → 冲不成立，理由记在这里，
+    # 由 `_judge_pass` 直接送进 `rejected`（与「破局」同一形制）。
+    jie: str | None = None
     # 可合化出的多个五行——只有子丑（水/土）与午未（火/土）两对。书 上 3326：
     # 「如果满足了合化为火的条件，那它就合化为火；如果满足了合化为土的条件，那就
     # 合化为土；如果两者都没有满足，那就以互助或合绊论」，故按序试条件。
@@ -737,14 +751,12 @@ def _tou_gan(cols: list[_Col], wx: str, keys: list[str] | None = None) -> bool:
     return any(c.gan and GAN_WUXING[c.gan] == wx for c in pool)
 
 
-def _zhi_degrees(cols: list[_Col], month_zhi: str) -> dict[str, float]:
-    """**全局地支**的静态旺度（藏干度数 × 月令系数）。
+def _raw_zhi_degrees(cols: list[_Col], month_zhi: str) -> dict[str, float]:
+    """藏干度数之和（× 月令系数）——**不施加任何关系影响**的版本（第一遍用）。"""
+    return _scale_by_month(_sum_hidden(cols, month_zhi), month_zhi)
 
-    书《上》第四节 地支六合「3. 子和丑至少有一支在其上透出水，如果没有透出的话那么水的力量必须」 的条件 3 明确限定为「指**全局地支**水的静态旺度」——天干**不计入**。
-    这是与「含天干」口径的关键区别（后者已作为死代码删除）。
 
-    TODO(T016 余下)：仍缺通根递减；应由 `degrees` 模块统一提供。
-    """
+def _sum_hidden(cols: list[_Col], month_zhi: str) -> dict[str, float]:
     raw = {w: 0.0 for w in tables.WUXING_ORDER}
     for c in cols:
         if not c.zhi:
@@ -752,10 +764,44 @@ def _zhi_degrees(cols: list[_Col], month_zhi: str) -> dict[str, float]:
         for g, d in tables.hidden_degrees(c.zhi, month_zhi,
                                           dangzhong=tables.dangzhong_run(cols, "土", c.key)):
             raw[GAN_WUXING[g]] += d
+    return raw
+
+
+def _scale_by_month(raw: dict[str, float], month_zhi: str) -> dict[str, float]:
     if not month_zhi:
         return raw
     return {w: raw[w] * tables.COEF[tables.month_state(w, month_zhi)]
             for w in tables.WUXING_ORDER}
+
+
+def _zhi_degrees(cols: list[_Col], month_zhi: str) -> dict[str, float]:
+    """**全局地支**的静态旺度（藏干度数 × 月令系数）。
+
+    书《上》第四节 地支六合「3. 子和丑至少有一支在其上透出水，如果没有透出的话那么水的力量必须」 的条件 3 明确限定为「指**全局地支**水的静态旺度」——天干**不计入**。
+    这是与「含天干」口径的关键区别（后者已作为死代码删除）。
+
+    TODO(T016 余下)：仍缺通根递减；应由 `degrees` 模块统一提供。
+
+    **「静态旺度」须计入其它关系的增减（2026-09-18 起）**：判定期若已有上一轮的关系集
+    （`_REL_CTX`），本函数返回的是 书 上 764-771 五步算法里的那个量——**先落其它已成立
+    关系的 effects，再乘月令系数**。**自己那条不计**（`_SELF_CTX`）：合化成功后整支会变成
+    纯化神 6 度，计进去会让条件③ 自我实现（实测会造出 394 条假「不化→化」）。
+    书证与影响面见 `judge_relations` 的 docstring。
+    """
+    established = _REL_CTX["established"]
+    if not established:
+        return _raw_zhi_degrees(cols, month_zhi)
+    from services.bazi.v2 import pipeline as _pl      # 惰性导入：pipeline 依赖本模块
+    self_key = _SELF_CTX["self"]
+    others = {"established": [e for e in established
+                              if (e["tier"], frozenset(e["cols"])) != self_key]}
+    adj = _pl._adjusted_hidden(others, [degrees.Col(c.key, c.gan, c.zhi) for c in cols],
+                               month_zhi)
+    raw = {w: 0.0 for w in tables.WUXING_ORDER}
+    for lst in adj.values():
+        for gan, d in lst:
+            raw[GAN_WUXING[gan]] += d
+    return _scale_by_month(raw, month_zhi)
 
 
 def _zuozhi_wx(zhi: str | None, month_zhi: str) -> str:
@@ -1105,6 +1151,7 @@ def _hua_ok(cand: _Cand, cols: list[_Col], month_zhi: str,
 
     辰酉合另有两条（书《—》待核）：辰土原始含土量不得为 0；辰土个数不得是酉金的 3 倍以上。
     """
+    _SELF_CTX["self"] = (cand.tier, frozenset(cand.cols))   # 两遍管线：本条自己不计入度数
     hua = hua or cand.hua          # 子丑/午未 有两个候选化神，由调用方逐个试
     if not hua:
         return False
@@ -1255,24 +1302,40 @@ def _cols_with(st: _State, zhi: str) -> list[_Col]:
     return [c for c in st.cols if c.zhi == zhi]
 
 
-def _ju_cols(st: _State, zhis: tuple[str, ...]) -> list[_Col] | None:
-    """一个「局」的**全部**参与支（含同类多支），按柱位排序；构局之支不齐返回 None。
+def _ju_runs(st: _State, zhis: tuple[str, ...]) -> list[list[_Col]]:
+    """一个「局」的参与支，按**极大连续段**切分；段内构局之支不齐则该段不成局。
 
-    书：多出的同类支**加入合局**——半三合「多出 1 个寅或 1 个午就多出 6 度」（下 430），
-    三合「多出 1 支就多出 6 度」（上 3448/3545），合绊时「多一支…就多减一次合绊之力」（上 3458/3555）。
-    故 `寅寅午` 是**一条**「2 寅合 1 午」（下 452 书例原话），
-    **不是**两条互相竞争、靠让位裁决的关系。
+    多出的同类支**与局相连时并入同一条**——半三合「多出 1 个寅或 1 个午就多出 6 度」
+    （下 430），三合「多出 1 支就多出 6 度」（上 3448/3545），合绊时「多一支…就多减
+    一次合绊之力」（上 3458/3555）。故 `寅寅午` 是**一条**「2 寅合 1 午」（下 452
+    书例原话）、`甲辰 丙子 甲辰 甲子` 是**一条** 2 子合 2 辰（下 1023，总旺度 24 度），
+    **不是**多条互相竞争、靠让位裁决的关系。
 
-    顺带覆盖了书《—》待核⑤「中隔之支为其中一支本身」那条例外：中隔支与两端同类时会被
-    一并收进参与支，跨度自然连成一片，无需另设特例。
+    **隔着其它支的同类支不参与**——书 下 1011「年月子辰相合，两者相邻（**年时子辰
+    不能合，因为不相邻**）」、下 1015「原局日时子辰相合（**年子不能参与相合**）」：
+    该支不进本段，但**不得把这条局一并抹掉**。
+
+    > 旧实现（收全部同类柱 + `_contiguous` 判整段无缝隙）在下 1011/1015/1018 三例上
+    > 把局整个丢弃，连合绊都不论。段由构造保证连续，故调用方不再需要 `_contiguous`。
+
+    书《—》待核⑤「中隔之支为其中一支本身」那条例外由此天然覆盖：中隔支与两端同类时
+    它本就在 `zhis` 内，不会断开本段。
     """
-    cols: list[_Col] = []
-    for z in zhis:
-        got = _cols_with(st, z)
-        if not got:
-            return None
-        cols.extend(got)
-    return sorted(cols, key=lambda c: st.idx(c.key))
+    need = set(zhis)
+    runs: list[list[_Col]] = []
+    i = 0
+    while i < len(st.cols):
+        if st.cols[i].zhi not in need:
+            i += 1
+            continue
+        j = i
+        while j < len(st.cols) and st.cols[j].zhi in need:
+            j += 1
+        run = st.cols[i:j]
+        if {c.zhi for c in run} >= need:
+            runs.append(run)
+        i = j
+    return runs
 
 
 def _ju_detail(cols: list[_Col], suffix: str) -> str:
@@ -1288,6 +1351,84 @@ def _ju_detail(cols: list[_Col], suffix: str) -> str:
     multi = any(n > 1 for _, n in ordered)
     body = "".join(f"{n}{z}" if multi else z for z, n in ordered)
     return body + suffix
+
+
+# ===============================================================
+# 合解冲（书《下》第十二节 六冲 ②合可解冲，1966-1976）
+# ===============================================================
+# 「所谓合解冲，即合（包括六合、半三合、三合、三会、半会）能解两支或多支相冲。
+#  ▲合能解冲的关键是**主冲之支须被合住**才能解冲。**若为原局的墓库相冲，不管能不能成功，
+#   原局逢相合，只需合住一支即可解冲**（若为天克地冲，则必须同时合住两支或逢天合地合方可
+#   解冲）……合住包括**合绊和合化**，不管是合绊还是合化都必须**使相冲五行减力**方可，
+#   否则不能解冲。」
+#
+# 「合住」的判据因此是两条：① 该支与相邻支构成一个**会成立**的合（三会/三合/卯辰半会/
+# 半三合/六合）；② 该合的 effects **使该支的相冲五行减力**——化成功且化神不是相冲五行也算
+# （下 2003 例4：辰在子月本无土，书仍说「辰土被子水合化为水，辰土减力」）。
+_HE_JIE_TIERS = (4, 6, 9, 10, 12, 13)
+_MUKU_CHONG_PAIRS = frozenset((frozenset(("辰", "戌")), frozenset(("丑", "未"))))
+# 合解冲**只在原局**（书 1974 后两句讲的是岁运合住，本实现未接岁运，见 research O-8）
+
+
+def _he_reduces(cand: _Cand, cols: list[_Col], month_zhi: str,
+                target_wx: str, zhi: str) -> bool:
+    """该合是否把 `zhi` 这一支的**相冲五行**（`target_wx`）削弱了（书 下 1976）。"""
+    if cand.hua_options:
+        hua_ok = any(_hua_ok(cand, cols, month_zhi, h) for h in cand.hua_options)
+    else:
+        hua_ok = bool(cand.hua) and _hua_ok(cand, cols, month_zhi)
+    for fx in _effects_for(cand, hua_ok):
+        if fx["zhi"] != zhi:
+            continue
+        if fx.get("pure"):                       # 化成功：整支换成化神
+            return fx["pure"] != target_wx
+        weak = (fx.get("remove") or (fx.get("scale") is not None and fx["scale"] < 1)
+                or (fx.get("delta") is not None and fx["delta"] < 0))
+        if not weak:
+            continue
+        gan = fx.get("gan")
+        if (GAN_WUXING.get(gan, "") if gan else fx.get("wuxing", "")) == target_wx:
+            return True
+    return False
+
+
+def _col_held_by_he(st: _State, key: str, zhi: str, month_zhi: str) -> str | None:
+    """该柱的支是否被某个**会成立**的合合住；合住则返回该合的名字（书 下 1966-1976）。"""
+    cols = st.cols
+    target_wx = ZHI_WUXING.get(zhi, "")
+    if not target_wx:
+        return None
+    for tier in _HE_JIE_TIERS:
+        for c in _candidates(tier, st):
+            if zhi not in c.members or key not in c.cols:
+                continue
+            if _he_reduces(c, cols, month_zhi, target_wx, zhi):
+                return c.detail
+    return None
+
+
+def _jie_reason(st: _State, k1: str, k2: str, z1: str, z2: str,
+                month_zhi: str, *, need_both: bool = False) -> str | None:
+    """该**相邻冲对**是否被合解（书 下 1974/1984）；解则返回理由串。
+
+    `need_both` 强制「两支都须被合住」——**天克地冲**用它（书 下 1974 括注 +
+    下 1278 例：「丑未冲为天克地冲，天克地冲具有优先权，所以巳午未没法解冲」）。
+    """
+    held1 = _col_held_by_he(st, k1, z1, month_zhi)
+    held2 = _col_held_by_he(st, k2, z2, month_zhi)
+    label = _ordered.sort_zhis([z1, z2])
+    if not need_both and frozenset((z1, z2)) in _MUKU_CHONG_PAIRS:   # 墓库冲：合住一支即可解
+        if held1:
+            return (f"{label}冲：{z1}被「{held1}」合住，合可解冲"
+                    f"（书 下 1974「原局的墓库相冲……只需合住一支即可解冲」）")
+        if held2:
+            return (f"{label}冲：{z2}被「{held2}」合住，合可解冲"
+                    f"（书 下 1974 同）")
+        return None
+    if held1 and held2:                                   # 普通冲 / 天克地冲：两支都须被合住
+        return (f"{label}冲：两支分别被「{held1}」「{held2}」合住，合可解冲"
+                f"（书 下 1974/1984「必须同时合住两支才能解冲」）")
+    return None
 
 
 def _broken_by_chong(st: _State, cols: list[_Col]) -> str | None:
@@ -1309,11 +1450,14 @@ def _broken_by_chong(st: _State, cols: list[_Col]) -> str | None:
     > 流年子冲午且被合绊），岁运支不存在相邻问题，故原文不足以支持盘内远冲也破。
     > 修订影响：仅此一条（非相邻冲）即改动 96 条三合/三会 + 884 个半三合盘的判定。
     """
+    mz = _MONTH_CTX.get("zhi", "")
     for c in cols:
         for d in st.cols:
             if d is c or not d.zhi:
                 continue
             if frozenset((c.zhi, d.zhi)) in ZHI_CHONG and _adjacent(st, c, d):
+                if _jie_reason(st, c.key, d.key, c.zhi, d.zhi, mz):
+                    continue          # 合解冲：被合住的冲不再破局（否则两条规则互相掐）
                 return f"破局：{c.zhi}{d.zhi}冲"
     return None
 
@@ -1321,8 +1465,9 @@ def _broken_by_chong(st: _State, cols: list[_Col]) -> str | None:
 def _candidates(tier: int, st: _State) -> list[_Cand]:
     """枚举某一级的所有候选关系（**不判合化是否成立**）。
 
-    相邻约束：两两关系（六合/六冲/六害/两支刑/半三合/卯辰半会）须 `_adjacent`；
-    三支关系（三会/三合/寅巳申三刑/丑未戌刑/三支自刑）须 `_contiguous`；
+    相邻约束：两两关系（六冲/六害/两支刑/卯辰半会）须 `_adjacent`；
+    四支以上的关系由 `_contiguous`（丑未戌三刑、三支自刑）或 `_ju_runs`
+    （三会/三合/半三合/六合的**极大连续段**）保证；
     四库土局**不受**相邻限制（书 下 1854 把它列为独立条件，四支齐即可）。
     > 拱合/拱会（tier 16/17）**已去除**，不再产出候选——见 `_candidates` 里那段留痕。
     """
@@ -1358,6 +1503,13 @@ def _candidates(tier: int, st: _State) -> list[_Cand]:
             if not _adjacent(st, a, b):
                 continue
             if frozenset((a.gan, b.gan)) in GAN_CHONG and frozenset((a.zhi, b.zhi)) in ZHI_CHONG:
+                jie = _jie_reason(st, a.key, b.key, a.zhi, b.zhi,
+                                  _MONTH_CTX.get("zhi", ""), need_both=True)
+                if jie:
+                    out.append(_Cand(2, tname, [a.gan, b.gan, a.zhi, b.zhi],
+                                     [a.key, b.key], jie=jie,
+                                     detail=f"{a.gan}{b.gan}冲、{a.zhi}{b.zhi}冲"))
+                    continue
                 out.append(_Cand(2, tname, [a.gan, b.gan, a.zhi, b.zhi], [a.key, b.key],
                                  detail=f"{a.gan}{b.gan}冲、{a.zhi}{b.zhi}冲"))
 
@@ -1369,10 +1521,9 @@ def _candidates(tier: int, st: _State) -> list[_Cand]:
                              [c.key for c in siku_cols], hua="土",
                              detail="辰戌丑未俱全"))
 
-    elif tier == 4:    # 三会局（三支须紧贴；同类多支并入同一条）
+    elif tier == 4:    # 三会局（同类多支并入同一条；隔开者另成一条，见 `_ju_runs`）
         for z1, z2, z3, hua in SANHUI:
-            cs = _ju_cols(st, (z1, z2, z3))
-            if cs and _contiguous(st, cs):
+            for cs in _ju_runs(st, (z1, z2, z3)):
                 out.append(_Cand(4, tname, [z1, z2, z3], [c.key for c in cs],
                                  hua=hua, detail=_ju_detail(cs, f"会{hua}")))
 
@@ -1387,10 +1538,9 @@ def _candidates(tier: int, st: _State) -> list[_Cand]:
                 out.append(_Cand(5, TYPE_OF_TIER[5], [z] * len(hit), [c.key for c in hit],
                                  detail=f"{len(hit)}{z}自刑（四支以上）"))
 
-    elif tier == 6:    # 三合局（三支须紧贴；同类多支并入同一条）
+    elif tier == 6:    # 三合局（同类多支并入同一条；隔开者另成一条，见 `_ju_runs`）
         for z1, z2, z3, hua in SANHE:
-            cs = _ju_cols(st, (z1, z2, z3))
-            if cs and _contiguous(st, cs):
+            for cs in _ju_runs(st, (z1, z2, z3)):
                 out.append(_Cand(6, tname, [z1, z2, z3], [c.key for c in cs],
                                  hua=hua, detail=_ju_detail(cs, f"合{hua}")))
 
@@ -1414,10 +1564,27 @@ def _candidates(tier: int, st: _State) -> list[_Cand]:
             c1, c2 = _cols_with(st, z1), _cols_with(st, z2)
             if not (c1 and c2):
                 continue
-            keys = [c.key for c in c1 if any(_touching(st, c, d) for d in c2)]
-            keys += [c.key for c in c2 if any(_touching(st, c, d) for d in c1)]
-            if not keys:
+            # **合解冲**（书 下 1966-1976）：某一柱在它的**全部**相邻冲对里都被合住 → 该柱
+            # 不再参与本冲；某对的两支都被合住同理。整条都被解掉时产出一条带 `jie` 的候选，
+            # 由 `_judge_pass` 送进 rejected（与「破局」同一形制）。
+            mz0 = _MONTH_CTX.get("zhi", "")
+            adj = [(a, b) for a in c1 for b in c2 if _touching(st, a, b)]
+            kept: set[str] = set()
+            jied: list[tuple[str, str]] = []            # (理由, 柱位标签)
+            for a, b in adj:
+                why = _jie_reason(st, a.key, b.key, z1, z2, mz0)
+                if why:
+                    jied.append((why, _ordered.col_zhis_label(st.cols, [a.key, b.key])))
+                    continue
+                kept.update((a.key, b.key))
+            if not kept:
+                if jied:                                 # 整条被解 → 送 rejected（理由带柱位）
+                    out.append(_Cand(8, tname, _ordered.sort_zhis([z1, z2]),
+                                     sorted({k for a, b in adj for k in (a.key, b.key)},
+                                            key=st.idx),
+                                     jie="；".join(f"{w}（{wtr}）" for w, wtr in jied)))
                 continue
+            keys = sorted(kept, key=st.idx)
             # 落在寅巳申三刑内的寅申冲由 tier 11 统一按其组合规则施加，不重复成立——
             # 但**只剔掉窗内的柱**：一条冲对可能一部分落在三刑窗内、一部分在窗外
             # （如 `寅巳申寅` 的时寅在窗外），把整条丢掉会让窗外那支的冲一并消失。
@@ -1427,8 +1594,12 @@ def _candidates(tier: int, st: _State) -> list[_Cand]:
                 if not keys:
                     continue
             cols_ = sorted(dict.fromkeys(keys), key=st.idx)
+            detail = f"{z1}{z2}冲"
+            if jied:
+                # **部分被解**：剩几对就论几对（书 下 2000「合解了月日丑未冲，但不能解年月丑未冲」）
+                detail += "（" + "、".join(f"{wtr}那一对已被合解" for _, wtr in jied) + "）"
             out.append(_Cand(8, tname, _ordered.sort_zhis([z1, z2]), cols_,
-                             detail=f"{z1}{z2}冲"))
+                             detail=detail))
 
     elif tier == 9:    # 卯辰半会（须相邻；化神木——书 下 2905「①卯辰半会木成功的条件」）
         for a, b in _pairs(st):
@@ -1436,10 +1607,9 @@ def _candidates(tier: int, st: _State) -> list[_Cand]:
                 out.append(_Cand(9, tname, ["卯", "辰"], [a.key, b.key], hua="木",
                                  detail="卯辰半会"))
 
-    elif tier == 10:   # 生地半三合（书括注含酉丑合；须紧贴；同类多支并入同一条）
+    elif tier == 10:   # 生地半三合（书括注含酉丑合；同类多支并入同一条）
         for z1, z2, hua in BANHE_SHENGDI:
-            cs = _ju_cols(st, (z1, z2))
-            if cs and _contiguous(st, cs):
+            for cs in _ju_runs(st, (z1, z2)):
                 out.append(_Cand(10, tname, _ordered.sort_zhis([z1, z2]),
                                  [c.key for c in cs], hua=hua,
                                  detail=_ju_detail(cs, f"半合{hua}")))
@@ -1452,23 +1622,21 @@ def _candidates(tier: int, st: _State) -> list[_Cand]:
             out.append(_Cand(11, tname, ["寅", "巳", "申"], [c.key for c in win],
                              detail=f"寅巳申三刑（{win[1].zhi}居中）"))
 
-    elif tier == 12:   # 六合（须紧贴；同类多支并入同一条）
+    elif tier == 12:   # 六合（同类多支并入同一条；隔开者另成一条，见 `_ju_runs`）
         # 书《上》第四节 地支六合：「地支之合（包括六合、三合、三会）……**不存在争合现象**，
         # 一般来说，多出的一支或数支以增力来论」——故同样走「局」模型。
         for pair in sorted(ZHI_LIUHE, key=lambda p: min(_ordered.ZHI_ORDER.index(z) for z in p)):
             z1, z2 = sorted(pair, key=lambda z: _ordered.ZHI_ORDER.index(z))
-            cs = _ju_cols(st, (z1, z2))
-            if cs and _contiguous(st, cs):
+            for cs in _ju_runs(st, (z1, z2)):
                 huas = ZHI_LIUHE[pair]
                 out.append(_Cand(12, tname, _ordered.sort_zhis([z1, z2]),
                                  [c.key for c in cs], hua=huas[0],
                                  hua_options=tuple(huas) if len(huas) > 1 else (),
                                  detail=_ju_detail(cs, "六合")))
 
-    elif tier == 13:   # 墓地半三合（书括注含巳酉合；须紧贴；同类多支并入同一条）
+    elif tier == 13:   # 墓地半三合（书括注含巳酉合；同类多支并入同一条）
         for z1, z2, hua in BANHE_MUDI:
-            cs = _ju_cols(st, (z1, z2))
-            if cs and _contiguous(st, cs):
+            for cs in _ju_runs(st, (z1, z2)):
                 out.append(_Cand(13, tname, _ordered.sort_zhis([z1, z2]),
                                  [c.key for c in cs], hua=hua,
                                  detail=_ju_detail(cs, f"半合{hua}")))
@@ -1563,7 +1731,8 @@ def _candidates(tier: int, st: _State) -> list[_Cand]:
     # 候选也放进来（如 `寅寅午` 的 月寅+时午），它与真正相邻的 日寅+时午 是同一
     # 关系；让真正相邻者先被枚举，才不会出现「紧贴的那对反而输给跨一位的那对」。
     out.sort(key=lambda c: (
-        max(st.idx(k) for k in c.cols) - min(st.idx(k) for k in c.cols),
+        # 被合解掉的冲**没有参与柱**（`cols` 空）——给个不会崩的跨度，排在最前。
+        (max(st.idx(k) for k in c.cols) - min(st.idx(k) for k in c.cols)) if c.cols else -1,
         [st.idx(k) for k in c.cols],
         c.detail,
     ))
@@ -1816,7 +1985,8 @@ def _effects_for(cand: _Cand, hua_succeeded: bool = False) -> list[dict]:
         from services.bazi.v2 import ban as _ban
         mz = _MONTH_CTX["zhi"]
         out.extend(_ban._ju_shengke_effects(list(cand.members), cols_of(_MONTH_CTX), mz,
-                                            {4: "三会", 6: "三合"}.get(cand.tier, "半三合")))
+                                            {4: "三会", 6: "三合"}.get(cand.tier, "半三合"),
+                                            keys=list(cand.cols)))
         out.extend(_ban._ban_power_effects(list(cand.cols), cols_of(_MONTH_CTX),
                                            cand.tier, mz))
         return out
@@ -1948,11 +2118,52 @@ def _entry(cand: _Cand, hua_succeeded: bool = False) -> dict:
 
 
 def judge_relations(pillars: dict) -> dict:
-    """判定命局中全部干支关系（十八级顺序 + 并存 + 让位）。
+    """判定命局中全部干支关系（十八级顺序 + 并存 + 让位），并做**两遍迭代**收敛。
 
     `pillars` = {"year": {"gan","zhi"}|None, "month": …, "day": …, "time": …|None}
     返回 `{"established": [...], "rejected": [...]}`（契约见 data-model §2）。
+
+    **两遍管线（2026-09-18）**：条件③「化神的力量必须达到太旺以上（指**全局地支** X 的
+    静态旺度）」里的静态旺度，是 书 上 764-771 五步算法里的那个量——**关系增减之后**的，
+    与「谁先成立」无关（子克巳是 tier 18、子辰合是 tier 13，调级序解决不了）。故先按
+    十八级判一遍得关系集，再把它施回地支度数、重判 `hua`，迭代到不再变
+    （实测 12⁴ 全量：20597 盘 1 轮稳定、138 盘 2 轮、1 盘 3 轮、0 盘振荡）。
+
+    书里**两个方向**都有明文：
+    - **降**：下 1011 丙辰 庚子 癸巳 甲子——「子克巳」使子水 −1（上 2370「子水减力1度」），
+      化神水 =（子5 ＋ 时子5−1 ＋ 辰中癸3）×2 = **24 < 26** →「没有达到太旺以上」→ 合绊；
+      下 2818 己亥 乙亥 庚子 丙戌 无此减力 →（4+4+5）×2 = 26 →「达到了太旺以上」✓ 自洽。
+    - **升**：上 2553——「逢92壬申年，申子辰合水成功，**导致了地支水达到了太旺以上，
+      所以引发了子丑合化水也成功**，与申子辰合化水并存」。
+
+    重判只动 `hua` 与 effects，**不动关系集**（实测 12⁴ × 3 组天干关系集零变动）。
     """
+    _REL_CTX["established"] = None
+    _SELF_CTX["self"] = None
+    prev_sig: tuple | None = None
+    result: dict = {"established": [], "rejected": []}
+    try:
+        for _ in range(_MAX_REFINE_ROUNDS):
+            result = _judge_pass(pillars)
+            sig = _verdict_sig(result)
+            if sig == prev_sig:
+                return result
+            prev_sig = sig
+            _REL_CTX["established"] = result["established"]
+        return result
+    finally:
+        _REL_CTX["established"] = None
+        _SELF_CTX["self"] = None
+
+
+def _verdict_sig(result: dict) -> tuple:
+    """判定结果的可比较签名（级、柱位、化神）——两遍管线的收敛判据。"""
+    return tuple(sorted((e["tier"], tuple(e["cols"]), e["hua"])
+                        for e in result["established"]))
+
+
+def _judge_pass(pillars: dict) -> dict:
+    """一遍十八级判定；度数口径由 `_REL_CTX` 决定（第一遍为原始度数）。"""
     cols = _build_cols(pillars)
     cols_by_key = {c.key: c for c in cols}
     if not cols:
@@ -1967,6 +2178,14 @@ def judge_relations(pillars: dict) -> dict:
 
     for tier in range(1, 19):
         for cand in _candidates(tier, st):
+            # **合解冲**：主冲之支被合住 → 冲不成立（书 下 1966-1976）。先于一切消费判定，
+            # 故被解的冲**不占用柱位**，原先被它挡住的合/局得以照常成立。
+            if cand.jie:
+                ent = _entry(cand)
+                ent["reason"] = cand.jie
+                ent["blocked_by"] = None
+                rejected.append(ent)
+                continue
             blocking = [(k, e) for k in cand.cols
                         for e in st.consumed.get(k, [])]
             if blocking:
@@ -2035,6 +2254,7 @@ def judge_relations(pillars: dict) -> dict:
                 if gan_hua:
                     cand.hua = gan_hua       # 戊癸：火/土按序试出的那一个
                 # 天合地合的地支腿是**六合** → 按「参与支上透出」判
+                _SELF_CTX["self"] = (1, frozenset(cand.cols))   # 两遍管线：本条自己不计入度数
                 zhi_ok = any(_generic_hua_ok(h, cols, month_zhi, cand.cols) for h in zhi_huas)
                 if not (gan_ok and zhi_ok):
                     ent = _entry(cand)

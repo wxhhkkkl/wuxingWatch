@@ -80,9 +80,62 @@ def _si_di(wx: str, month_zhi: str) -> bool:
     return tables.month_state(wx, month_zhi) == "死"
 
 
+# 把「合绊之力」写成**通则**（「不减力的藏干不受合绊之力…本气 −0.25 / 中气 −0.125」）的五个局：
+# 亥卯（下 143 ③）、卯未（下 262 ③）、午戌（下 546/553 ③）、巳酉（下 658 ②）、酉丑（下 772 ④）。
+# 其余三个局（**子辰** 下 1003、**申子** 下 888、**寅午** 下 437）把 0.25/0.125 直接写在
+# 条目里、无通则，故那三个局**不再另加**合绊之力（否则重复扣一次）。
+_GENERIC_BAN_PAIRS = frozenset(map(frozenset, (("亥", "卯"), ("卯", "未"),
+                                              ("午", "戌"), ("巳", "酉"), ("酉", "丑"))))
+
+
+def _bansanhe_ban_power(cand_cols: list, cols: list, tier: int, month_zhi: str,
+                        n_extra: int = 0) -> list[dict]:
+    """半三合的合绊之力——**只有减力的藏干才受**，层级按**实际度数**定。
+
+    书 下 143/437/542/656/765/888/997/1003 每处 ③ 都写：「以上情况只讲生克之力，尚未讲
+    合绊之力——当藏干减力时要受到合绊之力时（**不减力的藏干不受合绊之力**），本气减力
+    0.25度，中气减去0.125度，余气不减力，合绊之力不能平摊，还会叠加」。
+    「本气/中气」按**实际度数**定（书 上 3344「戌土生于巳月…本气实际上是火不是土」）——
+    故未土生于巳月（含火4/含土2）时己土算**中气**、拿 0.125 而非 0.25（下 265 例）。
+    """
+    coef = HUA_BAN_POWER.get(tier, (0.0, 0.0, 0.0))
+    zhis = [c.zhi for c in cols if c.key in cand_cols and c.zhi]
+    if frozenset(zhis) not in _GENERIC_BAN_PAIRS:
+        return []          # 该局把合绊之力写在条目内（子辰/申子/寅午）→ 不再另加
+    sk = _ju_shengke_effects(zhis, cols, month_zhi, "半三合", keys=list(cand_cols))
+    reduced = {(fx["zhi"], fx.get("gan")) for fx in sk
+               if fx.get("remove") or (fx.get("scale") is not None and fx["scale"] < 1)
+               or (fx.get("delta") is not None and fx["delta"] < 0)}
+    out: list[dict] = []
+    for key in cand_cols:
+        col = next((x for x in cols if x.key == key), None)
+        if col is None or not col.zhi:
+            continue
+        hid = _hidden_of(cols, col.zhi, month_zhi)
+        ranked = sorted(range(len(hid)), key=lambda i: -hid[i][1])
+        layer_of = {hid[i][0]: rank for rank, i in enumerate(ranked)}
+        for gan, _deg in hid:
+            if (col.zhi, gan) not in reduced:
+                continue                      # 不减力的藏干不受合绊之力
+            amount = coef[layer_of.get(gan, 2)] * (1 + n_extra)
+            if amount:
+                layer = {0: "本气", 1: "中气"}.get(layer_of.get(gan, 2), "余气")
+                out.append({"zhi": col.zhi, "gan": gan, "delta": -round(amount, 3),
+                            "reason": f"{tier} 级合绊之力（仅减力者，{layer}）："
+                                      f"{col.zhi}中{gan} −{amount:g} 度"
+                                      f"（书 下 143 ③「不减力的藏干不受合绊之力」）"})
+    return out
+
+
 def _ban_power_effects(cand_cols: list, cols: list, tier: int,
                        month_zhi: str, n_extra: int = 0) -> list[dict]:
-    """**合绊之力**：按藏干层级逐支扣减，多一支多减一次（书 上 3458「③受到三合局的合绊之力：每个本气再减去0.5度，每个中气减力0.25度」 / 书 下 1097 三会同构）。"""
+    """**合绊之力**：按藏干层级逐支扣减，多一支多减一次（书 上 3458「③受到三合局的合绊之力：每个本气再减去0.5度，每个中气减力0.25度」 / 书 下 1097 三会同构）。
+
+    **半三合（10/13）另走 `_bansanhe_ban_power`**——书在八个半三合局里都写了「不减力的
+    藏干不受合绊之力」；三合（上 3458）与三会（下 1097）只给系数、未写该守卫，故维持原口径。
+    """
+    if tier in (10, 13):
+        return _bansanhe_ban_power(cand_cols, cols, tier, month_zhi, n_extra)
     a, b, c = HUA_BAN_POWER.get(tier, (0.0, 0.0, 0.0))
     if not (a or b or c):
         return []
@@ -104,13 +157,188 @@ def _ban_power_effects(cand_cols: list, cols: list, tier: int,
     return out
 
 
+# ===============================================================
+# 半三合合绊：书《下》第六节**八个局各自的 ①②③ 表**（此处落地 1:1 档）
+# ===============================================================
+# 此前半三合一律走上一节的「局内生克通例」，与逐局表在**分档**处不符——最典型的是
+# 子辰：书 ①亥子月「子水减力1度」、③其他月才「子水减半」，通例只会减半（下 1011 例因此判错）。
+# 多支档（「3 个卯合绊 1 未 → 未中丁火完全去除」「1 个酉金被 3 个丑土合绊 → 酉金变为 0」等）
+# **未转写**——遇到多支一律回落通用模型，见 `_bansanhe_effects`。
+
+def _deg_in(cols: list, zhi: str, gan: str, month_zhi: str) -> float:
+    """该支本月令下某藏干的度数（「未土含火量」这类判据用）。"""
+    return next((d for g, d in _hidden_of(cols, zhi, month_zhi) if g == gan), 0.0)
+
+
+def _live(cols: list, zhi: str, gan: str, month_zhi: str) -> bool:
+    """该藏干在本月令下**存在**（度数 > 0）——0 度者不登记增减（如子月的辰中戊土）。"""
+    return _deg_in(cols, zhi, gan, month_zhi) > 0.0
+
+
+def _d2(zhi: str, gan: str, delta: float, cite: str) -> dict:
+    """合绊之力（书在部分局里把它**写在条目内**，如子辰①②、申子②、寅午③）。"""
+    return {"zhi": zhi, "gan": gan, "delta": delta,
+            "reason": f"半三合合绊表（{cite}）：{zhi}中{gan} 再 {delta:+g} 度（合绊之力）"}
+
+
+def _d(zhi: str, gan: str, delta: float, cite: str) -> dict:
+    return {"zhi": zhi, "gan": gan, "delta": delta,
+            "reason": f"半三合合绊表（{cite}）：{zhi}中{gan} {delta:+g} 度"}
+
+
+def _half(zhi: str, gan: str, cite: str) -> dict:
+    return {"zhi": zhi, "gan": gan, "delta": None, "scale": 0.5,
+            "reason": f"半三合合绊表（{cite}）：{zhi}中{gan}减半"}
+
+
+def _bk_haimao(cols: list, month_zhi: str) -> list[dict]:
+    """亥卯 ②其他情况（书 下 143）：卯中乙木 +1、亥中壬水 −1、亥中甲木不变。"""
+    c = "书 下 143 ②"
+    return [_d("卯", "乙", 1.0, c), _d("亥", "壬", -1.0, c)]
+
+
+def _bk_maowei(cols: list, month_zhi: str) -> list[dict]:
+    """卯未 ①（书 下 258）：按**未土含火量**分两档。"""
+    c = "书 下 258 ①"
+    if _deg_in(cols, "未", "丁", month_zhi) >= 4.0:
+        return [_d("卯", "乙", -1.0, c), _d("未", "丁", 1.0, c),
+                _zhaqi("未", "己", month_zhi, c)]
+    return [_d("卯", "乙", -1.0, c), _half("未", "己", c), _d("未", "丁", 1.0, c)]
+
+
+def _bk_yinwu(cols: list, month_zhi: str) -> list[dict]:
+    """寅午 ③其他情况（书 下 437）——**合绊之力写在条目里**（本节无「不减力者不受」通则）。
+
+    「寅中甲木减力1度，同时还要减去0.25度的合绊之力；寅中丙火当令者减半，失令者全部
+    减力，同时还要受到0.125度的合绊之力；寅中戊土当令者增力1度，失令者不变，**且不受
+    合绊之力**；午中丁火增力1度，**不受合绊之力**；午中己土当令者减半，失令者完全减力，
+    同时己土还要受到0.125度的合绊之力」
+    """
+    c = "书 下 437 ③"
+    out = []
+    if _live(cols, "寅", "甲", month_zhi):
+        out += [_d("寅", "甲", -1.0, c), _d2("寅", "甲", -0.25, c)]
+    if _live(cols, "寅", "丙", month_zhi):
+        out.append(_zhaqi("寅", "丙", month_zhi, c))
+        if _dang("火", month_zhi):
+            out.append(_d2("寅", "丙", -0.125, c))
+    if _live(cols, "寅", "戊", month_zhi) and _dang("土", month_zhi):
+        out.append(_d("寅", "戊", 1.0, c))          # 当令 +1、失令不变，不受合绊之力
+    if _live(cols, "午", "丁", month_zhi):
+        out.append(_d("午", "丁", 1.0, c))          # 不受合绊之力
+    if _live(cols, "午", "己", month_zhi):
+        out.append(_zhaqi("午", "己", month_zhi, c))
+        if _dang("土", month_zhi):
+            out.append(_d2("午", "己", -0.125, c))
+    return out
+
+
+def _bk_wuxu(cols: list, month_zhi: str) -> list[dict]:
+    """午戌 ②其他情况（书 下 542；①燥月为**互助论**，由 relations 层提前返回）。"""
+    c = "书 下 542 ②"
+    return [_d("午", "丁", -1.0, c), _zhaqi("午", "己", month_zhi, c),
+            _d("戌", "戊", 1.0, c), _zhaqi("戌", "辛", month_zhi, c),
+            _zhaqi("戌", "丁", month_zhi, c)]
+
+
+def _bk_siyou(cols: list, month_zhi: str) -> list[dict]:
+    """巳酉 ①（书 下 656）：巳中丙火 −1、巳中戊土当令减半、巳中庚金不变、酉中辛金减半。"""
+    c = "书 下 656 ①"
+    return [_d("巳", "丙", -1.0, c), _zhaqi("巳", "戊", month_zhi, c),
+            _half("酉", "辛", c)]
+
+
+def _bk_youchou(cols: list, month_zhi: str) -> list[dict]:
+    """酉丑 ①②（书 下 765-772）：按**丑土原始含土量**分两档。"""
+    c = "书 下 765-772"
+    if _deg_in(cols, "丑", "己", month_zhi) == 0.0:
+        return [_d("酉", "辛", -1.0, c), _d("丑", "癸", 1.0, c)]
+    out = [_d("酉", "辛", 1.0, c), _d("丑", "己", -1.0, c)]
+    if _dang("水", month_zhi):
+        out.append(_d("丑", "癸", 1.0, c))          # 丑中癸水当令 +1、失令不变
+    return out
+
+
+def _bk_shenzi(cols: list, month_zhi: str) -> list[dict]:
+    """申子 ②其他情况（书 下 888）——**合绊之力写在条目里**。
+
+    「在申子个数比为1:1，申中庚金减力1度（生克之力），**还要再减去0.25度的合绊之力**；
+    申中当令的戊土减半，失令的戊土完全减力，申中的壬水不变；子中癸水增力1度」
+    """
+    c = "书 下 888 ②"
+    out = []
+    if _live(cols, "申", "庚", month_zhi):
+        out += [_d("申", "庚", -1.0, c), _d2("申", "庚", -0.25, c)]
+    if _live(cols, "申", "戊", month_zhi):
+        out.append(_zhaqi("申", "戊", month_zhi, c))
+    if _live(cols, "子", "癸", month_zhi):
+        out.append(_d("子", "癸", 1.0, c))
+    return out
+
+
+def _bk_zichen(cols: list, month_zhi: str) -> list[dict]:
+    """子辰 ①亥子月 / ③其他情况（书 下 997 / 1003）——**合绊之力写在条目里**。
+
+    ①「子水减去1度生克之力，**同时还要减去0.25度合绊之力**；辰中乙木增力1度，
+      辰中戊土及癸水均不变」
+    ③「子水减半；辰中戊土减去1度的生克之力，**同时还要再减去0.25度合绊之力**；
+      辰中乙木增力1度、癸水不变」——③的**子水不减合绊之力**（书只写「减半」）。
+    """
+    if month_zhi in ("亥", "子"):
+        c = "书 下 997 ①"
+        return [_d("子", "癸", -1.0, c), _d2("子", "癸", -0.25, c),
+                _d("辰", "乙", 1.0, c)]
+    c = "书 下 1003 ③"
+    out = [_half("子", "癸", c)]
+    if _live(cols, "辰", "戊", month_zhi):
+        out += [_d("辰", "戊", -1.0, c), _d2("辰", "戊", -0.25, c)]
+    out.append(_d("辰", "乙", 1.0, c))
+    return out
+
+
+_BANSHANHE_1TO1 = {
+    frozenset(("亥", "卯")): _bk_haimao,
+    frozenset(("卯", "未")): _bk_maowei,
+    frozenset(("寅", "午")): _bk_yinwu,
+    frozenset(("午", "戌")): _bk_wuxu,
+    frozenset(("巳", "酉")): _bk_siyou,
+    frozenset(("酉", "丑")): _bk_youchou,
+    frozenset(("申", "子")): _bk_shenzi,
+    frozenset(("子", "辰")): _bk_zichen,
+}
+
+
+def _bansanhe_effects(pair: frozenset, cols: list, month_zhi: str,
+                      keys: list | None) -> list[dict] | None:
+    """八局逐局表的 **1:1 档**；不适用时返回 None（由调用方回落通用模型）。
+
+    不适用＝ ① 不是这八个局（如三合/三会，参与支 3 个）；② `keys` 未给（无参与柱信息）；
+    ③ **多支**（同一支出现两次以上）——书的 ①② 档给了多支规则（完全绊住 / 余下档位），
+    本实现未转写，故整条回落通用模型，不做半套。
+    """
+    fn = _BANSHANHE_1TO1.get(pair)
+    if fn is None or keys is None:
+        return None
+    zs = [next((c.zhi for c in cols if c.key == k), None) for k in keys]
+    zs = [z for z in zs if z]
+    if len(zs) != len(set(zs)):
+        return None
+    return fn(cols, month_zhi)
+
+
 def _ju_shengke_effects(branches: list[str], cols: list, month_zhi: str,
-                        label: str) -> list[dict]:
+                        label: str, keys: list | None = None) -> list[dict]:
     """**局内生克**：三合/三会/半三合 合绊时，局内各支按五行生克调整（书《上》第五节 地支三合 / 书《下》第七节 地支三会）。
 
     受生者本气 +1、主生者本气 −1、主克者本气 −1、被克者本气减半；
     受克泄耗的杂气「当令减半、失令去除」。
+
+    **半三合另按书逐局表**（书《下》第六节八个局各有 ①②③）：`keys` 为参与柱位，
+    1:1 时改走 `_bansanhe_effects`；多支档未转写（回落本函数）。
     """
+    book = _bansanhe_effects(frozenset(branches), cols, month_zhi, keys)
+    if book is not None:
+        return book
     out: list[dict] = []
     wxs = [tables.BRANCH_WUXING_BENQI.get(z, "") for z in branches]
     for z, wx in zip(branches, wxs):

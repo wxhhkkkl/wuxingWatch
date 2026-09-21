@@ -309,14 +309,21 @@ function stepResult(s: WangduStep) {
                   <div v-for="p in r.pillars" :key="p.key" class="pillar-col"
                        :data-testid="`v2-chart-${p.key}`">
                     <span class="pillar-label">{{ p.label }}</span>
-                    <span class="pillar-gan" :style="{ color: wxColor(p.gan_wx) }">
-                      {{ p.gan }}<i class="pillar-deg">{{ p.gan_degree }}</i>
+                    <span class="pillar-gan"
+                          :style="{ color: ganZhiColor(p.gan_original ?? p.gan) }">
+                      <!-- 天干五合合化成功会**换字**（甲→戊，书 上 1593），但显示上**不改字**：
+                           正字仍是原局那个字，另用**化神五行的框 + 底色**标出已合化，
+                           换字后的字放下面小字。合而不化只减力、不换字（书 上 1595）。 -->
+                      <span v-if="p.gan_original" class="gan-hua"
+                            :data-testid="`v2-gan-hua-${p.key}`"
+                            :style="{ borderColor: wxColor(p.gan_wx),
+                                      background: `color-mix(in srgb, ${wxColor(p.gan_wx)} 15%, transparent)` }"
+                      >{{ p.gan_original }}</span>
+                      <template v-else>{{ p.gan }}</template><i class="pillar-deg">{{ p.gan_degree }}</i>
                     </span>
-                    <!-- 天干五合：合化成功会**换字**（甲→戊，书 上 1593），故标出新字来自哪个原字；
-                         合而不化的合绊只减力、不换字（书 上 1595）。 -->
                     <span v-if="p.gan_original" class="pillar-sub pillar-changed"
                           :data-testid="`v2-gan-changed-${p.key}`">
-                      原{{ p.gan_original }}·{{ p.gan_change }}
+                      {{ p.gan_change }}→{{ p.gan }}
                     </span>
                     <span v-else-if="p.gan_change" class="pillar-sub"
                           :data-testid="`v2-gan-changed-${p.key}`">{{ p.gan_change }}</span>
@@ -327,8 +334,15 @@ function stepResult(s: WangduStep) {
                       自身 {{ p.gan_own }}
                     </span>
                     <span class="pillar-zhi" :style="{ color: wxColor(p.zhi_effective_wx) }">
-                      {{ p.zhi }}<i v-if="p.zhi_effective_wx !== p.zhi_wx"
-                                    class="pillar-sub pillar-changed">变{{ p.zhi_effective_wx }}</i>
+                      <!-- 支被合化改宗时字也不换，套**生效五行**的框 + 底色（与天干换字同一套视觉） -->
+                      <span v-if="p.zhi_effective_wx !== p.zhi_wx" class="gan-hua"
+                            :data-testid="`v2-zhi-hua-${p.key}`"
+                            :style="{ borderColor: wxColor(p.zhi_effective_wx),
+                                      background: `color-mix(in srgb, ${wxColor(p.zhi_effective_wx)} 15%, transparent)` }"
+                      >{{ p.zhi }}</span>
+                      <template v-else>{{ p.zhi }}</template><i
+                          v-if="p.zhi_effective_wx !== p.zhi_wx"
+                          class="pillar-sub pillar-changed">变{{ p.zhi_effective_wx }}</i>
                     </span>
                     <span class="pillar-cang">
                       <span v-for="h in p.hidden" :key="h.gan" class="pillar-cang-row"
@@ -1016,6 +1030,12 @@ function stepResult(s: WangduStep) {
 }
 .pillar-changed {
   color: #00796b;
+}
+/* 合化换字：正字仍是原局那个字，用**化神五行**的框 + 底色标出（012） */
+.gan-hua {
+  padding: 0 4px;
+  border: 1px solid currentColor;
+  border-radius: 5px;
 }
 .cang-deg {
   font-size: 10px;
