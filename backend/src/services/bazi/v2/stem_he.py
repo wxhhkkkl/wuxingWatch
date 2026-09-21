@@ -60,7 +60,7 @@ _HUA_GAN: dict[str, dict[str, str]] = {
 # ——「其余」之间一律相等（同节末问：甲寅与甲子的坐支既不是土也不是火，底气一样）。
 _DIQI_RANK = {"土": 2, "火": 1}
 
-_PILLAR_CN = {"year": "年", "month": "月", "day": "日", "time": "时"}
+_PILLAR_CN = {"year": "年", "month": "月", "day": "日", "time": "时", "_dayun": "大运", "_liunian": "流年"}
 
 
 def _diqi(cols: list, k: int) -> int:
@@ -98,7 +98,8 @@ def _rank_key(item: tuple[int, int, frozenset], shared: set[int],
 def judge_stem_he(cols: list, month_zhi: str, rel: dict,
                   effective: str | None = None,
                   final_provider=None,
-                  force_ban: bool = False) -> dict:
+                  force_ban: bool = False,
+                  suiyun: list | None = None) -> dict:
     """判定原局相邻天干五合。**会就地改写 `cols[i].gan`（换字）**。
 
     条件④「弱方不能独立」按**动态旺度**判（书 上 1588「甲必须处于不能独立的状态
@@ -122,6 +123,16 @@ def judge_stem_he(cols: list, month_zhi: str, rel: dict,
     rel_mod = _rel()
     from services.bazi.v2.relations import GAN_HE_HUA, _WEAK_PARTY
 
+    # **岁运之干纳入五合**（013 期 T026；FR-012 / FR-012a / FR-014a）：书 上 578
+    # 「岁运的天干到原局**任何一柱**的天干的距离都是相同的，都是相邻的关系」。
+    #
+    # `work` ＝「原局 + 岁运」的**局部扩展表**：`work[i] is cols[i]`（i < len(cols)），
+    # 故对**原局下标**换字会自然传播回调用方的 `cols` ✓；**岁运下标**的换字只写到
+    # 局部对象上，由返回值（`hua`/`ban_cheng`，键为扩展下标）交回调用方。
+    # ⚠️ **`_gan_hua_one(cols=...)` 仍传原局 `cols`**——它读的是化神条件（透干/月令），
+    # 把岁运列喂进去会改变**原局**的判定，违反零回归。
+    work = list(cols) + list(suiyun or [])
+
     cand: list[tuple[int, int, frozenset]] = []
     for i in range(len(cols) - 1):
         j = i + 1
@@ -132,6 +143,19 @@ def judge_stem_he(cols: list, month_zhi: str, rel: dict,
         if pair not in GAN_HE_HUA:
             continue
         cand.append((i, j, pair))
+
+    # 岁运参与的候选（T026）：岁运之干与原局**任何一柱**都相邻（书 上 578），
+    # 故与**每一**原局柱配对；两岁运之干之间同理。
+    sy_cand: list[tuple[int, int, frozenset]] = []
+    for k in range(len(cols), len(work)):
+        for i in range(len(cols)):
+            g1, g2 = cols[i].src_gan, work[k].src_gan
+            if g1 and g2 and frozenset((g1, g2)) in GAN_HE_HUA:
+                sy_cand.append((min(i, k), max(i, k), frozenset((g1, g2))))
+        for k2 in range(k + 1, len(work)):
+            g1, g2 = work[k].src_gan, work[k2].src_gan
+            if g1 and g2 and frozenset((g1, g2)) in GAN_HE_HUA:
+                sy_cand.append((k, k2, frozenset((g1, g2))))
 
     # 共享柱位的相邻对归为一组 = 一组争合（`甲己甲` 的 (0,1) 与 (1,2) 共享柱 1）。
     # 五合是十天干的一个对合（甲己/乙庚/丙辛/丁壬/戊癸），一个干只属一组，
@@ -146,7 +170,9 @@ def judge_stem_he(cols: list, month_zhi: str, rel: dict,
     #     **两两相合，不存在争合现象**」✓（2026-09-17：此前被误并成一组争合、全判合绊）；
     #   · **不等**（如 甲己甲 的 2:1）→ 并组按争合论（上 1692「底气足者…势均力敌者
     #     自然谁也不让谁」；上 1711「年日2甲争合1己」）。
-    _all_gans = [c.src_gan for c in cols if c.src_gan]
+    # 岁运之干也在**盘上**，故计入——它只影响「刚刚够」的判定，而岁运参与的对已自成一组、
+    # 不参与争合并组（FR-012），故不会让岁运之干与被争合的干混为一谈。
+    _all_gans = [c.src_gan for c in work if c.src_gan]
     groups: list[list[tuple[int, int, frozenset]]] = []
     _paired: set[int] = set()             # 「刚刚够」路径下已配走的柱位
     _chain: list | None = None            # 正在并的「不刚刚够」组
@@ -178,6 +204,11 @@ def judge_stem_he(cols: list, month_zhi: str, rel: dict,
     if cand and not force_ban and final_provider is not None:
         final_by_col = final_provider()
 
+    # 岁运参与的每个对**自成一组**——FR-012「岁运之干 MUST NOT 与原局之干构成争合」，
+    # 故不与原局对并组；两岁运之间至多一对，也不存在争合。
+    for sy in sy_cand:
+        groups.append([sy])
+
     for grp in groups:
         cnt: dict[int, int] = {}
         for a, b, _ in grp:
@@ -188,10 +219,10 @@ def judge_stem_he(cols: list, month_zhi: str, rel: dict,
         if len(grp) == 1:
             winner, losers = grp[0], []
         else:
-            ranked = sorted(grp, key=lambda t: _rank_key(t, shared, cols, rel),
+            ranked = sorted(grp, key=lambda t: _rank_key(t, shared, work, rel),
                             reverse=True)
-            top, second = _rank_key(ranked[0], shared, cols, rel), \
-                _rank_key(ranked[1], shared, cols, rel)
+            top, second = _rank_key(ranked[0], shared, work, rel), \
+                _rank_key(ranked[1], shared, work, rel)
             # b. 底气相当、优先权也相当 → 互不相让，**均不化**（书 上 1692 b / 例 5）
             winner, losers = (None, list(grp)) if top == second else (ranked[0], ranked[1:])
 
@@ -206,9 +237,9 @@ def judge_stem_he(cols: list, month_zhi: str, rel: dict,
             weak_deg = None
             if final_by_col is not None and weak_weak is not None:
                 weak_deg = final_by_col.get(
-                    cols[a].key if cols[a].src_gan == weak_weak else cols[b].key)
+                    work[a].key if work[a].src_gan == weak_weak else work[b].key)
             is_hua = rel_mod._gan_hua_one(
-                cols[a].src_gan, cols[a], cols[b].src_gan, cols[b],
+                work[a].src_gan, work[a], work[b].src_gan, work[b],
                 month_zhi, hua_wx, weak_deg=weak_deg, cols=cols,
                 effective_month=effective)
 
@@ -216,22 +247,22 @@ def judge_stem_he(cols: list, month_zhi: str, rel: dict,
             a, b, pair = winner
             hua_wx = GAN_HE_HUA[pair]
             for k in (a, b):
-                src = cols[k].src_gan
+                src = work[k].src_gan
                 hua[k] = (hua_wx, _HUA_GAN[hua_wx][GAN_YIN_YANG[src]])
-                cols[k].orig_gan = src
-                cols[k].gan = _HUA_GAN[hua_wx][GAN_YIN_YANG[src]]
+                work[k].orig_gan = src
+                work[k].gan = _HUA_GAN[hua_wx][GAN_YIN_YANG[src]]
             for x, y, _ in grp:               # 让位者同样「不作用」（书 上 1595）
                 blocked.add((x, y))
-            names = "、".join(f"{_PILLAR_CN.get(cols[k].key, k)}干{cols[k].src_gan}"
+            names = "、".join(f"{_PILLAR_CN.get(work[k].key, k)}干{work[k].src_gan}"
                               f"变{hua[k][1]}" for k in (a, b))
             traces.append(
-                f"{''.join(sorted((cols[a].src_gan, cols[b].src_gan)))}合化{hua_wx}成功"
+                f"{''.join(sorted((work[a].src_gan, work[b].src_gan)))}合化{hua_wx}成功"
                 f"：{names}（书 上 1593「甲木变成了戊土」／上 1872／上 1990）")
             established.append({
                 "type": "天干五合", "result": "合化", "hua": hua_wx,
-                "cols": [cols[a].key, cols[b].key],
-                "pair": f"{cols[a].src_gan}{cols[b].src_gan}",
-                "change": [{"col": cols[k].key, "from": cols[k].src_gan,
+                "cols": [work[a].key, work[b].key],
+                "pair": f"{work[a].src_gan}{work[b].src_gan}",
+                "change": [{"col": work[k].key, "from": work[k].src_gan,
                             "to": hua[k][1]} for k in (a, b)],
             })
             continue
@@ -243,7 +274,7 @@ def judge_stem_he(cols: list, month_zhi: str, rel: dict,
         side2: list[int] = []
         for a, b, pair in grp:
             g4 = rel_mod._HE_REDUCE4_PARTY[pair]
-            k4 = a if cols[a].src_gan == g4 else b
+            k4 = a if work[a].src_gan == g4 else b
             k2 = b if k4 == a else a
             side4[k4] = side4.get(k4, 0.0) + 4.0
             side2.append(k2)
@@ -257,16 +288,16 @@ def judge_stem_he(cols: list, month_zhi: str, rel: dict,
             ban_cheng[k] = ban_cheng.get(k, 0.0) + c
         established.append({
             "type": "天干五合", "result": "合绊",
-            "cols": [c.key for a, b, _ in grp for c in (cols[a], cols[b])],
-            "pair": "、".join(f"{cols[a].src_gan}{cols[b].src_gan}" for a, b, _ in grp),
-            "ban_cheng": {cols[k].key: c for k, c in sorted(side4.items())},
+            "cols": [c.key for a, b, _ in grp for c in (work[a], work[b])],
+            "pair": "、".join(f"{work[a].src_gan}{work[b].src_gan}" for a, b, _ in grp),
+            "ban_cheng": {work[k].key: c for k, c in sorted(side4.items())},
         })
         # 2026-09-16 起合绊减的是**该干所在组的静态旺度**（含通根那一份），
         # 不是「1 个干本身」那个度数——故这里只报**成数**，落码在 `pipeline._layers`。
         detail = "、".join(
-            f"{_PILLAR_CN.get(cols[k].key, k)}干{cols[k].src_gan} −{c:g} 成"
+            f"{_PILLAR_CN.get(work[k].key, k)}干{work[k].src_gan} −{c:g} 成"
             for k, c in sorted(side4.items()))
-        names = "".join(sorted({cols[a].src_gan + cols[b].src_gan
+        names = "".join(sorted({work[a].src_gan + work[b].src_gan
                                 for a, b, _ in grp}))
         traces.append(f"{names}合而不化（合绊）：{detail}"
                       f"（书 上 1595「1 个甲木减去 0.2 度变为 0.8 度」"

@@ -132,15 +132,29 @@ def test_liunian_column_supported():
     assert "_liunian" in used
 
 
-def test_dayun_column_does_not_change_original_scores():
-    """附加列**不改变原局度数**——它只参与关系判定，不改 `degrees`。"""
+def test_dayun_zhi_hidden_stems_are_added_to_the_scores():
+    """附加列**会**改变该步度数——**运支自身藏干计入旺度池**（013 期 T016 起）。
+
+    > **口径变更记录**：本测试原名 `test_dayun_column_does_not_change_original_scores`，
+    > 断言「附加列**不**改变原局度数——它只参与关系判定」。那是 012 期的设计假设，
+    > **且本就只在个别盘上成立**（`book-audit-20260911.md:377` 的 A15 已指出：换个运就会变）。
+    > 013 期 T016 按书 上 884「**未本身藏丁火 3 度**」（同 上 900 / 上 901）把运支藏干
+    > 计入该步旺度池，该断言随之**作废并反转**。
+    >
+    > **原局零回归不受影响**——它由 `test_v2_yuanju_zero_regression.py`（667 盘）在
+    > **不带岁运**的路径上守（FR-023 / SC-003），不靠这条。
+    """
     from services.bazi.v2 import pipeline
 
     p = _pillars("戊申", "庚申", "戊午", "戊午")
     a = pipeline.compute_strength(p)
     b = pipeline.compute_strength(p, dayun_ganzhi="丙辰")
-    assert a["final_scores"] == b["final_scores"]
-    assert a["degrees"]["土"]["root"] == b["degrees"]["土"]["root"]
+    # 辰的藏干（上 449-451 ④ 临大运档）：癸1 乙2 戊3 → 水 +1、木 +2、土 +3
+    assert b["static_scores"]["土"] == pytest.approx(a["static_scores"].get("土", 0.0) + 3.0)
+    assert b["static_scores"]["木"] == pytest.approx(a["static_scores"].get("木", 0.0) + 2.0)
+    assert b["static_scores"]["水"] == pytest.approx(a["static_scores"].get("水", 0.0) + 1.0)
+    # 无岁运那一趟必须与「从来没传过岁运」逐位相同——原局路径不受影响
+    assert a["static_scores"] == pipeline.compute_strength(_pillars("戊申", "庚申", "戊午", "戊午"))["static_scores"]
 
 
 def test_muku_month_with_dayun_liuhai_does_not_crash():

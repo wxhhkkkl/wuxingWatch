@@ -427,20 +427,111 @@ _MUKU_WEIXU = ("未", "戌")
 _MUKU_CHENCHOU = ("辰", "丑")
 
 
-def _muku_benqi_delta(zhi: str, month_zhi: str, deg: float) -> float:
+def _suiyun_lane(z: str, cols: list) -> str:
+    """该库支落在哪一列——原局 / 大运 / 流年（书 下 1735-1752 的 a/b/c/d 按**位置**分档）。"""
+    for c in cols:
+        if c.zhi == z and c.key in ("_dayun", "_liunian"):
+            return "dayun" if c.key == "_dayun" else "liunian"
+    return "natal"
+
+
+def _dayun_zhi_of(cols: list) -> str:
+    c = next((x for x in cols if x.key == "_dayun"), None)
+    return (c.zhi or "") if c else ""
+
+
+# 岁运档 c/d 的分组（书 下 1739/1741 与 1746/1748，两组**条文相同**）：
+#   c：**寅卯亥子**临大运 + 辰戌丑未临流年 → 冲**仍以冲破论**
+#   d：**巳午申酉**临大运 + 辰戌丑未临流年 → 冲以**半冲破论**（流年之土减 1 度）
+_MUKU_SY_C = frozenset("寅卯亥子")
+_MUKU_SY_D = frozenset("巳午申酉")
+
+
+def _suiyun_benqi(z: str, cols: list, week_earth: bool) -> float | None:
+    """岁运介入时该库支**本气（土）**的度数变化；`None`＝走原局的生月档。
+
+    书 下 1735-1752 的 a/b/c/d 四档（两组 ①② 的 a/b 流年子档**不同**，故传 `week_earth`
+    ＝是否 ①寅卯月组）：
+
+    | 档 | 条件 | 本气变化 |
+    |---|---|---|
+    | a | 未戌**临大运** | −1 度（且该支火减半） |
+    | b | 辰丑**临大运** | −1 度 |
+    | a/b 的流年子档 | 库**临流年**、无 c/d 条件 | ①：**同临大运**；②：四库土均 −1 度 |
+    | c | 寅卯亥子临大运 + 库临流年 | `None`（仍以冲破论 → 走原局档） |
+    | d | 巳午申酉临大运 + 库临流年 | −1 度（半冲破论） |
+    """
+    lane = _suiyun_lane(z, cols)
+    if lane == "dayun":
+        return -1.0
+    if lane != "liunian":
+        return None
+    dy = _dayun_zhi_of(cols)
+    if dy in _MUKU_SY_D:
+        return -1.0                       # d 档：半冲破论
+    if dy in _MUKU_SY_C:
+        return None                       # c 档：仍以冲破论
+    # 无大运（只有流年）时按 a/b 的流年子档：两组不同（书 下 1737/1739 与 1750/1752）
+    if week_earth:
+        # ①寅卯月组：「（流年）其藏干变化与临大运相同」——辰丑土 −1（未戌在 ① 档本就减半，
+        # 故这里对未戌不另施加，交回原局档）
+        return -1.0 if z in _MUKU_CHENCHOU else None
+    # ②亥子月组：「未戌辰丑土**减力 1 度**」——四库一律 −1
+    return -1.0
+
+
+def _muku_dang(wx: str, month_zhi: str, cols: list | None = None) -> bool:
+    """杂气是否**当令**——**岁运介入时按综合（折中）状态**（书 下 1735-1752）。
+
+    a/b/c/d 每一行都以「其他杂气当令者减半、失令者完全减力（**考虑综合状态**）」收尾；
+    书例 下 1819 即此：「辰中乙木**综合状态失令**，变为 0 度」——木在子月为相(3)、
+    在戌运为囚(5)，折中 (3+5)/2 = 4 > 3 → **失令**（只看月令会误判为当令而减半）。
+
+    无岁运时退化为只看月令（`_dang`），故原局路径不变。
+    """
+    if not month_zhi:
+        return True
+    c = next((x for x in (cols or []) if x.key == "_dayun"), None)
+    if c is None or not c.zhi:
+        return _dang(wx, month_zhi)
+    from services.bazi.v2 import dayun as _dyun, tables as _t
+    _, ok = _t.compromise_state(tables.month_state(wx, month_zhi),
+                                _dyun.dayun_state(wx, c.zhi))
+    return ok
+
+
+def _muku_benqi_delta(zhi: str, month_zhi: str, deg: float,
+                      as_earth: bool = False) -> float:
     """墓库冲不成功时**本气（土）**的度数变化（书《下》第八节 六冲 ①-⑤）。
 
     | 生月 | 未戌之土 | 辰丑之土 |
     |---|---|---|
     | ①寅卯 | 减半 | 减半 |
     | ②亥子 | −1 度 | 不变 |
+    | ②亥子·**辰丑以土论** | **减半** | **减半** |
     | ③巳午未 | 不变 | +1 度 |
     | ④戌月 | 不变 | 不变 |
     | ⑤辰申酉丑 | 不变 | 不变 |
+
+    **`as_earth`＝亥子月的那句括注**（013 期，2026-09-21 用户裁定一并修）：
+
+    书 下 1746 的 ② 主句是「即**辰丑水减半，未戌土减去 1 度**（**如果辰丑以土论，
+    辰戌、丑未土均减半**）」。即：亥子月下若该辰/丑**以土论**，则四库之土**一律减半**，
+    而不是「未戌 −1 度」。
+
+    「以土论」＝该辰/丑在**本月令下含土量 ≠ 0**——辰生于亥子月本含土 0（书 上 449-451 ①），
+    仅当**党众 3 个以上又连成一片**时含土 3；丑同（上 399-403 ①、党众见 上 395/444）。
+    故判断即「该支的土藏干度数 > 0」，由调用方从 `cols` 读出后传入。
+
+    书例 下 1826（乾 壬戌 壬子 戊子 戊午 + 丙辰运）：「生于子月辰运…**戌中戊土减半
+    变为 1.5 度**」——按常规的「未戌土 −1 度」应是 2 度；正因辰临大运后含土 3 度、
+    辰**以土论**，故戌土也减半。
     """
     if month_zhi in _MUKU_YINMAO:
         return -deg * 0.5
     if month_zhi in _MUKU_SHUIFU:
+        if as_earth:
+            return -deg * 0.5            # 「辰戌、丑未土均减半」
         return -1.0 if zhi in _MUKU_WEIXU else 0.0
     if month_zhi in _MUKU_HOT:
         return 1.0 if zhi in _MUKU_CHENCHOU else 0.0
@@ -465,26 +556,83 @@ def _muku_fail_effects(members: list[str], cols: list,
         if c.zhi:
             counts[c.zhi] = counts.get(c.zhi, 0) + 1
 
+    # 亥子月的那句括注：「如果**辰丑以土论**，辰戌、丑未土均**减半**」（书 下 1746）——
+    # 「以土论」＝该辰/丑本月令下**含土量 ≠ 0**（上 449-451 ① / 399-403 ①：亥子月本含土 0，
+    # 仅党众 3 个以上又连成一片时含土 3）。四库之一以土论，则**四库之土一律减半**。
+    def _as_earth_of(z: str) -> bool:
+        """**该支**本月令下是否「以土论」（含土量 ≠ 0）。
+
+        **按该支所在的列取档**：落在岁运列时取其岁运档（如辰临大运为「含水1乙2戊3」
+        → 含土 3 → 以土论），不能用原局档（亥子月的辰本含土 0）——书例 下 1826 的辰
+        正是**大运辰**，书明写它「以土论」。
+        """
+        if z not in _MUKU_CHENCHOU or month_zhi not in _MUKU_SHUIFU:
+            return False
+        lane = _suiyun_lane(z, cols)
+        flag = {"dayun": {"is_dayun": True}, "liunian": {"is_liunian": True}}.get(lane, {})
+        return any(GAN_WUXING[g] == "土" and d > 0 for g, d in
+                   tables.hidden_degrees(z, month_zhi,
+                                         dangzhong=tables.dangzhong_for(cols, z),
+                                         **flag))
+
+    # 「四库土均减半」是**全局**判定：四库之一以土论即适用（书 下 1746 括注）
+    as_earth = any(_as_earth_of(z) for z in members)
+
+    # 岁运介入时的 a/b/c/d 四档（书 下 1735-1752）：①寅卯月组与②亥子月组的 a/b **流年子档
+    # 不同**，故 `week_earth` 标记是否 ① 组（寅卯月）。见 `_suiyun_benqi`。
+    week_earth = month_zhi in _MUKU_YINMAO
+
     out: list[dict] = []
     for z in members:
+        lane = _suiyun_lane(z, cols)
+        sy_benqi = _suiyun_benqi(z, cols, week_earth) if lane != "natal" else None
+        # a 档（未戌临大运）附带「未戌火减半」（书 下 1735/1746）
+        sy_fire_half = (lane == "dayun" and z in _MUKU_WEIXU)
+        # 库支落在岁运列时，藏干取**岁运档**（上 399-403 / 449-451 / 491-497 ④）——
+        # 如辰临大运为「含水1乙2戊3」，而非原局亥子月的「含水3乙2戊0」。
+        sy_flag = {"dayun": {"is_dayun": True},
+                   "liunian": {"is_liunian": True}}.get(lane, {})
         for gan, deg in tables.hidden_degrees(z, month_zhi,
-                                              dangzhong=tables.dangzhong_for(cols, z)):
+                                              dangzhong=tables.dangzhong_for(cols, z),
+                                              **sy_flag):
             if not deg:
                 continue
             wx = GAN_WUXING[gan]
             if wx == "土":                       # 本气
-                delta = _muku_benqi_delta(z, month_zhi, deg)
+                if sy_benqi is not None:
+                    delta = sy_benqi
+                    why = (f"（岁运档：{'未戌' if z in _MUKU_WEIXU else '辰丑'}临"
+                           f"{'大运' if lane == 'dayun' else '流年'}，书 下 1735-1752）")
+                else:
+                    delta = _muku_benqi_delta(z, month_zhi, deg, as_earth=as_earth)
+                    why = "（书《下》第八节 六冲）"
                 if delta:
                     out.append({"zhi": z, "gan": gan, "delta": round(delta, 3),
-                                "reason": f"墓库冲不成功：{z}中{gan}（本气）{delta:+g} 度"
-                                          f"（书《下》第八节 六冲）"})
+                                "reason": f"墓库冲不成功：{z}中{gan}（本气）{delta:+g} 度{why}"})
+                continue
+            if (month_zhi in _MUKU_SHUIFU and z in _MUKU_CHENCHOU and wx == "水"
+                    and not _as_earth_of(z)):
+                # ②亥子月的**主句**：「即**辰丑水减半**，未戌土减去 1 度（**如果辰丑以土论，
+                # 辰戌、丑未土均减半**），杂气当令者减半…」——「辰丑水减半」与「杂气当令」
+                # 通例**并列**、不随后者分档；但**该支一旦以土论，那一句就被括注改掉了**
+                # （土均减半），水回到杂气通例。
+                # 书例 下 1819（原局辰，含土 0）：「辰中癸水**减半**变为 1.5 度」；
+                # 书例 下 1826（大运辰，含土 3→以土论）：「辰中癸水综合状态**失令，变为 0 度**」。
+                out.append({"zhi": z, "gan": gan, "scale": 0.5,
+                            "reason": f"墓库冲不成功：{z}中{gan}减半"
+                                      f"（书 下 1746 ②「辰丑水减半」）"})
+                continue
+            if sy_fire_half and wx == "火":
+                out.append({"zhi": z, "gan": gan, "scale": 0.5,
+                            "reason": f"墓库冲不成功：{z}中{gan}减半"
+                                      f"（岁运档 a：未戌临大运「未戌火减半」，书 下 1735/1746）"})
                 continue
             if month_zhi == "戌" and z in _MUKU_WEIXU and wx == "火":
                 out.append({"zhi": z, "gan": gan, "scale": 0.5,
                             "reason": f"墓库冲不成功：{z}中{gan}减半"
                                       f"（书《下》第八节 六冲④「未戌之火减半」）"})
                 continue
-            if _dang(wx, month_zhi):
+            if _muku_dang(wx, month_zhi, cols):
                 out.append({"zhi": z, "gan": gan, "scale": 0.5,
                             "reason": f"墓库冲不成功：{z}中{gan}当令减半"
                                       f"（书《下》第八节 六冲「杂气当令者减半」）"})

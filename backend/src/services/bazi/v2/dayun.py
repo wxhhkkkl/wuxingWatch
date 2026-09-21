@@ -24,9 +24,19 @@ STATE_DELTA = {"旺": 2.0, "余气": 1.5, "相": 1.0, "休": -1.0, "囚": -1.5, 
 
 
 def dayun_state(wx: str, dayun_zhi: str) -> str:
-    """某五行在**运支**所处的旺相休囚死（按运支本气为基准）。"""
-    el = tables.BRANCH_WUXING_BENQI.get(dayun_zhi, "")
-    return tables.element_state(wx, el) if el else "旺"
+    """某五行在**运支**所处的旺相休囚死。
+
+    **运支按「月令」取状态表**——书 上 204-299 的旺相休囚死表覆盖十二支，运支与月令
+    同用此表（书 上 909「月令是五行旺衰的来源，而大运**也具有部分月令的作用**」）。
+
+    ⚠️ **改前走 `element_state(wx, 运支本气)`，对四库之支会错**：辰月**木为余气**（当令），
+    而按「木相对土」是**囚**（失令）——两者结论相反。书例 下 1826（壬戌 壬子 戊子 戊午
+    + 丙辰运）明写「辰中乙木**综合状态当令**减半变为 1 度」，即用**月令表**。
+    （此即 `book-audit-20260911.md` 的 S3 残「大运侧未接四库月分支表」所记。）
+    """
+    if not dayun_zhi:
+        return "旺"
+    return tables.month_state(wx, dayun_zhi)
 
 
 def apply_dayun_delta(scores: dict[str, float], dayun_zhi: str,
@@ -67,17 +77,24 @@ def compromise(month_state: str, dayun_state_: str) -> tuple[str, bool]:
 # 逐步重判（T054）
 # ---------------------------------------------------------------
 
-def analyze_step(pillars: dict, dayun_ganzhi: str, *, dayun_meta: dict | None = None) -> dict:
+def analyze_step(pillars: dict, dayun_ganzhi: str, *, dayun_meta: dict | None = None,
+                 liunian_ganzhi: str | None = None) -> dict:
     """对**某一步大运**重判：关系 → 旺度 → 格局 → 取用。
 
     返回 data-model §8 的条目：`ganzhi` / `level` / `ge_ju` / `yong_shen` /
     `transition`（成格·破格）/ `deltas`。
+
+    **传 `liunian_ganzhi` 即得阶段 3**（013 期 T036）——阶段 3 = 阶段 2 + 该年流年，
+    走**同一个函数**、同一条管线，只多一个参数（research R5：阶段独立性由**结构**保证，
+    不靠两处实现对齐）。`source` 随之由 `"dayun"` 变 `"liunian"`。
+    运支的**状态增减**照旧施加（书 上 847-853 的「大运旺度」在阶段 2/3 相同）。
     """
-    from services.bazi.v2 import geju, pipeline, xiyong_v2
+    from services.bazi.v2 import geju, layers as _layers, pipeline, xiyong_v2
 
     gan, zhi = dayun_ganzhi[0], dayun_ganzhi[1]
     # 该步的关系判定**含本步大运干支**（FR-042 的大运维度，旧引擎缺失）
-    base = pipeline.compute_strength(pillars, dayun_ganzhi=dayun_ganzhi)
+    base = pipeline.compute_strength(pillars, dayun_ganzhi=dayun_ganzhi,
+                                     liunian_ganzhi=liunian_ganzhi)
     shifted = apply_dayun_delta(base["final_scores"], zhi, gan)
 
     cols = degrees.build_cols(pillars)
@@ -104,7 +121,15 @@ def analyze_step(pillars: dict, dayun_ganzhi: str, *, dayun_meta: dict | None = 
                                    static=base["static_scores"], cols=cols,
                                    ge_ju=gj, month_zhi=month_zhi)
 
+    # 调候与格局层次也**按该步同口径重判**（013 期 T035；FR-021b）——不得出现
+    # 「格局/取用按大运重判、调候或层次仍按原局」的内部不一致
+    ys["tiaohou"] = xiyong_v2.judge_tiaohou(cols, month_zhi) if cols else None
+    lay = _layers.evaluate(cols=cols, day_master=dm or "", dm_wx=dm_wx,
+                           final=shifted, month_zhi=month_zhi)
+
     return {
+        "source": "liunian" if liunian_ganzhi else "dayun",   # 来源阶段（T035；FR-024）
+        "liunian": liunian_ganzhi,
         "ganzhi": dayun_ganzhi,
         "start_year": (dayun_meta or {}).get("start_year"),
         "start_age_xu": (dayun_meta or {}).get("start_age_xu"),
@@ -112,11 +137,16 @@ def analyze_step(pillars: dict, dayun_ganzhi: str, *, dayun_meta: dict | None = 
             (dm_group or {}).get("final", shifted.get(dm_wx, 0.0))),
         "ge_ju": gj,
         "yong_shen": ys,
+        "tiaohou": ys["tiaohou"],        # T035：与 yong_shen 同值，另开顶层便于成对呈现
+        "layers": lay,                   # T035：格局层次按该步重判
         "relations": base["relations"],   # 含本步大运的裁定（供命盘图消费）
         "transition": None,      # 由 analyze_all 与前后步比较后填入
         "deltas": [{"target": w, "expression": f"{w} 运支状态增减后 {shifted[w]:g} 度",
                     "value": shifted[w]} for w in tables.WUXING_ORDER],
         "scores_after": shifted,
+        # 判定依据段（data-model §1 / contracts §3：「可**按阶段追加**」）——
+        # 该阶段的关系/旺度/格局/取用逐段依据，页面上须逐条可见（SC-005）。
+        "steps": base.get("steps") or [],
     }
 
 
@@ -190,3 +220,48 @@ def judge_relations_with_dayun(pillars: dict, dayun_ganzhi: str,
     if liunian_ganzhi and len(liunian_ganzhi) >= 2:
         extended["_liunian"] = {"gan": liunian_ganzhi[0], "zhi": liunian_ganzhi[1]}
     return relations.judge_relations(extended)
+
+# ---------------------------------------------------------------
+# 两阶段**成对呈现**（013 期 T036；FR-016c / SC-009）
+# ---------------------------------------------------------------
+# 「加入流年」页须把**大运阶段与流年阶段的同名判断逐项对照**，使使用者一眼看出
+# 「加流年之后哪几项变了、分别变成什么」。**引擎不合成吉凶**（FR-016a），故这里只列同名项，
+# 不做任何加权或结论性判定。
+_PAIR_ITEMS: tuple[tuple[str, str], ...] = (
+    ("yong_shen.theoretical.element", "用神"),
+    ("yong_shen.xi_shen", "喜神"),
+    ("yong_shen.ji_shen", "忌神"),
+    ("level", "旺度档位"),
+    ("ge_ju.type", "格局"),
+    ("tiaohou", "调候"),
+    ("layers", "格局层次"),
+)
+
+
+def _pick(obj: dict, path: str):
+    cur = obj
+    for part in path.split("."):
+        if not isinstance(cur, dict):
+            return None
+        cur = cur.get(part)
+    return cur
+
+
+def build_pairs(dayun_item: dict, liunian_item: dict) -> list[dict]:
+    """把**大运层**与**流年层**的同名判断**成对**列出（FR-016c / SC-009）。
+
+    每对**两侧都必须在**（`MUST NOT 只给一侧`），并各标**来源阶段**（FR-024 / SC-008）。
+    `changed` 由两侧取值是否相等推出——它只是提示，**不是吉凶结论**。
+    """
+    out: list[dict] = []
+    for key, label in _PAIR_ITEMS:
+        a = _pick(dayun_item, key)
+        b = _pick(liunian_item, key)
+        out.append({
+            "key": key,
+            "label": label,
+            "dayun": {"value": a, "source": "dayun"},
+            "liunian": {"value": b, "source": "liunian"},
+            "changed": a != b,
+        })
+    return out

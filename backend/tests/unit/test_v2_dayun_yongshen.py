@@ -93,11 +93,25 @@ def test_yongshen_varies_across_steps():
     assert len(kinds) > 1, "该命例应产生至少两种不同的（格局, 用神）组合"
 
 
-def test_yongshen_does_not_vary_with_liunian():
-    """用神**只随大运变、不随流年变**（书 4208）——`analyze_step` 不接受流年参数。"""
-    import inspect
-    sig = inspect.signature(dayun.analyze_step)
-    assert "liunian" not in " ".join(sig.parameters), "取用不应由流年驱动"
+def test_yongshen_does_vary_with_liunian():
+    """**用神随流年重判**（013 期 FR-016b；2026-09-21 用户裁定，**推翻书 下 4207/4208**）。
+
+    > **口径变更记录**：本测试原名 `test_yongshen_does_not_vary_with_liunian`，是一条
+    > **签名断言**——「`analyze_step` 不接受流年参数」。013 期用户裁定「用神随流年重判」：
+    > 流年既已参与关系与度数（FR-014/015），用神若冻在大运层就会出现「旺度与格局随流年
+    > 重判、用神不动」的内部不一致，且该矛盾无法用依据解释。书所指「中和状态最易变」
+    > （下 4002）的特例在本裁定下已自动覆盖。故该断言**作废并反转**。
+
+    判据用**依据串**而非「用神五行是否变了」——取用按**档位**走，同档内度数变化**不换**用神，
+    那是正常的；`theoretical.basis` 里带着该阶段的度数，它变才证明取用是拿新数值重跑的。
+    """
+    p = _pillars("辛酉", "庚寅", "丙寅", "乙未")
+    a = dayun.analyze_step(p, "己丑")
+    b = dayun.analyze_step(p, "己丑", liunian_ganzhi="壬午")
+    assert b["source"] == "liunian"
+    if a["scores_after"] != b["scores_after"]:
+        assert (a["yong_shen"]["theoretical"]["basis"]
+                != b["yong_shen"]["theoretical"]["basis"]),             "旺度已随流年变，取用依据却与阶段 2 逐字相同——说明取用没重跑"
 
 
 # 锚点：书 上 418（坤 乙丑 丁亥 己巳 丁卯；运 戊子/己丑/庚寅）。日主己土动态 0 度、

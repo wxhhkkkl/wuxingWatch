@@ -1528,7 +1528,8 @@ def _layers(cols: list[degrees.Col], rel: dict, month_zhi: str,
 
 
 def _stem_he_trial(cols: list[degrees.Col], rel: dict, month_zhi: str,
-                   effective: str | None, pure: frozenset[str]) -> dict[str, float]:
+                   effective: str | None, pure: frozenset[str],
+                   suiyun: list | None = None) -> dict[str, float]:
     """天干五合条件④的**试探趟**：全部五合先按**合绊**算到底，取**逐柱动态旺度**。
 
     书 上 1588：「4. 甲必须处于不能独立的状态（**指动态旺度**）」——动态旺度要结算完
@@ -1542,7 +1543,8 @@ def _stem_he_trial(cols: list[degrees.Col], rel: dict, month_zhi: str,
     返回**柱位 key → 该柱天干所在连片组的动态终值**（不是五行合计）——条件④问的是
     「**甲**能不能独立」（书 上 1588 指的是那个字），同五行的其它实例不算数。
     """
-    he0 = stem_he.judge_stem_he(cols, month_zhi, rel, effective=effective, force_ban=True)
+    he0 = stem_he.judge_stem_he(cols, month_zhi, rel, effective=effective,
+                                force_ban=True, suiyun=suiyun)
     lay = _layers(cols, rel, month_zhi, effective, pure, he0["ban_cheng"])
     stem_layer(cols, lay["static"], lay["root_scaled"],
                blocked=frozenset(he0["blocked"]), hidden=lay["hidden"],
@@ -1552,6 +1554,32 @@ def _stem_he_trial(cols: list[degrees.Col], rel: dict, month_zhi: str,
     for g in lay["grps"]:
         for k in g.keys:
             out[k] = g.final
+    return out
+
+
+def _suiyun_hidden(dayun_ganzhi: str | None, liunian_ganzhi: str | None,
+                   month_zhi: str) -> dict[str, float]:
+    """**岁运之支自身藏干**的五行合计（013 期 T016；书 上 884 / 900 / 901）。
+
+    书 上 884 例2 的算式把这一项写得很直白：「进入乙未运……日临未运为余气之地，增力 1.5 度；
+    **未本身藏丁火 3 度**，卯未合绊增力 1 度，变为 4 度火。日干在此运的静态旺度
+    ＝11.25＋1.5＋**4**＝16.75 度」——那 4 度是**平加**的（11.25 已含月令系数 1.5，
+    这一项不再乘系数）。上 901 例4 同构（「午藏 2 度土」）、丙申运（「申藏 0.5 度」）。
+
+    **取哪一档**：大运之支走 `is_dayun`，流年之支走 `is_liunian`（书 399-403 / 449-451 /
+    491-497 三处的「临大运」「临流年」档**数值不同**，见 `tables.hidden_degrees`）。
+    党众按 0 计——岁运之支不参与原局的「连成一片」判定。
+
+    两者皆无时返回空字典，故**原局路径分文不动**（FR-023 零回归）。
+    """
+    import services.bazi.v2.tables as tables          # 本文件的约定：函数内局部导入
+
+    out: dict[str, float] = {}
+    for gz, flag in ((dayun_ganzhi, "is_dayun"), (liunian_ganzhi, "is_liunian")):
+        if not gz or len(gz) < 2:
+            continue
+        for gan, deg in tables.hidden_degrees(gz[1], month_zhi, **{flag: True}):
+            out[GAN_WUXING[gan]] = out.get(GAN_WUXING[gan], 0.0) + deg
     return out
 
 
@@ -1566,6 +1594,19 @@ def compute_strength(pillars: dict, *, dayun_ganzhi: str | None = None,
     返回 `static_scores` / `final_scores` / `level` / `relations` / `traces`
     / `degrees`（data-model §3 的形状）/ `input_scope` / `degradations` / `steps`。
     """
+    # **门控：命 → 运 → 岁**（013 期 T029；书 下 4430「运制约岁」、下 4468）。
+    # 流年之支若被该步大运**合/冲/合绊住**，则**作用不到原局**——做法是**把它摘掉**，
+    # 使后续「关系判定」与「藏干入池」都看不到它，与「流年本就没传」等价。
+    # 算例 下 4450：「现亥卯半合，**亥被合绊则无法冲巳**」。
+    _gate: str | None = None
+    if dayun_ganzhi and liunian_ganzhi:
+        _natal = {p.get("zhi") for k, p in pillars.items()
+                  if k in ("year", "month", "day", "time") and p}
+        _gate = relations._liunian_held_by_dayun(
+            dayun_ganzhi[1], liunian_ganzhi[1], {z for z in _natal if z})
+        if _gate:
+            liunian_ganzhi = None
+
     cols = degrees.build_cols(pillars)
     if not cols:
         return {"static_scores": {}, "final_scores": {}, "level": "弱极",
@@ -1593,9 +1634,19 @@ def compute_strength(pillars: dict, *, dayun_ganzhi: str | None = None,
     # 调 `_stem_he_trial` 跑一趟「全按合绊」的试探。换字后 `hidden`（四库党众分档读
     # 天干）、`static`、`grps`、`insts` 都要按定案的 `ban` 重算一遍——这就是**第二趟**。
     # ---------------------------------------------------------------
+    # 岁运之干**纳入五合**（013 期 T026；FR-012/012a/014a）：把伪列建成 `Col` 交给
+    # `judge_stem_he` 的 `suiyun`（岁运之干与原局**任何一柱都相邻**，书 上 578）。
+    # 对**原局下标**的换字仍写回 `cols`（`work[i] is cols[i]`）；**岁运下标**的换字只写到
+    # 局部对象，由 `he["hua"]` 交回（键 >= len(cols) 即岁运）。
+    # ⚠️ **从 `dayun_ganzhi`/`liunian_ganzhi` 参数构建**，不是从 `pillars` 里找——
+    # 伪列是 `_with_extras` 在判关系那一刻才挂上的，`pillars` 本身不含 `_dayun`/`_liunian`。
+    _sy_cols = [degrees.Col(key=k, gan=gz[0], zhi=gz[1], orig_gan=gz[0])
+                for k, gz in (("_dayun", dayun_ganzhi), ("_liunian", liunian_ganzhi))
+                if gz and len(gz) >= 2]
     he = stem_he.judge_stem_he(
-        cols, month_zhi, rel, effective=effective,
-        final_provider=lambda: _stem_he_trial(cols, rel, month_zhi, effective, pure))
+        cols, month_zhi, rel, effective=effective, suiyun=_sy_cols,
+        final_provider=lambda: _stem_he_trial(cols, rel, month_zhi, effective, pure,
+                                              _sy_cols))
     ban = he["ban"]
 
     # 「原字」视图（`src_gan` 还原合化换过的干）——五合现在排在**静态旺度之后**
@@ -1621,6 +1672,15 @@ def compute_strength(pillars: dict, *, dayun_ganzhi: str | None = None,
                                for k in e["cols"])
 
     lay = _layers(cols, rel_after, month_zhi, eff_after, pure_after, he["ban_cheng"])
+
+    # 岁运之支**自身藏干**计入旺度（013 期 T016；书 上 884「未本身藏丁火 3 度」/900/901）。
+    # **必须赶在 `stem_layer` 之前**——它拿 `lay["static"]` 当**生克基数**，而运支的藏干
+    # 是该步旺度的一部分，不能只进契约值、不进生克。平加项（不乘月令系数）；无岁运时为空。
+    _sy_hidden = _suiyun_hidden(dayun_ganzhi, liunian_ganzhi, month_zhi)
+    if _sy_hidden:
+        lay["static"] = {wx: round(v + _sy_hidden.get(wx, 0.0), 6)
+                         for wx, v in lay["static"].items()}
+
     hidden, muku = lay["hidden"], lay["muku"]
     static, coef_by_wx = lay["static"], lay["coef_by_wx"]
     root_scaled, qi_by_wx = lay["root_scaled"], lay["qi_by_wx"]
@@ -1652,6 +1712,12 @@ def compute_strength(pillars: dict, *, dayun_ganzhi: str | None = None,
     # 合绊的缩放只作**生克基数**（`stem_layer` 拿 `lay["static"]`）。2026-09-16 用户裁定：
     # 「静态部分不应算合绊」（与 书 上 1638 把合绊写进静态旺度相反，属有意分歧）。
     _static0 = lay0["static"]
+
+    # 岁运之支**自身藏干**计入**契约的静态旺度**（013 期 T016；书 上 884「未本身藏丁火
+    # 3 度」/900/901）。平加项（不乘月令系数）；**无岁运时为空字典**，故原局分文不动
+    # （FR-023）。生克基数那一份在 `lay["static"]` 上就已加好（见上文）。
+    if _sy_hidden:
+        _static0 = {wx: round(v + _sy_hidden.get(wx, 0.0), 6) for wx, v in _static0.items()}
     deg_detail = {wx: _deg_detail(cols0, lay0["hidden"], wx, month_zhi, _static0, final,
                                   effective, lay0["root"].get(wx, 0.0), lay0["muku"],
                                   lay0["root_scaled"].get(wx, 0.0),
@@ -1676,7 +1742,10 @@ def compute_strength(pillars: dict, *, dayun_ganzhi: str | None = None,
         "day_master_group": (dm_group.as_dict() if dm_group is not None else None),
         "benqi_instances": insts,
         "input_scope": "three_pillars" if len(cols) < 4 else "four_pillars",
-        "degradations": _degradations(cols),
+        # 门控（T029）命中的说明并入 degradations——FR-019 要求「此门控的判定结果 MUST 写入依据」
+        "degradations": (_degradations(cols)
+                         + ([f"该年流年被大运以「{_gate}」挡住，作用不到原局"
+                             f"（书 下 4430「运制约岁」/ 下 4468）"] if _gate else [])),
         "month_effective_wx": effective,
         # 天干五合（第 6 段）的结论：格局层判化格与「依据行」都消费它，只判一次。
         "stem_he": he,

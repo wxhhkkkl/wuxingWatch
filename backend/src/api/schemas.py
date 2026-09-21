@@ -175,3 +175,14 @@ class ChapterReorderIn(BaseModel):
 
 class ProgressUpdateIn(BaseModel):
     chapter_id: int
+
+
+class SuiyunRequest(BirthInput):
+    """岁运推导请求（013 期 T034）——出生信息同 `BirthInput`，另指定选中的岁运。
+
+    `liunian_year` 给了即算**阶段 3**（加入流年）；不给只算**阶段 2**（加入大运）。
+    **结论按需实时计算、不落库**（FR-026）。
+    """
+
+    dayun_ganzhi: str = Field(description="选中的大运干支，如 '辛丑'（须是该盘的合法步）")
+    liunian_year: int | None = Field(default=None, description="选中的流年年份（公历）")

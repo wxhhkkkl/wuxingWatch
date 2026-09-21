@@ -43,19 +43,40 @@
 """
 
 
-def xiyong_analysis_v2(day_master: str, pillars: dict, da_yun: list | None = None) -> dict:
-    """v2 喜忌分析对外入口（012 期 T050）。
+def xiyong_analysis_v2(day_master: str, pillars: dict, da_yun: list | None = None,
+                       *, dayun_ganzhi: str | None = None,
+                       liunian_ganzhi: str | None = None,
+                       stage: int | None = None) -> dict:
+    """v2 喜忌分析对外入口（012 期 T050；013 期 T027 起支持**三阶段**）。
 
     替代旧 `services.bazi.xiyong.xiyong_analysis` 的对外职责——**旧文件原封不动**
     （spec C26-3）。返回 data-model §1 形状的 `strength` 子树。
 
     流程：旺度管线 → 格局判定 → 三因素取用 → 调候量化 → 旬空削弱 → 契约校验。
     `da_yun` 由 T054（US4）接入；当前忽略。
+
+    **三阶段（013 期 R9）**——三个阶段产出**同构**结论，差别只在参与判定的岁运：
+
+    | `stage` | `dayun_ganzhi` | `liunian_ganzhi` | 含义 |
+    |---|---|---|---|
+    | 1 | 不传 | 不传 | **原局**（既有行为，逐位不变） |
+    | 2 | 该步大运 | 不传 | **加入大运** |
+    | 3 | 该步大运 | 该年流年 | **加入流年** |
+
+    `stage` 只是**显式校验**（与实参不符即报错）——阶段由「传了哪些岁运」唯一决定，
+    不另设内部状态。**折中状态只取月令与大运**、流年不进折中（FR-003 / FR-017a），
+    这一层由 `relations._dang_ling` 保证。
     """
     from services.bazi.constants import GAN_WUXING
     from services.bazi.v2 import degrees, geju, pipeline, xiyong_v2
 
-    r = pipeline.compute_strength(pillars)
+    # 三阶段（013/T027）：阶段由**传了哪些岁运**唯一决定；`stage` 仅作显式校验。
+    _want = 3 if liunian_ganzhi else (2 if dayun_ganzhi else 1)
+    if stage is not None and stage != _want:
+        raise ValueError("stage=%r 与实参不符（dayun=%r、liunian=%r → 应为 %d）"
+                         % (stage, dayun_ganzhi, liunian_ganzhi, _want))
+    r = pipeline.compute_strength(pillars, dayun_ganzhi=dayun_ganzhi,
+                                  liunian_ganzhi=liunian_ganzhi)
     # **一律用管线交出来的那一份 cols**——日干可能被天干五合换了字（甲→戊，书 上 1593），
     # 自行 `build_cols` 会拿到原字，后果是旺度按土算、格局/取用/十神却按木算。
     cols = r["cols"]
@@ -132,7 +153,9 @@ def xiyong_analysis_v2(day_master: str, pillars: dict, da_yun: list | None = Non
 
 
 def xiyong_analysis(day_master: str, pillars: dict, da_yun: list | None = None,
-                    *, hour_known: bool = True) -> dict:
+                    *, hour_known: bool = True,
+                    dayun_ganzhi: str | None = None,
+                    liunian_ganzhi: str | None = None) -> dict:
     """v2 喜忌分析的**完整包装**（T076 起由 `engine.py` 调用）。
 
     产出与旧 `xiyong.xiyong_analysis` **同层级的对象**（`conclusion` /
@@ -151,7 +174,11 @@ def xiyong_analysis(day_master: str, pillars: dict, da_yun: list | None = None,
     src = pillars
     if not hour_known:
         src = {k: (None if k == "time" else v) for k, v in pillars.items()}
-    r = xiyong_analysis_v2(day_master, src, da_yun)
+    # 三阶段（013/T027）：岁运经此透传给 `xiyong_analysis_v2`——阶段 3 的**喜忌**
+    # 也须基于该年的旺度与格局，故包装层不能吞掉这两个参数。
+    r = xiyong_analysis_v2(day_master, src, da_yun,
+                           dayun_ganzhi=dayun_ganzhi,
+                           liunian_ganzhi=liunian_ganzhi)
     ys = r["yong_shen"]
     gj = r["ge_ju"]
     dm_wx = r["day_master_wuxing"]

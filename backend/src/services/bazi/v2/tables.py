@@ -62,12 +62,23 @@ _CHOU_SHUIFU = [("癸", 3.0), ("辛", 2.0), ("己", 0.0)]        # 亥子月
 _CHOU_SHENYOUCHOU = [("癸", 2.0), ("辛", 2.0), ("己", 3.0)]   # 申酉丑月
 _CHOU_OTHER = [("癸", 1.0), ("辛", 2.0), ("己", 3.0)]         # 其他月
 _CHOU_DANGZHONG = [("癸", 2.0), ("辛", 2.0), ("己", 3.0)]     # 亥子月 + 党众≥3
+# 书 上 399-403 ④（**独立档**——不依附 ①②③ 的月份分组，与生于何月无关）：
+# 「当丑在大运出现时——丑含水2度，含金2度，含土3度；丑在流年或流日出现时——丑含水1度，
+#   含金2度，含土3度。」（大运档的值恰与 ② 同、流年档恰与 ③ 同，但**语义是独立档**，
+#   故单列常量而不复用 ②③——否则日后改 ② 会静默改掉岁运档）
+_CHOU_SUIYUN_DAYUN = [("癸", 2.0), ("辛", 2.0), ("己", 3.0)]
+_CHOU_SUIYUN_LIUNIAN = [("癸", 1.0), ("辛", 2.0), ("己", 3.0)]
 
 # 辰土（上 442-450）：②申酉丑月 含水2/木2/**土3**（上 446-448；实例 上 460、462）
 _CHEN_SHUIFU = [("癸", 3.0), ("乙", 2.0), ("戊", 0.0)]
 _CHEN_SHENYOUCHOU = [("癸", 2.0), ("乙", 2.0), ("戊", 3.0)]
 _CHEN_OTHER = [("癸", 1.0), ("乙", 2.0), ("戊", 3.0)]
 _CHEN_DANGZHONG = [("癸", 2.0), ("乙", 2.0), ("戊", 3.0)]
+# 书 上 449-451 ④（**独立档**）：「当辰在大运**或流年**、流日出现时：辰含水1度，含木2度，
+# 含土3度。」——**大运档与流年档相同**（与丑不同），且与生于何月无关。
+# 书例 上 477：「进入甲辰运，辰临大运，此时辰含水1度，含木2度，含土3度。逢2000庚辰年，
+# 流年辰也含水1度，含木2度，含土3度；逢辰月或辰日，辰也含水1度，含木2度，含土3度。」
+_CHEN_SUIYUN = [("癸", 1.0), ("乙", 2.0), ("戊", 3.0)]
 
 # 未土、戌土（上 489-503）
 #
@@ -130,12 +141,19 @@ def dangzhong_run(cols: list, wx: str, col_key: str) -> int:
     与该支相邻的同类（同五行）单位构成连续段；本函数返回该段长度。
     天干与地支同计——书 上 423「2丑及**己土**党众3个」、470「辰、未、**己、戊**党众4个」、
     486「辰土党众（**辰-戊-辰**）」。
+
+    **岁运之支不入该序列**（013 期）：序列明写为「年干·年支·…·时干·时支」八位，
+    是**原局**的连片概念。实测若不排除伪列，书例 下 1819（丙寅 庚子 戊子 丙辰 + 戊戌运）
+    会把「日干戊 + 时支辰 + 大运戊戌」串成 3 个土，使辰的含土由 **0** 误算为 3
+    ——而书该例明写「**辰土原始含土量为 0**」。无岁运时无可排除者，故原局路径不变。
     """
     from services.bazi.constants import GAN_WUXING
 
     seq: list[tuple[bool, str | None]] = []      # (是否同类, 所属柱位)
     idx = -1
     for c in cols:
+        if c.key in ("_dayun", "_liunian"):      # 岁运不入原局连片
+            continue
         if c.gan:
             seq.append((GAN_WUXING.get(c.gan) == wx, c.key))
         if c.zhi:
@@ -172,21 +190,38 @@ def hidden_degrees(
     `dangzhong` 为该支的**党众连续段长度**（`tables.dangzhong_run`）——丑/辰 在亥子月的
     「党众 3 个或 3 个以上**又连成一片**」分支用它判定（书 上 395 / 444、连片见 上 413-414）。
     注意这与**合化条件**里的「党众特指地支的同类」（上 2705、下 127）是**两套口径**。
-    `is_dayun` / `is_liunian` 用于四墓库在岁运出现时的度数特例（上 401 / 450 / 491-497）。
+    `is_dayun` / `is_liunian` 用于四墓库在岁运出现时的度数特例（上 399-403 丑 / 449-451 辰 /
+    491-497 未戌）。**两组条文的写法不同，不可一视同仁**（013 期 T006 按原文订正）：
+
+    - **丑、辰：④ 是独立档**——「当丑（辰）在大运出现时……」与生于何月无关，故**先于**
+      月份分组判定，直接取值。丑的两档**不同**（大运 [癸2辛2己3]、流年 [癸1辛2己3]）；
+      辰的两档**相同**（均 [癸1乙2戊3]）。
+    - **未、戌：岁运档写在具体月份块内**——未的在「未戌生于**巳午未月**」块、戌的在
+      「未戌生于**戌月**」块，故是**月份条件**档（`group == "hot"` / `group == "xu"`），
+      与 ①②③ 同层而非覆盖它们。
+
+    > 订正前：丑无流年档（靠落到 `_CHOU_OTHER`，值虽对但月令为亥子/申酉丑时被前面的分组
+    > 截走）；辰两条都无；**戌的守卫误用了 `hot`（巳午未月），应为 `xu`（戌月）**。
+    > 这三个分支在 012 期**无任何调用方**，故订正不影响既有结论（零回归）；
+    > 调用侧由 013 期的 T024 接上。
     """
     group = _month_group(zhi, month_zhi)
     n_same = dangzhong
 
     if zhi == "丑":
+        if is_dayun:                       # 上 399-403 ④ 独立档
+            return list(_CHOU_SUIYUN_DAYUN)
+        if is_liunian:
+            return list(_CHOU_SUIYUN_LIUNIAN)
         if group == "shuifu":
             return list(_CHOU_DANGZHONG if n_same >= 3 else _CHOU_SHUIFU)
         if group == "shenyouchou":
             return list(_CHOU_SHENYOUCHOU)
-        if is_dayun:
-            return list(_CHOU_SHENYOUCHOU)
         return list(_CHOU_OTHER)
 
     if zhi == "辰":
+        if is_dayun or is_liunian:         # 上 449-451 ④ 独立档（两档相同）
+            return list(_CHEN_SUIYUN)
         if group == "shuifu":
             return list(_CHEN_DANGZHONG if n_same >= 3 else _CHEN_SHUIFU)
         if group == "shenyouchou":
@@ -194,17 +229,19 @@ def hidden_degrees(
         return list(_CHEN_OTHER)
 
     if zhi == "未":
-        if is_liunian and group == "hot":
-            return [("丁", 2.0), ("己", 3.0), ("乙", 1.0)]
-        if is_dayun and group == "hot":
-            return list(_WEI["xu"])
+        if group == "hot":                 # 上 491-497：写在「巳午未月」块内
+            if is_liunian:
+                return [("丁", 2.0), ("己", 3.0), ("乙", 1.0)]
+            if is_dayun:
+                return list(_WEI["xu"])
         return list(_WEI[group if group in _WEI else "shenyou"])
 
     if zhi == "戌":
-        if is_liunian:
-            return [("戊", 3.0), ("辛", 2.0), ("丁", 1.0)]
-        if is_dayun and group == "hot":
-            return list(_SHU["xu"])
+        if group == "xu":                  # 上 491-497：写在「戌月」块内（**不是巳午未月**）
+            if is_liunian:
+                return [("戊", 3.0), ("辛", 2.0), ("丁", 1.0)]
+            if is_dayun:
+                return list(_SHU["xu"])
         return list(_SHU[group if group in _SHU else "shenyou"])
 
     return list(HIDDEN_FIXED[zhi])

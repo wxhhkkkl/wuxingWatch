@@ -398,14 +398,43 @@ def test_dayun_acts_on_any_pillar():
     若按盘面柱距判相邻，岁运与原局的天克地冲/天合地合会**全部**判不出来。
     书 下 1786「进入壬戌运，**与月天克地冲**」、下 3294「进入癸酉运，流年
     **与月柱天克地冲**」。
+
+    > **2026-09-21 换盘（013 期 T013）**：本例原第二个盘是 `甲申 丁卯 戊戌 甲寅` +
+    > `癸酉`运，断言 tier 2 成立。T013 把「岁运之支与原局任何一柱均相邻」从**下标巧合**
+    > 改为**显式语义**后，那个盘的运酉**正确地加入了「申酉戌会」**（tier 4，cols 含
+    > `_dayun`）——于是 卯酉冲 的**两支都被合住**（卯被卯戌六合、酉被申酉戌会），
+    > 按 书 下 1974/1984 的「合可解冲」**不应成立**。旧断言是下标伪影的产物，
+    > 故换为下面这个无竞争关系的盘；那个盘的新行为另见
+    > `test_dayun_joins_a_sanhui_and_resolves_the_chong`。
     """
-    for gz, dy in (("戊戌 丙辰 癸酉 丁巳", "壬戌"), ("甲申 丁卯 戊戌 甲寅", "癸酉")):
+    for gz, dy in (("戊戌 丙辰 癸酉 丁巳", "壬戌"), ("甲子 丁卯 甲午 丙寅", "癸酉")):
         p = _chart(*gz.split())
         p["_dayun"] = {"gan": dy[0], "zhi": dy[1]}
         r = relations.judge_relations(p)
         t2 = [e for e in r["established"] if e["tier"] == 2]
         assert t2 and t2[0]["cols"] == ["month", "_dayun"], \
             (gz, dy, [(e["tier"], e["type"], e["cols"]) for e in r["established"]])
+
+
+def test_dayun_joins_a_sanhui_and_resolves_the_chong():
+    """运支**加入三会**后，与之相冲的那一支被合住 → 冲按「合可解冲」不成立。
+
+    `甲申 丁卯 戊戌 甲寅` + `癸酉`运：运酉与原局年申、日戌 三支成**申酉戌会金**
+    （书 上 578「岁运的地支到原局任何一柱的地支的距离都是相同的，都是相邻的关系」）；
+    卯酉冲的两支遂**都被合住**（卯被卯戌六合、酉被申酉戌会），按 书 下 1974/1984
+    「若为天克地冲，则必须**同时合住两支**……方可解冲」→ 卯酉冲**不成立**。
+
+    > 本断言记录 013 期 T013 的口径修正：改前运酉因**下标不相邻**进不了会，
+    > 卯酉冲照常成立——那是伪列排在列尾造成的假象。
+    """
+    p = _chart("甲申", "丁卯", "戊戌", "甲寅")
+    p["_dayun"] = {"gan": "癸", "zhi": "酉"}
+    r = relations.judge_relations(p)
+    hui = [e for e in r["established"] if e["tier"] == 4 and set(e["members"]) == {"申", "酉", "戌"}]
+    assert hui and "_dayun" in hui[0]["cols"], \
+        "运酉应加入申酉戌会（书 上 578）"
+    assert not [e for e in r["established"] if e["tier"] == 2], \
+        "卯酉冲的两支均被合住，按合可解冲不应成立（书 下 1974/1984）"
 
 
 def test_tier15_beats_tier16():

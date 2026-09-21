@@ -206,3 +206,23 @@ def delete_record(record_id: int, user: CurrentUser, db: DbDep):
     db.delete(record)
     db.commit()
     return None
+
+@router.get("/{record_id}/suiyun")
+def record_suiyun(record_id: int, dayun_ganzhi: str, user: CurrentUser, db: DbDep,
+                  liunian_year: int | None = None):
+    """**从已保存记录进岁运推导**（013 期 T034；FR-021a）。
+
+    因岁运结论**不落库**（FR-026），此处用该记录的**输入信息当场重推大运与流年**
+    （`_load_result` 已含「版本不符则重算」的语义），**不读记录里可能存过的岁运结论**。
+    """
+    record = _get_owned(db, record_id, user.id)
+    _, payload = _load_result(record, db)
+    if not payload:
+        raise HTTPException(status_code=422,
+                            detail="该记录未保存完整入参，无法重推岁运")
+    try:
+        return chart_service.suiyun_conclusion(RecordCreate(**payload),
+                                               dayun_ganzhi, liunian_year)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+

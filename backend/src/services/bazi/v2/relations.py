@@ -238,6 +238,12 @@ _COLS_CTX: dict[str, list] = {"cols": []}
 # 走「计入其它关系 effects」的口径）；`_SELF_CTX` = 本轮正在判定的那条（(tier, cols)）。
 _REL_CTX: dict[str, list | None] = {"established": None}
 _SELF_CTX: dict[str, tuple | None] = {"self": None}
+# 岁运阶段上下文（013 期 T005）：由 `_judge_pass` **从伪列派生**，每一遍都重设。
+# **缺省（两者皆 None）= 阶段 1 原局**——原局路径因此不进入任何新增分支（FR-023 零回归）。
+# 分工：`dayun` 是**折中状态**（FR-002/003）的唯一输入；`liunian` 只用于「参与关系与度数」
+# （FR-014/015），**绝不参与折中**（FR-003 / FR-017a——书 上 3213 的算例里流年午火明明加入
+# 午未合局、算式却只取月令与大运）。二者皆以 `(gan, zhi)` 元组承载。
+_SUIYUN_CTX: dict[str, tuple[str, str] | None] = {"dayun": None, "liunian": None}
 # 重判轮上限：实测（12^4 全量）20597 盘 1 轮稳定、138 盘 2 轮、1 盘 3 轮、0 盘振荡。
 _MAX_REFINE_ROUNDS = 3
 
@@ -311,13 +317,19 @@ def _special_applies(z1: str, z2: str, month_zhi: str, cols: list[_Col]) -> bool
 
 
 def _special_effects(z1: str, z2: str, month_zhi: str,
-                     n_recv: int = 1) -> list[dict]:
+                     n_recv: int = 1, suiyun: str | None = None) -> list[dict]:
     """七条特殊生克（+戌生金）的度数影响（书《上》第三节 2294-2458《特殊情况三》489-505）。
 
     `n_recv`＝**受方**参与支的个数（同一特例的多支按书的总量/平摊计，见
     `_special_group`）。只有「一对多」时才有意义：书 上 2359「1子生3寅，子水
     减去3度剩下2度；3个寅木**一共**增力1度，平均每个寅中甲木增力0.33度」——
     施方按**每支受方**计（子水 −1×3），受方的定量增力按**总量平摊**（+1÷3）。
+
+    `suiyun`＝**施方（未）所在的是岁运哪一列**（`"dayun"` / `"liunian"` / None＝原局）。
+    **只有未克申酉用得到它**（013 期 T025）：书 上 2307-2309 在 a 档（未生于**巳午未戌**
+    月）下另列两行——「未土临**大运**：申酉金减半（杂气不变），未中之火均减 1 度，其他不变。
+    未土临**流年**：申酉金**减力 1/3**（杂气不变），未之火减 **0.67** 度，其他不变。」
+    大运那一行的数值与 a 档**完全相同**（金减半、丁 −1），故实质新增的只有**流年档**。
     """
     pair = frozenset((z1, z2))
     fx: list[dict] = []
@@ -326,8 +338,17 @@ def _special_effects(z1: str, z2: str, month_zhi: str,
         jin = z2 if z2 in ("申", "酉") else z1
         # 未中丁火按**每个**受方计（书 上 528「未土脆克3申，其中的丁火共减力0.5×3＝1.5度」）
         if month_zhi in _SP_HOT:
+            if suiyun == "liunian":
+                # 书 上 2309「未土临流年：申酉金减力1/3（杂气不变），未之火减0.67度」
+                fx.append({"zhi": jin, "wuxing": "金", "delta": None, "scale": round(2 / 3, 6),
+                           "reason": "未克申酉（**未临流年**）：申酉金减 1/3（书 上 2309「未土临流年：申酉金减力1/3（杂气不变），未之火减0.67度，其他不变」）"})
+                fx.append({"zhi": "未", "gan": "丁", "delta": round(-0.67 * n_recv, 4),
+                           "reason": "未克申酉（未临流年）：未中之火每个受方减 0.67 度（书 上 2309 同句）"})
+                return fx
+            # 原局 a 档 与「未临**大运**」档的数值相同（书 上 2307 与 2308），故同一分支
+            _tail = "；未临大运档 上 2308 数值相同" if suiyun == "dayun" else ""
             fx.append({"zhi": jin, "wuxing": "金", "delta": None, "scale": 0.5,
-                       "reason": "未克申酉：燥月申酉减半（书 上 2307「a. 当未土生于巳、午、未、戌月时，未土克申酉金，此时申酉金减半（杂气不变），未中丁火减力1度」）"})
+                       "reason": "未克申酉：燥月申酉减半（书 上 2307「a. 当未土生于巳、午、未、戌月时，未土克申酉金，此时申酉金减半（杂气不变），未中丁火减力1度」" + _tail + "）"})
             fx.append({"zhi": "未", "gan": "丁", "delta": -1.0 * n_recv,
                        "reason": "未克申酉：未中丁火每个受方减 1 度（书 上 2307「未中丁火减力1度」；多支算例 上 528「未土脆克3申，其中的丁火共减力0.5×3＝1.5度」）"})
         elif month_zhi in _SP_YINMAO_SHENYOU:
@@ -976,12 +997,75 @@ def _chen_count(cols: list[_Col]) -> int:
     return sum(1 for c in cols if c.zhi in ("辰", "丑"))
 
 
+def _pure_wx_of(zhi: str) -> str | None:
+    """该**支**被合化**改宗**后的五行；未改宗返回 None（书 上 943 / 上 953）。
+
+    来源与 `pipeline._pure/month_effective_wx` 同：合化成功后整支变为纯粹的化神，
+    在已成立关系的 effects 里落成 `pure`。**按支名匹配**（effects 以 `zhi` 记，不记柱位）。
+    """
+    for e in _REL_CTX["established"] or []:
+        for fx in e.get("effects") or []:
+            if fx.get("pure") and fx.get("zhi") == zhi:
+                return fx["pure"]
+    return None
+
+
+def _dang_ling(hua: str, month_zhi: str) -> bool:
+    """化神是否**当令**——**岁运介入时改看综合（折中）状态**，否则只看月令。
+
+    书 上 907-963 定折中＝(月令参数 + 大运参数) / 2，参数 旺1/余气2/相3/休4/囚5/死6，
+    **当令 ≤3、失令 >3**（上 918-930）。书在各类关系的条件② 后反复加注「（如果有岁运
+    介入则其**综合状态**必须为化神的当令之地）」，而「岁运介入」的定义见 上 2480：
+    「相合（相会/相冲/相刑）之支只要有一支在岁运出现，就为岁运介入」。
+
+    **折中只取月令与大运**——流年**不参与**（FR-003 / FR-017a）。这是书自己的口径：
+    上 3213 的算例里流年午火明明加入了午未合局，算式依然只取月令与大运的平均。
+
+    **两个输入各自都可能是「被改变后」的状态**（013 期 T012）：
+    - ②月令被改变为其他状态时，取**月令改变后**的状态再与大运平均（上 943）——
+      书例 上 949：原局寅午合化火 → 月令改火 → 金由「囚(5)」改按**死(6)** 论，
+      折中 (6+3)/2 = 4.5 → 失令；
+    - ③大运被改变为其他状态时同理（上 953）——书例 上 961：运亥被亥卯合化木 →
+      水由「旺(1)」改按**休(4)** 论，折中 (4+4)/2 = 4 → 失令。
+
+    > 改宗信息从 `_REL_CTX["established"]` 读，故**要第二遍才生效**——与 书 上 949 的
+    > 叙述顺序一致（先「原局寅午合化火成功」，再论酉丑）。第一遍 `_REL_CTX` 为 None，
+    > 走未改宗的口径。
+
+    > **无大运时返回值与改动前逐位相同**：书 上 943 的 ② 本就定义在折中**之内**
+    > （「与大运参数的平均值」），无岁运时另有 上 1586 的独立规则（「月令必须…**且月令
+    > 没有被改变为其它五行**」）——那条不在本函数职责内。故**原局路径不进入新分支**
+    > （FR-023 零回归的机制保证）。
+
+    > 半值（如 4.5）时 `compromise_state` 的状态名是空串——**那是书的口径**
+    > （上 949-950 处理 4.5 只写「4.5＞3，当然是失令」，不给名），故此处只取布尔。
+    """
+    if not month_zhi:
+        return True
+    dy = _SUIYUN_CTX["dayun"]
+    if dy is None:
+        return tables.COMPROMISE_PARAM[tables.month_state(hua, month_zhi)] <= 3
+
+    from services.bazi.v2 import dayun as _dyun      # 惰性导入：dayun 依赖 degrees/tables
+
+    def _state(zhi: str, is_month: bool) -> str:
+        """该柱的五行状态——**被合化改宗则按改宗后的五行取**（书 上 943/953）。"""
+        pure = _pure_wx_of(zhi)
+        if pure:
+            return tables.element_state(hua, pure)
+        return tables.month_state(hua, zhi) if is_month else _dyun.dayun_state(hua, zhi)
+
+    _, ok = tables.compromise_state(_state(month_zhi, True), _state(dy[1], False))
+    return ok
+
+
 def _generic_hua_ok(hua: str, cols: list[_Col], month_zhi: str,
                     keys: list[str] | None = None) -> bool:
-    """通用合化判据：月令当令 + （参与支透出化神 或 全局地支化神 ≥26）。"""
+    """通用合化判据：**化神当令**（岁运介入时看折中，见 `_dang_ling`）+ （参与支透出化神
+    或 全局地支化神 ≥26）。"""
     if not hua:
         return False
-    if month_zhi and tables.COMPROMISE_PARAM[tables.month_state(hua, month_zhi)] > 3:
+    if not _dang_ling(hua, month_zhi):
         return False
     if _tou_gan(cols, hua, keys):
         return True
@@ -1121,7 +1205,8 @@ def _zixing_ok(cand: _Cand, cols: list[_Col], month_zhi: str) -> bool:
     z = cand.members[0]
     hua = ZIXING_HUA[z][0]
 
-    if month_zhi and tables.COMPROMISE_PARAM[tables.month_state(hua, month_zhi)] > 3:
+    # ② 化神当令（岁运介入时看折中——书 下 2574 的条件② 同此）
+    if not _dang_ling(hua, month_zhi):
         return False
 
     if z == "辰":
@@ -1162,8 +1247,9 @@ def _hua_ok(cand: _Cand, cols: list[_Col], month_zhi: str,
     if len(set(cand.members)) == 1 and cand.members[0] in ZIXING_HUA:
         return _zixing_ok(cand, cols, month_zhi)
 
-    # ② 月令当令：旺/余气/相 为当令（参数 ≤3），休/囚/死 为失令
-    if month_zhi and tables.COMPROMISE_PARAM[tables.month_state(hua, month_zhi)] > 3:
+    # ② 化神当令：旺/余气/相 为当令（参数 ≤3），休/囚/死 为失令。
+    # **岁运介入时改看月令与大运的折中**（书 上 907-963；流年不参与，见 `_dang_ling`）
+    if not _dang_ling(hua, month_zhi):
         return False
 
     # ---- 半三合条件④「党众」（书 下 第六节各局明文）；卯辰半会同此条 ----
@@ -1295,7 +1381,14 @@ def _contiguous(st: _State, cols: list[_Col]) -> bool:
     """三支关系（三会/三合/三刑）要求三支紧贴成一段。
 
     书例：「寅卯辰会木不成（三支不紧贴）」（下 4030）。
+
+    **含岁运之柱时直接为真**：岁运之支与原局**任何一柱**均相邻（书 上 578「岁运的地支
+    到原局任何一柱的地支的距离都是相同的，都是相邻的关系」），故整条链必然连通——
+    书 上 3502「进入乙亥运，大运亥介入，使得亥卯未变得**相邻紧贴**」、下 1684
+    「由于运支午火的介入，使得年支跟日支变为**紧贴**的关系」。
     """
+    if any(c.key in _EXTRA_ORDER for c in cols):
+        return True
     idx = sorted(st.idx(c.key) for c in cols)
     return idx[-1] - idx[0] == len(idx) - 1
 
@@ -1322,18 +1415,43 @@ def _ju_runs(st: _State, zhis: tuple[str, ...]) -> list[list[_Col]]:
 
     书《—》待核⑤「中隔之支为其中一支本身」那条例外由此天然覆盖：中隔支与两端同类时
     它本就在 `zhis` 内，不会断开本段。
+
+    **段只按「原局列」切**（013 期 T013）。岁运之支与原局**任何一柱**均相邻（书 上 578），
+    故它**不占下标距离**，而是把散落的原局同类支**接成一串**——书 上 3502「进入乙亥运，
+    大运亥介入，使得亥卯未变得**相邻紧贴**，满足了第一个条件」、下 1684「由于运支午火的
+    介入，使得年支跟日支变为**紧贴**的关系」、上 2944「进入丙辰运，辰酉相合」、上 2203
+    「进入甲寅运，巳火与寅木也相邻了」。
+
+    > **改前**：`st.cols` 含伪列且**混在一条下标序列里**扫极大连续段。伪列追加在列尾
+    > （`_EXTRA_ORDER`），于是运支只与**时支**下标相邻、与年支不相邻——是**下标巧合**，
+    > 不是书 上 578 的语义。实测：上 3502 带乙亥运**仍判不成**，且引擎把「时亥 + 运亥」
+    > 判成了 `亥亥自刑`（cols = `['time', '_dayun']`）。
     """
     need = set(zhis)
+
+    # 岁运成员列：与本局同支的岁运柱（它本身即「桥」——书 上 1541「岁运有它们的同类或
+    # 它们本身介入则变成作用」）。
+    extras = [c for c in st.cols if c.key in _EXTRA_ORDER and c.zhi in need]
+    natal = [c for c in st.cols if c.key not in _EXTRA_ORDER]
+
+    if extras:
+        # 有岁运介入时，原局同类支**不必自相邻**——岁运把它们接起来即可（书 上 3502）。
+        # 但**构局之支仍须齐**，缺一支照样不成局。
+        members = [c for c in natal if c.zhi in need]
+        if {c.zhi for c in members} | {c.zhi for c in extras} >= need:
+            return [members + extras]
+        return []
+
     runs: list[list[_Col]] = []
     i = 0
-    while i < len(st.cols):
-        if st.cols[i].zhi not in need:
+    while i < len(natal):
+        if natal[i].zhi not in need:
             i += 1
             continue
         j = i
-        while j < len(st.cols) and st.cols[j].zhi in need:
+        while j < len(natal) and natal[j].zhi in need:
             j += 1
-        run = st.cols[i:j]
+        run = natal[i:j]
         if {c.zhi for c in run} >= need:
             runs.append(run)
         i = j
@@ -1409,16 +1527,89 @@ def _col_held_by_he(st: _State, key: str, zhi: str, month_zhi: str) -> str | Non
     return None
 
 
+def _liunian_held_by_dayun(dayun_zhi: str, liunian_zhi: str,
+                          natal_zhis: set[str]) -> str | None:
+    """流年之支是否被该步大运**合/冲/合绊住**（书 下 4430 / 下 4468）；受制则返回理由串。
+
+    **命 → 运 → 岁**的门控（书 下 4430）：
+
+    > 命运岁就像**上下级的关系，命为大，运次之，岁最小**……如果基层领导想呈送一份文件
+    > 到中央，就**必先递交省级领导的审批**，如果省级领导的审批通不过……
+    > （下 4468）流年为吉如果**不能让命局接受得到**则以凶论。
+
+    算例 下 4450：「现**亥卯半合，亥被合绊则无法冲巳**」——大运卯把流年亥合住 → 亥冲不到原局巳。
+
+    **判据**（书说的是「被**合、冲或合绊**住」）：
+
+    - **两支即可成者**：六合、六冲、半三合（生地/墓地）、卯辰半会——大运与流年直接构成即受制；
+    - **须三支者**（三合/三会）：原局凑齐第三支时，大运与流年同在该局内，同样受制；
+    - **六害不算**——书的列举只有「合、冲、合绊」。
+
+    > **未尽**：被合**住**的语义（「必须使相冲五行减力方可」之类，下 1976）此处未细分——
+    > 凡成大运-流年之合/冲即视为受制，不再判该合是否真的使流年减力。
+    """
+    if not dayun_zhi or not liunian_zhi:
+        return None
+    pair = frozenset((dayun_zhi, liunian_zhi))
+    if pair in ZHI_LIUHE:
+        return "六合"
+    if pair in ZHI_CHONG:
+        return "六冲"
+    # 半三合的表是**三元组列表**（支, 支, 化神），不是 frozenset 集合——须逐个比。
+    for name, tbl in (("生地半三合", BANHE_SHENGDI), ("墓地半三合", BANHE_MUDI)):
+        if any(pair == frozenset((a, b)) for a, b, _hua in tbl):
+            return name
+    if pair == MAOCHEN:                      # 卯辰半会（tier 9）
+        return "卯辰半会"
+    for z1, z2, z3, _hua in SANHE:
+        trip = {z1, z2, z3}
+        if pair <= trip and (trip - pair) <= natal_zhis:
+            return "三合"
+    for z1, z2, z3, _hua in SANHUI:
+        trip = {z1, z2, z3}
+        if pair <= trip and (trip - pair) <= natal_zhis:
+            return "三会"
+    return None
+
+
+_PILLAR_RANK = {"year": 0, "month": 1, "day": 2, "time": 3, "_dayun": 4, "_liunian": 5}
+
+
+def _zhu_chong_key(k1: str, k2: str) -> str | None:
+    """**主冲之支**的柱位（书 下 1976）；`None` ＝**两支都是主冲之支**（都在原局）。
+
+    书 下 1976：
+
+    > 若相冲的两支**均在原局**出现，则**两支都是主冲之支**；若其中一支在原局出现，
+    > 另一支在**大运**出现，则**大运之支为主冲之支**；若其中一支在大运出现，另一支在
+    > **流年**出现，则**流年之支为主冲之支**……**后面出现的为主冲之支**。
+
+    故只有「都在原局」时才两支皆主冲；一旦有岁运参与，**后出现的那一支**才是主冲之支。
+    """
+    r1 = _PILLAR_RANK.get(k1, 0)
+    r2 = _PILLAR_RANK.get(k2, 0)
+    if r1 < 4 and r2 < 4:
+        return None
+    return k1 if r1 > r2 else k2
+
+
 def _jie_reason(st: _State, k1: str, k2: str, z1: str, z2: str,
                 month_zhi: str, *, need_both: bool = False) -> str | None:
-    """该**相邻冲对**是否被合解（书 下 1974/1984）；解则返回理由串。
+    """该**相邻冲对**是否被合解（书 下 1974/1976/1984）；解则返回理由串。
 
-    `need_both` 强制「两支都须被合住」——**天克地冲**用它（书 下 1974 括注 +
-    下 1278 例：「丑未冲为天克地冲，天克地冲具有优先权，所以巳午未没法解冲」）。
+    合解冲的判据是**主冲之支须被合住**（书 下 1974）：
+
+    - **有岁运参与**时，主冲之支是**后出现的那一支**（下 1976）→ **只须合住它**；
+    - **两支都在原局**时两支皆主冲 → **须同时合住两支**（下 1979 例1 卯酉冲）；
+    - **墓库冲**是明确例外：「若为**原局**的墓库相冲，不管能不能成功，原局逢相合，
+      **只需合住一支即可解冲**」（下 1974）——该例外**按原局口径**保留；
+    - `need_both` 强制「两支都须被合住」——**天克地冲**用它（下 1974 括注 + 下 1278 例
+      「丑未冲为天克地冲，天克地冲具有优先权，所以巳午未没法解冲」）。
     """
     held1 = _col_held_by_he(st, k1, z1, month_zhi)
     held2 = _col_held_by_he(st, k2, z2, month_zhi)
     label = _ordered.sort_zhis([z1, z2])
+    zhu = _zhu_chong_key(k1, k2)
     if not need_both and frozenset((z1, z2)) in _MUKU_CHONG_PAIRS:   # 墓库冲：合住一支即可解
         if held1:
             return (f"{label}冲：{z1}被「{held1}」合住，合可解冲"
@@ -1427,7 +1618,14 @@ def _jie_reason(st: _State, k1: str, k2: str, z1: str, z2: str,
             return (f"{label}冲：{z2}被「{held2}」合住，合可解冲"
                     f"（书 下 1974 同）")
         return None
-    if held1 and held2:                                   # 普通冲 / 天克地冲：两支都须被合住
+    if zhu is not None:                                   # 有岁运参与：只须合住**主冲之支**
+        zhu_zhi, zhu_held = (z1, held1) if zhu == k1 else (z2, held2)
+        if zhu_held:
+            lane = "大运" if zhu == "_dayun" else "流年"
+            return (f"{label}冲：主冲之支{zhu_zhi}（{lane}）被「{zhu_held}」合住，合可解冲"
+                    f"（书 下 1976「后面出现的为主冲之支」+ 下 1974「主冲之支须被合住」）")
+        return None
+    if held1 and held2:                                   # 两支都在原局：两支都须被合住
         return (f"{label}冲：两支分别被「{held1}」「{held2}」合住，合可解冲"
                 f"（书 下 1974/1984「必须同时合住两支才能解冲」）")
     return None
@@ -1774,7 +1972,9 @@ def _muku_chong_ok(members: list[str], cols: list, keys: list[str] | None = None
     mz = _MONTH_CTX.get("zhi", "")
 
     # ② 月令必须是化神土的当令之地（书 下 1718；同条「辰丑含土量不为0」见 docstring）
-    if mz and tables.COMPROMISE_PARAM[tables.month_state("土", mz)] > 3:
+    # **岁运介入时改看折中**——书 下 1864 的四库土局同注「如果有岁运介入则其综合状态
+    # 必须为土的当令之地」
+    if not _dang_ling("土", mz):
         return False
 
     # ③ 本柱透土；不透则全局地支土的静态旺度 ≥26
@@ -2059,7 +2259,8 @@ def _effects_for(cand: _Cand, hua_succeeded: bool = False) -> list[dict]:
         mid = next((c for c in cs if c.key == keys[1]), None) if len(keys) > 1 else None
         if mid is not None and mid.zhi == "巳":
             def _dang(wx: str) -> bool:
-                return tables.COMPROMISE_PARAM[tables.month_state(wx, mz)] <= 3
+                # 书 上 3017「申金临旺地（**包括综合状态**）时…」——岁运介入时走折中
+                return _dang_ling(wx, mz)
 
             n_yin = sum(1 for k in keys
                         if (c := next((x for x in cs if x.key == k), None)) and c.zhi == "寅")
@@ -2123,8 +2324,18 @@ def _effects_for(cand: _Cand, hua_succeeded: bool = False) -> list[dict]:
             recv = _SPECIAL_RECV.get(pair, ())
             n_recv = max(1, sum(1 for k in cand.cols
                                 if any(c.key == k and c.zhi in recv for c in cs)))
+        # 未克申酉的**岁运档**（013 期 T025；书 上 2308/2309）：要判**未**这一支落在
+        # 哪一列——原局 / `_dayun` / `_liunian`。只有该特例用得到（见 `_special_effects`）。
+        sy: str | None = None
+        if pair in (frozenset({"未", "申"}), frozenset({"未", "酉"})):
+            for k in cand.cols:
+                c = next((x for x in cs if x.key == k), None)
+                if c is None or c.zhi != "未":
+                    continue
+                sy = {"_dayun": "dayun", "_liunian": "liunian"}.get(k)
+                break
         out.extend(_special_effects(cand.members[0], cand.members[1],
-                                    _MONTH_CTX["zhi"], n_recv=n_recv))
+                                    _MONTH_CTX["zhi"], n_recv=n_recv, suiyun=sy))
 
     # 注：原此处另有一条「辰戌冲 → 戌中辛金无条件 −1 度」（引《初级答疑》），
     # 2026-09-11 随答疑书源撤销删除。辰戌冲的藏干变化统一由
@@ -2199,6 +2410,12 @@ def _judge_pass(pillars: dict) -> dict:
     month_zhi = next((c.zhi for c in cols if c.key == "month"), cols[0].zhi)
     _MONTH_CTX["zhi"] = month_zhi
     _COLS_CTX["cols"] = cols
+    # 岁运阶段上下文（013/T005）：伪列在 `_build_cols` 里已按 `_EXTRA_ORDER` 追加，
+    # 这里只做派生——**没有伪列即为阶段 1**，原局路径一行不走新分支。
+    _dy = next((c for c in cols if c.key == "_dayun"), None)
+    _ln = next((c for c in cols if c.key == "_liunian"), None)
+    _SUIYUN_CTX["dayun"] = (_dy.gan, _dy.zhi) if _dy else None
+    _SUIYUN_CTX["liunian"] = (_ln.gan, _ln.zhi) if _ln else None
     st = _State(cols)
 
     established: list[dict] = []
