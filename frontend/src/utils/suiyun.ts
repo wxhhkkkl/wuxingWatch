@@ -33,6 +33,10 @@ export function useSuiyun(opts: { withLiunian?: boolean } = {}) {
   const chart = ref<ChartResult | null>(null)
   const input = ref<BirthInput | null>(null)
   const sourceError = ref('')
+  const sourcePending = ref(true)
+  /** 来源命盘不可得（直接打开本页、或记录取不到）——两页据此出空态，而不是空白。
+   *  取数**未完成时不判**，否则首帧会闪一下空态。 */
+  const noChart = computed(() => !sourcePending.value && !chart.value)
 
   async function loadSource() {
     if (recordId.value != null) {
@@ -40,11 +44,14 @@ export function useSuiyun(opts: { withLiunian?: boolean } = {}) {
         chart.value = (await getRecord(recordId.value)).chart_result
       } catch (e) {
         sourceError.value = (e as Error).message
+      } finally {
+        sourcePending.value = false
       }
       return
     }
     chart.value = store.result
     input.value = store.inputs
+    sourcePending.value = false
   }
 
   // ---- 选中态：默认当前年份所处的大运步；流年默认该步内的当前年份 ----
@@ -158,7 +165,7 @@ export function useSuiyun(opts: { withLiunian?: boolean } = {}) {
 
   return {
     recordId, chart, steps, selectedIndex, currentStep, years, selectedYear,
-    blocked, degradeReason, notes, sourceError,
+    blocked, degradeReason, notes, sourceError, noChart,
     conclusion, loading, error,
   }
 }

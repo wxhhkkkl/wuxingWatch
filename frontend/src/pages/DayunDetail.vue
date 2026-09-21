@@ -16,7 +16,7 @@ import SuiyunStage from '../components/SuiyunStage.vue'
 
 const router = useRouter()
 const { chart, steps, selectedIndex, blocked, degradeReason, notes, sourceError,
-        conclusion, loading, error } = useSuiyun()
+        noChart, conclusion, loading, error } = useSuiyun()
 
 const PILLAR_LABEL = { year: '年', month: '月', day: '日', time: '时' } as const
 const pillars = computed(() =>
@@ -40,10 +40,15 @@ const pillars = computed(() =>
       </div>
     </section>
 
-    <p v-if="sourceError" class="warn-line">{{ sourceError }}</p>
+    <!-- 来源命盘不可得：直接打开本页、或记录取不到 -->
+    <van-empty v-if="noChart" data-testid="sy-empty" description="暂无可推导的命盘（旧记录可重新排盘获取）">
+      <van-button type="primary" @click="router.push('/')">去排盘</van-button>
+    </van-empty>
 
-    <!-- 降级（FR-025）：无出生日期 / 尚未起运——不发请求，直接明示原因 -->
-    <van-empty v-if="blocked" data-testid="sy-degrade" :description="degradeReason">
+    <p v-else-if="sourceError" class="warn-line">{{ sourceError }}</p>
+
+    <!-- 降级（FR-025）：尚未起运 / 四柱输入且选不了年份——不发请求，直接明示原因 -->
+    <van-empty v-else-if="blocked" data-testid="sy-degrade" :description="degradeReason">
       <van-button type="primary" @click="router.back()">返回</van-button>
     </van-empty>
 

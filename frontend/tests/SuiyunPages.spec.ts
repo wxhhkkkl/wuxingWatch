@@ -186,6 +186,15 @@ describe('DayunDetail（加入大运）', () => {
     expect(w.find('[data-testid="sy-degrade"]').exists()).toBe(false)
   })
 
+  it('无来源命盘（直接打开本页）→ 出空态，不发请求', async () => {
+    setActivePinia(createPinia())          // store 为空：既无记录 id 也无会话排盘
+    const w = mount(DayunDetail)
+    await flushPromises()
+    expect(fetchSuiyun).not.toHaveBeenCalled()
+    expect(w.find('[data-testid="sy-empty"]').exists()).toBe(true)
+    expect(w.find('[data-testid="sy-degrade"]').exists()).toBe(false)
+  })
+
   it('记录路径：带 ?record=<id> 时走记录端点（当场重推，FR-021a）', async () => {
     routeQuery = { record: '7' }
     const w = mountPage(DayunDetail)

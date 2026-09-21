@@ -19,7 +19,8 @@ import type { V2Pair } from '../types'
 
 const router = useRouter()
 const { chart, steps, selectedIndex, years, selectedYear, blocked, degradeReason,
-        notes, sourceError, conclusion, loading, error } = useSuiyun({ withLiunian: true })
+        notes, sourceError, noChart, conclusion, loading, error } =
+  useSuiyun({ withLiunian: true })
 
 const PILLAR_LABEL = { year: '年', month: '月', day: '日', time: '时' } as const
 const pillars = computed(() =>
@@ -65,10 +66,14 @@ const pairs = computed<V2Pair[]>(() => conclusion.value?.pairs ?? [])
       </div>
     </section>
 
-    <p v-if="sourceError" class="warn-line">{{ sourceError }}</p>
+    <van-empty v-if="noChart" data-testid="sy-empty" description="暂无可推导的命盘（旧记录可重新排盘获取）">
+      <van-button type="primary" @click="router.push('/')">去排盘</van-button>
+    </van-empty>
 
-    <!-- 降级（FR-025）：无出生日期 / 尚未起运 -->
-    <van-empty v-if="blocked" data-testid="sy-degrade" :description="degradeReason">
+    <p v-else-if="sourceError" class="warn-line">{{ sourceError }}</p>
+
+    <!-- 降级（FR-025）：尚未起运 / 四柱输入定不出年份 -->
+    <van-empty v-else-if="blocked" data-testid="sy-degrade" :description="degradeReason">
       <van-button type="primary" @click="router.back()">返回</van-button>
     </van-empty>
 
