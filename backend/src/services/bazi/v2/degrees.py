@@ -60,6 +60,13 @@ class Col:
     gan: str | None
     zhi: str | None
     orig_gan: str | None = None
+    # ---- 以下两个字段**只服务于命盘快照的呈现**（013 补遗），不参与任何判定 ----
+    # 柱位的中文标签（岁运两列是「大运」「流年」，与 `_PILLAR_CN` 的四柱不同）。
+    label: str | None = None
+    # 该列**固定的原始藏干表**：岁运之支不参与原局的关系层（`_adjusted_hidden` 只遍历
+    # `cols`），其藏干按 `is_dayun`/`is_liunian` 独立档**平加**进旺度、不乘月令系数
+    # （书 上 884）。给定时快照直接取它，不再走 `_raw_hidden`/月令系数那条路。
+    flat_hidden: list[tuple[str, float]] | None = None
 
     @property
     def src_gan(self) -> str:

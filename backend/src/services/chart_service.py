@@ -139,7 +139,9 @@ def suiyun_conclusion(payload, dayun_ganzhi: str, liunian_year: int | None = Non
 
     dm = pillars["day"]["gan"]
     ln = liunian_ganzhi(liunian_year) if liunian_year else None
-    stage2 = _dayun.analyze_step(pillars, dayun_ganzhi)
+    # `with_suiyun_columns=True`：两页的命盘（顶部卡与逐段快照）要把大运/流年画在
+    # 四柱左边（013 补遗）——只走本端点，入库的 `strength.dayun[]` 不传（见 `analyze_step`）。
+    stage2 = _dayun.analyze_step(pillars, dayun_ganzhi, with_suiyun_columns=True)
     out = {
         "engine": "wangdu-v2",
         "contract_version": 2,
@@ -147,7 +149,8 @@ def suiyun_conclusion(payload, dayun_ganzhi: str, liunian_year: int | None = Non
         "dayun": stage2,
     }
     if ln:
-        stage3 = _dayun.analyze_step(pillars, dayun_ganzhi, liunian_ganzhi=ln)
+        stage3 = _dayun.analyze_step(pillars, dayun_ganzhi, liunian_ganzhi=ln,
+                                     with_suiyun_columns=True)
         out["liunian"] = stage3
         out["pairs"] = _dayun.build_pairs(stage2, stage3)
     else:

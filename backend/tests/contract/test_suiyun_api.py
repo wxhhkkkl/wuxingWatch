@@ -83,6 +83,40 @@ def test_suiyun_stage_three_with_liunian_year(client):
 
 
 # ---------------------------------------------------------------
+# 命盘快照里的岁运两列（013 补遗；FR-027）
+# ---------------------------------------------------------------
+
+def _chart_keys(step: dict) -> set[frozenset]:
+    """该阶段**所有**快照图（段末 + 逐实例）的列 key 集合。"""
+    return {frozenset(p["key"] for p in s["chart"]["pillars"])
+            for s in step["steps"]} | {
+        frozenset(p["key"] for p in cp["chart"]["pillars"])
+        for s in step["steps"] for cp in (s.get("charts") or [])}
+
+
+def test_suiyun_charts_carry_the_two_extra_columns(client):
+    """两页的命盘要比原局页多出四个字 → 岁运端点的快照图**含大运/流年列**（FR-027）。
+
+    阶段 2 只有大运（5 列，且**不得**出现流年列——那一列没有对应的判定）；
+    阶段 3 两列俱在（6 列）。列在**尾部追加**、由前端重排到最左（见
+    `tests/unit/test_v2_steps_suiyun_columns.py` 的口径说明）。
+    """
+    dy = _legal_dayun(client)
+    natal = {"year", "month", "day", "time"}
+
+    r2 = client.post("/api/charts/suiyun", json={**BIRTH, "dayun_ganzhi": dy})
+    assert r2.status_code == 200, r2.text
+    for keys in _chart_keys(r2.json()["dayun"]):
+        assert keys == natal | {"_dayun"}, keys
+
+    r3 = client.post("/api/charts/suiyun",
+                     json={**BIRTH, "dayun_ganzhi": dy, "liunian_year": 2024})
+    assert r3.status_code == 200, r3.text
+    for keys in _chart_keys(r3.json()["liunian"]):
+        assert keys == natal | {"_dayun", "_liunian"}, keys
+
+
+# ---------------------------------------------------------------
 # 硬约束
 # ---------------------------------------------------------------
 

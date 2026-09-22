@@ -10,9 +10,20 @@
  */
 import { computed } from 'vue'
 import type { V2DayunStep, V2Relation } from '../types'
-import { ganZhiColor, wxColor } from '../utils/wuxing'
+import { wxColor } from '../utils/wuxing'
+import StepList from './StepList.vue'
 
 const props = defineProps<{ phase: 'dayun' | 'liunian'; step: V2DayunStep }>()
+
+/** 本阶段**未参与**的那一列：流年（阶段 2 没有它；阶段 3 被大运挡住时后端也不建它）。
+ *  判据只能是「快照里有没有这一列」——`step.liunian` 在门控命中时**仍是传入值**，
+ *  看它会把被挡住的流年画成一个正常列。 */
+const PLACEHOLDERS = [{ key: '_liunian', label: '流年' }]
+
+/** 快照里岁运两列的度数口径（省得把「平加」读成「乘了月令系数」）。 */
+const CHART_NOTE = '命盘含本阶段参与的字：大运/流年两列在最左。'
+  + '岁运之干为 1 度（即「同类相助 +1」），合而不化者按成数缩放、合化成功改标换字后之字；'
+  + '岁运之支的藏干按临大运/临流年独立档**平加**（书 上 884），不乘月令系数。'
 
 const WUXING = ['木', '火', '土', '金', '水'] as const
 const GEJU_LABEL: Record<string, string> = {
@@ -155,19 +166,12 @@ const rejected = computed<V2Relation[]>(
       <p v-if="!established.length && !rejected.length" class="xi-note">本阶段无关系裁定</p>
     </div>
 
-    <!-- ⑦ 判定依据（逐段可读） -->
-    <ol v-if="step.steps?.length" class="step-list">
-      <li v-for="(s, si) in step.steps" :key="s.key" class="step-block">
-        <p class="step-title"><span class="step-no">{{ si + 1 }}</span>{{ s.title }}</p>
-        <p class="step-rule">{{ s.rule }}</p>
-        <div v-for="(t, ti) in s.traces" :key="ti" class="step-trace">
-          <span class="step-trace-target" :style="{ color: ganZhiColor(t.target) }">{{ t.target }}</span>
-          <span class="step-trace-expr">{{ t.expression }}</span>
-          <span v-if="t.value !== null && t.value !== undefined" class="step-trace-val">{{ t.value }}</span>
-        </div>
-        <p class="step-result">→ {{ s.result }}</p>
-      </li>
-    </ol>
+    <!-- ⑦ 判定依据（逐段可读）——与**原局页共用同一份实现**（013 补遗）：
+         算式行 → 逐实例快照插在对应算式之后 → 结果 → 五行速览 → 段末命盘。
+         命盘比原局页多出大运/流年两列；本阶段未参与的那一列（阶段 2 的流年，
+         或被大运挡住的流年）出灰显占位，不伪造度数。 -->
+    <StepList v-if="step.steps?.length" :steps="step.steps" :id-prefix="`sy-${phase}`"
+              trace-target-color :placeholders="PLACEHOLDERS" :note="CHART_NOTE" />
   </section>
 </template>
 
@@ -334,53 +338,6 @@ const rejected = computed<V2Relation[]>(
   color: #6b6b6b;
 }
 .rel-off { color: var(--wx-muted); }
-.step-list {
-  list-style: none;
-  margin: 10px 0 0;
-  padding: 0;
-}
-.step-block {
-  padding: 10px 0;
-  border-top: 1px solid var(--wx-line);
-}
-.step-title {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin: 0 0 5px;
-  font-size: 13.5px;
-  font-weight: 600;
-}
-.step-no {
-  flex: 0 0 18px;
-  height: 18px;
-  line-height: 18px;
-  text-align: center;
-  border-radius: 50%;
-  background: var(--wx-primary);
-  color: #fff;
-  font-size: 11px;
-}
-.step-rule {
-  margin: 0 0 6px;
-  font-size: 12px;
-  color: var(--wx-muted);
-  line-height: 1.55;
-}
-.step-trace {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  font-size: 12.5px;
-  line-height: 1.7;
-}
-.step-trace-target { flex: 0 0 auto; font-weight: 600; }
-.step-trace-expr { flex: 1; }
-.step-trace-val { color: var(--wx-muted); font-variant-numeric: tabular-nums; }
-.step-result {
-  margin-top: 6px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--wx-primary);
-}
+/* 判定依据的外壳（.step-*）见 `styles/chart.css`——013 补遗起与**原局页共用一份**，
+   本组件不再自带副本（两处的间距/行高曾各写各的、已漂移 10 处）。 */
 </style>

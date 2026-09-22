@@ -1557,9 +1557,9 @@ def _stem_he_trial(cols: list[degrees.Col], rel: dict, month_zhi: str,
     return out
 
 
-def _suiyun_hidden(dayun_ganzhi: str | None, liunian_ganzhi: str | None,
-                   month_zhi: str) -> dict[str, float]:
-    """**岁运之支自身藏干**的五行合计（013 期 T016；书 上 884 / 900 / 901）。
+def _suiyun_hidden_detail(dayun_ganzhi: str | None, liunian_ganzhi: str | None,
+                          month_zhi: str) -> dict[str, list[tuple[str, float]]]:
+    """**岁运之支各自**的藏干表（柱位 key → [(干, 度)]）——**唯一的取表点**。
 
     书 上 884 例2 的算式把这一项写得很直白：「进入乙未运……日临未运为余气之地，增力 1.5 度；
     **未本身藏丁火 3 度**，卯未合绊增力 1 度，变为 4 度火。日干在此运的静态旺度
@@ -1570,26 +1570,53 @@ def _suiyun_hidden(dayun_ganzhi: str | None, liunian_ganzhi: str | None,
     491-497 三处的「临大运」「临流年」档**数值不同**，见 `tables.hidden_degrees`）。
     党众按 0 计——岁运之支不参与原局的「连成一片」判定。
 
-    两者皆无时返回空字典，故**原局路径分文不动**（FR-023 零回归）。
+    **为什么按柱位给**（而不只给五行合计）：命盘快照要逐列显示岁运两列的藏干度数，
+    必须与计入旺度的那一份**同源**——若快照另走 `_raw_hidden`（它会多传 `dangzhong`，
+    而未/戌 的岁运档恰与党众分支同层），两处会给出不同的表。求和那一份见 `_suiyun_hidden`。
     """
     import services.bazi.v2.tables as tables          # 本文件的约定：函数内局部导入
 
-    out: dict[str, float] = {}
-    for gz, flag in ((dayun_ganzhi, "is_dayun"), (liunian_ganzhi, "is_liunian")):
+    out: dict[str, list[tuple[str, float]]] = {}
+    for key, gz, flag in (("_dayun", dayun_ganzhi, "is_dayun"),
+                          ("_liunian", liunian_ganzhi, "is_liunian")):
         if not gz or len(gz) < 2:
             continue
-        for gan, deg in tables.hidden_degrees(gz[1], month_zhi, **{flag: True}):
-            out[GAN_WUXING[gan]] = out.get(GAN_WUXING[gan], 0.0) + deg
+        out[key] = list(tables.hidden_degrees(gz[1], month_zhi, **{flag: True}))
+    return out
+
+
+def _suiyun_hidden(dayun_ganzhi: str | None, liunian_ganzhi: str | None,
+                   month_zhi: str) -> dict[str, float]:
+    """岁运之支自身藏干的**五行合计**（= `_suiyun_hidden_detail` 按五行求和）。
+
+    两者皆无时返回空字典，故**原局路径分文不动**（FR-023 零回归）。
+    """
+    out: dict[str, float] = {}
+    for hid in _suiyun_hidden_detail(dayun_ganzhi, liunian_ganzhi, month_zhi).values():
+        for gan, deg in hid:
+            wx = GAN_WUXING[gan]
+            out[wx] = out.get(wx, 0.0) + deg
     return out
 
 
 def compute_strength(pillars: dict, *, dayun_ganzhi: str | None = None,
-                     liunian_ganzhi: str | None = None) -> dict:
+                     liunian_ganzhi: str | None = None,
+                     suiyun_columns: bool = False) -> dict:
     """跑完整管线。
 
     `dayun_ganzhi` / `liunian_ganzhi` 为**附加列**（FR-042 的 大运维度）——传入时
     该步的干支会**并入关系判定**，使命盘图的「含大运/流年」在后端有对应物
     （旧引擎从不传，前端那个开关在后端一直没有实现）。
+
+    `suiyun_columns=True` 时，各段命盘快照的 `pillars` 里**追加**大运/流年两列
+    （013 补遗；岁运两页要把这两列画在四柱左边）。**默认关闭**，两条理由：
+      ① 入库路径（`analyze_all` → `strength.dayun[]`）用的是同一条管线，而
+         `chart_result` 已因 64 张快照涨到 200KB 量级（列 `MEDIUMTEXT`）——
+         给每张图再加两列是纯增负，且那两页根本不画它；
+      ② 原局路径的输出必须逐位不变（FR-023 / SC-003）。
+    ⚠️ 伪列**追加在四柱之后**（下标 4/5），因为 `ban` / `ban_cheng` 的键是
+    「四柱 + 岁运」的**扩展下标**（`stem_he.judge_stem_he` 的 `work`）——前置会
+    让合绊与换字全部错位。显示顺序由前端重排。
 
     返回 `static_scores` / `final_scores` / `level` / `relations` / `traces`
     / `degrees`（data-model §3 的形状）/ `input_scope` / `degradations` / `steps`。
@@ -1648,6 +1675,30 @@ def compute_strength(pillars: dict, *, dayun_ganzhi: str | None = None,
         final_provider=lambda: _stem_he_trial(cols, rel, month_zhi, effective, pure,
                                               _sy_cols))
     ban = he["ban"]
+
+    # **岁运两列的命盘快照视图**（013 补遗，`suiyun_columns=True` 时才建）。
+    # 与四柱同走「原字 / 换字后」两套：第 6 段（`_STAGE_WITH_BAN`）之前的各段用
+    # `sy_src`（原字、无合绊），其上用 `sy_after`——否则同一张图里会出现
+    # 「原局列显示原字、大运列显示换字后」这种自相矛盾。
+    # 换字与合绊成数由 `he` 交回，键是**扩展下标**（4 = 大运、5 = 流年）。
+    _sy_cols_src: list[degrees.Col] = []
+    _sy_cols_after: list[degrees.Col] = []
+    if suiyun_columns:
+        _sy_hid_detail = _suiyun_hidden_detail(dayun_ganzhi, liunian_ganzhi, month_zhi)
+        for _off, (_key, _label, _gz) in enumerate(
+                (("_dayun", "大运", dayun_ganzhi), ("_liunian", "流年", liunian_ganzhi))):
+            if not _gz or len(_gz) < 2:
+                continue
+            _idx = len(cols) + _off
+            _hid = _sy_hid_detail.get(_key) or []
+            # `he["hua"]` 的值是 (化神五行, 换字后的干)；未换字时没有这一项。
+            _hua = (he.get("hua") or {}).get(_idx)
+            _sy_cols_src.append(degrees.Col(key=_key, gan=_gz[0], zhi=_gz[1], orig_gan=None,
+                                            label=_label, flat_hidden=_hid))
+            _sy_cols_after.append(degrees.Col(
+                key=_key, gan=(_hua[1] if _hua else _gz[0]), zhi=_gz[1],
+                orig_gan=(_gz[0] if _hua else None),
+                label=_label, flat_hidden=_hid))
 
     # 「原字」视图（`src_gan` 还原合化换过的干）——五合现在排在**静态旺度之后**
     # （2026-09-16 用户规格），故第 5 段先按原字算一遍，换字后再重算（第 7 段）。
@@ -1759,7 +1810,8 @@ def compute_strength(pillars: dict, *, dayun_ganzhi: str | None = None,
                               month_zhi, eff_after, traces, pure_after, muku,
                               grps=grps, insts=insts, dm_group=dm_group,
                               he=he, ban=ban, checkpoints=checkpoints,
-                              cols0=cols0, lay0=lay0, rel_after=rel_after),
+                              cols0=cols0, lay0=lay0, rel_after=rel_after,
+                              sy_cols_src=_sy_cols_src, sy_cols_after=_sy_cols_after),
     }
 
 
@@ -1921,7 +1973,8 @@ def _step_chart(cols: list[degrees.Col], hidden: dict, month_zhi: str,
                 ban: dict[int, float] | None = None,
                 ban_cheng: dict[int, float] | None = None,
                 inst_finals: list[float] | None = None,
-                grp_finals: list[float] | None = None) -> dict:
+                grp_finals: list[float] | None = None,
+                extra_cols: list[degrees.Col] | None = None) -> dict:
     """某一段**结束时**的命盘快照（data-model §7 的 `steps[].chart`）。
 
     四柱逐字列出天干、地支与各藏干及其度数，供前端在每一段依据里直接看到「这一段
@@ -1944,13 +1997,25 @@ def _step_chart(cols: list[degrees.Col], hidden: dict, month_zhi: str,
     `inst_finals` 用于**逐实例结算过程中**的快照（第 7 段）：给定时以它覆盖各本气实例的
     终值，从而得到「结算到一半」的命盘，而不是最后一锤定音的状态。
 
+    `extra_cols` 是**追加在四柱之后**的岁运两列（013 补遗）。它们不走上面那张表：
+    · **天干**——自己一个干、1 度（书 上 第一节「五行在大运的静态旺度等于在原局静态旺度的
+      基础上进行增减」的「运干同类相助 +1」就是这个 1 度）；不建组、不通根，故
+      `gan_own` / `gan_root` 恒为 null（那两字在宣示「主数 = 自身 + 根」，对它不成立）。
+      参与天干五合而有合绊成数时按成数缩放并标「合绊」（`ban_cheng` 的键是扩展下标，
+      与 `enumerate` 的下标天然对齐，见 `compute_strength` 的说明）。
+    · **地支**——藏干取 `flat_hidden`（`is_dayun`/`is_liunian` 独立档），**平加、不乘
+      月令系数**（书 上 884），且**不随段次变化**：岁运之支不参与原局的关系层，
+      其度数也不进 `lay`，故没有「结算后变了多少」可言。
     ⚠️ **已知简化**：通根的「按最近一支递减一次」（`_run_split`）是整段扣减，归不到
     单个藏干头上，故第 5 段（静态旺度）起各藏干度数之和会略大于 `degrees[wx].root × 系数`。
     本快照不给该合计，`degrees` 契约亦不受影响。
     """
     import services.bazi.v2.tables as tables
 
-    orig = {c.key: _raw_hidden(cols, c, month_zhi) for c in cols}
+    is_sy = {c.key for c in (extra_cols or [])}
+    orig = {c.key: (_raw_hidden(cols, c, month_zhi) if c.key not in is_sy
+                    else list(c.flat_hidden or []))
+            for c in list(cols) + list(extra_cols or [])}
     pure_notes = _pure_branch_notes(rel, cols, hidden)
     grp_by_key = {k: g for g in grps for k in g.keys}
     inst_by_col = {n["col"]: n for n in insts}
@@ -1964,17 +2029,23 @@ def _step_chart(cols: list[degrees.Col], hidden: dict, month_zhi: str,
             for wx in tables.WUXING_ORDER}
 
     pillars: list[dict] = []
-    for idx, c in enumerate(cols):
+    for idx, c in enumerate(list(cols) + list(extra_cols or [])):
+        is_pseudo = c.key in is_sy
         # `he` 段（天干五合）只换天干，藏干尚未受关系影响，故与 `origin` 同用原始表
         changed = stage not in ("origin", "he")
         is_pure = changed and c.key in pure_notes
-        hid = list(hidden.get(c.key) or []) if changed else orig[c.key]
+        # 岁运之支的藏干**恒取 flat_hidden**（`hidden` 只装了四柱，取它会得到空表）；
+        # 且平加，不乘月令系数——故下面各 stage 的系数分支对它一律不适用。
+        hid = (list(c.flat_hidden or []) if is_pseudo
+               else (list(hidden.get(c.key) or []) if changed else orig[c.key]))
         orig_deg = {g: d for g, d in orig[c.key]}
 
         hidden_out: list[dict] = []
         for gan, deg in hid:
             wx = GAN_WUXING.get(gan, "")
-            if stage == "dynamic":
+            if is_pseudo:
+                val = round(deg, 3)
+            elif stage == "dynamic":
                 nd = inst_by_col.get(c.key)
                 val = (inst_final_of.get(c.key, 0.0)
                        if nd is not None and nd["gan"] == gan
@@ -1986,7 +2057,7 @@ def _step_chart(cols: list[degrees.Col], hidden: dict, month_zhi: str,
             mark = None
             if is_pure:
                 mark = _CHANGE_PURE
-            elif changed:
+            elif changed and not is_pseudo:
                 base = orig_deg.get(gan)
                 if base is None:
                     mark = _CHANGE_NEW
@@ -2020,6 +2091,11 @@ def _step_chart(cols: list[degrees.Col], hidden: dict, month_zhi: str,
             # `主数 = 自身 + 根` 在任何时刻都成立，且「根」不会为负。
             own = min(own, grp_deg)
             gan_degree, gan_own, gan_root = grp_deg, own, round(grp_deg - own, 3)
+        elif is_pseudo:
+            # 岁运之干：一个干 1 度（即「运干同类相助 +1」的那 1 度）；合而不化者按
+            # **成数表**整缩（与上面那一支同口径），不建组、不通根。
+            _k = max(0.0, 1.0 - min((ban_cheng or {}).get(idx, 0.0), 10.0) / 10.0)
+            gan_degree, gan_own, gan_root = round(1.0 * _k, 3), None, None
         else:
             gan_degree, gan_own, gan_root = gan_base, None, None
 
@@ -2040,7 +2116,8 @@ def _step_chart(cols: list[degrees.Col], hidden: dict, month_zhi: str,
         zhi_wx = ZHI_WUXING.get(c.zhi or "", "")
         pillars.append({
             "key": c.key,
-            "label": _PILLAR_CN.get(c.key, c.key),
+            # 岁运两列的中文标签（「大运」「流年」）走 `Col.label`，四柱走 `_PILLAR_CN`
+            "label": c.label or _PILLAR_CN.get(c.key, c.key),
             "gan": gan_char,
             "gan_wx": gan_wx,
             "gan_original": c.orig_gan if stage != "origin" else None,
@@ -2167,7 +2244,9 @@ def _build_steps(cols: list[degrees.Col], rel: dict, hidden: dict, deg_detail: d
                  ban: dict[int, float] | None = None,
                  checkpoints: list[dict] | None = None,
                  cols0: list[degrees.Col] | None = None,
-                 lay0: dict | None = None) -> list[dict]:
+                 lay0: dict | None = None,
+                 sy_cols_src: list[degrees.Col] | None = None,
+                 sy_cols_after: list[degrees.Col] | None = None) -> list[dict]:
     """逐段判定依据（data-model §7、FR-050）。
 
     每一段给出 `key` / `title` / `rule` / `rulings` / `traces` / `result`，顺序固定
@@ -2176,6 +2255,10 @@ def _build_steps(cols: list[degrees.Col], rel: dict, hidden: dict, deg_detail: d
     `rulings` 列出该段生效的**口径裁定编号**（C26-n / O-n），落实 FR-056 的
     「每一条已生效的口径裁定 MUST 能从引擎输出的判定依据反向追溯」——编号可在
     `specs/012-rebuild-wangdu-xiyong/research.md` 定位到对应条目。
+
+    `sy_cols_src` / `sy_cols_after` 是**岁运两列的命盘快照视图**（013 补遗）——只有
+    `compute_strength(suiyun_columns=True)` 会传，空的则各段快照恒为四柱（原局路径）。
+    ⚠️ 它们**不并入 `cols`**：`cols` 一被撑长，通根连片、依据行文字与全部数字都会变。
     """
     import services.bazi.v2.tables as _t
 
@@ -2268,19 +2351,24 @@ def _build_steps(cols: list[degrees.Col], rel: dict, hidden: dict, deg_detail: d
                grp_finals: list[float] | None = None) -> dict:
         """命盘快照。**带不带合绊由 `_STAGE_WITH_BAN` 决定**（按 stage，不按调用点）——
         第 6 段（五合）之前的各段一律用**原字视图**（未换字、未合绊），否则同段的
-        result 与快照会给出两个不同的数。"""
+        result 与快照会给出两个不同的数。
+
+        岁运两列（013 补遗）跟着走**同一套视图**：非 ban 段用 `sy_cols_src`、ban 段用
+        `sy_cols_after`——否则同一张图里原局列显示原字、大运列却显示换字后。"""
         if stage in _STAGE_WITH_BAN:
             return _step_chart(cols, hidden, month_zhi, effective, muku, rel,
                                grps or [], insts or [], stage=stage, ban=ban,
                                ban_cheng=_ban_cheng,
                                group_value=group_value,
-                               inst_finals=inst_finals, grp_finals=grp_finals)
+                               inst_finals=inst_finals, grp_finals=grp_finals,
+                               extra_cols=sy_cols_after)
         return _step_chart(_c0, _l0.get("hidden", hidden), month_zhi, effective,
                            _l0.get("muku", muku), rel,
                            _l0.get("grps", grps) or [], _l0.get("insts", insts) or [],
                            stage=stage, ban=None, ban_cheng=None,
                            group_value=group_value,
-                           inst_finals=inst_finals, grp_finals=grp_finals)
+                           inst_finals=inst_finals, grp_finals=grp_finals,
+                           extra_cols=sy_cols_src)
 
     chart_origin = _chart("origin")
     chart_he = _chart("he")

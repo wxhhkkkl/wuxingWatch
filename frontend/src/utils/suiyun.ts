@@ -13,6 +13,8 @@ import { useRoute } from 'vue-router'
 import { fetchSuiyun } from '../api/charts'
 import { getRecord, getRecordSuiyun } from '../api/records'
 import { useChartStore } from '../stores/chart'
+import { dayunColumn, emptyColumn, liunianColumn, natalColumns,
+         type BoardColumn } from './chartColumns'
 import type { BirthInput, ChartResult, SuiyunResponse } from '../types'
 
 /** 一步大运覆盖的 10 年（公历）。 */
@@ -108,6 +110,26 @@ export function useSuiyun(opts: { withLiunian?: boolean } = {}) {
     return out
   })
 
+  // ---- 顶部命盘卡的列（013 补遗）----
+  //
+  // 两页比原局页**多出四个字**：大运、流年两列，放最左（与命盘图的列序一致）。
+  // 「加入大运」页（阶段 2）**没有流年参与**，该列出灰显占位——不是「取本年流年」，
+  // 那一列在阶段 2 的判定里根本不存在。被大运挡住的流年同理（后端不建那一列）。
+  const selectedLiunian = computed(
+    () => (currentStep.value?.liu_nian ?? []).find((l) => l.year === selectedYear.value) ?? null)
+
+  const boardColumns = computed<BoardColumn[]>(() => {
+    const natal = natalColumns(chart.value?.pillars)
+    // 一步大运都没有（尚未起运）：没有「本轮加进来的字」可言，就只摆四柱——
+    // 摆一列灰显流年反而像在说「只差流年」。
+    if (!currentStep.value) return natal
+    const out: BoardColumn[] = [dayunColumn(currentStep.value)]
+    out.push(opts.withLiunian === true && selectedLiunian.value
+      ? liunianColumn(selectedLiunian.value)
+      : emptyColumn('_liunian', '流年'))
+    return [...out, ...natal]
+  })
+
   // ---- 按需请求 ----
   const conclusion = ref<SuiyunResponse | null>(null)
   const loading = ref(false)
@@ -165,6 +187,7 @@ export function useSuiyun(opts: { withLiunian?: boolean } = {}) {
 
   return {
     recordId, chart, steps, selectedIndex, currentStep, years, selectedYear,
+    boardColumns,
     blocked, degradeReason, notes, sourceError, noChart,
     conclusion, loading, error,
   }

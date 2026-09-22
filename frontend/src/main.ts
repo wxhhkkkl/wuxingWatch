@@ -4,6 +4,7 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import Vant from 'vant'
 import 'vant/lib/index.css'
 import './styles/theme.css'
+import './styles/chart.css'
 
 import App from './App.vue'
 import router from './router'

@@ -78,7 +78,8 @@ def compromise(month_state: str, dayun_state_: str) -> tuple[str, bool]:
 # ---------------------------------------------------------------
 
 def analyze_step(pillars: dict, dayun_ganzhi: str, *, dayun_meta: dict | None = None,
-                 liunian_ganzhi: str | None = None) -> dict:
+                 liunian_ganzhi: str | None = None,
+                 with_suiyun_columns: bool = False) -> dict:
     """对**某一步大运**重判：关系 → 旺度 → 格局 → 取用。
 
     返回 data-model §8 的条目：`ganzhi` / `level` / `ge_ju` / `yong_shen` /
@@ -88,13 +89,18 @@ def analyze_step(pillars: dict, dayun_ganzhi: str, *, dayun_meta: dict | None = 
     走**同一个函数**、同一条管线，只多一个参数（research R5：阶段独立性由**结构**保证，
     不靠两处实现对齐）。`source` 随之由 `"dayun"` 变 `"liunian"`。
     运支的**状态增减**照旧施加（书 上 847-853 的「大运旺度」在阶段 2/3 相同）。
+
+    `with_suiyun_columns=True` 时各段命盘快照另含大运/流年两列（013 补遗）——
+    **只有岁运端点传 True**。`analyze_all`（入库路径）不传：`strength.dayun[]` 里
+    那 64 张快照每张再加两列是纯增负，而那两页并不画它（见 `pipeline.compute_strength`）。
     """
     from services.bazi.v2 import geju, layers as _layers, pipeline, xiyong_v2
 
     gan, zhi = dayun_ganzhi[0], dayun_ganzhi[1]
     # 该步的关系判定**含本步大运干支**（FR-042 的大运维度，旧引擎缺失）
     base = pipeline.compute_strength(pillars, dayun_ganzhi=dayun_ganzhi,
-                                     liunian_ganzhi=liunian_ganzhi)
+                                     liunian_ganzhi=liunian_ganzhi,
+                                     suiyun_columns=with_suiyun_columns)
     shifted = apply_dayun_delta(base["final_scores"], zhi, gan)
 
     cols = degrees.build_cols(pillars)

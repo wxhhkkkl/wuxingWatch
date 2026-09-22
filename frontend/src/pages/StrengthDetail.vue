@@ -3,9 +3,11 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getRecord } from '../api/records'
 import { useChartStore } from '../stores/chart'
-import { isWangduStrength, isWangduV2, type ChartResult, type V2Step,
-         type V2ChartPillar, type StepTrace, type WangduStep } from '../types'
-import { ganZhiColor, wxColor } from '../utils/wuxing'
+import PillarBoard from '../components/PillarBoard.vue'
+import StepList from '../components/StepList.vue'
+import { natalColumns } from '../utils/chartColumns'
+import { isWangduStrength, isWangduV2, type ChartResult, type WangduStep } from '../types'
+import { wxColor } from '../utils/wuxing'
 
 const router = useRouter()
 const route = useRoute()
@@ -41,13 +43,6 @@ const v2 = computed(() => {
   const s = source.value?.xi_yong.strength
   return isWangduV2(s) ? s : null
 })
-const WUXING_SET = new Set(['木', '火', '土', '金', '水'])
-
-/** 该段 traces 里以**五行为 target** 且带数值者——渲染成得分行。
- *
- *  静态旺度 / 动态定级这两段天然给出五个五行的度数；其余段落多为说明性 traces。
- *  只在该段覆盖 ≥2 个五行时才当作「得分行」渲染，避免把零散 trace 误当表格。 */
-const PILLAR_LABEL = { year: '年', month: '月', day: '日', time: '时' } as const
 
 /** 能量条归一基准：五行中的最大值（至少 1，避免除零）。 */
 const maxScore = computed(() => {
@@ -57,13 +52,7 @@ const maxScore = computed(() => {
 
 /** 当前命盘（八字四柱）。 */
 const chart = computed(() => chartStore.result)
-const pillarList = computed(() => {
-  const ps = chart.value?.pillars
-  if (!ps) return []
-  return (['year', 'month', 'day', 'time'] as const)
-    .map((k) => ({ key: k, label: PILLAR_LABEL[k], p: ps[k] }))
-    .filter((x) => !!x.p)
-})
+const pillarList = computed(() => natalColumns(chart.value?.pillars))
 
 /** 全部大运步。 */
 const daYunSteps = computed(() => chart.value?.da_yun?.steps ?? [])
@@ -87,64 +76,6 @@ const currentLiunian = computed(() => {
   const y = new Date().getFullYear()
   return (chart.value?.liu_nian ?? []).find((l) => l.year === y) ?? null
 })
-
-type Wx = (typeof WUXING)[number]
-
-function stepScores(
-  s: { traces?: { target: string; value: number | string | null }[] },
-): { wx: Wx; value: number | undefined }[] {
-  const m = new Map<string, number>()
-  for (const t of s.traces ?? []) {
-    if (WUXING_SET.has(t.target) && typeof t.value === 'number') m.set(t.target, t.value)
-  }
-  if (m.size < 2) return []
-  return WUXING.map((wx) => ({ wx, value: m.get(wx) }))
-}
-
-type StepRow =
-  | { kind: 'trace'; t: StepTrace }
-  | { kind: 'scores' }
-  | { kind: 'result' }
-  | { kind: 'chart'; label: string; pillars: V2ChartPillar[]; testid: string }
-
-/** 一段之内的渲染序列。
- *
- *  顺序：算式行 →（第 7 段的**逐实例快照**插在对应算式之后）→ 结果 → 五行速览 → 段末命盘。
- *  速览格与命盘相邻；第 7 段的命盘在过程中逐实例出（末尾那张即本段终态），段末不再重复贴。
- *
- *  算式行**不剔除**已进速览格的那几项——速览格只给「五行 + 数值」，算式本身
- *  （天干/通根/系数的来路）必须逐行可见，否则读者看得到结论看不到过程。
- */
-function stepRows(s: V2Step): StepRow[] {
-  const rows: StepRow[] = []
-  const points = s.charts ?? []
-  let ci = 0
-  const emitCharts = (rendered: number) => {
-    while (ci < points.length && points[ci].after <= rendered) {
-      rows.push({ kind: 'chart', label: `结算至此 · ${points[ci].label}`,
-                  pillars: points[ci].chart.pillars,
-                  testid: `v2-step-chart-${s.key}-${ci + 1}` })
-      ci++
-    }
-  }
-  ;(s.traces ?? []).forEach((t, i) => {
-    rows.push({ kind: 'trace', t })
-    emitCharts(i + 1)
-  })
-  emitCharts(Number.MAX_SAFE_INTEGER)        // 保险：`after` 越界时补在算式行之后
-  rows.push({ kind: 'result' })
-  if (stepScores(s).length) rows.push({ kind: 'scores' })
-  if (s.chart && !points.length) {
-    rows.push({ kind: 'chart', label: '本段结束时的命盘',
-                pillars: s.chart.pillars, testid: `v2-step-chart-${s.key}` })
-  }
-  return rows
-}
-
-/** 藏干「字变」标记 → 样式类（标记值是中文，不能直接当类名）。 */
-const CHANGE_CLASS: Record<string, string> = {
-  新增: 'is-new', 归零: 'is-zero', 增力: 'is-up', 减力: 'is-down', 变纯: 'is-pure',
-}
 
 /** 日干被天干五合换了字时的**原局那个字**（未换字则 null）。 */
 const dmOriginal = computed(() => {
@@ -201,25 +132,7 @@ function stepResult(s: WangduStep) {
       <!-- ① 命盘：八字四柱 + 当前大运 / 流年 -->
       <section class="wx-card">
         <p class="wx-card-title">命盘</p>
-        <div class="pillar-row">
-          <div v-for="it in pillarList" :key="it.key" class="pillar-col">
-            <span class="pillar-label">{{ it.label }}</span>
-            <span class="pillar-gan" :style="{ color: wxColor(it.p!.gan_wuxing) }">{{ it.p!.gan }}</span>
-            <span class="pillar-zhi" :style="{ color: wxColor(it.p!.zhi_wuxing) }">{{ it.p!.zhi }}</span>
-            <span class="pillar-shishen">{{ it.p!.shishen }}</span>
-            <!-- 藏干：该地支所藏天干（干 · 十神），虚线以下 -->
-            <span
-              v-if="it.p!.detail?.cang_gan?.length"
-              class="pillar-cang"
-              :data-testid="`v2-canggan-${it.key}`"
-            >
-              <span v-for="cg in it.p!.detail.cang_gan" :key="cg.gan" class="pillar-cang-row">
-                <b :style="{ color: ganZhiColor(cg.gan) }">{{ cg.gan }}</b>
-                <i>{{ cg.shishen }}</i>
-              </span>
-            </span>
-          </div>
-        </div>
+        <PillarBoard :columns="pillarList" />
         <div class="luck-row">
           <div class="luck-item">
             <em>当前大运</em>
@@ -275,90 +188,10 @@ function stepResult(s: WangduStep) {
         <p class="note-line">能量条以五行最大值为满格；日主一行加重显示。</p>
       </section>
 
-      <!-- ③ 判定依据（紧接强弱与格局） -->
+      <!-- ③ 判定依据（紧接强弱与格局）——013 起与岁运两页共用同一份实现 -->
       <section class="wx-card">
         <p class="wx-card-title">判定依据</p>
-        <ol class="step-list">
-          <li v-for="(s, si) in v2.steps" :key="s.key" class="step-block"
-              :data-testid="`v2-step-${s.key}`">
-            <p class="step-title"><span class="step-no">{{ si + 1 }}</span>{{ s.title }}</p>
-            <p class="step-rule">{{ s.rule }}</p>
-
-            <!-- 一段之内的渲染顺序由 `stepRows` 统一决定：算式行 →（第 7 段的逐实例快照
-                 就插在对应算式之后）→ 结果 → 五行速览 → 段末命盘。速览与命盘相邻。 -->
-            <template v-for="(r, ri) in stepRows(s)" :key="ri">
-              <div v-if="r.kind === 'trace'" class="step-trace">
-                <span class="step-trace-target">{{ r.t.target }}</span>
-                <span class="step-trace-expr">{{ r.t.expression }}</span>
-                <span v-if="r.t.value !== null && r.t.value !== undefined" class="step-trace-val">{{ r.t.value }}</span>
-              </div>
-
-              <div v-else-if="r.kind === 'scores'" class="step-scores" data-testid="v2-step-scores">
-                <div v-for="it in stepScores(s)" :key="it.wx" class="score-cell">
-                  <span class="score-wx step-score-wx" :style="{ color: wxColor(it.wx) }">{{ it.wx }}</span>
-                  <span class="score-val">{{ it.value ?? '—' }}</span>
-                </div>
-              </div>
-
-              <p v-else-if="r.kind === 'result'" class="step-result">→ {{ s.result }}</p>
-
-              <!-- 命盘快照：每个天干 / 藏干各多少度，变了的字标出来 -->
-              <div v-else class="step-chart" :data-testid="r.testid">
-                <p class="step-chart-caption">{{ r.label }}</p>
-                <div class="pillar-row pillar-mini">
-                  <div v-for="p in r.pillars" :key="p.key" class="pillar-col"
-                       :data-testid="`v2-chart-${p.key}`">
-                    <span class="pillar-label">{{ p.label }}</span>
-                    <span class="pillar-gan"
-                          :style="{ color: ganZhiColor(p.gan_original ?? p.gan) }">
-                      <!-- 天干五合合化成功会**换字**（甲→戊，书 上 1593），但显示上**不改字**：
-                           正字仍是原局那个字，另用**化神五行的框 + 底色**标出已合化，
-                           换字后的字放下面小字。合而不化只减力、不换字（书 上 1595）。 -->
-                      <span v-if="p.gan_original" class="gan-hua"
-                            :data-testid="`v2-gan-hua-${p.key}`"
-                            :style="{ borderColor: wxColor(p.gan_wx),
-                                      background: `color-mix(in srgb, ${wxColor(p.gan_wx)} 15%, transparent)` }"
-                      >{{ p.gan_original }}</span>
-                      <template v-else>{{ p.gan }}</template><i class="pillar-deg">{{ p.gan_degree }}</i>
-                    </span>
-                    <span v-if="p.gan_original" class="pillar-sub pillar-changed"
-                          :data-testid="`v2-gan-changed-${p.key}`">
-                      {{ p.gan_change }}→{{ p.gan }}
-                    </span>
-                    <span v-else-if="p.gan_change" class="pillar-sub"
-                          :data-testid="`v2-gan-changed-${p.key}`">{{ p.gan_change }}</span>
-                    <!-- 第 5 段起：主数（组旺度）之外，再给出「自身」「根」两个分量，
-                         三者恒有 主数 = 自身 + 根；第 7 段逐实例快照里都会随结算变。 -->
-                    <span v-if="p.gan_own !== null && p.gan_own !== undefined"
-                          class="pillar-sub" :data-testid="`v2-gan-own-${p.key}`">
-                      自身 {{ p.gan_own }}
-                    </span>
-                    <span class="pillar-zhi" :style="{ color: wxColor(p.zhi_effective_wx) }">
-                      <!-- 支被合化改宗时字也不换，套**生效五行**的框 + 底色（与天干换字同一套视觉） -->
-                      <span v-if="p.zhi_effective_wx !== p.zhi_wx" class="gan-hua"
-                            :data-testid="`v2-zhi-hua-${p.key}`"
-                            :style="{ borderColor: wxColor(p.zhi_effective_wx),
-                                      background: `color-mix(in srgb, ${wxColor(p.zhi_effective_wx)} 15%, transparent)` }"
-                      >{{ p.zhi }}</span>
-                      <template v-else>{{ p.zhi }}</template><i
-                          v-if="p.zhi_effective_wx !== p.zhi_wx"
-                          class="pillar-sub pillar-changed">变{{ p.zhi_effective_wx }}</i>
-                    </span>
-                    <span class="pillar-cang">
-                      <span v-for="h in p.hidden" :key="h.gan" class="pillar-cang-row"
-                            :class="{ 'is-off': h.change === '归零' }"
-                            :data-testid="`v2-chart-hidden-${p.key}`">
-                        <b :style="{ color: ganZhiColor(h.gan) }">{{ h.gan }}</b>
-                        <i class="cang-deg">{{ h.degree }}</i>
-                        <i v-if="h.change" class="cang-mark" :class="CHANGE_CLASS[h.change]">{{ h.change }}</i>
-                      </span>
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </template>
-          </li>
-        </ol>
+        <StepList :steps="v2.steps" />
       </section>
 
       <section class="wx-card">
@@ -619,62 +452,7 @@ function stepResult(s: WangduStep) {
   font-size: 13px;
 }
 
-/* ==== 012 v2：命盘（八字四柱 + 当前大运 / 流年）==== */
-.pillar-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-.pillar-col {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1px;
-  padding: 9px 0;
-  background: #faf7f1;
-  border-radius: 10px;
-}
-.pillar-label {
-  font-size: 11px;
-  color: var(--wx-muted);
-}
-.pillar-gan,
-.pillar-zhi {
-  font-size: 21px;
-  font-weight: 600;
-  line-height: 1.2;
-  font-family: Georgia, "Songti SC", "STSong", "SimSun", serif;
-}
-.pillar-shishen {
-  font-size: 11px;
-  color: var(--wx-muted);
-}
-.pillar-cang {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  width: 100%;
-  margin-top: 6px;
-  padding-top: 5px;
-  border-top: 1px dashed var(--wx-line);
-}
-.pillar-cang-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 2px;
-  font-size: 11px;
-  line-height: 1.45;
-}
-.pillar-cang-row b {
-  font-weight: 600;
-}
-.pillar-cang-row i {
-  font-style: normal;
-  font-size: 10px;
-  color: var(--wx-muted);
-}
+/* ==== 012 v2：当前大运 / 流年两格（命盘柱列见 styles/chart.css）==== */
 .luck-row {
   display: flex;
   gap: 8px;
@@ -889,170 +667,5 @@ function stepResult(s: WangduStep) {
   gap: 4px;
 }
 
-/* ==== 012 v2：判定依据分步卡片 ==== */
-.step-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.step-block {
-  padding: 12px 0;
-  border-top: 1px solid var(--wx-line);
-}
-.step-block:first-child {
-  border-top: none;
-  padding-top: 0;
-}
-.step-title {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin: 0 0 5px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--wx-ink);
-}
-.step-no {
-  flex: 0 0 18px;
-  height: 18px;
-  line-height: 18px;
-  text-align: center;
-  border-radius: 50%;
-  background: var(--wx-primary);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 600;
-}
-.step-rule {
-  margin: 0 0 7px;
-  font-size: 12px;
-  color: var(--wx-muted);
-  line-height: 1.55;
-}
-.step-scores {
-  display: flex;
-  gap: 6px;
-  margin: 7px 0;
-}
-.step-scores .score-cell {
-  flex: 1;
-  text-align: center;
-  padding: 6px 2px;
-  background: #faf7f1;
-  border-radius: 8px;
-}
-.step-scores .step-score-wx {
-  display: block;
-  font-size: 12px;
-  font-weight: 600;
-}
-.step-scores .score-val {
-  display: block;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--wx-ink);
-  font-variant-numeric: tabular-nums;
-}
-.step-trace {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  font-size: 12.5px;
-  line-height: 1.75;
-}
-.step-trace-target {
-  flex: 0 0 auto;
-  font-weight: 600;
-}
-.step-trace-expr {
-  flex: 1;
-  color: var(--wx-ink);
-}
-.step-trace-val {
-  color: var(--wx-muted);
-  font-variant-numeric: tabular-nums;
-}
-.step-list .step-result {
-  margin-top: 7px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--wx-primary);
-}
-
-/* ==== 012 v2：判定依据里的逐段命盘快照 ==== */
-.step-chart {
-  margin-top: 9px;
-  padding: 8px 8px 6px;
-  background: #faf7f1;
-  border-radius: 10px;
-}
-.step-chart-caption {
-  margin: 0 0 6px;
-  font-size: 11px;
-  color: var(--wx-muted);
-}
-.step-chart-note {
-  margin: 5px 0 0;
-  font-size: 11px;
-  line-height: 1.55;
-  color: #8a6a3a;
-}
-/* 顶层命盘卡用的是 .pillar-row 全尺寸；这里收一档，四柱多的度数才排得下 */
-.pillar-mini {
-  gap: 5px;
-  margin-bottom: 0;
-}
-.pillar-mini .pillar-col {
-  gap: 0;
-  padding: 6px 0 5px;
-  background: #fff;
-}
-.pillar-mini .pillar-gan,
-.pillar-mini .pillar-zhi {
-  font-size: 17px;
-}
-.pillar-mini .pillar-cang {
-  margin-top: 4px;
-  padding-top: 4px;
-}
-.pillar-deg {
-  font-style: normal;
-  font-size: 10px;
-  font-weight: 400;
-  color: var(--wx-muted);
-  margin-left: 1px;
-  font-variant-numeric: tabular-nums;
-}
-.pillar-sub {
-  font-size: 9px;
-  color: var(--wx-muted);
-  line-height: 1.3;
-}
-.pillar-changed {
-  color: #00796b;
-}
-/* 合化换字：正字仍是原局那个字，用**化神五行**的框 + 底色标出（012） */
-.gan-hua {
-  padding: 0 4px;
-  border: 1px solid currentColor;
-  border-radius: 5px;
-}
-.cang-deg {
-  font-size: 10px;
-  font-variant-numeric: tabular-nums;
-}
-.cang-mark {
-  font-size: 9px;
-  margin-left: 1px;
-}
-.cang-mark.is-new,
-.cang-mark.is-pure { color: #2f6b35; }
-.cang-mark.is-up { color: #a63431; }
-.cang-mark.is-down,
-.cang-mark.is-zero { color: var(--wx-muted); }
-.pillar-cang-row.is-off b,
-.pillar-cang-row.is-off .cang-deg {
-  text-decoration: line-through;
-  color: var(--wx-muted) !important;
-}
+/* 命盘柱列族与判定依据分步卡片族见 `styles/chart.css`（013 补遗：与原局/岁运两页共用） */
 </style>

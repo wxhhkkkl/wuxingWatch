@@ -265,6 +265,44 @@ test_v2_xi_ji::test_book_case_xia_4261_production_xiyong_layer
 
 ---
 
+## Phase 8: 013 补遗 · 判定依据的岁运命盘快照（2026-09-22）
+
+**缘起**：两页的「判定依据」只渲染了算式行与结果，把**每一段结束时的命盘快照**整块丢掉了
+（原局页有）。后端其实早就把快照给了两页——`analyze_step` 的 `steps[]` 与原局页的 `steps[]`
+出自同一个 `pipeline._build_steps`。本次把这块补上，并让命盘比原局页**多出四个字**
+（大运、流年两列，居左，FR-027）。
+
+> **编号说明**：本期既有任务号为 T001–T051，**不插入既有编号**，从 T052 起接排。
+
+- [X] T052 后端：`_suiyun_hidden` 拆出 `_suiyun_hidden_detail`（柱位 → 藏干表），前者降为「按五行求和」的薄封装——使快照与「计入旺度的那一份」**同源**（此前快照走 `_raw_hidden`，它多传 `dangzhong`，而未/戌 的岁运档恰与党众分支同层，两处会给出不同的表）；`degrees.Col` 末尾加 `label` / `flat_hidden` 两个仅服务呈现的字段
+  > **2026-09-22 完成**：`_suiyun_hidden` 输出**逐位不变**（既有 suiyun 系列测试全绿）；`Col` 的两个新字段带默认值，既有位置调用与关键字调用均不受影响。
+- [X] T053 后端：`compute_strength(suiyun_columns=False)` → `_build_steps` → `_chart` → `_step_chart` 的参数链，把岁运两列**追加在四柱之后**；`_step_chart` 认 `flat_hidden`（免月令系数、不给 `change` 标记）与 `label`，岁运之干按成数缩放、不给 `gan_own`/`gan_root`
+  > **2026-09-22 完成**：伪列**追加**而非前置（`ban`/`ban_cheng` 的键是 `work = cols + suiyun` 的扩展下标，前置会让合绊与换字全部错位）；「原字 / 换字后」两套视图跟着 `_STAGE_WITH_BAN` 走，避免同段自相矛盾；**不并入 `cols`**（否则 `_tonggen_static_traces` 会把岁运之干与原局时干连成一片，既有依据行的文字与数字都会变）。
+- [X] T054 后端：`dayun.analyze_step(with_suiyun_columns=False)` 透传；`chart_service.suiyun_conclusion` 两处传 `True`。**`analyze_all` 不传**——入库的 `strength.dayun[]`（64 张快照、约 280KB）零增长
+  > **2026-09-22 完成**：实测 `analyze_all` 产物列数恒 4、JSON 文本里不含 `"_dayun"`；同盘走端点则阶段 2 为 5 列、阶段 3 为 6 列（该年流年被门控时仍为 5 列，见 T057）。
+- [X] T055 前端：新建 `styles/chart.css`（`main.ts` 在 `theme.css` 之后引入），把 `.pillar-*` / `.step-*` / `.step-chart/.pillar-mini` 三族从 `StrengthDetail.vue` 的 `<style scoped>` **原样搬运**并删掉副本
+  > **2026-09-22 完成**：只搬运、未改值。搬完发现两处**同权重竞争**（残留的旧契约裸规则 `.score-wx`、`.step-result` 与搬去的后代选择器同为 0,2,0，胜负取决于注入顺序）——把搬去的那两条各加一层（`.step-scores .score-cell .step-score-wx`、`.step-list .step-block .step-result`）钉死，旧契约路径的值一行未动。
+- [X] T056 前端：抽 `components/StepChart.vue`（根即 `.step-chart`，无 wrapper）与 `components/StepList.vue` + `utils/stepRows.ts`；`StrengthDetail.vue` 改用它们
+  > **2026-09-22 完成**：`idPrefix` 默认 `'v2'`，原局页的 DOM 与 33 条 `data-testid` 断言**逐字未变**（`tests/WangduV2.spec.ts` 全绿即此门）；顺带删掉原局页因抽取而孤立的 `CHANGE_CLASS` / `stepScores` / `stepRows` / `PILLAR_LABEL`。
+- [X] T057 前端：抽 `components/PillarBoard.vue` + `utils/chartColumns.ts`（四柱/大运/流年三种形状整成同一种列）；`SuiyunStage.vue` 的判定依据改用 `StepList`，两页顶部卡改用 `PillarBoard`
+  > **2026-09-22 完成**：岁运页的判定依据因此接受全局外壳值（`.step-list` margin 10→0、`.step-block` padding 10→12px、`.step-title` 13.5→14px 等 5 处），**以原局页为准**、原局页未动；两页的退化版 `.pillar-*` 副本已删（残留会通过组件**根元素**继续命中、凭空多出 8px 边距）。「无步可推」（尚未起运）时只摆四柱，不摆一列灰显流年。
+- [X] T058 前端：岁运两列的**占位**与列序——`useSuiyun` 出 `boardColumns`（大运、流年居左），`StepChart` 的 `placeholders` 补灰显占位。**判据只能是「快照里有没有这一列」**：`analyze_step` 的门控**不清** `item["liunian"]`，看它会把一个被挡住、根本没参与判定的流年画成正常列
+  > **2026-09-22 完成**：占位列显示 `—` 且不给藏干块；门控的说明仍由页面上已有的 `degradations` ⚠️ 行承担，未另造文案。
+- [X] T059 测试：后端 `tests/unit/test_v2_steps_suiyun_columns.py`（17 例）+ `tests/contract/test_suiyun_api.py` 增 1 例；前端新建 `tests/SuiyunChart.spec.ts`（10 例）。`tests/WangduV2.spec.ts` **一字未改**（它是原局页零回归的门）
+  > **2026-09-22 完成**：后端钉住「默认/入库路径恒四柱」「阶段 2 五列、阶段 3 六列」「藏干逐位等于独立档且不乘系数」「丑的两档可分辨」「逐段不变」「与 `_suiyun_hidden` 同源」「天干 1 度不给自身/根」「合绊 0.6 / 合化 戊·原甲」「门控不建列且字段仍带干支」；前端钉住「6 列且岁运最左」「占位灰显无数度」「门控走同一占位路径」「速览格紧邻命盘」「四柱输入不产生第五列」。
+- [X] T060 文档同步：`specs/013-dayun-liunian-judgment/` 的 spec.md（FR-027 / FR-027a）、data-model.md（§7a）、contracts/suiyun-v2.md（§3 快照口径 + §2 R-9 校验规则）。**不动** 012 期的任何文档——原局 `steps[].chart` 的形状与口径未变，扩展只写在 013
+  > **2026-09-22 完成**：契约里显式写明「入库路径仍为四柱」是**有意差异、勿修**（两条路径出自同一函数，靠形参分流）。
+- [X] T061 全量回归：后端 `uv run pytest tests`、前端 `npx vitest run` + `vue-tsc --noEmit`
+  > **2026-09-22 完成**：后端 **1476 passed / 9 failed**（红数与清单逐条相同，见文首「9 红清单」；已用 HEAD 的独立 worktree 复跑确认**改动前也是这 9 红**）；前端 **225 passed / 0 failed**（基线 215，净增 10 例全绿）；`vue-tsc --noEmit` 与 `vite build` 均通过。
+- [ ] T062（**登记为待办，不在本次范围**）岁运页的能量条用 `scores_after`，而 ±2/±1.5 的**运支状态增减**目前只写在 `analyze_step` 的 `deltas` 里、`SuiyunStage` 未渲染——能量条与依据之间缺一环
+- [X] T063 修复：`styles/chart.css` 的注释里把「星号」与「斜杠」**挨着写**（写三个系列名时用斜杠分隔），于是注释**提前结束**、半句被当成选择器，**紧随其后的 `.pillar-row{display:flex}` 整条被吞**——全部命盘的柱列**塌成竖排一条线**（原局页与岁运两页都中）
+  > **2026-09-22 完成**。三个通道**没有一道会红**：`vitest`（不加载 CSS）、`vue-tsc`、`vite build`（**esbuild 的解析器较宽容，会把残渣丢掉、保住那条规则**——所以在产物里 grep `.pillar-row` 反而是好的，而浏览器/dev 与 postcss 一样直接丢规则）。只有人眼看得见，这也是用户先发现的原因。
+  > 新增守卫 `frontend/tests/style-sanity.spec.ts`（3 例）：用 postcss 解析 `src/**` 的全部 CSS（含各 `.vue` 的 `<style>` 块），断言**选择器里不得出现反引号或中文标点**（注释残渣的指纹——不认汉字，`RelationDiagram` 的 `.rd-edge--冲` 是合法类名），并正面断言 `chart.css` 里 `.pillar-row` 规则在、且含 `display: flex`。**已双证能红**（把错注释放回去，两条同时红）。
+  > 连带：`tsconfig.json` 的 `types` 补 `vite/client`（读源文件要用 `import.meta.glob`）；`tests/node-shims.d.ts` 只手声明 `readFileSync`（Vitest 会把 `.css` 的任何 import 形式截成空串，正文只能走 fs）。
+  > **教训**：在注释里举例说明「别写星号斜杠」时，我自己在**同一个文件与测试文件里又踩了两次**——两次都是 TS/CSS 语法直接报错或静默吞规则。以后一律用「星号斜杠」这个词描述，不写出字符。
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies

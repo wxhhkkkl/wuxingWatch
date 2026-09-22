@@ -12,32 +12,24 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSuiyun } from '../utils/suiyun'
+import PillarBoard from '../components/PillarBoard.vue'
 import SuiyunStage from '../components/SuiyunStage.vue'
 
 const router = useRouter()
-const { chart, steps, selectedIndex, blocked, degradeReason, notes, sourceError,
-        noChart, conclusion, loading, error } = useSuiyun()
+const { chart, steps, selectedIndex, boardColumns, blocked, degradeReason, notes,
+        sourceError, noChart, conclusion, loading, error } = useSuiyun()
 
-const PILLAR_LABEL = { year: '年', month: '月', day: '日', time: '时' } as const
-const pillars = computed(() =>
-  (['year', 'month', 'day', 'time'] as const)
-    .map((k) => ({ key: k, label: PILLAR_LABEL[k], p: chart.value?.pillars?.[k] }))
-    .filter((x) => !!x.p))
+const hasBoard = computed(() => boardColumns.value.some((c) => c.key === 'year'))
 </script>
 
 <template>
   <div class="detail-page">
     <van-nav-bar title="岁运推导 · 加入大运" left-text="返回" left-arrow @click-left="router.back()" />
 
-    <!-- 来源命盘（四柱） -->
-    <section v-if="pillars.length" class="wx-card">
+    <!-- 命盘：大运居左（本页流年未参与 → 灰显占位），与原局页同一张卡、同一份实现 -->
+    <section v-if="hasBoard" class="wx-card">
       <p class="wx-card-title">命盘</p>
-      <div class="pillar-row">
-        <div v-for="it in pillars" :key="it.key" class="pillar-col">
-          <span class="pillar-label">{{ it.label }}</span>
-          <span class="pillar-ganzhi">{{ it.p!.ganzhi }}</span>
-        </div>
-      </div>
+      <PillarBoard :columns="boardColumns" id-prefix="sy-board" />
     </section>
 
     <!-- 来源命盘不可得：直接打开本页、或记录取不到 -->
@@ -118,29 +110,5 @@ const pillars = computed(() =>
   border-radius: 8px;
   background: #fff;
   color: var(--wx-ink);
-}
-.pillar-row {
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-}
-.pillar-col {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  padding: 9px 0;
-  background: #faf7f1;
-  border-radius: 10px;
-}
-.pillar-label {
-  font-size: 11px;
-  color: var(--wx-muted);
-}
-.pillar-ganzhi {
-  font-size: 18px;
-  font-weight: 600;
-  font-family: Georgia, "Songti SC", "STSong", "SimSun", serif;
 }
 </style>

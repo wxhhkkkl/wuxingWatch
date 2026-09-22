@@ -1,0 +1,253 @@
+/* 命盘展示的共享样式（013 补遗）——原局页与岁运两页共用同一份。
+ *
+ * **来源**：逐字搬运自 `pages/StrengthDetail.vue` 的 `<style scoped>`（012 期 v2 建立），
+ * 一行未改值。抽出的理由：岁运两页要「效果与原局页保持一致」，而 scoped 样式不会作用于
+ * 子组件内部元素，两处各留一份必然漂移（011/012 已两度吃亏）。
+ *
+ * **纪律**：本文件只放**两处以上共用**的族。只原局页用的（`.luck-row`、`.luck-item`）留在页内；
+ * 两页各有一份且取值本就不同的（`.verdict-` 与 `.energy-` 与 `.xi-` 与 `.chip` 各系列）不动。
+ *
+ * ⚠️ **本文件的注释里，星号不许紧挨着斜杠写**——那两个字符相邻就是注释的结束符，
+ * 剩下的半句会被当成选择器，把**紧随其后的那条规则整条吞掉**。2026-09-22 真实踩过：
+ * 上面那句「各系列」原来是用斜杠连接三个系列名写的，于是紧接其后的 `.pillar-row`
+ * 连同它的 display 一起消失，全部命盘的柱列塌成竖排一条线，而所有测试与构建
+ * **都不会红**。守卫见 `tests/style-sanity.spec.ts`。
+ */
+
+/* ==== 命盘：柱列 + 藏干（顶部命盘卡与逐段快照共用）==== */
+.pillar-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.pillar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 9px 0;
+  background: #faf7f1;
+  border-radius: 10px;
+}
+.pillar-label {
+  font-size: 11px;
+  color: var(--wx-muted);
+}
+.pillar-gan,
+.pillar-zhi {
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.2;
+  font-family: Georgia, "Songti SC", "STSong", "SimSun", serif;
+}
+.pillar-shishen {
+  font-size: 11px;
+  color: var(--wx-muted);
+}
+.pillar-cang {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  width: 100%;
+  margin-top: 6px;
+  padding-top: 5px;
+  border-top: 1px dashed var(--wx-line);
+}
+.pillar-cang-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2px;
+  font-size: 11px;
+  line-height: 1.45;
+}
+.pillar-cang-row b {
+  font-weight: 600;
+}
+.pillar-cang-row i {
+  font-style: normal;
+  font-size: 10px;
+  color: var(--wx-muted);
+}
+
+/* ==== 判定依据分步卡片 ==== */
+.step-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.step-block {
+  padding: 12px 0;
+  border-top: 1px solid var(--wx-line);
+}
+.step-block:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+.step-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 5px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--wx-ink);
+}
+.step-no {
+  flex: 0 0 18px;
+  height: 18px;
+  line-height: 18px;
+  text-align: center;
+  border-radius: 50%;
+  background: var(--wx-primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+}
+.step-rule {
+  margin: 0 0 7px;
+  font-size: 12px;
+  color: var(--wx-muted);
+  line-height: 1.55;
+}
+.step-scores {
+  display: flex;
+  gap: 6px;
+  margin: 7px 0;
+}
+.step-scores .score-cell {
+  flex: 1;
+  text-align: center;
+  padding: 6px 2px;
+  background: #faf7f1;
+  border-radius: 8px;
+}
+/* 多带一层 `.score-cell`：原局页遗留的旧契约样式 `.score-wx`（scoped，权重同为 0,2,0）
+ * 也命中这一格，同权重时胜负取决于注入顺序 → 抬一档钉死，两页字号才都是 12px。 */
+.step-scores .score-cell .step-score-wx {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+}
+.step-scores .score-val {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--wx-ink);
+  font-variant-numeric: tabular-nums;
+}
+.step-trace {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 12.5px;
+  line-height: 1.75;
+}
+.step-trace-target {
+  flex: 0 0 auto;
+  font-weight: 600;
+}
+.step-trace-expr {
+  flex: 1;
+  color: var(--wx-ink);
+}
+.step-trace-val {
+  color: var(--wx-muted);
+  font-variant-numeric: tabular-nums;
+}
+/* 多带一层 `.step-block`：同上——原局页旧契约的裸 `.step-result`（第 514 行，权重 0,2,0）
+ * 只在旧路径用，不该与这一条打平。 */
+.step-list .step-block .step-result {
+  margin-top: 7px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--wx-primary);
+}
+
+/* ==== 判定依据里的逐段命盘快照 ==== */
+.step-chart {
+  margin-top: 9px;
+  padding: 8px 8px 6px;
+  background: #faf7f1;
+  border-radius: 10px;
+}
+.step-chart-caption {
+  margin: 0 0 6px;
+  font-size: 11px;
+  color: var(--wx-muted);
+}
+.step-chart-note {
+  margin: 5px 0 0;
+  font-size: 11px;
+  line-height: 1.55;
+  color: #8a6a3a;
+}
+/* 顶层命盘卡用的是 .pillar-row 全尺寸；这里收一档，四柱多的度数才排得下 */
+.pillar-mini {
+  gap: 5px;
+  margin-bottom: 0;
+}
+.pillar-mini .pillar-col {
+  gap: 0;
+  padding: 6px 0 5px;
+  background: #fff;
+}
+.pillar-mini .pillar-gan,
+.pillar-mini .pillar-zhi {
+  font-size: 17px;
+}
+.pillar-mini .pillar-cang {
+  margin-top: 4px;
+  padding-top: 4px;
+}
+.pillar-deg {
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--wx-muted);
+  margin-left: 1px;
+  font-variant-numeric: tabular-nums;
+}
+.pillar-sub {
+  font-size: 9px;
+  color: var(--wx-muted);
+  line-height: 1.3;
+}
+.pillar-changed {
+  color: #00796b;
+}
+/* 合化换字：正字仍是原局那个字，用**化神五行**的框 + 底色标出（012） */
+.gan-hua {
+  padding: 0 4px;
+  border: 1px solid currentColor;
+  border-radius: 5px;
+}
+.cang-deg {
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.cang-mark {
+  font-size: 9px;
+  margin-left: 1px;
+}
+.cang-mark.is-new,
+.cang-mark.is-pure { color: #2f6b35; }
+.cang-mark.is-up { color: #a63431; }
+.cang-mark.is-down,
+.cang-mark.is-zero { color: var(--wx-muted); }
+.pillar-cang-row.is-off b,
+.pillar-cang-row.is-off .cang-deg {
+  text-decoration: line-through;
+  color: var(--wx-muted) !important;
+}
+
+/* 013 补遗：岁运两列未参与本阶段（阶段 2，或被大运挡住）时的灰显占位 */
+.pillar-col.is-dim .pillar-gan,
+.pillar-col.is-dim .pillar-zhi {
+  color: var(--wx-muted);
+}
+/* 6 列时收一档间距——4 列（原局页）不受影响 */
+.pillar-mini.is-dense {
+  gap: 3px;
+}

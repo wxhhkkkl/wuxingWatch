@@ -14,19 +14,16 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSuiyun } from '../utils/suiyun'
+import PillarBoard from '../components/PillarBoard.vue'
 import SuiyunStage from '../components/SuiyunStage.vue'
 import type { V2Pair } from '../types'
 
 const router = useRouter()
-const { chart, steps, selectedIndex, years, selectedYear, blocked, degradeReason,
-        notes, sourceError, noChart, conclusion, loading, error } =
+const { chart, steps, selectedIndex, years, selectedYear, boardColumns, blocked,
+        degradeReason, notes, sourceError, noChart, conclusion, loading, error } =
   useSuiyun({ withLiunian: true })
 
-const PILLAR_LABEL = { year: '年', month: '月', day: '日', time: '时' } as const
-const pillars = computed(() =>
-  (['year', 'month', 'day', 'time'] as const)
-    .map((k) => ({ key: k, label: PILLAR_LABEL[k], p: chart.value?.pillars?.[k] }))
-    .filter((x) => !!x.p))
+const hasBoard = computed(() => boardColumns.value.some((c) => c.key === 'year'))
 
 const GEJU_LABEL: Record<string, string> = {
   zheng: '正格', cong_ruo: '从弱格', cong_qiang: '从强格', cong_yin: '从印格',
@@ -56,14 +53,10 @@ const pairs = computed<V2Pair[]>(() => conclusion.value?.pairs ?? [])
   <div class="detail-page">
     <van-nav-bar title="岁运推导 · 加入流年" left-text="返回" left-arrow @click-left="router.back()" />
 
-    <section v-if="pillars.length" class="wx-card">
+    <!-- 命盘：大运、流年两列居左（与原局页同一张卡、同一份实现） -->
+    <section v-if="hasBoard" class="wx-card">
       <p class="wx-card-title">命盘</p>
-      <div class="pillar-row">
-        <div v-for="it in pillars" :key="it.key" class="pillar-col">
-          <span class="pillar-label">{{ it.label }}</span>
-          <span class="pillar-ganzhi">{{ it.p!.ganzhi }}</span>
-        </div>
-      </div>
+      <PillarBoard :columns="boardColumns" id-prefix="sy-board" />
     </section>
 
     <van-empty v-if="noChart" data-testid="sy-empty" description="暂无可推导的命盘（旧记录可重新排盘获取）">
@@ -176,30 +169,9 @@ const pairs = computed<V2Pair[]>(() => conclusion.value?.pairs ?? [])
   background: #fff;
   color: var(--wx-ink);
 }
-.pillar-row {
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-}
-.pillar-col {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  padding: 9px 0;
-  background: #faf7f1;
-  border-radius: 10px;
-}
-.pillar-label {
-  font-size: 11px;
-  color: var(--wx-muted);
-}
-.pillar-ganzhi {
-  font-size: 18px;
-  font-weight: 600;
-  font-family: Georgia, "Songti SC", "STSong", "SimSun", serif;
-}
+/* 命盘卡的柱列样式见 `styles/chart.css`（013 补遗起与**原局页共用一份**）。
+   本页不再自带 `.pillar-*` 副本——残留的那份会通过组件**根元素**继续命中，
+   凭空多出上边距。 */
 .pair-note {
   margin: 4px 0 8px;
   font-size: 12px;
