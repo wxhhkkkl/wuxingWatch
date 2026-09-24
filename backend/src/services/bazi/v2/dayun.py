@@ -3,9 +3,19 @@
 书源：《四柱精髓（上）》846-851（大运五行静态旺度）、907-963（综合/折中状态）、
 《四柱精髓（下）》4207-4248（**用神变化**）。
 
-**运支状态增减**（书《—》待核）：
+**运支状态增减**（书 上 849）：
   旺 **+2** ／ 余气 **+1.5** ／ 相 **+1** ／ 休 **−1** ／ 囚 **−1.5** ／ 死 **−2**；
-运干有同类相助或通根运支者依理叠加（书《上》第一节 五行旺衰「② 五行在运干有同类天干相助或通根于运支时依理叠加。」）。
+运干有同类相助或通根于运支者依理叠加（书 上 851）。
+
+> **全部落在「静态旺度」这一层**（2026-09-24 订正点 ①②）。书 上 847「五行在大运的
+> **静态**旺度等于在原局静态旺度的基础上进行增减」、上 874「日主静态旺度 = 9−2 = 7 度……
+> **此时**日主的动态旺度**还需**计算辛金、子水、戊土作用日干后的旺度」——即
+> **原局静态 → ± 增减 → 大运静态 → 生克 → 大运动态**。
+>
+> 施加点是 `pipeline._apply_dayun_layer`（**实例层**：落在该五行的**天干组**上，
+> 每五行**一次**），故**本模块不再对 `final_scores` 施加任何增量** ——
+> `apply_dayun_delta` 仍是纯函数，由管线调用。`scores_after` 随之改为报告
+> **大运静态旺度**（与 `data-model.md` 的措辞一致）。
 
 **用神随大运变化**（书《下》第一节 用神总则「用神并非一成不变，它会随大运的变化而变化，一般不会随流年的变化而变化」）：「用神并非一成不变，它会随大运的变化而变化，
 一般不会随流年的变化而变化（但有特例）」。书《下》第一节 用神总则「用神并非一成不变，它会随大运的变化而变化，一般不会随流年的变化而变化」 三例均演示
@@ -54,20 +64,6 @@ def apply_dayun_delta(scores: dict[str, float], dayun_zhi: str,
     return out
 
 
-def shift_instance(item: dict, dayun_zhi: str, dayun_gan: str | None = None) -> dict:
-    """把**运支状态增减**施加到某个实例（日主组 / 贴身实例）的终值上。
-
-    大运层对整个五行做加减（`apply_dayun_delta`），S7 之后日主与贴身位的判据取**实例**，
-    故同一套增减要按**该实例所属的五行**施加一次，两层口径才不漂移。
-    """
-    wx = item.get("wx")
-    if not wx:
-        return item
-    out = dict(item)
-    out["final"] = apply_dayun_delta({wx: item["final"]}, dayun_zhi, dayun_gan)[wx]
-    return out
-
-
 def compromise(month_state: str, dayun_state_: str) -> tuple[str, bool]:
     """月令与大运的**折中（综合）状态**——参数平均后 ≤3 当令（书《上》第一节 五行旺衰「②月令被改变为其他状态时：取月令被改变后的状态与大运参数的平均值，再」）。"""
     return tables.compromise_state(month_state, dayun_state_)
@@ -101,7 +97,17 @@ def analyze_step(pillars: dict, dayun_ganzhi: str, *, dayun_meta: dict | None = 
     base = pipeline.compute_strength(pillars, dayun_ganzhi=dayun_ganzhi,
                                      liunian_ganzhi=liunian_ganzhi,
                                      suiyun_columns=with_suiyun_columns)
-    shifted = apply_dayun_delta(base["final_scores"], zhi, gan)
+    # **大运静态旺度**已在实例层并入（`pipeline._apply_dayun_layer`，书 上 847-853），
+    # 故 `final_scores` 与各实例的终值就是书所谓的**大运动态旺度**（上 874 的顺序：
+    # 先静态 ± 增减、再生克）——此处**不得**再施加一次。
+    #
+    # 2026-09-24 口径订正（①②）：
+    #   改前 = `apply_dayun_delta(base["final_scores"], …)`，即加在**生克结算之后**，
+    #   与 上 847 的层序相反（上 874「日主静态旺度 = 9−2 = 7 度……**此时**日主的动态
+    #   旺度**还需**计算」），也与本模块 docstring 及 `data-model.md` 的「运支状态增减
+    #   后的五行**静态**旺度」两处描述不符；且 `shift_instance` 又对日主组与**每个贴身
+    #   实例**各再施一次，同一五行减两次——正是 上 859-860 明令不许的。
+    shifted = base["final_scores"]
 
     cols = degrees.build_cols(pillars)
     dm = next((c.gan for c in cols if c.key == "day"), None)
@@ -112,11 +118,11 @@ def analyze_step(pillars: dict, dayun_ganzhi: str, *, dayun_meta: dict | None = 
     # `has_sheng` 用**该步**的「有生」判据（书 上 1598「不能独立＝太弱以下＋无生
     # （或虽有若无）＋无强根」，同 `pipeline` 的生克层）——传全 False 会把「无生」
     # 这一条静默删掉，使该步的从格判定偏向从格。
-    # 日主与贴身位的判据取**实例**（S7）：大运的增减同样施加到实例上
-    dm_group = shift_instance(base["day_master_group"] or {}, zhi, gan) or None
-    tieshen = [shift_instance(t, zhi, gan) for t in
-               geju.tieshen_instances(cols, stem_groups=base["stem_groups"],
-                                      benqi_instances=base["benqi_instances"])]
+    # 日主与贴身位的判据取**实例**（S7）——实例终值由 `stem_layer` 结算**自然带上**
+    # 大运静态旺度，故不再 `shift_instance`（那会与 上 859-860「只落一次」相冲）。
+    dm_group = base["day_master_group"] or None
+    tieshen = geju.tieshen_instances(cols, stem_groups=base["stem_groups"],
+                                     benqi_instances=base["benqi_instances"])
     gj = geju.judge_geju(cols=cols, final=shifted, root=root,
                          has_sheng=base["has_sheng"],
                          rel=base["relations"], month_zhi=month_zhi,
@@ -133,6 +139,9 @@ def analyze_step(pillars: dict, dayun_ganzhi: str, *, dayun_meta: dict | None = 
     lay = _layers.evaluate(cols=cols, day_master=dm or "", dm_wx=dm_wx,
                            final=shifted, month_zhi=month_zhi)
 
+    # 该步的**大运静态旺度**（`pipeline._apply_dayun_layer` 已并入 `lay0["static"]`）。
+    static_after = base["static_scores"]
+
     return {
         "source": "liunian" if liunian_ganzhi else "dayun",   # 来源阶段（T035；FR-024）
         "liunian": liunian_ganzhi,
@@ -147,9 +156,12 @@ def analyze_step(pillars: dict, dayun_ganzhi: str, *, dayun_meta: dict | None = 
         "layers": lay,                   # T035：格局层次按该步重判
         "relations": base["relations"],   # 含本步大运的裁定（供命盘图消费）
         "transition": None,      # 由 analyze_all 与前后步比较后填入
-        "deltas": [{"target": w, "expression": f"{w} 运支状态增减后 {shifted[w]:g} 度",
-                    "value": shifted[w]} for w in tables.WUXING_ORDER],
-        "scores_after": shifted,
+        # `scores_after` = 该步的**大运静态旺度**（上 847-853：原局静态 ＋ 状态增减
+        # ＋运干同类 ＋ 岁运藏干平加）——与 `data-model.md` 的「运支状态增减后的五行
+        # **静态**旺度」一致。改前它是「动态 ± 增减」的混合量，与两处文档都不符。
+        "deltas": [{"target": w, "expression": f"{w} 大运静态旺度 {static_after[w]:g} 度",
+                    "value": static_after[w]} for w in tables.WUXING_ORDER],
+        "scores_after": static_after,
         # 判定依据段（data-model §1 / contracts §3：「可**按阶段追加**」）——
         # 该阶段的关系/旺度/格局/取用逐段依据，页面上须逐条可见（SC-005）。
         "steps": base.get("steps") or [],

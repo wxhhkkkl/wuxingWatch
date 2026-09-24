@@ -1467,8 +1467,68 @@ def _degradations(cols: list[degrees.Col]) -> list[str]:
     ]
 
 
+def _apply_dayun_layer(grps: list[degrees.StemGroup], static: dict[str, float],
+                       dayun_ganzhi: str | None, liunian_ganzhi: str | None,
+                       month_zhi: str) -> dict[str, float]:
+    """把**大运静态旺度**的两项（书 上 847-853）落到**实例层**——**每五行一次**。
+
+    书 上 847「五行在大运的**静态**旺度等于在原局**静态**旺度的基础上进行增减」、
+    上 874「日主静态旺度 = 9−2 = 7 度……**此时**日主的动态旺度**还需**计算」。
+
+    ① **运支状态增减**（上 849，±2/±1.5/…）**＋运干同类相助 +1**（上 851）——
+       落在该五行的**天干组**上；该五行**不透干**（无天干组）时才落在五行合计上
+       （上 860「这个规律对于天干来说是适用的，但对于地支却不一定适用
+       （**只有在没有天干只有地支的时候适用**）」）。
+    ② **岁运之支自身藏干的平加**（上 884「未本身藏丁火 3 度」/900/901）——
+       同落在**该组**上（上 884 的算法就是把它加进「日干……静态旺度」）。
+
+    **每五行只加一次**（上 859-860 的总额恒为一次；改前 `dayun.shift_instance` 对
+    日主组与每个贴身实例各再施一次，同一五行减两次）。
+
+    ⚠️ **多组时取哪一组：书无明文**——书里四个大运算例（上 874/884/892/900）的日主
+    **都只透出一次**，判不了一个五行有两个天干组的情形。此处取**日主那一组**，
+    其次天干度数最大者。见 research.md R14 的开放项。
+
+    ⚠️ ② 落在组上还修掉一处既有裂缝：改前它只加在**五行合计**上，故
+    `static[wx] == Σ grps.static` 的不变量对**透干**五行不成立、组值（日主档位、
+    从格判据读的就是它）看不到运支藏干。
+    """
+    by_wx: dict[str, list[degrees.StemGroup]] = {}
+    for g in grps:
+        by_wx.setdefault(g.wx, []).append(g)
+    carrier = {wx: (next((x for x in gs if x.is_day_master), None) or
+                    max(gs, key=lambda x: x.stem_degree))
+               for wx, gs in by_wx.items()}
+    out = dict(static)
+
+    def _add(wx: str, d: float) -> None:
+        if not d:
+            return
+        g = carrier.get(wx)
+        if g is not None:
+            g.static = round(max(0.0, g.static + d), 3)
+            g.final = g.static
+            out[wx] = round(sum(x.static for x in by_wx[wx]), 2)
+        else:
+            out[wx] = round(max(0.0, out.get(wx, 0.0) + d), 2)
+
+    if dayun_ganzhi and len(dayun_ganzhi) >= 2:
+        from services.bazi.v2 import dayun as _dy      # 惰性：dayun 反向按需 import 本模块
+        for wx in list(out):
+            d = _dy.STATE_DELTA[_dy.dayun_state(wx, dayun_ganzhi[1])]
+            if GAN_WUXING.get(dayun_ganzhi[0]) == wx:
+                d += 1.0                                # 上 851 同类相助
+            _add(wx, d)
+    for wx, d in _suiyun_hidden(dayun_ganzhi, liunian_ganzhi, month_zhi).items():
+        if wx in out:
+            _add(wx, d)
+    return out
+
+
 def _layers(cols: list[degrees.Col], rel: dict, month_zhi: str,
-            effective: str | None, pure: frozenset[str], ban: dict[int, float] | None):
+            effective: str | None, pure: frozenset[str], ban: dict[int, float] | None,
+            dayun_ganzhi: str | None = None,
+            liunian_ganzhi: str | None = None):
     """第 2-5 段的一串中间产物：藏干 → 月令系数 → 静态旺度 → 通根 → 实例。
 
     `ban` 是**合绊的成数**（柱位下标 → 减几成），不是度数——**减的是该干所在组的
@@ -1476,6 +1536,9 @@ def _layers(cols: list[degrees.Col], rel: dict, month_zhi: str,
 
     抽出来供**两处**复用：`compute_strength` 的定案趟，与天干五合条件④的**试探趟**
     （见 `_stem_he_trial`）——两者只差一个 `ban`，其余口径必须逐字一致。
+
+    `dayun_ganzhi` / `liunian_ganzhi` 一并传：**大运静态旺度**要在组建好之后、
+    合绊缩放之前落到实例上（见 `_apply_dayun_layer`）。
     """
     import services.bazi.v2.tables as _t
 
@@ -1497,6 +1560,10 @@ def _layers(cols: list[degrees.Col], rel: dict, month_zhi: str,
                 for wx in _t.WUXING_ORDER}
     # 生克层按**实例**（连片天干组 + 同柱本气）结算（S7 / 书 上 651、1008）。
     grps = stem_groups(cols, hidden, coef_by_wx, pure, None)
+    # 岁运：**大运静态旺度**两项落到实例上（书 上 847-853；2026-09-24 订正点 ①）——
+    # **赶在合绊缩放之前**，因为合绊缩的是「该干所在组的**静态**旺度」。
+    if dayun_ganzhi or liunian_ganzhi:
+        static = _apply_dayun_layer(grps, static, dayun_ganzhi, liunian_ganzhi, month_zhi)
     # **合绊减的是「该干所在组的静态旺度」（含通根那一份）**——2026-09-16 用户裁定。
     # `ban` 是柱位下标 → 减几**成**；组按 `组静态 × (1 − 成数/10)` 整体缩放，
     # 组通根与乘系数根**同步缩**（否则「根 ≤ 静态」不变量会破）。一组内多个干都合绊时成数相加。
@@ -1529,7 +1596,9 @@ def _layers(cols: list[degrees.Col], rel: dict, month_zhi: str,
 
 def _stem_he_trial(cols: list[degrees.Col], rel: dict, month_zhi: str,
                    effective: str | None, pure: frozenset[str],
-                   suiyun: list | None = None) -> dict[str, float]:
+                   suiyun: list | None = None,
+                   dayun_ganzhi: str | None = None,
+                   liunian_ganzhi: str | None = None) -> dict[str, float]:
     """天干五合条件④的**试探趟**：全部五合先按**合绊**算到底，取**逐柱动态旺度**。
 
     书 上 1588：「4. 甲必须处于不能独立的状态（**指动态旺度**）」——动态旺度要结算完
@@ -1542,10 +1611,15 @@ def _stem_he_trial(cols: list[degrees.Col], rel: dict, month_zhi: str,
 
     返回**柱位 key → 该柱天干所在连片组的动态终值**（不是五行合计）——条件④问的是
     「**甲**能不能独立」（书 上 1588 指的是那个字），同五行的其它实例不算数。
+
+    ⚠️ `dayun_ganzhi` / `liunian_ganzhi` 必须传：本趟自建 `lay`，若不把**大运静态旺度**
+    一并落进去，条件④ 判的会是**原局的**动态旺度，而定案趟判的是**该步的**——两趟口径
+    不一致（2026-09-24 随订正点 ① 一并修正；此前连运支藏干都没传）。
     """
     he0 = stem_he.judge_stem_he(cols, month_zhi, rel, effective=effective,
                                 force_ban=True, suiyun=suiyun)
-    lay = _layers(cols, rel, month_zhi, effective, pure, he0["ban_cheng"])
+    lay = _layers(cols, rel, month_zhi, effective, pure, he0["ban_cheng"],
+                  dayun_ganzhi, liunian_ganzhi)
     stem_layer(cols, lay["static"], lay["root_scaled"],
                blocked=frozenset(he0["blocked"]), hidden=lay["hidden"],
                coef_by_wx=lay["coef_by_wx"], pure=pure,
@@ -1673,7 +1747,7 @@ def compute_strength(pillars: dict, *, dayun_ganzhi: str | None = None,
     he = stem_he.judge_stem_he(
         cols, month_zhi, rel, effective=effective, suiyun=_sy_cols,
         final_provider=lambda: _stem_he_trial(cols, rel, month_zhi, effective, pure,
-                                              _sy_cols))
+                                              _sy_cols, dayun_ganzhi, liunian_ganzhi))
     ban = he["ban"]
 
     # **岁运两列的命盘快照视图**（013 补遗，`suiyun_columns=True` 时才建）。
@@ -1703,7 +1777,8 @@ def compute_strength(pillars: dict, *, dayun_ganzhi: str | None = None,
     # 「原字」视图（`src_gan` 还原合化换过的干）——五合现在排在**静态旺度之后**
     # （2026-09-16 用户规格），故第 5 段先按原字算一遍，换字后再重算（第 7 段）。
     cols0 = [degrees.Col(key=c.key, gan=c.src_gan, zhi=c.zhi, orig_gan=None) for c in cols]
-    lay0 = _layers(cols0, rel, month_zhi, effective, pure, None)
+    lay0 = _layers(cols0, rel, month_zhi, effective, pure, None,
+                   dayun_ganzhi, liunian_ganzhi)
     lay0["deg_detail"] = {wx: {"root": r} for wx, r in lay0["root"].items()}
 
     # **换字后重判地支**（2026-09-17 用户裁定）：合化成功的字换了五行，地支合会的
@@ -1722,15 +1797,8 @@ def compute_strength(pillars: dict, *, dayun_ganzhi: str | None = None,
                                for fx in e.get("effects", []) if fx.get("pure")
                                for k in e["cols"])
 
-    lay = _layers(cols, rel_after, month_zhi, eff_after, pure_after, he["ban_cheng"])
-
-    # 岁运之支**自身藏干**计入旺度（013 期 T016；书 上 884「未本身藏丁火 3 度」/900/901）。
-    # **必须赶在 `stem_layer` 之前**——它拿 `lay["static"]` 当**生克基数**，而运支的藏干
-    # 是该步旺度的一部分，不能只进契约值、不进生克。平加项（不乘月令系数）；无岁运时为空。
-    _sy_hidden = _suiyun_hidden(dayun_ganzhi, liunian_ganzhi, month_zhi)
-    if _sy_hidden:
-        lay["static"] = {wx: round(v + _sy_hidden.get(wx, 0.0), 6)
-                         for wx, v in lay["static"].items()}
+    lay = _layers(cols, rel_after, month_zhi, eff_after, pure_after, he["ban_cheng"],
+                  dayun_ganzhi, liunian_ganzhi)
 
     hidden, muku = lay["hidden"], lay["muku"]
     static, coef_by_wx = lay["static"], lay["coef_by_wx"]
@@ -1762,13 +1830,10 @@ def compute_strength(pillars: dict, *, dayun_ganzhi: str | None = None,
     # 契约的「静态旺度」＝**第 5 段（原字）**那一份，**不含合绊**——五合排在第 6 段，
     # 合绊的缩放只作**生克基数**（`stem_layer` 拿 `lay["static"]`）。2026-09-16 用户裁定：
     # 「静态部分不应算合绊」（与 书 上 1638 把合绊写进静态旺度相反，属有意分歧）。
+    # 岁运的**大运静态旺度**（上 847-853 两项）已由 `_layers` 落到 `lay0["static"]` 上
+    # （2026-09-24 订正点 ①；`lay0` 与定案趟同传岁运参数），故此处直接取用。
+    # **无岁运时 `lay0["static"]` 与改前逐位相同**，原局分文不动（FR-023 / SC-003）。
     _static0 = lay0["static"]
-
-    # 岁运之支**自身藏干**计入**契约的静态旺度**（013 期 T016；书 上 884「未本身藏丁火
-    # 3 度」/900/901）。平加项（不乘月令系数）；**无岁运时为空字典**，故原局分文不动
-    # （FR-023）。生克基数那一份在 `lay["static"]` 上就已加好（见上文）。
-    if _sy_hidden:
-        _static0 = {wx: round(v + _sy_hidden.get(wx, 0.0), 6) for wx, v in _static0.items()}
     deg_detail = {wx: _deg_detail(cols0, lay0["hidden"], wx, month_zhi, _static0, final,
                                   effective, lay0["root"].get(wx, 0.0), lay0["muku"],
                                   lay0["root_scaled"].get(wx, 0.0),

@@ -128,19 +128,26 @@ HERO_PILLARS = ("乙丑", "丁亥", "己巳", "丁卯")
 
 
 def _real_geju(pillars, *, dayun_ganzhi=None):
-    """按 `analyze_step` 的同口径（真实通根/关系/有生）独立重算格局类型。"""
+    """按 `analyze_step` 的同口径（真实通根/关系/有生）独立重算格局类型。
+
+    ⚠️ **不再自行施加运支增减**：2026-09-24 订正点 ① 起，大运静态旺度已在
+    `pipeline` 的实例层并入，`base["final_scores"]` 就是**大运动态旺度**——
+    在此再 `apply_dayun_delta` 一次会与引擎双算。
+    """
     from services.bazi.v2 import degrees, geju, pipeline
 
     base = pipeline.compute_strength(pillars, dayun_ganzhi=dayun_ganzhi)
     cols = degrees.build_cols(pillars)
-    final = base["final_scores"]
-    if dayun_ganzhi:
-        final = dayun.apply_dayun_delta(final, dayun_ganzhi[1], dayun_ganzhi[0])
     return geju.judge_geju(
-        cols=cols, final=final,
+        cols=cols, final=base["final_scores"],
         root={w: base["degrees"][w]["root"] for w in base["degrees"]},
         has_sheng=base["has_sheng"], rel=base["relations"],
         month_zhi=next((c.zhi for c in cols if c.key == "month"), "") or "")["type"]
+
+
+# 书 下 4518（庚戌 戊寅 癸酉 乙卯 + 丙子运）——**书自己给了结论**：
+# 「此造原局身太弱以从弱论，但进入丁丑、**丙子运后得根不再相从**」
+SENSUO_PILLARS = ("庚戌", "戊寅", "癸酉", "乙卯")
 
 
 def test_analyze_step_uses_step_has_sheng():
@@ -148,23 +155,24 @@ def test_analyze_step_uses_step_has_sheng():
 
     书证：书 上 1598「答：不能独立＝太弱以下＋无生（或虽有若无）＋无强根（≥2.4度）」
     ——「无生」是三个合取项之一，必须真实判定；若 `analyze_step` 传
-    `has_sheng={全 False}`，该项被静默删除，日主虽受生仍被判「不能独立」→ 误判从弱。
-    本例（书 上 418 坤造）日主己土受丁火之生，而丁火之生克权来自「有生」
-    （书 上 980；链见 HERO_PILLARS 注释），该步应为正格。
+    `has_sheng={全 False}`，该项被静默删除、被判误作「无生」→ 偏向从格。
+
+    本例改用 书 下 4518（庚戌 戊寅 癸酉 乙卯 + **丙子**运）：书自己写「原局身太弱以
+    **从弱**论，但进入丁丑、丙子运后**得根不再相从**」——该步应为**正格**。
+    （原用的 书 上 418 坤造在订正点 ① 之后两个判法同值，断言会空转。）
     """
     from services.bazi.v2 import degrees, geju, pipeline
-    p = _pillars(*HERO_PILLARS)
-    base = pipeline.compute_strength(p, dayun_ganzhi="庚寅")
-    shifted = dayun.apply_dayun_delta(base["final_scores"], "寅", "庚")
-    root = {w: base["degrees"][w]["root"] for w in base["degrees"]}
+    p = _pillars(*SENSUO_PILLARS)
+    base = pipeline.compute_strength(p, dayun_ganzhi="丙子")
     cols = degrees.build_cols(p)
-    all_false = geju.judge_geju(cols=cols, final=shifted, root=root,
-                                has_sheng={w: False for w in shifted},
-                                rel=base["relations"], month_zhi="亥")["type"]
-    real = _real_geju(p, dayun_ganzhi="庚寅")
+    all_false = geju.judge_geju(cols=cols, final=base["final_scores"],
+                                root={w: base["degrees"][w]["root"] for w in base["degrees"]},
+                                has_sheng={w: False for w in base["final_scores"]},
+                                rel=base["relations"], month_zhi="寅")["type"]
+    real = _real_geju(p, dayun_ganzhi="丙子")
     assert real != all_false, "该命例须能区分「真 has_sheng」与「全 False」（否则断言空转）"
-    assert real == "zheng"
-    assert dayun.analyze_step(p, "庚寅")["ge_ju"]["type"] == real
+    assert real == "zheng", "书 下 4518：丙子运得根不再相从"
+    assert dayun.analyze_step(p, "丙子")["ge_ju"]["type"] == real
 
 
 def test_analyze_all_origin_geju_uses_same_caliber_as_analyze_step():

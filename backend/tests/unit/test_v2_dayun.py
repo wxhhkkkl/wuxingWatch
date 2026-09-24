@@ -149,10 +149,16 @@ def test_dayun_zhi_hidden_stems_are_added_to_the_scores():
     p = _pillars("戊申", "庚申", "戊午", "戊午")
     a = pipeline.compute_strength(p)
     b = pipeline.compute_strength(p, dayun_ganzhi="丙辰")
-    # 辰的藏干（上 449-451 ④ 临大运档）：癸1 乙2 戊3 → 水 +1、木 +2、土 +3
-    assert b["static_scores"]["土"] == pytest.approx(a["static_scores"].get("土", 0.0) + 3.0)
-    assert b["static_scores"]["木"] == pytest.approx(a["static_scores"].get("木", 0.0) + 2.0)
-    assert b["static_scores"]["水"] == pytest.approx(a["static_scores"].get("水", 0.0) + 1.0)
+    # **大运静态旺度**＝原局静态 ＋ 运支状态增减＋运干同类（上 847-853）
+    #                    ＋ 运支自身藏干平加（上 884）
+    # 2026-09-24 订正点 ①：改前只加第 2 项，第 1 项被加在生克**之后**的动态旺度上。
+    shift = {wx: dayun.STATE_DELTA[dayun.dayun_state(wx, "辰")] for wx in a["static_scores"]}
+    shift["火"] += 1.0                       # 运干丙（火）同类相助，上 851
+    # 运支辰的 ④ 档（上 449-451）：癸1 乙2 戊3 → 水 +1、木 +2、土 +3
+    hidden = {"水": 1.0, "木": 2.0, "土": 3.0}
+    for wx in a["static_scores"]:
+        want = a["static_scores"][wx] + shift[wx] + hidden.get(wx, 0.0)
+        assert b["static_scores"][wx] == pytest.approx(max(0.0, want)), wx
     # 无岁运那一趟必须与「从来没传过岁运」逐位相同——原局路径不受影响
     assert a["static_scores"] == pipeline.compute_strength(_pillars("戊申", "庚申", "戊午", "戊午"))["static_scores"]
 
