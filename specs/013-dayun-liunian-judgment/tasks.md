@@ -21,15 +21,26 @@ description: "Task list for 岁运判定（大运与流年加入后的推导）"
 
 > **两个后端命令的数字不同，须分别记**——先前把 `tests/unit` 的数当成全量，会导致「无新增红」不可验证。
 
-| 命令 | 命令 | 基线 | 收尾实测（T051） |
-|---|---|---|---|
-| 后端（全量） | `cd backend && uv run pytest tests` | **1255 例 / 1246 passed / 9 failed** | **1467 例 / 1458 passed / 9 failed** |
-| 后端（仅单元） | `cd backend && uv run pytest tests/unit` | **1190 例 / 1181 passed / 9 failed** | 随全量同向（红与全量同一批 9 条） |
-| 前端 | `cd frontend && npx vitest run` | **18 文件 / 197 passed / 0 failed** | **19 文件 / 215 passed / 0 failed** |
+| 命令 | 命令 | 基线 | 收尾实测（T051） | **后续批次收尾（2026-09-28）** |
+|---|---|---|---|---|
+| 后端（全量） | `cd backend && uv run pytest tests` | **1255 例 / 1246 passed / 9 failed** | **1467 例 / 1458 passed / 9 failed** | **1583 例 / 1575 passed / 8 failed** |
+| 后端（仅单元） | `cd backend && uv run pytest tests/unit` | **1190 例 / 1181 passed / 9 failed** | 随全量同向（红与全量同一批 9 条） | **1509 例 / 1501 passed / 8 failed** |
+| 后端（单元+契约） | `cd backend && uv run pytest tests/unit tests/contract` | — | — | **1579 例 / 1571 passed / 8 failed** |
+| 前端 | `cd frontend && npx vitest run` | **18 文件 / 197 passed / 0 failed** | **19 文件 / 215 passed / 0 failed** | 未改动（本期未触前端） |
 
 **收尾实测的红**与开头的「9 红清单」**逐条相同**（012 期遗留 `4d8dd9d`）——无新增红。
 
-**9 红清单**（两个后端命令下相同，均为 012 期遗留 `4d8dd9d`，与 HEAD 逐条一致）：
+> **2026-09-28 的后续批次**（`research.md` 的 O-10 甲~壬：让位收窄守卫、多支一条模型、
+> 天克地冲合并、相刑阈值表、刑旺土成功门、四条真缺陷、门控减力、藏干口径与静态算式）——
+> 新增 10 个测试文件约 65 条，**无新增红**；期间换过若干**既有测试的盘**（每条在原处写了
+> 理由与书证，清单见 O-10「测试」节）。
+>
+> **红数由 9 减为 8**：原 9 红中的 `test_v2_steps::test_chart_group_degree_tracks_settlement`
+> 已**更新断言、红转绿**——它的**数字**断言（年干甲结算后为 0）本就成立，只是快照粒度已从
+> 「生批完成／克批完成」两个批次标签细化为**逐实例**（「X · 受」「X · 生」＋「本段结算完成」）。
+
+**8 红清单**（两个后端命令下相同，均为 012 期遗留 `4d8dd9d`；**原 9 条**，
+2026-09-28 更新掉 `test_chart_group_degree_tracks_settlement` 后减为 8，余 8 条与 HEAD 逐条一致）：
 
 ```
 test_v2_instances::test_ke_main_party_also_loses_power
@@ -39,7 +50,6 @@ test_v2_shengke_rules::test_same_type_on_one_unit_takes_max_not_sum
 test_v2_shengke_rules::test_different_receivers_each_get_their_own
 test_v2_shengke_rules::test_same_batch_pairs_ordered_by_pillar
 test_v2_stem_he_hua::test_condition4_uses_weak_party_instance_not_element_total
-test_v2_steps::test_chart_group_degree_tracks_settlement
 test_v2_xi_ji::test_book_case_xia_4261_production_xiyong_layer
 ```
 
