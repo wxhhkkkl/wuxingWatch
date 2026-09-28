@@ -29,8 +29,8 @@ const DEFAULT_PLACE: { place: string; longitude: number; latitude: number; timez
 const calendar = ref<'solar' | 'lunar' | 'sizhu'>('solar')
 const gender = ref<'M' | 'F' | 'UNKNOWN'>('M')
 const name = ref('')
-const birthDate = ref('1984-02-14')
-const birthTime = ref('12:00')
+const birthDate = ref('1963-11-16')
+const birthTime = ref('10:00')
 const unknownTime = ref(false)
 const birthPlace = ref(DEFAULT_PLACE.place)
 const birthLatitude = ref<number | undefined>(DEFAULT_PLACE.latitude)
@@ -72,8 +72,8 @@ const showPillarPicker = computed({
 // 日期/时间选择器
 const showDatePicker = ref(false)
 const showTimePicker = ref(false)
-const dateModel = ref(['1984', '02', '14'])
-const timeModel = ref(['12', '00'])
+const dateModel = ref(['1963', '11', '16'])
+const timeModel = ref(['10', '00'])
 const minDate = new Date(1920, 0, 1)
 const maxDate = new Date(new Date().getFullYear(), 11, 31)
 

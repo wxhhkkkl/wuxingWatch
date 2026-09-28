@@ -152,9 +152,10 @@ describe('StrengthDetail — v2 渲染路径（012）', () => {
     expect(row.text()).toContain('破格')
   })
 
-  it('判定依据含规则与算式（口径裁定不在页面展示）', () => {
+  it('判定依据只显示算式（段口径长文与口径裁定都不在页面展示）', () => {
     const w = mountWith(withV2)
-    expect(w.findAll('.step-rule').length).toBeGreaterThan(0)
+    // `s.rule`（该段的口径长文）2026-09-28 起不在页面展示，数据里仍在
+    expect(w.findAll('.step-rule').length).toBe(0)
     expect(w.findAll('.step-trace').length).toBeGreaterThan(0)
     // 口径裁定只留在数据里（`s.rulings`），页面不渲染
     expect(w.findAll('[data-testid="v2-step-rulings"]').length).toBe(0)
@@ -292,10 +293,9 @@ describe('StrengthDetail — 推演分步展示', () => {
     expect(vals).toEqual(['0', '5.6', '7.8', '17.6', '6'])
   })
 
-  it('规则与结果直接可见，无需交互', () => {
+  it('结果直接可见，无需交互', () => {
     const w = mountWith(withV2)
     const step = w.find('[data-testid="v2-step-total"]')
-    expect(step.find('.step-rule').text()).toContain('十一档')
     expect(step.find('.step-result').text()).toContain('偏弱')
   })
 

@@ -36,7 +36,8 @@ const props = withDefaults(defineProps<{
     <li v-for="(s, si) in props.steps" :key="s.key" class="step-block"
         :data-testid="`${props.idPrefix}-step-${s.key}`">
       <p class="step-title"><span class="step-no">{{ si + 1 }}</span>{{ s.title }}</p>
-      <p class="step-rule">{{ s.rule }}</p>
+      <!-- `s.rule`（该段的口径长文）**不在页面展示**（2026-09-28）——它仍随数据返回、
+           保留在 `steps[].rule` 里供追溯，但页面上只看算式行与结果。 -->
 
       <!-- 一段之内的渲染顺序由 `stepRows` 统一决定：算式行 →（第 7 段的逐实例快照
            就插在对应算式之后）→ 结果 → 五行速览 → 段末命盘。速览与命盘相邻。 -->
