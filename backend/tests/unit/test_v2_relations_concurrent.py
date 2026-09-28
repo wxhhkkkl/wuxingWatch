@@ -121,3 +121,30 @@ def test_maochen_prefers_banhui_over_liuhai():
     rej = _rejected(r, "六害")
     assert rej, "卯辰六害应进 rejected"
     assert rej[0]["blocked_by"] and rej[0]["blocked_by"]["tier"] == 9, rej[0]
+
+
+# ---------------------------------------------------------------
+# 卯辰半会 与 半三合 并存（013 期批 7；书 下 302）
+# ---------------------------------------------------------------
+
+def test_maochen_banhui_coexists_with_bansanhe():
+    """下 302 坤 丁卯 癸卯 辛未 壬辰 + 乙巳运 + 2011辛卯年。
+
+    > 「逢2011辛卯年，**卯未半合与卯辰半会并存**，平均每个卯木减力1.17度，变为3.83度……
+    >   卯未仍**合而不化**，以合绊论，**与卯辰合绊并存**。」
+
+    两条**都不化**却并存——故并存判据读的是**名义化神**（`_nominal_hua`），
+    不是已成立条目里那个「化成功才有」的 `hua`。这与
+    `test_coexist_requires_hua_non_empty` 只断言「未化时 `hua` 为 None」不冲突。
+    """
+    p = _chart("丁卯", "癸卯", "辛未", "壬辰")
+    p["_dayun"] = {"gan": "乙", "zhi": "巳"}
+    p["_liunian"] = {"gan": "辛", "zhi": "卯"}
+    r = relations.judge_relations(p)
+    banhui = [e for e in r["established"] if e["tier"] == 9]
+    banhe = [e for e in r["established"] if e["tier"] == 13]
+    assert banhui, "卯辰半会应成立（书 下 302）"
+    assert banhe, "卯未半合应成立且**并存**（书 下 302）：%s" % [
+        (e["tier"], e["cols"]) for e in r["rejected"] if e["tier"] == 13]
+    assert banhui[0]["hua"] == "木" and banhe[0]["hua"] == "木", \
+        "两者化神同为木：%s / %s" % (banhui[0]["hua"], banhe[0]["hua"])

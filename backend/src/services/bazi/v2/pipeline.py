@@ -1112,6 +1112,13 @@ def stem_layer(cols: list[degrees.Col], static: dict[str, float],
     # ---------------------------------------------------------------
     # 节点收集：相邻天干组对 + **同柱（干 ↔ 本支本气）**
     # ---------------------------------------------------------------
+    # ⚠️ **已知缺口（O-10 未尽 B3）**：本处只取**相邻**柱对（`i, i+1`），而本函数的 `cols`
+    # 只含四柱——**岁运之干进不了生克网络**。FR-005 要求「大运与流年之支视为与原局任何一柱
+    # 均相邻……**两者的天干同理**」（书 上 578）。天干**五合**那一层已在
+    # `judge_stem_he(suiyun=…)` 里按同一原理处理，故两层口径不一致。
+    # 未能就地补齐：`stem_groups` 的**连片组**与 `_tonggen_with_hidden` 的**通根**都依赖
+    # `cols`，把伪列塞进来会级联到分组与通根；而岁运之干的度数本就由 `_apply_dayun_layer`
+    # 另一套机制给。属**天干层的结构性改造**，非补一段配对循环可收。
     stem_pairs: list[tuple[int, int, degrees.StemGroup, degrees.StemGroup]] = []
     for i in range(len(cols) - 1):
         j = i + 1
@@ -1360,7 +1367,13 @@ def _muku_ctx(rel: dict, cols: list[degrees.Col], month_zhi: str,
             continue
         zhis = [z for z in e.get("members", [])
                 if z in tables.BRANCH_WUXING_BENQI and z != month_zhi]
-        if e["type"] == "六冲":
+        # **天克地冲（tier 2）的冲腿也算冲**——它的地支腿本就是一对同样的六冲
+        # （书《入门》788「天克地冲就是天干相克、地支相冲」；答疑 1106「其实质还是冲」），
+        # 只是该柱对同时满足天干相克时**整条升到 tier 2**、六冲那条随之让位。
+        # 只认 `type == "六冲"` 会漏掉它：实测 答疑 150（丁亥 丁未 丁未 癸卯 + 癸丑运）
+        # 的「丑未冲」以「丁未/癸丑 天克地冲」形式成立，于是 未月 火 被错判成 ④「临界」
+        # （系数 1.0），而书 上 1088③ 判「余气+休地取平均 = **1.2**」。
+        if e["type"] == "六冲" or e["tier"] == 2:
             chong += zhis
         elif e["type"] in ("两支刑", "丑未戌刑"):
             xing += zhis
@@ -1378,7 +1391,7 @@ def _muku_ctx(rel: dict, cols: list[degrees.Col], month_zhi: str,
                 if z is not None and z != month_zhi:
                     hai.append(z)
         # 刑/冲成功 → 该支被置为**中性纯土**（书 上 1049「辰土被刑、冲成功变为中性土」）
-        if e["type"] in ("六冲", "两支刑", "丑未戌刑") and any(
+        if (e["type"] in ("六冲", "两支刑", "丑未戌刑") or e["tier"] == 2) and any(
                 fx.get("pure") == "土" for fx in e.get("effects", [])):
             pure = True
     # 亥拱未（书 上 1088③「2亥拱1未」、上 1090④「1亥拱」）——拱合（tier 17）已从关系层
@@ -1469,7 +1482,7 @@ def _degradations(cols: list[degrees.Col]) -> list[str]:
 
 def _apply_dayun_layer(grps: list[degrees.StemGroup], static: dict[str, float],
                        dayun_ganzhi: str | None, liunian_ganzhi: str | None,
-                       month_zhi: str) -> dict[str, float]:
+                       month_zhi: str) -> tuple[dict[str, float], dict[str, float]]:
     """把**大运静态旺度**的两项（书 上 847-853）落到**实例层**——**每五行一次**。
 
     书 上 847「五行在大运的**静态**旺度等于在原局**静态**旺度的基础上进行增减」、
@@ -1494,6 +1507,7 @@ def _apply_dayun_layer(grps: list[degrees.StemGroup], static: dict[str, float],
     从格判据读的就是它）看不到运支藏干。
     """
     by_wx: dict[str, list[degrees.StemGroup]] = {}
+    deltas: dict[str, float] = {}          # 每五行的**总增量**——第 5 段的算式要用
     for g in grps:
         by_wx.setdefault(g.wx, []).append(g)
     carrier = {wx: (next((x for x in gs if x.is_day_master), None) or
@@ -1504,6 +1518,7 @@ def _apply_dayun_layer(grps: list[degrees.StemGroup], static: dict[str, float],
     def _add(wx: str, d: float) -> None:
         if not d:
             return
+        deltas[wx] = round(deltas.get(wx, 0.0) + d, 3)
         g = carrier.get(wx)
         if g is not None:
             g.static = round(max(0.0, g.static + d), 3)
@@ -1522,7 +1537,7 @@ def _apply_dayun_layer(grps: list[degrees.StemGroup], static: dict[str, float],
     for wx, d in _suiyun_hidden(dayun_ganzhi, liunian_ganzhi, month_zhi).items():
         if wx in out:
             _add(wx, d)
-    return out
+    return out, deltas
 
 
 def _layers(cols: list[degrees.Col], rel: dict, month_zhi: str,
@@ -1562,8 +1577,10 @@ def _layers(cols: list[degrees.Col], rel: dict, month_zhi: str,
     grps = stem_groups(cols, hidden, coef_by_wx, pure, None)
     # 岁运：**大运静态旺度**两项落到实例上（书 上 847-853；2026-09-24 订正点 ①）——
     # **赶在合绊缩放之前**，因为合绊缩的是「该干所在组的**静态**旺度」。
+    sy_deltas: dict[str, float] = {}
     if dayun_ganzhi or liunian_ganzhi:
-        static = _apply_dayun_layer(grps, static, dayun_ganzhi, liunian_ganzhi, month_zhi)
+        static, sy_deltas = _apply_dayun_layer(grps, static, dayun_ganzhi,
+                                               liunian_ganzhi, month_zhi)
     # **合绊减的是「该干所在组的静态旺度」（含通根那一份）**——2026-09-16 用户裁定。
     # `ban` 是柱位下标 → 减几**成**；组按 `组静态 × (1 − 成数/10)` 整体缩放，
     # 组通根与乘系数根**同步缩**（否则「根 ≤ 静态」不变量会破）。一组内多个干都合绊时成数相加。
@@ -1591,7 +1608,10 @@ def _layers(cols: list[degrees.Col], rel: dict, month_zhi: str,
     insts = _benqi_instances(cols, hidden, coef_by_wx)
     return {"hidden": hidden, "muku": muku, "static": static, "root": root,
             "coef_by_wx": coef_by_wx, "root_scaled": root_scaled, "qi_by_wx": qi_by_wx,
-            "grps": grps, "insts": insts}
+            "grps": grps, "insts": insts,
+            # 大运静态旺度的**每五行总增量**——只供第 5 段的算式行如实呈现
+            # （`static[wx]` 含它，而算式原先只写「天干＋藏干」两项，两边对不上）
+            "sy_deltas": sy_deltas}
 
 
 def _stem_he_trial(cols: list[degrees.Col], rel: dict, month_zhi: str,
@@ -1704,7 +1724,8 @@ def compute_strength(pillars: dict, *, dayun_ganzhi: str | None = None,
         _natal = {p.get("zhi") for k, p in pillars.items()
                   if k in ("year", "month", "day", "time") and p}
         _gate = relations._liunian_held_by_dayun(
-            dayun_ganzhi[1], liunian_ganzhi[1], {z for z in _natal if z})
+            dayun_ganzhi[1], liunian_ganzhi[1], {z for z in _natal if z},
+            (pillars.get("month") or {}).get("zhi") or "")
         if _gate:
             liunian_ganzhi = None
 
@@ -1876,7 +1897,8 @@ def compute_strength(pillars: dict, *, dayun_ganzhi: str | None = None,
                               grps=grps, insts=insts, dm_group=dm_group,
                               he=he, ban=ban, checkpoints=checkpoints,
                               cols0=cols0, lay0=lay0, rel_after=rel_after,
-                              sy_cols_src=_sy_cols_src, sy_cols_after=_sy_cols_after),
+                              sy_cols_src=_sy_cols_src, sy_cols_after=_sy_cols_after,
+                              lay=lay),
     }
 
 
@@ -1954,10 +1976,11 @@ _GAN_CHANGE_BAN = "合绊"     # 合而不化，本干减力
 
 # 各段的「度数」口径（`_step_chart` 的 `stage`）——与 `_build_steps` 的段序一一对应
 _STAGE_OF: dict[str, str] = {
-    "relations": "origin",       # 第 1 段：原局，未受关系影响
-    "effects": "adjusted",       # 第 2 段：关系影响后
-    "month_coef": "adjusted",    # 第 3 段：系数本身不落到字上
-    "tonggen": "adjusted",       # 第 4 段
+    "relations": "origin",          # 第 1 段：原局，未受关系影响
+    "effects": "adjusted",          # 第 2 段：关系影响后（**未乘系数**）
+    # 第 3 段**引入月令系数**，故自此以下各段的藏干一律乘系数（口径统一，2026-09-28 用户裁定）
+    "month_coef": "adjusted_coef",  # 第 3 段：系数本身不落到天干，但落到藏干上
+    "tonggen": "adjusted_coef",     # 第 4 段
     "static": "static",          # 第 5 段：静态旺度（**原字**，尚无合绊）
     "stem_he": "he",             # 第 6 段：天干五合换字 + 合绊减力
     "static_he": "static_he",    # 第 7 段：换字后重算静态
@@ -2096,8 +2119,13 @@ def _step_chart(cols: list[degrees.Col], hidden: dict, month_zhi: str,
     pillars: list[dict] = []
     for idx, c in enumerate(list(cols) + list(extra_cols or [])):
         is_pseudo = c.key in is_sy
-        # `he` 段（天干五合）只换天干，藏干尚未受关系影响，故与 `origin` 同用原始表
-        changed = stage not in ("origin", "he")
+        # **只有 `origin` 用原始藏干表**。原实现把 `he`（第 6 段）也排除在外，理由写的是
+        # 「藏干尚未受关系影响」——那个前提是**错的**：藏干从**第 2 段**起就带关系影响了
+        # （第 2/3/4 段都显示 2.5）。后果是第 6 段的藏干**倒退**回原字：实测
+        # `癸卯 癸亥 癸亥 丁巳` + 辛酉运 的卯中乙在第 2/3/4 段都是 2.5（减力），
+        # 第 6 段跳回 **5.0**、连「减力」标记也没了，第 7 段又变成 10.05——
+        # 正是用户报的「本段后的数字」对不上。
+        changed = stage != "origin"
         is_pure = changed and c.key in pure_notes
         # 岁运之支的藏干**恒取 flat_hidden**（`hidden` 只装了四柱，取它会得到空表）；
         # 且平加，不乘月令系数——故下面各 stage 的系数分支对它一律不适用。
@@ -2115,7 +2143,11 @@ def _step_chart(cols: list[degrees.Col], hidden: dict, month_zhi: str,
                 val = (inst_final_of.get(c.key, 0.0)
                        if nd is not None and nd["gan"] == gan
                        else round(deg * coef.get(wx, 1.0), 3))
-            elif stage in ("static", "static_he"):
+            elif stage not in ("origin", "adjusted"):
+                # **口径统一**（2026-09-28 用户裁定）：月令系数自**引入它的那一段**
+                # （第 3 段）起一直乘到底，后面各段不再退回「不乘系数」。
+                # 改前只有 `static`/`static_he` 乘，于是第 5↔6 段之间 3.75↔2.5 来回跳、
+                # 像「倒退」——而系数并没有被哪一段撤回。
                 val = round(deg * coef.get(wx, 1.0), 3)
             else:
                 val = round(deg, 3)
@@ -2207,7 +2239,9 @@ def _step_chart(cols: list[degrees.Col], hidden: dict, month_zhi: str,
 def _tonggen_static_traces(cols: list[degrees.Col], hidden: dict, deg_detail: dict,
                            static: dict[str, float], ban: dict[int, float] | None,
                            month_zhi: str, effective: str | None,
-                           muku, pure: frozenset[str]) -> tuple[list[dict], list[dict]]:
+                           muku, pure: frozenset[str],
+                           sy_deltas: dict[str, float] | None = None
+                           ) -> tuple[list[dict], list[dict]]:
     """第 4/5 段（通根递减、静态旺度）的依据行。
 
     2026-09-16 起抽成函数，供**两处**复用：**原字视图**（换字前）与**换字后**的重算视图
@@ -2291,8 +2325,17 @@ def _tonggen_static_traces(cols: list[degrees.Col], hidden: dict, deg_detail: di
                     else f"地支藏干 {root:g} 度")  # 不透天干：无干可通根
         basis = (f"月令化{effective}，{wx}为{state}" if _month_hua(month_zhi, effective)
                  else f"{month_zhi}月{wx}为{state}")
+        # **大运静态旺度是加在「×系数之后」的**（`_apply_dayun_layer` 落在实例的
+        # `static` 上，而那已是乘过系数的量）。算式原先只写「天干＋藏干」两项，
+        # 于是 癸卯 癸亥 癸亥 丁巳 + 辛酉运 的金给出「0＋0＝0 ×0.8＝**8**」这种
+        # 自相矛盾的式子——那个 8 正是大运层给的（运干辛同类相助 1 ＋ 运支酉藏干平加 5
+        # ＋ 运支状态旺 +2）。补上第三项，两边就对上。
+        _sd = round((sy_deltas or {}).get(wx, 0.0), 3)
+        _sy_txt = (f"；＋ 大运静态旺度 {_sd:+g} 度" if _sd else "")
         deg_tr.append(_tr(wx, f"{stem_txt} ＋ {root_txt} ＝ {stem_n + root:g} 度，"
-                              f"× 月令系数 {coef:g}（{basis}）＝ {st:g} 度", st))
+                              f"× 月令系数 {coef:g}（{basis}）"
+                              f"＝ {round(stem_n + root, 3) * coef:g} 度{_sy_txt}"
+                              f" ＝ {st:g} 度", st))
     return tg_tr, deg_tr
 
 
@@ -2311,7 +2354,8 @@ def _build_steps(cols: list[degrees.Col], rel: dict, hidden: dict, deg_detail: d
                  cols0: list[degrees.Col] | None = None,
                  lay0: dict | None = None,
                  sy_cols_src: list[degrees.Col] | None = None,
-                 sy_cols_after: list[degrees.Col] | None = None) -> list[dict]:
+                 sy_cols_after: list[degrees.Col] | None = None,
+                 lay: dict | None = None) -> list[dict]:
     """逐段判定依据（data-model §7、FR-050）。
 
     每一段给出 `key` / `title` / `rule` / `rulings` / `traces` / `result`，顺序固定
@@ -2384,9 +2428,11 @@ def _build_steps(cols: list[degrees.Col], rel: dict, hidden: dict, deg_detail: d
     _l0 = lay0 or {}
     tg_tr0, deg_tr0 = _tonggen_static_traces(
         _c0, _l0.get("hidden", hidden), _l0.get("deg_detail", deg_detail),
-        _l0.get("static", static), None, month_zhi, effective, muku, pure)
+        _l0.get("static", static), None, month_zhi, effective, muku, pure,
+        _l0.get("sy_deltas"))
     tg_tr, deg_tr = _tonggen_static_traces(
-        cols, hidden, deg_detail, static, None, month_zhi, effective, muku, pure)
+        cols, hidden, deg_detail, static, None, month_zhi, effective, muku, pure,
+        (lay or {}).get("sy_deltas"))
     _swapped = _c0 is not cols and any(c.orig_gan for c in cols)
 
     fin_tr = [_tr(wx, f"{wx}：动态旺度 {final.get(wx, 0.0):g} 度", final.get(wx, 0.0))
@@ -2437,9 +2483,10 @@ def _build_steps(cols: list[degrees.Col], rel: dict, hidden: dict, deg_detail: d
 
     chart_origin = _chart("origin")
     chart_he = _chart("he")
-    chart_adjusted = _chart("adjusted")
+    chart_adjusted = _chart("adjusted")            # 第 2 段：关系影响后，**未乘系数**
+    chart_adjusted_coef = _chart("adjusted_coef")  # 第 3 段：自本段起藏干恒乘系数
     # 第 4 段（通根递减）起就带上「组旺度 + 自身 + 根」三个数
-    chart_tonggen = _chart("adjusted", group_value=True)
+    chart_tonggen = _chart("adjusted_coef", group_value=True)
     chart_static = _chart("static")          # 第 5 段：原字视图（`_STAGE_WITH_BAN` 决定）
     chart_static_he = _chart("static_he")    # 第 7 段：含换字 + 合绊
     chart_dynamic = _chart("dynamic")
@@ -2468,7 +2515,7 @@ def _build_steps(cols: list[degrees.Col], rel: dict, hidden: dict, deg_detail: d
                     for fx in e.get("effects", [])],
          "result": "藏干度数已按关系影响调整"},
         'month_coef':         {"key": "month_coef", "title": "第 3 段 · 月令系数",
-         "chart": chart_adjusted,
+         "chart": chart_adjusted_coef,
          "rulings": [],
          "rule": "以月令的有效五行为基准，判断每个五行处于旺 / 相 / 休 / 囚 / 死中的哪一档，"
                  "该档决定后面的乘算系数；月令为四库时按刑冲害分支取状态"

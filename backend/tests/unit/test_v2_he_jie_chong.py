@@ -74,11 +74,24 @@ def test_xia1979_mao_you_resolved_when_both_held():
 
 def test_xia1985_yin_shen_not_resolved_when_one_side_gains():
     """下 1985 例2 乙亥 戊寅 壬申 乙巳：申被巳申合绊住，但寅被亥水生**反增力** →
-    「合不能解冲，最后依然论寅申冲」。"""
+    「合不能解冲，最后依然论寅申冲」。
+
+    > 书在该例原话是「**原局月日天克地冲**」（戊克壬 + 寅申冲）——批 6b 把
+    > `GAN_CHONG` 由四组扩到有书例的八组后，本盘由 tier 8 升为 **tier 2**，
+    > 与书一致。故查成立时两级一并认（地支腿本就复用 `ban.chong_effects`）。
+    """
     r = relations.judge_relations(_chart("乙亥", "戊寅", "壬申", "乙巳"))
-    chong = _estab(r, 8, ["寅", "申"])
-    assert chong, "只合住一支时，普通冲**仍成立**"
-    assert not _rej_chong(r, ["寅", "申"]), "不应被解"
+    # tier 2 的 `members` 是**干支混列** `[ga, gb, za, zb]`，故按**末两位**取支对
+    # （`_rej_chong` 同此约定）。
+    chong = [e for e in r["established"]
+             if e["tier"] in (2, 8) and set(e["members"][-2:]) == {"寅", "申"}]
+    assert chong, "只合住一支时，冲**仍成立**"
+    # 只断言**不因合解被拒**——tier 8 那条现在会因**让位**（tier 2 的天克地冲抢先）
+    # 进 rejected，那是级位问题，与本条要验的「只合住一支不算解」无关。
+    jied = [e for e in r["rejected"]
+            if e["tier"] in (2, 8) and set(e["members"][-2:]) == {"寅", "申"}
+            and "合可解冲" in (e.get("reason") or "")]
+    assert not jied, "不应被**合解**：%s" % jied
 
 
 # ---------------------------------------------------------------

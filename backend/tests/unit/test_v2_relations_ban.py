@@ -26,10 +26,11 @@ def _fx(effects, zhi, gan):
 
 
 def _effects(r, tier, zhi):
-    """取某级某支上的度数影响条目。"""
+    """取某级某支上的度数影响条目。`tier` 可为元组——见 `test_v2_ban._effects` 的同注。"""
+    tiers = tier if isinstance(tier, (tuple, set, frozenset)) else (tier,)
     out = []
     for e in r["established"]:
-        if e["tier"] != tier:
+        if e["tier"] not in tiers:
             continue
         for ef in e.get("effects", []):
             if ef["zhi"] == zhi:
@@ -110,7 +111,7 @@ def test_chenxu_chong_failure_follows_month_group():
     > 该造天干无土、全局地支土 22 度 < 26，故冲不成功。
     """
     r = relations.judge_relations(_chart("庚戌", "庚辰", "庚午", "丙戌"))
-    chong = [e for e in r["established"] if e["tier"] == 8]
+    chong = [e for e in r["established"] if e["tier"] in (2, 8)]
     assert chong, "辰戌冲应成立"
     eff = chong[0].get("effects", [])
     xin = next((e for e in eff if e["zhi"] == "戌" and e.get("gan") == "辛"), None)
@@ -130,7 +131,7 @@ def test_chenxu_chong_success_turns_pure_earth():
     > 规则空转——审计 S4）。现按书要求的 `{"pure":"土","deg":6.0}` 断言。
     """
     r = relations.judge_relations(_chart("戊辰", "壬戌", "甲子", "丙寅"))
-    chong = [e for e in r["established"] if e["tier"] == 8]
+    chong = [e for e in r["established"] if e["tier"] in (2, 8)]
     assert chong, "辰戌冲应成立"
     pure = [fx for fx in chong[0].get("effects", []) if fx.get("pure")]
     assert len(pure) == 2, "成功时两支均应变为纯土"

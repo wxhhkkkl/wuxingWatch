@@ -327,14 +327,25 @@ def test_chart_points_cover_the_settlement_order():
 
 
 def test_chart_group_degree_tracks_settlement():
-    """第 7 段快照：现在是**两个阶段**（生批完成 / 克批完成），主数与根随之变化。"""
+    """第 7 段快照：**逐实例**结算，主数与根随之变化（2026-09-28 更新断言）。
+
+    > 快照粒度已从「两个批次标签（生批完成 / 克批完成）」细化为**逐实例**——
+    > 每个参与结算的实例各出一张「· 受」「· 生」，末尾一张「本段结算完成」。
+    > 数值口径未变，故本测试原本的**数字**断言仍成立；只有标签列表须跟上实现
+    > （旧断言是 013 期遗留的 9 红之一，本条即其更新——更新后该红消失，基线变 **8 红**）。
+    """
     r = pipeline.compute_strength(_chart("甲子", "丙寅", "戊寅", "戊午"))
     pts = _step(r, "stem_shengke")["charts"]
-    assert [c["label"] for c in pts] == ["生批完成", "克批完成"], \
-        [c["label"] for c in pts]
+    labels = [c["label"] for c in pts]
+    assert labels, "第 7 段应给出逐实例快照"
+    assert labels[-1] == "本段结算完成", labels
+    assert all(lbl == "本段结算完成" or "·" in lbl for lbl in labels), labels
     year = [_pillar(c["chart"], "year") for c in pts]
-    # 年干甲：生批里被「木生火」泄耗 16.25 成 → 0
-    assert [p["gan_degree"] for p in year][-1] == pytest.approx(0.0)
+    # 年干甲走完「受批 → 生批」两张：受批后 2.15，生批里被「木生火」泄尽 → 0
+    yin = [p for c, p in zip(pts, year) if c["label"].startswith("年干甲")]
+    assert len(yin) == 2, labels
+    assert yin[0]["gan_degree"] == pytest.approx(2.15)
+    assert yin[1]["gan_degree"] == pytest.approx(0.0)
     # 不变量：主数 = 自身 + 根，且两者非负
     for p in year:
         assert p["gan_own"] + p["gan_root"] == pytest.approx(p["gan_degree"])
@@ -435,3 +446,69 @@ def test_chart_result_is_mediumtext_on_mysql():
     col = Base.metadata.tables["bazi_charts"].c.chart_result
     assert col.type.compile(dialect=mysql.dialect()).upper() == "MEDIUMTEXT"
     assert col.type.compile().upper() == "TEXT", "非 MySQL（dev 用 SQLite）仍是 TEXT"
+
+
+# ---------------------------------------------------------------
+# 藏干度数在逐段快照里的口径（2026-09-28）
+# ---------------------------------------------------------------
+
+def test_hidden_degree_is_monotone_across_stages():
+    """藏干度数只在该段**真的改动它**时变——口径自第 3 段（月令系数）起贯穿到底。
+
+    两条都是 2026-09-28 修的：
+
+    ① `he` 段（第 6 段）曾把藏干退回**原字表**，注释写的理由是「藏干尚未受关系影响」
+       ——那是错的（藏干从第 2 段就带关系影响）。后果是第 6 段跳回原值、连「减力」
+       标记都没了。
+    ② 月令系数原只在第 5/7 段乘，第 6 段退回不乘 → 第 5↔6 段之间 3.75↔2.5 来回跳。
+       现统一为**自引入系数的第 3 段起一直乘**。
+
+    盘 `癸卯 癸亥 癸亥 丁巳` + 辛酉运：年支卯中乙
+    原字 5.0 →（第 2 段 卯酉冲减半）2.5 →（第 3 段 ×亥月木相 1.5）3.75 → 此后不变，
+    直到第 7 段按实例结算。
+    """
+    p = _chart("癸卯", "癸亥", "癸亥", "丁巳")
+    p["_dayun"] = {"gan": "辛", "zhi": "酉"}
+    r = pipeline.compute_strength(p, dayun_ganzhi="辛酉")
+    got = {}
+    for s in r["steps"]:
+        y = next((c for c in s["chart"]["pillars"] if c["key"] == "year"), None)
+        if not y:
+            continue
+        b = next((h for h in y["hidden"] if h["gan"] == "乙"), None)
+        if b:
+            got[s["key"]] = b["degree"]
+    assert got["relations"] == pytest.approx(5.0), got          # 原字
+    assert got["effects"] == pytest.approx(2.5), got            # 关系影响（卯酉冲减半）
+    # **第 3 段起**乘系数，且此后各段不再退回
+    for k in ("month_coef", "tonggen", "static", "stem_he"):
+        assert got[k] == pytest.approx(3.75), (k, got)
+    # 第 7 段起按实例结算（本气取该支本气实例的终值——用户 2026-09-28 裁定保持）
+    assert got["stem_shengke"] != pytest.approx(3.75), got
+
+
+def test_static_expression_includes_the_dayun_term():
+    """第 5 段的算式**必须含大运层那一项**，且逐项加起来等于该段的结果。
+
+    **大运静态旺度是加在「×月令系数之后」的**（`_apply_dayun_layer` 落在实例的 `static`
+    上，而那已是乘过系数的量）。算式原先只写「天干 ＋ 藏干」两项，于是
+    `癸卯 癸亥 癸亥 丁巳` + 辛酉运 给出 **「0＋0＝0 ×0.8＝8」** 这种自相矛盾的式子——
+    那个 8 正是大运层给的（运干辛同类相助 1 ＋ 运支酉藏干平加 5 ＋ 运支状态旺 +2）。
+
+    三条断言：
+    ① 每个五行的算式里都出现「＝ {static[wx]} 度」；
+    ② 有大运介入的五行，算式里必须出现「＋ 大运静态旺度」；
+    ③ 该段的 `chart` 与 `static_scores` 同口径（透天干者的天干汇总 == static）。
+    """
+    p = _chart("癸卯", "癸亥", "癸亥", "丁巳")
+    p["_dayun"] = {"gan": "辛", "zhi": "酉"}
+    r = pipeline.compute_strength(p, dayun_ganzhi="辛酉")
+    st = _step(r, "static")
+    exprs = {t["target"]: t["expression"] for t in st["traces"]
+             if t["target"] in ("木", "火", "土", "金", "水")}
+    for wx, val in r["static_scores"].items():
+        assert wx in exprs, (wx, exprs)
+        assert f"＝ {val:g} 度" in exprs[wx], (wx, val, exprs[wx])
+    # 金：大运带来的 +8 —— 算式必须写出这一项，否则 0×0.8 与 8 对不上
+    assert "大运静态旺度 +8 度" in exprs["金"], exprs["金"]
+    assert "大运静态旺度" in exprs["水"], exprs["水"]      # 水 +1

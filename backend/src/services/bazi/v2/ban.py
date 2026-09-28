@@ -1040,23 +1040,387 @@ _CHOUXU_YINMAO = frozenset({"亥", "子", "寅", "卯"})
 _CHOUXU_HOT = frozenset({"巳", "午", "未"})
 
 
-def xing_effects(members: list[str], cols: list, month_zhi: str) -> list[dict]:
-    """相刑的藏干影响（1:1；覆盖书里给出明文度数的两支刑）。
+def _xing_state(wx: str, month_zhi: str, cols: list | None = None) -> str | None:
+    """该五行在**月令**（岁运介入时取**综合状态**）的状态名；半值时返回 `None`。
+
+    与 `_muku_dang` 同一折中口径（书 上 907-963）：只取月令与大运，流年不参与。
+    相刑各档的抬头用的正是这套词（下 2281「综合状态**木有气水无气**」、
+    下 2309「综合状态**水有气木不旺**」、下 2325「综合状态**木无气**」）。
+    """
+    if not month_zhi:
+        return None
+    c = next((x for x in (cols or []) if x.key == "_dayun"), None)
+    if c is None or not c.zhi:
+        return tables.month_state(wx, month_zhi)
+    from services.bazi.v2 import dayun as _dyun
+    st, _ = tables.compromise_state(tables.month_state(wx, month_zhi),
+                                    _dyun.dayun_state(wx, c.zhi))
+    return st or None
+
+
+def _xing_dang(wx: str, month_zhi: str, cols: list | None = None) -> bool:
+    """该五行在该状态是否**有气**（旺/余气/相，参数 ≤3）——同 `_muku_dang` 的折中。"""
+    if not month_zhi:
+        return True
+    c = next((x for x in (cols or []) if x.key == "_dayun"), None)
+    if c is None or not c.zhi:
+        return _dang(wx, month_zhi)
+    from services.bazi.v2 import dayun as _dyun
+    _, ok = tables.compromise_state(tables.month_state(wx, month_zhi),
+                                    _dyun.dayun_state(wx, c.zhi))
+    return ok
+
+
+def _xing_count(cols: list, keys: list | None, zhi: str) -> int:
+    """参与本次关系的该支**实例数**。`keys` 给出参与柱；缺省退化为全盘同类支。"""
+    if keys is None:
+        return sum(1 for c in cols if c.zhi == zhi)
+    return sum(1 for c in cols if c.key in keys and c.zhi == zhi)
+
+
+# 子卯刑的档位表（书 下 2280-2286）。4 档的抬头是**月令/综合状态**，
+# 行键是 (子数, 卯数)。值 = (子方效果, 卯方效果, 书证)。
+#   ① 木有气水无气（下 2280）② 木不旺水有气（下 2283）
+#   ③ 木无气（下 2284）      ④ 其他 → **相生论**（1:1，走原路径，不在此表）
+# **未列的行书里没有**（书一律只写「刑掉/刑伤 1 个 X」）→ 落到 ④，见 `xing_effects`。
+_KILL = {"remove": True}
+_ZIMAO_ROWS: dict[str, dict[tuple[int, int], tuple]] = {
+    "①": {
+        (1, 3): (_KILL, {"delta": 1.67},
+                 "书 下 2280「3卯可以刑掉1子，此时子水变为0，每个卯木増力1.67度，3个卯正好増力5度」"),
+        (1, 2): ({"delta": -3.0}, {"delta": 1.5},
+                 "书 下 2280「2卯可以刑伤1子，此时子水减力3度，每个卯増力1.5度」"),
+        (3, 1): ({"delta": -0.33}, {"scale": 2 / 3},
+                 "书 下 2280「3子可刑伤1卯，此时卯减力1/3，每个子减去0.33度，3子共减去1度」"),
+        (4, 1): ({"delta": -0.25}, {"scale": 0.5},
+                 "书 下 2280「4子可刑伤1卯，此时卯减力1/2，每个子减去0.25度，4子共减去1度」"),
+        (5, 1): ({"delta": -0.2}, _KILL,
+                 "书 下 2280「5子可刑掉1卯，此时卯变为0，每个子减去0.2度」"),
+    },
+    "②": {
+        (1, 4): (_KILL, {"delta": 1.25},
+                 "书 下 2283「4卯可刑掉1子，此时子水变为0度，每个卯木增力1.25度，4个卯正好增力5度」"),
+        (3, 1): ({"delta": -0.33}, {"scale": 0.5},
+                 "书 下 2283「3子可刑伤1卯，此时卯减半，每个子减去0.33度」"),
+        (4, 1): ({"delta": -0.25}, _KILL,
+                 "书 下 2283「4子可刑掉1卯，卯变为0，每个子减去0.25度」"),
+    },
+    "③": {
+        (3, 1): ({"delta": -0.33}, {"scale": 2 / 3},
+                 "书 下 2284「3子可刑伤1卯，此时卯减力1/3，每个子减去0.33度，3子共减去1度」"),
+        (4, 1): ({"delta": -0.25}, {"scale": 0.5},
+                 "书 下 2284「4子可刑伤1卯，此时卯减力1/2，每个子减去0.25度，4子共减去1度」"),
+        (5, 1): ({"delta": -0.2}, _KILL,
+                 "书 下 2284「5子可刑掉1卯，此时卯变为0，每个子减去0.2度」"),
+    },
+}
+
+_ZIMAO_GAN = {"子": "癸", "卯": "乙"}
+
+
+def _zimao_tier(month_zhi: str, cols: list) -> str:
+    """子卯刑的档位（书 下 2280-2286）。
+
+    - **①** 木有气 **且** 水无气；
+    - **②** 木不旺 **且** 水有气；
+    - **③** 木无气；
+    - **④** 其余 → 以相生论。
+
+    五个算例逐条对上：下 2298 例1（卯月）①、下 2303 例2（丁卯运，「木有气水无气」）①、
+    下 2308 例3（子月）②／（丁巳运+庚子年，「水有气木不旺」）②、下 2318 例4（戊子运，
+    「木不旺水有气」）②、下 2322 例5（甲子运，「木无气」）③。
+    """
+    mu = _xing_state("木", month_zhi, cols)
+    if _xing_dang("木", month_zhi, cols) and not _xing_dang("水", month_zhi, cols):
+        return "①"
+    if mu != "旺" and _xing_dang("水", month_zhi, cols):
+        return "②"
+    if not _xing_dang("木", month_zhi, cols):
+        return "③"
+    return "④"
+
+
+def _scale_word(s: float) -> str:
+    if abs(s - 0.5) < 1e-9:
+        return "减半"
+    if abs(s - 2 / 3) < 1e-9:
+        return "减力 1/3"
+    return "×%.4g" % s
+
+
+def _zimao_fx(zhi: str, spec: dict, cite: str) -> dict:
+    d = {"zhi": zhi, "gan": _ZIMAO_GAN[zhi], **spec}
+    if spec.get("remove"):
+        d["reason"] = f"子卯刑：{zhi}中{_ZIMAO_GAN[zhi]}被刑掉变为 0 度（{cite}）"
+    elif "scale" in spec:
+        d["reason"] = (f"子卯刑：{zhi}中{_ZIMAO_GAN[zhi]}"
+                       f"{_scale_word(spec['scale'])}（{cite}）")
+    else:
+        d["reason"] = (f"子卯刑：每个{zhi}中{_ZIMAO_GAN[zhi]} "
+                       f"{'+' if spec['delta'] > 0 else '−'}{abs(spec['delta'])} 度（{cite}）")
+    return d
+
+
+# 寅巳刑的受方效果（书 下 2038-2103 的 a 档共用语）
+_SI_ZHAQI = ("戊", "庚")       # 巳的两杂气（本气丙）
+
+
+def _yinsi_tier(month_zhi: str, cols: list) -> str:
+    """寅巳刑的档位（书 下 2038-2103）。
+
+    书的抬头逐档是「生于 X 月**或**综合状态为 Y」——用**状态**表达时，
+    十二条月令的映射与书的月令条款**逐一吻合**（见各档括注）：
+
+    | 档 | 谓词 | 覆盖的月 |
+    |---|---|---|
+    | ① | 木 **旺** | 寅卯 |
+    | ③ | 火 ∈ {**休**, **囚**} | 辰申酉 |
+    | ④ | 火 **死** | 亥子丑 |
+    | ⑤ | 火**当令** 且 木**失令** | 巳午未戌 |
+    | ② | 木**当令但不旺**（书只给综合状态一条，无月令款） | 仅岁运折中可达 |
+
+    **次序即上表**（①③④⑤②⑧）：② 必须排在 ③④⑤ 之后，否则 辰月（木余气当令不旺）
+    会被 ② 截胡，而书把它归 ③。
+    """
+    mu_wang = _xing_state("木", month_zhi, cols) == "旺"
+    huo = _xing_state("火", month_zhi, cols)
+    if mu_wang:
+        return "①"
+    if huo in ("休", "囚"):
+        return "③"
+    if huo == "死":
+        return "④"
+    if _xing_dang("火", month_zhi, cols) and not _xing_dang("木", month_zhi, cols):
+        return "⑤"
+    if mu_wang is False and _xing_dang("木", month_zhi, cols):
+        return "②"
+    return "⑧"
+
+
+def _yinsi_ratio_tiers(out: list[dict], n_yin: int, n_si: int, month_zhi: str,
+                       static: dict | None) -> bool:
+    """寅巳刑 ⑥⑦——**静态旺度倍比轴**（书 下 2084-2098）。落档则返回 True。
+
+    ⑥ 寅静态旺度 ≥20 度：3.5 倍巳 ≤ 寅 < 5 倍巳 → 巳被**刑伤**（a）；寅 ≥ 5 倍巳 → 巳被**刑掉**（b）。
+    ⑦ 巳静态旺度 ≥20 度：2 倍寅 ≤ 巳 < 3 倍寅 → 寅被**刑伤**（a）；巳 ≥ 3 倍寅 → 寅被**刑掉**（b）。
+
+    **用户 2026-09-28 裁定「度数十优先」**：本组先于 ①-⑤ 判——书里三条倍比算例
+    （下 2162 寅32度/巳6度=5.3倍、下 2164 巳9度/寅3.56倍、下 2174 巳22度/寅4.6倍）
+    的两个旺度都悬殊，若按月令优先会被 ①-⑤ 截胡，与书相反。
+
+    0「在寅巳个数比为 1：1 的情况下」—— 书把 寅/丙/戊 的增减限定在该情形；
+    非 1:1 时只施加**与个数比无关**的部分（巳减半 / 巳全去 / 寅减半 / 皆变火），
+    其余留白（注释登记于 `xing_effects`）。
+    """
+    if not static:
+        return False
+    yin_d, si_d = static.get("寅") or 0.0, static.get("巳") or 0.0
+    one_one = (n_yin == 1 and n_si == 1)
+
+    def _siduan(full: bool) -> None:
+        """⑥ 的受方（巳）：full=刑掉（藏干全去）；否则刑伤（本气减半 + 杂气当令减半/失令去除）。"""
+        if full:
+            for gan in ("丙",) + _SI_ZHAQI:
+                out.append({"zhi": "巳", "gan": gan, "remove": True,
+                            "reason": "寅巳刑⑥b：巳中%s完全去除（书 下 2088）" % gan})
+        else:
+            out.append({"zhi": "巳", "gan": "丙", "delta": None, "scale": 0.5,
+                        "reason": "寅巳刑⑥a：巳火均减半（书 下 2086）"})
+            for gan in _SI_ZHAQI:
+                out.append(_zhaqi("巳", gan, month_zhi, "书 下 2086"))
+
+    def _yin_side(full: bool) -> None:
+        """⑥ 的施方（寅）——书限定在 1:1。"""
+        if not one_one:
+            return
+        out.append({"zhi": "寅", "gan": "甲", "delta": -1.0,
+                    "reason": "寅巳刑⑥：寅木减去 1 度（书 下 2086/2088）"})
+        if full:
+            out.append(_zhaqi("寅", "丙", month_zhi, "书 下 2088「寅中丙火当令时减半、失令时完全去除」"))
+        else:
+            out.append(_zhaqi("寅", "丙", month_zhi, "书 下 2086「寅中丙火当令时减半、失令时完全减力」"))
+        if _dang("土", month_zhi):
+            out.append({"zhi": "寅", "gan": "戊", "delta": 1.0,
+                        "reason": "寅巳刑⑥：寅中戊土当令增力 1 度（书 下 2086/2088）"})
+
+    if yin_d >= 20.0 and si_d > 0:
+        r = yin_d / si_d
+        if 3.5 <= r < 5.0:
+            _siduan(False)
+            _yin_side(False)
+            return True
+        if r >= 5.0:
+            _siduan(True)
+            _yin_side(True)
+            return True
+    if si_d >= 20.0 and yin_d > 0:
+        r = si_d / yin_d
+        if 2.0 <= r < 3.0:
+            for gan in ("甲",):
+                out.append({"zhi": "寅", "gan": gan, "delta": None, "scale": 0.5,
+                            "reason": "寅巳刑⑦a：每个寅木均减半（书 下 2095）"})
+            if one_one:
+                if _dang("土", month_zhi):
+                    out.append({"zhi": "寅", "gan": "戊", "delta": 1.0,
+                                "reason": "寅巳刑⑦a：寅中戊土当令增力 1 度（书 下 2095）"})
+                out.append(_zhaqi("寅", "丙", month_zhi, "书 下 2095「寅中丙火当令时减半，失令时完全去除」"))
+                out.append({"zhi": "巳", "gan": "丙", "delta": 1.0,
+                            "reason": "寅巳刑⑦a：巳火增 1 度（书 下 2095）"})
+                for gan in _SI_ZHAQI:
+                    out.append(_zhaqi("巳", gan, month_zhi, "书 下 2095「巳火增1度，其杂气当令的减半，失令的完全减力」"))
+            return True
+        if r >= 3.0:
+            for zhi in ("寅", "巳"):
+                out.append({"zhi": zhi, "pure": "火", "deg": 5.0,
+                            "reason": f"寅巳刑⑦b：{zhi}变为火，每支含火 5 度（书 下 2097）"})
+            return True
+    return False
+
+
+def _yinsi_tiered(out: list[dict], n_yin: int, n_si: int,
+                  month_zhi: str, cols: list,
+                  static: dict | None = None) -> bool:
+    """寅巳刑 ①-⑤（书 下 2038-2103）。落档则返回 True；行未列者返回 False 走 ⑧。
+
+    **未列的行书里没有**——书一律只写「刑掉/刑伤 **1** 个 X」，故受方支数 >1 的组合
+    （如 2寅2巳）不在表内，落到 ⑧ 的 1:1 兜底。⑥⑦ 是**静态旺度倍比轴**，另在
+    `_effects_for` 侧判定（用户 2026-09-28 裁定「度数十优先」），不到这里。
+    """
+    if not (n_yin and n_si):
+        return False
+    # ⑥⑦（静态旺度倍比轴）**先判**——用户裁定「度数十优先」（书 下 2084-2098）
+    if _yinsi_ratio_tiers(out, n_yin, n_si, month_zhi, static):
+        return True
+    tier = _yinsi_tier(month_zhi, cols)
+    # 受方效果：hurt_si（巳火减半 + 杂气全去）／hurt_si_cond（④a：杂气当令减半、失令去除）／
+    #          kill_si（巳藏干全→0）／pure_fire（巳刑掉1寅，寅巳皆变火）
+    # 寅方逐支效果：(干, 操作, 值)。操作 d＝固定增减（值 "k/n" 表示 −k/寅数）、
+    #              kill＝完全减力、dang＝仅当令时增减（值同上）
+    rows = {
+        "①": ((lambda y, s: y == 2 and s == 1, "hurt_si",
+               [("甲", "d", -0.5), ("丙", "d", -0.5)],
+               "书 下 2040「2寅可刑伤1巳——巳火减半，巳中杂气全部去除；每个寅木减去0.5度，"
+               "每个寅中丙火减0.5度，每个寅中戊土不变」"),
+              (lambda y, s: y >= 3 and s == 1, "kill_si",
+               [("甲", "d", "1/n"), ("丙", "d", "1/n")],
+               "书 下 2041「寅个数≥3时：寅可刑掉1巳——巳中所有藏干均变为0；每个寅木减去"
+               "（1/寅数）度，每个寅中丙火减（1/寅数）度，戊土不变」"),
+              (lambda y, s: s >= 3, "pure_fire", [],
+               "书 下 2042「巳个数≥3时：巳可刑掉1寅，此时寅和巳均变为火，每一支含火5度」")),
+        "②": ((lambda y, s: y == 3 and s == 1, "hurt_si",
+               [("甲", "d", -0.33), ("丙", "d", -0.33)],
+               "书 下 2049「3寅可刑伤1巳——巳火减半，巳中杂气全部去除，每个寅木减去0.33度，"
+               "每个寅中丙火减0.33度，每个寅中戊土不变」"),
+              (lambda y, s: y >= 4 and s == 1, "kill_si",
+               [("甲", "d", "1/n"), ("丙", "d", "1/n")],
+               "书 下 2050「寅木个数≥4时：寅可刑掉1巳……每个寅木减去（1/寅数）度，"
+               "每个寅中丙火减（1/寅数）度，戊土不变」"),
+              (lambda y, s: s >= 3, "pure_fire", [],
+               "书 下 2051「巳个数≥3时：巳可刑掉1寅，此时寅和巳均变为火，每一支含火5度」")),
+        "③": ((lambda y, s: y == 2 and s == 1, "hurt_si",
+               [("甲", "d", -0.5), ("丙", "d", -1.0), ("戊", "dang", 0.5)],
+               "书 下 2057「2寅可刑伤1巳——巳火减半，巳中杂气全部去除；每个寅木减去0.5度，"
+               "每个寅中丙火减去1度，寅中戊土失令时不变、当令时增力0.5度」"),
+              (lambda y, s: y >= 3 and s == 1, "kill_si",
+               [("甲", "d", "1/n"), ("丙", "d", "2/n"), ("戊", "dang", "1/n")],
+               "书 下 2058「寅木个数≥3时：寅可刑掉1巳……每个寅木减去（1/寅数）度，"
+               "每个寅中丙火减（2/寅数）度，戊土失令时不变、当令时增力（1/寅数）度」"),
+              (lambda y, s: s >= 4, "pure_fire", [],
+               "书 下 2059「巳个数≥4时：巳可刑掉1寅，此时寅和巳均变为火，每一支含火5度」")),
+        "④": ((lambda y, s: y == 1 and s == 1, "hurt_si_cond",
+               [("甲", "d", -1.0), ("丙", "kill", 0), ("戊", "dang", 1.0)],
+               "书 下 2066「1寅可刑伤1巳——巳火减半，巳中杂气失令者全部去除，当令者减半；"
+               "寅木减去1度，寅中丙火完全减力，寅中戊土失令时不变、当令时增力1度」"),
+              (lambda y, s: y >= 2 and s == 1, "kill_si",
+               [("甲", "d", "1/n"), ("丙", "d", "2/n"), ("戊", "dang", "1/n")],
+               "书 下 2067「寅木个数≥2时：寅可刑掉1巳……每个寅木减去（1/寅数）度，"
+               "每个寅中丙火减（2/寅数）度，戊土失令时不变、当令时增力（1/寅数）度」"),
+              (lambda y, s: s >= 5, "pure_fire", [],
+               "书 下 2068「巳个数≥5时：巳可刑掉1寅，此时寅和巳均变为火，每一支含火5度」")),
+        "⑤": ((lambda y, s: y == 4 and s == 1, "hurt_si",
+               [("甲", "d", -0.25), ("丙", "d", -0.25), ("戊", "d", 0.25)],
+               "书 下 2076「4寅可刑伤1巳——巳火减半，巳中杂气全部去除，每个寅木减去0.25度，"
+               "每个寅中丙火减0.25度，每个寅中戊土增力0.25度」"),
+              (lambda y, s: y >= 5 and s == 1, "kill_si",
+               [("甲", "d", "1/n"), ("丙", "d", "1/n"), ("戊", "d", "1/n")],
+               "书 下 2077「寅木个数≥5时：寅可刑掉1巳……每个寅木减去（1/寅数）度，"
+               "每个寅中丙火减（1/寅数）度，每个寅中戊土增力（1/寅数）度」"),
+              (lambda y, s: s >= 2, "pure_fire", [],
+               "书 下 2078「巳个数≥2时：巳可刑掉1寅，此时寅和巳均变为火，每一支含火5度」")),
+    }
+    for cond, shou_fx, shi_rows, cite in rows.get(tier, ()):
+        if not cond(n_yin, n_si):
+            continue
+        _emit_yinsi(out, n_yin, n_si, shou_fx, shi_rows, cite, month_zhi, cols)
+        return True
+    return False
+
+
+def _emit_yinsi(out: list[dict], n_yin: int, n_si: int, shou: str,
+                shi_rows: list, cite: str, month_zhi: str, cols: list) -> None:
+    """按一档的规则施加：受方一支、施方（寅）**每支**一份。"""
+    if shou == "pure_fire":                 # 巳刑掉1寅 → 寅、巳皆变为火
+        for zhi in ("寅", "巳"):
+            out.append({"zhi": zhi, "pure": "火", "deg": 5.0,
+                        "reason": f"寅巳刑：{zhi}变为火，每支含火 5 度（{cite}）"})
+        return
+    out.append({"zhi": "巳", "gan": "丙",
+                **({"remove": True} if shou == "kill_si" else {"delta": None, "scale": 0.5}),
+                "reason": (f"寅巳刑：巳中丙变为 0 度（{cite}）" if shou == "kill_si"
+                           else f"寅巳刑：巳火减半（{cite}）")})
+    for gan in _SI_ZHAQI:
+        if shou == "hurt_si_cond":          # ④a：杂气「失令者全部去除，当令者减半」
+            out.append(_zhaqi("巳", gan, month_zhi, cite))
+        else:
+            out.append({"zhi": "巳", "gan": gan, "remove": True,
+                        "reason": f"寅巳刑：巳中{gan}（杂气）全部去除（{cite}）"})
+    for gan, op, val in shi_rows:
+        if op == "kill":
+            out.append({"zhi": "寅", "gan": gan, "remove": True,
+                        "reason": f"寅巳刑：寅中{gan}完全减力（{cite}）"})
+            continue
+        delta = val
+        if isinstance(val, str) and val.endswith("/n"):
+            # `d` 档的书句是「减去（k/寅数）度」，`dang` 档是「增力（k/寅数）度」
+            delta = (-1.0 if op == "d" else 1.0) * float(val[:-2]) / n_yin
+        if op == "dang" and not _dang(GAN_WUXING[gan], month_zhi):
+            continue                        # 「失令时不变」
+        out.append({"zhi": "寅", "gan": gan, "delta": delta,
+                    "reason": f"寅巳刑：每个寅中{gan} {delta:+.2f} 度（{cite}）"})
+
+
+def xing_effects(members: list[str], cols: list, month_zhi: str,
+                 *, keys: list | None = None,
+                 static: dict | None = None) -> list[dict]:
+    """相刑的藏干影响。
+
+    `keys` = **参与本次关系的柱位**（tier 14 的多支候选）；缺省 `None` 时退化为
+    「全盘同类支」，与改动前的口径一致（`tests/unit/test_v2_ban.py` 的直接调用点全部兼容）。
+
+    已实现：**子卯刑 ①-④**（多支阈值表，书 下 2280-2286）、**寅巳刑 ⑧**（1:1 兜底）、
+    丑戌/未戌（不成功档）。
 
     章节与条号：《四柱精髓（下）》第十节 相刑——
     子卯刑（2280-2286）、寅巳刑（2032-2103）、丑戌刑（2361-2389）、未戌刑（2416-2446）。
 
     ⚠️ **未覆盖**：书里按**参与支个数**分档的阈值表（子卯 ①-③「3 卯刑掉 1 子」、
     寅巳 ①-⑦「2 寅刑伤 1 巳」「巳个数≥3 刑掉寅」、寅巳静态旺度 ≥20 度的 ⑥⑦ 档）。
-    本函数只实现 **1:1** 的落档；`relations` 的 tier 14 候选本来就按**相邻两支**枚举
-    （`_Cand(14, …, [a.key, b.key])`），多支只能靠多个候选拼出，与书的「总量/平摊」口径不同。
     """
     pair = frozenset(members)
     out: list[dict] = []
 
     if pair == frozenset("子卯"):
+        # ①-③ 是多支阈值档（表见 `_ZIMAO_ROWS`）——行未列者落到 ④ 的相生论兜底。
+        tier = _zimao_tier(month_zhi, cols)
+        row = _ZIMAO_ROWS.get(tier, {}).get(
+            (_xing_count(cols, keys, "子"), _xing_count(cols, keys, "卯")))
+        if row is not None:
+            zi_spec, mao_spec, cite = row
+            out.append(_zimao_fx("子", zi_spec, cite))
+            out.append(_zimao_fx("卯", mao_spec, cite))
+            return out
         # 书《下》第(2)节 子卯刑 ④（下 2286）：「不在以上范围内的以相生论：1：1的情况下，
-        # **子减去1度，卯增力1度**」。（①-③ 是多支阈值档，见上「未覆盖」）
+        # **子减去1度，卯增力1度**」
         cite = "书 下 2286「1：1的情况下，子减去1度，卯增力1度」"
         out.append({"zhi": "子", "gan": "癸", "delta": -1.0,
                     "reason": f"子卯刑：子水减 1 度（{cite}）"})
@@ -1064,6 +1428,11 @@ def xing_effects(members: list[str], cols: list, month_zhi: str) -> list[dict]:
                     "reason": f"子卯刑：卯木增力 1 度（{cite}）"})
 
     elif pair == frozenset("寅巳"):
+        # ①-⑤ 是多支阈值档（书 下 2038-2103）；行未列者落到 ⑧ 的 1:1 兜底。
+        if _yinsi_tiered(out, _xing_count(cols, keys, "寅"),
+                         _xing_count(cols, keys, "巳"), month_zhi, cols,
+                         static=static):
+            return out
         # 书《下》第(1)节 寅巳刑 ⑧（下 2103）：「在1：1的情况下：寅木减1度，寅中戊土
         # 当令时増力1度，失令时不变；寅中丙火当令时减半，失令时完全去除；巳火增1度，
         # 其杂气当令的减半，失令的完全减力。」

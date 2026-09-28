@@ -24,10 +24,18 @@ def _chart(y, m, d, t):
 
 
 def _effects(r, tier, members=None):
+    """取某级的度数影响条目。
+
+    `tier` 可为**元组**——六冲的盘若同时满足天干相克就成了**天克地冲**（书《入门》788
+    「天干相克，地支相冲」），级位升到 tier 2；而**地支腿的度数本就复用 `ban.chong_effects`**
+    （答疑 1106「天克地冲，其实质还是冲」），故查表时两级一并认。
+    """
+    tiers = tier if isinstance(tier, (tuple, set, frozenset)) else (tier,)
     for e in r["established"]:
-        if e["tier"] != tier:
+        if e["tier"] not in tiers:
             continue
-        if members and set(e["members"]) != set(members):
+        if members and set(e["members"]) != set(members)                 and set(e["members"][-2:]) != set(members):
+            # tier 1/2 的 members 是**干支混列** `[ga, gb, za, zb]`，故支对按末两位比。
             continue
         return e.get("effects", [])
     return []
@@ -84,7 +92,7 @@ def test_chong_shengdi_main_reduction():
     > （年时子午不冲）」同款）。故主克者申只按 1 支受克支计，减 **1** 度。
     """
     r = relations.judge_relations(_chart("戊寅", "庚申", "甲子", "丙寅"))
-    eff = _effects(r, 8, ["寅", "申"])
+    eff = _effects(r, (2, 8), ["寅", "申"])
     assert eff, "寅申冲应成立"
     assert any(e["zhi"] == "申" and e.get("delta") == -1.0 for e in eff), "只 1 支寅参与"
     yin = next(e for e in eff if e["zhi"] == "寅")
@@ -99,7 +107,7 @@ def test_chong_counts_only_adjacent_partners():
     两支都参与；受克方给的是**总量**（单支本气 5 的一半），故发 `delta` + `split`。
     """
     r = relations.judge_relations(_chart("乙卯", "乙酉", "己卯", "丙寅"))
-    eff = _effects(r, 8, ["卯", "酉"])
+    eff = _effects(r, (2, 8), ["卯", "酉"])
     assert eff, "卯酉冲应成立"
     assert any(e["zhi"] == "酉" and e.get("delta") == -2.0 for e in eff), "2 支卯各贡献 1 度"
     mao = next(e for e in eff if e["zhi"] == "卯")
@@ -113,7 +121,7 @@ def test_chong_excludes_non_adjacent_same_branch():
     若走 `_adjacent` 的「中隔同类」例外会被误判成相邻，书明文否定。故参与柱只有日、时。
     """
     r = relations.judge_relations(_chart("戊午", "甲寅", "戊午", "壬子"))
-    chong = [e for e in r["established"] if e["tier"] == 8]
+    chong = [e for e in r["established"] if e["tier"] in (2, 8)]
     assert len(chong) == 1, [(e["members"], e["cols"]) for e in chong]
     assert chong[0]["cols"] == ["day", "time"], chong[0]["cols"]
     eff = chong[0]["effects"]
@@ -125,7 +133,7 @@ def test_chong_zisi_main_reduction():
     """子午冲：主克者子本气 −1 度、受克者午本气减半（书 下 1651）。"""
     # 午**不可落月令**——书 下 1651：受克者临月令时主克者减 2 度而非 1 度。
     r = relations.judge_relations(_chart("甲寅", "庚子", "戊午", "丙寅"))
-    eff = _effects(r, 8, ["子", "午"])
+    eff = _effects(r, (2, 8), ["子", "午"])
     assert eff, "子午冲应成立"
     assert any(e["zhi"] == "子" and e.get("delta") == -1.0 for e in eff)
     assert any(e["zhi"] == "午" and e.get("scale") == 0.5 for e in eff)
@@ -140,7 +148,7 @@ def test_chong_muku_success_vs_failure():
     > 力量变为了12度，每支各含土6度」（下 1729）。
     """
     ok = relations.judge_relations(_chart("戊辰", "壬戌", "甲子", "丙寅"))
-    pure = [fx for fx in _effects(ok, 8, ["辰", "戌"]) if fx.get("pure")]
+    pure = [fx for fx in _effects(ok, (2, 8), ["辰", "戌"]) if fx.get("pure")]
     assert len(pure) == 2, "透土应冲成功、两支均变纯土"
     assert all(fx["pure"] == "土" and fx["deg"] == 6.0 for fx in pure)
 
@@ -358,11 +366,19 @@ def test_xing_yinsi_one_to_one_hot_month():
 
 
 def test_xing_yinsi_one_to_one_cold_month():
-    """寅巳刑 1:1 生于**子月**：寅中戊土失令不变、丙火失令去除（书 下 2103）。"""
-    cols = degrees.build_cols(_chart("甲寅", "丙子", "戊寅", "丁巳"))
+    """寅巳刑 1:1 生于**子月**——落 **④a**（火死于亥子丑月，书 下 2066）。
+
+    > 「1寅可刑伤1巳——**巳火减半**，巳中杂气失令者全部去除，当令者减半；
+    >   寅木减去1度，寅中丙火完全减力，寅中戊土失令时不变、当令时增力1度」
+
+    > 本测试原钉 ⑧（1:1 相生论：巳火 **+1**）。批 5 落地 ①-⑤ 后，子月按书的月令
+    > 条款归 **④**（「火处于失令之地」那一档），巳火改为**减半**；原盘 `甲寅 丙子 戊寅 丁巳`
+    > 另有 2 个寅、本就不是 1:1，一并换成单寅单巳的盘。
+    """
+    cols = degrees.build_cols(_chart("甲寅", "丙子", "丁巳", "庚子"))
     eff = ban.xing_effects(["寅", "巳"], cols, "子")
     assert _pick(eff, "寅", "甲")["delta"] == -1.0
-    assert _pick(eff, "巳", "丙")["delta"] == 1.0
+    assert _pick(eff, "巳", "丙")["scale"] == 0.5, "④a：巳火减半"
     assert _pick(eff, "寅", "戊") is None, "寅中戊土失令时不变，不挂影响"
     assert _pick(eff, "寅", "丙").get("remove") is True
     assert _pick(eff, "巳", "庚").get("remove") is True
@@ -705,7 +721,7 @@ def test_chong_zisi_dead_place_only_when_si_not_xiu():
     > 故旧行为是 −1.8。
     """
     r = pipeline.compute_strength(_chart("丙寅", "甲寅", "戊子", "丙午"))
-    eff = _effects(r["relations"], 8, ["子", "午"])
+    eff = _effects(r["relations"], (2, 8), ["子", "午"])
     assert _pick(eff, "子", "癸")["delta"] == -1.0, "寅月水休 → 主克者只减 1 度"
     # 生产链路：子中癸水 5 度 → 4 度（只减 1 度）；寅月水「休」（系数 0.8）→ 静态 3.2
     d = r["degrees"]["水"]
@@ -721,7 +737,7 @@ def test_chong_zisi_dead_place_only_when_si_not_xiu():
 def test_chong_zisi_dead_place_minus_1_8(spec):
     """辰/未/戌月（水**死**）子午冲：主克者子水 −1.8 度（书 下 1651）。"""
     r = pipeline.compute_strength(_chart(*spec))
-    eff = _effects(r["relations"], 8, ["子", "午"])
+    eff = _effects(r["relations"], (2, 8), ["子", "午"])
     assert _pick(eff, "子", "癸")["delta"] == -1.8, "水死于辰/未/戌月 → 才走 1.8"
     d = r["degrees"]["水"]
     assert d["state"] == "死", "辰/未/戌月水为死地"
@@ -734,9 +750,9 @@ def test_chong_maoyou_dead_place_qiu_vs_si():
     > 与上一条同一判据——只认「死」。寅月金「囚」（上 204-299 表）不得加重到 1.8。
     """
     r1 = pipeline.compute_strength(_chart("甲寅", "辛酉", "丁卯", "丙寅"))
-    assert _pick(_effects(r1["relations"], 8, ["卯", "酉"]), "酉", "辛")["delta"] == -1.0
+    assert _pick(_effects(r1["relations"], (2, 8), ["卯", "酉"]), "酉", "辛")["delta"] == -1.0
     r2 = pipeline.compute_strength(_chart("丙寅", "己巳", "丁卯", "辛酉"))
-    assert _pick(_effects(r2["relations"], 8, ["卯", "酉"]), "酉", "辛")["delta"] == -1.8
+    assert _pick(_effects(r2["relations"], (2, 8), ["卯", "酉"]), "酉", "辛")["delta"] == -1.8
 
 
 def test_chong_multi_sub_main_deducts_per_sub():
@@ -747,7 +763,7 @@ def test_chong_multi_sub_main_deducts_per_sub():
     > （下 1684「年时两支午火，使子水减力2度」同构——按受克支数逐支累计）。
     """
     r = pipeline.compute_strength(_chart("乙卯", "乙酉", "己卯", "丙寅"))
-    eff = _effects(r["relations"], 8, ["卯", "酉"])
+    eff = _effects(r["relations"], (2, 8), ["卯", "酉"])
     assert _pick(eff, "酉", "辛")["delta"] == -2.0, "2 支卯各贡献 1 度"
     # 生产链路：酉中辛金 5 度 → 3 度（减 2 度）；酉月金「旺」（系数 2.0）→ 静态 6.0
     d = r["degrees"]["金"]
@@ -763,7 +779,7 @@ def test_chong_multi_sub_receiver_total_is_not_per_branch_half():
     > 平均每个午中己土减力2/3=0.67度」是同一条口径。
     """
     r = pipeline.compute_strength(_chart("乙卯", "乙酉", "己卯", "丙寅"))
-    fx = _pick(_effects(r["relations"], 8, ["卯", "酉"]), "卯", "乙")
+    fx = _pick(_effects(r["relations"], (2, 8), ["卯", "酉"]), "卯", "乙")
     assert fx["delta"] == -2.5, "总量 2.5，非每支各减半"
     assert fx["split"] is True, "总量须由 split 摊分"
     # **S7 变更**：年干乙与月干乙同类紧贴 → 同一连片组（书 上 651「紧贴…当做一个整体」），
@@ -781,7 +797,7 @@ def test_chong_multi_main_dayun_adds_one_share():
     """
     r = pipeline.compute_strength(_chart("癸丑", "甲子", "辛卯", "丁酉"),
                                   dayun_ganzhi="丁卯")
-    eff = _effects(r["relations"], 8, ["卯", "酉"])
+    eff = _effects(r["relations"], (2, 8), ["卯", "酉"])
     assert _pick(eff, "酉", "辛")["delta"] == -2.5
     assert _pick(eff, "卯", "乙")["delta"] == -2.5, "受克方给总量"
 
@@ -793,7 +809,7 @@ def test_chong_single_sub_keeps_half_scale():
     > 「原局一申冲一寅，主克者为申金…故主克者申的本气减力1度剩下2度」）。
     """
     r = pipeline.compute_strength(_chart("己亥", "甲戌", "甲申", "丙寅"))
-    fx = _pick(_effects(r["relations"], 8, ["寅", "申"]), "寅", "甲")
+    fx = _pick(_effects(r["relations"], (2, 8), ["寅", "申"]), "寅", "甲")
     assert fx.get("scale") == 0.5 and "split" not in fx, "1:1 走 scale，总量口径只用于多支"
 
 

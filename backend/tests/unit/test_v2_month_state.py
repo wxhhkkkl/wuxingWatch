@@ -206,3 +206,71 @@ def test_muku_wei_critical_fire_is_neutral():
 def test_muku_non_branch_returns_none():
     """非四库支不适用墓库分支表。"""
     assert tables.muku_month_state("火", "寅", tables.MukuCtx()) is None
+
+
+# ---------------------------------------------------------------
+# 大运参与后**月令系数**改变（2026-09-28；书里仅四库月令有此机制）
+# ---------------------------------------------------------------
+
+def test_muku_wei_branch3_by_chou_chong():
+    """未③ 的**丑冲**入口：1个未土受丑冲 → 火有两个状态（余气 1.6 / 休地 0.8）→ 取平均 1.2。
+
+    书 上 1088：「③**1个未土受丑冲**（不成功）或2子害1未或2亥拱1未：火生于未月或大运
+    有两个状态——余气和休地，则其综合状态和综合系数均取其平均值（……**综合系数为1.2**）」。
+    """
+    coef, label = tables.muku_month_state("火", "未", tables.MukuCtx(chong=("丑",)))
+    assert coef == pytest.approx(1.2), label
+
+
+def test_dayun_chou_pushes_wei_fire_to_the_average_coefficient():
+    """答疑 150（=176）：**大运之支提供丑冲** → 月令火系数由 1.6 变为 1.2。
+
+    > 丁亥 丁未 丁未 癸卯，进入癸丑运：「原局折中后的状态是相地（3），再跟大运休地（4）
+    > 折中后的状态是失令（3.5）……故原局之火=（3+2+2）*（**1.6+0.8**）*0.5=8.4，
+    > 在丑运处于死地 8.4−1=7.4 度。」——老师确认「计算结果是对的」。
+
+    原局四支**无丑**，未月火按 上 1086② 「未土没有受到丑冲……火生于未月或大运均以余气论」
+    ＝1.6；进入癸丑运，**运支丑冲月支未** → 走 上 1088③ → (1.6+0.8)/2 = **1.2**。
+
+    ⚠️ 本盘的「丑未冲」是以 **天克地冲（tier 2）** 的形式成立的（丁癸相克 + 丑未相冲），
+    六冲那条随之让位——`_muku_ctx` 原先只认 `type == "六冲"`，故漏掉它、
+    把未月火判成 ④「临界」（系数 1.0）。这是本条测试要钉的回归。
+    """
+    from services.bazi.v2 import pipeline
+
+    def _fire(dy: str | None):
+        p = {k: {"gan": g[0], "zhi": g[1]}
+             for k, g in zip(("year", "month", "day", "time"),
+                             ("丁亥", "丁未", "丁未", "癸卯"))}
+        if dy:
+            p["_dayun"] = {"gan": dy[0], "zhi": dy[1]}
+        r = pipeline.compute_strength(p)
+        s = next(x for x in r["steps"] if x.get("key") == "month_coef")
+        return next(t for t in s["traces"] if t["target"] == "火")["value"]
+
+    assert _fire(None) == pytest.approx(1.6), "原局无丑 → 余气 1.6（上 1086②）"
+    assert _fire("癸丑") == pytest.approx(1.2), "运丑冲月未 → 余气+休地取平均 1.2（上 1088③）"
+
+
+def test_dayun_chou_xing_pushes_xu_fire_from_xiang_to_xiu():
+    """答疑 177：**大运之支提供刑** → 月令火系数由 1.5 变为 0.8。
+
+    > 乙巳 丙戌 癸丑 丁巳，进入癸丑运，火处于何状态？答：「此时**两丑刑1戌**，火以休论。」
+
+    原局 `1丑刑1戌` 且火党众 ≥3 → 上 1066④「火……以**相**论」（系数 1.5）；
+    癸丑运再加一丑成「**2丑刑1戌**」→ 上 1064③「火……以**休**论」（系数 0.8）。
+    """
+    from services.bazi.v2 import pipeline
+
+    def _fire(dy: str | None):
+        p = {k: {"gan": g[0], "zhi": g[1]}
+             for k, g in zip(("year", "month", "day", "time"),
+                             ("乙巳", "丙戌", "癸丑", "丁巳"))}
+        if dy:
+            p["_dayun"] = {"gan": dy[0], "zhi": dy[1]}
+        r = pipeline.compute_strength(p)
+        s = next(x for x in r["steps"] if x.get("key") == "month_coef")
+        return next(t for t in s["traces"] if t["target"] == "火")["value"]
+
+    assert _fire(None) == pytest.approx(1.5), "原局 1丑刑1戌、火党众≥3 → 相 1.5（上 1066）"
+    assert _fire("癸丑") == pytest.approx(0.8), "运丑成 2丑刑1戌 → 休 0.8（上 1064）"

@@ -138,3 +138,59 @@ def test_liunian_not_held_does_contribute():
     with_ln = pipeline.compute_strength(p, dayun_ganzhi="戊午",
                                         liunian_ganzhi="壬申")["static_scores"]
     assert with_ln != only_dy, "未被合住的流年应照常贡献藏干（对照组）"
+
+
+# ---------------------------------------------------------------
+# 「合住」须使该支**减力**（013 期 B2；书 下 1974/1976）
+# ---------------------------------------------------------------
+
+def test_gate_requires_the_he_to_actually_weaken_the_liunian():
+    """门控的「合住」须**使该支减力**——火局类合会的**互助**档不算「住」。
+
+    书 下 1974/1976：「合住包括合绊和合化，**不管是合绊还是合化都必须使相冲五行减力
+    方可**，否则不能解冲。」同型的反证 下 1985 例2：「寅木是被亥水生合，**不但不减力，
+    反而增加了**去冲申金之力」——故该例判「合不能解冲」。
+
+    引擎里唯一「合而不减力」的路径是 `_HUZHU` 的**互助**档：生于**巳午未戌**月时，
+    午未 / 午戌 / 巳午未 三组**不再论合绊而按互助**（参与支**增力**）。故：
+
+    - 巳月 + 运午 + 岁未 → 互助（未增力）→ **不算住**，流年照常作用；
+    - 子月 + 运午 + 岁未 → 合绊（未减力）→ **算住**。
+    """
+    from services.bazi.v2 import relations
+
+    # 巳月（燥土月）：午未按互助论 → 不判受制
+    assert relations._liunian_held_by_dayun("午", "未", set(), "巳") is None, \
+        "巳月午未走互助（未增力），不算「合住」（下 1974/1976）"
+    # 子月：午未照常合绊 → 受制
+    assert relations._liunian_held_by_dayun("午", "未", set(), "子") == "六合", \
+        "子月午未合绊（未减力）→ 受制"
+    # 书 下 4450 的原例：亥卯半合绊住亥 → 受制（与月令无关）
+    assert relations._liunian_held_by_dayun("卯", "亥", set(), "子"), \
+        "亥卯半合绊住亥（书 下 4450）"
+    # 六冲无互助档：任何月令都受制
+    assert relations._liunian_held_by_dayun("子", "午", set(), "巳") == "六冲"
+
+
+def test_gate_huzhu_case_keeps_the_liunian_in_the_pipeline():
+    """上条的整盘版（**同一批柱、只换月支**）：
+
+    - `巳`月 → 午未走互助 → 流年未**不摘掉** → 巳午未三会成立（含 `_liunian`）；
+    - `子`月 → 午未合绊 → 流年未被摘掉 → 关系层里看不到 `_liunian`。
+    """
+    from services.bazi.v2 import pipeline
+
+    def _run(mz_ganzhi):
+        p = _chart("甲寅", mz_ganzhi, "戊辰", "壬申")
+        p["_dayun"] = {"gan": "戊", "zhi": "午"}
+        p["_liunian"] = {"gan": "辛", "zhi": "未"}
+        return [(e["tier"], e["type"], e["cols"])
+                for e in pipeline.compute_strength(p)["relations"]["established"]]
+
+    hot = _run("己巳")
+    assert any("_liunian" in c for _, _, c in hot), \
+        "巳月午未走互助（未增力）→ 流年不摘掉（书 下 1974/1976）：%s" % hot
+
+    cold = _run("壬子")
+    assert not any("_liunian" in c for _, _, c in cold), \
+        "子月午未合绊（未减力）→ 流年被摘掉：%s" % cold

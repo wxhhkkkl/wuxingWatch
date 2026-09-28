@@ -255,12 +255,18 @@ def test_zichen_multi_branch_keeps_the_ban_power():
 def test_zichen_one_to_one_does_not_double_count_ban_power():
     """1:1 的子辰**不另加**合绊之力——0.25 已在条目内（防重复扣的那一半）。
 
-    `甲子 甲辰 甲辰 乙卯`：月辰日辰成自刑、消费掉日辰，子辰半合只剩年子+月辰（1:1），
-    走 ③其他情况档，条目自带「辰中戊土…再 −0.25」。此处再补一次就变成 −0.5。
+    盘 `丁巳 甲辰 壬子 壬寅`：月辰日子成 1:1 的子辰半合，辰月水**死**故不化，
+    走 ③其他情况档，条目自带「辰中戊土 −1（生克）…再 −0.25（合绊之力）」。
+    此处若再补一次就变成 −0.5。
+
+    > 原盘 `甲子 甲辰 甲辰 乙卯` 换掉的原因：那条依赖旧 tier 9 的**逐对**模型
+    > （卯辰半会只吃日辰+时卯，年辰 留给子辰半合）。批 3 改为「1卯2辰相会，三者相邻」
+    > 一条后（书 下 2943），卯辰半会吃掉两个辰，子辰半合整条让位——原盘已不成立。
+    > 多支与缩窄那一半由上面的 `test_zichen_multi_branch_keeps_the_ban_power` 覆盖。
     """
-    r = relations.judge_relations(_chart("甲子", "甲辰", "甲辰", "乙卯"))
+    r = relations.judge_relations(_chart("丁巳", "甲辰", "壬子", "壬寅"))
     e = _ju(r, ["子", "辰"])
-    assert e and e["cols"] == ["year", "month"], "应只余 1:1 的年月子辰"
+    assert e and e["cols"] == ["month", "day"], "应只余 1:1 的月日子辰"
     assert not _ban_power_of(e["effects"]), \
         "1:1 时合绊之力已在条目内，不得由 _bansanhe_ban_power 再补一次"
     # 条目自带的 0.25 仍在（且只有一次）

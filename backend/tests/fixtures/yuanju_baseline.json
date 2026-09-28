@@ -1,6 +1,6 @@
 {
 "_generated_by": "snapshot_yuanju_baseline.py",
-"engine_commit": "013-US2-post-a-b-c-d",
+"engine_commit": "013-static-expr-dayun-term",
 "note": "013 期原局零回归基准（FR-023 / SC-003）。引擎改动后由 tests/unit/test_v2_yuanju_zero_regression.py 比对。",
 "book_cases": 327,
 "sweep_cases": 340,
@@ -33,7 +33,7 @@
 "水",
 "火"
 ],
-"h_steps": "ac0ffd7812391e46",
+"h_steps": "d72fbc097a018efa",
 "h_layers": "2ce2807a7fbdba6f",
 "h_tiaohou": "e4754a0deee39df5"
 },
@@ -64,7 +64,7 @@
 "木",
 "火"
 ],
-"h_steps": "c95c815acc6735e0",
+"h_steps": "6ffe6846cc2d4427",
 "h_layers": "fcb1cd9ed2034b5f",
 "h_tiaohou": "940e8f547548a575"
 },
@@ -95,7 +95,7 @@
 "水",
 "金"
 ],
-"h_steps": "64bacbaa56fd82bd",
+"h_steps": "401989c015a9c606",
 "h_layers": "ccce82cd36c54a1a",
 "h_tiaohou": "bbfaee097754bc62"
 },
@@ -126,7 +126,7 @@
 "木",
 "火"
 ],
-"h_steps": "2c086e42cea99bdd",
+"h_steps": "6a460f8c0e2223e8",
 "h_layers": "def7f17b522204bd",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -157,7 +157,7 @@
 "水",
 "火"
 ],
-"h_steps": "20f5926c3f3ae532",
+"h_steps": "e64438c723a88ff4",
 "h_layers": "e41f11f5dee51163",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -188,7 +188,7 @@
 "水",
 "金"
 ],
-"h_steps": "5c0d62a60cb28dca",
+"h_steps": "25b915e7b013cdf9",
 "h_layers": "c736107d551bbcfc",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -219,7 +219,7 @@
 "水",
 "金"
 ],
-"h_steps": "6fb8caf796c9e78e",
+"h_steps": "8a52242a1405d549",
 "h_layers": "01003019b3b668ff",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -250,7 +250,7 @@
 "木",
 "水"
 ],
-"h_steps": "35e52076ba788e85",
+"h_steps": "23037d3f6dcc14fd",
 "h_layers": "a5dd5e914e658d87",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -281,7 +281,7 @@
 "水",
 "金"
 ],
-"h_steps": "9a509f64e9d4f6f0",
+"h_steps": "98ad3ac404e98f20",
 "h_layers": "0fae3607567dd318",
 "h_tiaohou": "bbfaee097754bc62"
 },
@@ -312,7 +312,7 @@
 "水",
 "金"
 ],
-"h_steps": "d056d52025ad1f80",
+"h_steps": "44bcf79ea1cb6b0e",
 "h_layers": "5f589995745b4a82",
 "h_tiaohou": "f15d6c56e7385e60"
 },
@@ -343,7 +343,7 @@
 "水",
 "火"
 ],
-"h_steps": "87000d247faffc18",
+"h_steps": "bae5d764052f4476",
 "h_layers": "ecf61bb707a0ba95",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -374,7 +374,7 @@
 "火",
 "金"
 ],
-"h_steps": "bbca883aaeb81b77",
+"h_steps": "0f5a56b70979e6fb",
 "h_layers": "71ef933cc45d7f24",
 "h_tiaohou": "940e8f547548a575"
 },
@@ -405,7 +405,7 @@
 "水",
 "金"
 ],
-"h_steps": "0d02faf4bf5f4762",
+"h_steps": "7d7c65e7cb130ecc",
 "h_layers": "89fe8494587044c4",
 "h_tiaohou": "56499c0ab5e55dac"
 },
@@ -436,7 +436,7 @@
 "火",
 "金"
 ],
-"h_steps": "9254e1264978af2d",
+"h_steps": "34edfd793c14bfcf",
 "h_layers": "896b40bb234a67e5",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -467,7 +467,7 @@
 "木",
 "火"
 ],
-"h_steps": "dfd18ff17fd99af9",
+"h_steps": "551563bb9b622cd1",
 "h_layers": "aade31d949f70062",
 "h_tiaohou": "9059deed756bb44a"
 },
@@ -498,7 +498,7 @@
 "木",
 "火"
 ],
-"h_steps": "68a085c309a5c481",
+"h_steps": "e87477745bd9b092",
 "h_layers": "85e3f4198018c9c4",
 "h_tiaohou": "ee426e50e9f11286"
 },
@@ -529,7 +529,7 @@
 "水",
 "金"
 ],
-"h_steps": "9f8c8ad0adfd7194",
+"h_steps": "2f36d657d44c0715",
 "h_layers": "2d9ac90ff185b59a",
 "h_tiaohou": "940e8f547548a575"
 },
@@ -560,7 +560,7 @@
 "水",
 "金"
 ],
-"h_steps": "8f79643c51710d16",
+"h_steps": "91cac3da9f42a120",
 "h_layers": "db40ac015150639d",
 "h_tiaohou": "83109cfe9a8e1a87"
 },
@@ -591,7 +591,7 @@
 "火",
 "金"
 ],
-"h_steps": "41d426a0a85db547",
+"h_steps": "4669b552ecee8ed7",
 "h_layers": "76503254f09892cb",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -622,7 +622,7 @@
 "水",
 "金"
 ],
-"h_steps": "bbcf4903b421f470",
+"h_steps": "7ef95c3a54d25288",
 "h_layers": "0bfabdb806f69293",
 "h_tiaohou": "ae9422f58e696254"
 },
@@ -653,7 +653,7 @@
 "土",
 "金"
 ],
-"h_steps": "41a539a6db984e88",
+"h_steps": "562177ac00280135",
 "h_layers": "7513ccda97741883",
 "h_tiaohou": "042fce63913d13af"
 },
@@ -684,7 +684,7 @@
 "木",
 "火"
 ],
-"h_steps": "4940b3781127d762",
+"h_steps": "ae007b6d21748fdb",
 "h_layers": "dd19bf1ad2eb7de0",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -715,7 +715,7 @@
 "水",
 "金"
 ],
-"h_steps": "7df89dad821404af",
+"h_steps": "b6d32dcef85f887d",
 "h_layers": "eafc062f22ea152e",
 "h_tiaohou": "5c73c5984189ce1f"
 },
@@ -746,7 +746,7 @@
 "木",
 "火"
 ],
-"h_steps": "a1c10e4ab416e137",
+"h_steps": "c57029e112350e8c",
 "h_layers": "d3647a19b8564ae7",
 "h_tiaohou": "72306fba1120ff76"
 },
@@ -777,7 +777,7 @@
 "水",
 "金"
 ],
-"h_steps": "056dab557e371435",
+"h_steps": "fe910c8dbea97785",
 "h_layers": "407590336a5f7f4c",
 "h_tiaohou": "279ea783b9f17de3"
 },
@@ -808,7 +808,7 @@
 "水",
 "金"
 ],
-"h_steps": "022d12ed19c8cc55",
+"h_steps": "2b34df41e5a54b71",
 "h_layers": "407590336a5f7f4c",
 "h_tiaohou": "279ea783b9f17de3"
 },
@@ -839,7 +839,7 @@
 "木",
 "水"
 ],
-"h_steps": "446063104e5f2026",
+"h_steps": "380e12cacaf22e51",
 "h_layers": "1cb0cb3679e3a548",
 "h_tiaohou": "ee426e50e9f11286"
 },
@@ -870,7 +870,7 @@
 "火",
 "金"
 ],
-"h_steps": "bdef45530fd64044",
+"h_steps": "c6255c5c21d6cf3b",
 "h_layers": "b3a55a7d87b51bc0",
 "h_tiaohou": "776d6067085f99ea"
 },
@@ -901,25 +901,25 @@
 "土",
 "金"
 ],
-"h_steps": "1311864c84dcb3ac",
+"h_steps": "1765937225a1d843",
 "h_layers": "1d13d95c3415fd8f",
 "h_tiaohou": "940e8f547548a575"
 },
 "壬申 癸丑 戊戌 壬戌": {
-"level": "较旺",
+"level": "太旺",
 "static": {
 "木": 0.0,
-"火": 0.5,
-"土": 20.0,
-"金": 12.0,
-"水": 14.4
+"火": 0.0,
+"土": 34.0,
+"金": 4.5,
+"水": 7.35
 },
 "final": {
 "木": 0.0,
-"火": 0.5,
-"土": 10.72,
-"金": 10.56,
-"水": 3.6
+"火": 0.0,
+"土": 25.31,
+"金": 3.74,
+"水": 3.87
 },
 "ge_ju": "zheng",
 "yong_shen": "水",
@@ -932,8 +932,8 @@
 "木",
 "火"
 ],
-"h_steps": "6f46cb82785c65be",
-"h_layers": "42f8c4c2f5bd701d",
+"h_steps": "272fef197e0d7b32",
+"h_layers": "522654df0069d11c",
 "h_tiaohou": "54a90ffa60063839"
 },
 "辛亥 甲午 戊子 乙卯": {
@@ -963,7 +963,7 @@
 "土",
 "火"
 ],
-"h_steps": "aaeda0e0f31e1ddd",
+"h_steps": "954c7a84548fe5c8",
 "h_layers": "6d8d8af6f1d1cfcf",
 "h_tiaohou": "79dbb88f09d7e4d0"
 },
@@ -994,7 +994,7 @@
 "水",
 "金"
 ],
-"h_steps": "bbd6c02e7d6e56b3",
+"h_steps": "4294721971f4fd0b",
 "h_layers": "ba2abbdcafcfc2d3",
 "h_tiaohou": "e4754a0deee39df5"
 },
@@ -1025,7 +1025,7 @@
 "水",
 "金"
 ],
-"h_steps": "b21a072010948461",
+"h_steps": "50eb689f762fb751",
 "h_layers": "023094e9134668d8",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -1056,7 +1056,7 @@
 "木",
 "火"
 ],
-"h_steps": "3f9f8fa00e167a3c",
+"h_steps": "8e9bd607df3db76e",
 "h_layers": "c736107d551bbcfc",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -1087,7 +1087,7 @@
 "土",
 "金"
 ],
-"h_steps": "446a233249e109fd",
+"h_steps": "1dfd913c942d526c",
 "h_layers": "26b0ecf9b7e662fc",
 "h_tiaohou": "78e1991ef095eafe"
 },
@@ -1118,7 +1118,7 @@
 "土",
 "金"
 ],
-"h_steps": "d538570482b7a462",
+"h_steps": "16d3d6ddce1c91ef",
 "h_layers": "c1ffb402e7bce39a",
 "h_tiaohou": "8e97b24d3667b958"
 },
@@ -1149,7 +1149,7 @@
 "水",
 "金"
 ],
-"h_steps": "e7c4f036d6c0bab7",
+"h_steps": "7a79606d31313e93",
 "h_layers": "c736107d551bbcfc",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -1180,7 +1180,7 @@
 "水",
 "金"
 ],
-"h_steps": "b43829cec2542dc6",
+"h_steps": "a63bff9a92884224",
 "h_layers": "5b2217a3f2f1b33e",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -1211,7 +1211,7 @@
 "水",
 "火"
 ],
-"h_steps": "5341bd2c387ffaea",
+"h_steps": "519295188dfcefb2",
 "h_layers": "651d4ca76d9b4c0e",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -1242,7 +1242,7 @@
 "水",
 "金"
 ],
-"h_steps": "9316c14f9c60464e",
+"h_steps": "482bd6207c11b984",
 "h_layers": "46fe7fe53784725f",
 "h_tiaohou": "0b732930f164f68c"
 },
@@ -1273,7 +1273,7 @@
 "水",
 "金"
 ],
-"h_steps": "3915c8601cc782bf",
+"h_steps": "726f6617f5b64af8",
 "h_layers": "3786cf5b209e7436",
 "h_tiaohou": "e347f6b609c13a22"
 },
@@ -1304,7 +1304,7 @@
 "木",
 "水"
 ],
-"h_steps": "5c9e8e4109e0952e",
+"h_steps": "4fbf800ee997efce",
 "h_layers": "8e1c129eac8de898",
 "h_tiaohou": "ee426e50e9f11286"
 },
@@ -1335,7 +1335,7 @@
 "木",
 "火"
 ],
-"h_steps": "301bc521a297f08a",
+"h_steps": "bd4d2abb1e90fe43",
 "h_layers": "9df9eb1af2c292b5",
 "h_tiaohou": "5f485e619596c4aa"
 },
@@ -1366,7 +1366,7 @@
 "木",
 "火"
 ],
-"h_steps": "25167492f3a99705",
+"h_steps": "b43c03847d033116",
 "h_layers": "82e978214279bbb6",
 "h_tiaohou": "97ccaf944f720627"
 },
@@ -1397,7 +1397,7 @@
 "水",
 "火"
 ],
-"h_steps": "b77cdce6bde1f1b9",
+"h_steps": "1f790747bf54b23a",
 "h_layers": "a50bba9d1a1ea777",
 "h_tiaohou": "78e1991ef095eafe"
 },
@@ -1428,7 +1428,7 @@
 "土",
 "金"
 ],
-"h_steps": "8349bfec221e2638",
+"h_steps": "d66d872ad7bd7cb2",
 "h_layers": "2ee64636064cac1f",
 "h_tiaohou": "ad536ababe06a8ec"
 },
@@ -1459,7 +1459,7 @@
 "水",
 "金"
 ],
-"h_steps": "d385790c8724111a",
+"h_steps": "ccda8079c5abcddc",
 "h_layers": "933275eca90d66a8",
 "h_tiaohou": "e36bada40d937758"
 },
@@ -1490,7 +1490,7 @@
 "水",
 "金"
 ],
-"h_steps": "53f7a37264e7933c",
+"h_steps": "6bb5ac846154c4bd",
 "h_layers": "45a9ac0da6b56d2a",
 "h_tiaohou": "042fce63913d13af"
 },
@@ -1521,7 +1521,7 @@
 "水",
 "金"
 ],
-"h_steps": "eccb431085e8449c",
+"h_steps": "ac184b6af1e2a42a",
 "h_layers": "284401b3fe08ebb2",
 "h_tiaohou": "ee426e50e9f11286"
 },
@@ -1552,7 +1552,7 @@
 "木",
 "火"
 ],
-"h_steps": "c039bf3817fe856f",
+"h_steps": "ba2e7761f0787656",
 "h_layers": "cf262725af7763fb",
 "h_tiaohou": "ee426e50e9f11286"
 },
@@ -1583,7 +1583,7 @@
 "水",
 "金"
 ],
-"h_steps": "979021791dc2e8a9",
+"h_steps": "061d8e85e6fc6c54",
 "h_layers": "7820433f7041ba8b",
 "h_tiaohou": "41d8ad027148e12b"
 },
@@ -1614,7 +1614,7 @@
 "土",
 "火"
 ],
-"h_steps": "8603f0ed356bf458",
+"h_steps": "6b43a084ef8c0454",
 "h_layers": "a312d78aed0acf1e",
 "h_tiaohou": "8622f80f0ce669f4"
 },
@@ -1622,15 +1622,15 @@
 "level": "旺极",
 "static": {
 "木": 0.7,
-"火": 6.4,
-"土": 68.0,
+"火": 0.0,
+"土": 132.0,
 "金": 0.5,
 "水": 0.0
 },
 "final": {
 "木": 0.0,
-"火": 6.4,
-"土": 70.0,
+"火": 0.0,
+"土": 134.0,
 "金": 0.5,
 "水": 0.0
 },
@@ -1645,7 +1645,7 @@
 "水",
 "金"
 ],
-"h_steps": "ca2676ae1eb4efb1",
+"h_steps": "71c3b664d4a7e38d",
 "h_layers": "7820433f7041ba8b",
 "h_tiaohou": "a0d55edb8b917ca3"
 },
@@ -1676,7 +1676,7 @@
 "水",
 "金"
 ],
-"h_steps": "16fae4a3b7c91828",
+"h_steps": "1a4518a1a17a42d6",
 "h_layers": "55d92402047ee74f",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -1707,7 +1707,7 @@
 "水",
 "金"
 ],
-"h_steps": "c67c377707eb96b2",
+"h_steps": "c539bdd85434325e",
 "h_layers": "8ee32704e2b83ac4",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -1738,7 +1738,7 @@
 "水",
 "金"
 ],
-"h_steps": "26b27613cc1ee653",
+"h_steps": "02065ca533370a3f",
 "h_layers": "7bd1f8204f63ad69",
 "h_tiaohou": "54a90ffa60063839"
 },
@@ -1769,7 +1769,7 @@
 "木",
 "水"
 ],
-"h_steps": "8494520108ac7413",
+"h_steps": "32cf7b542598b4b8",
 "h_layers": "28aa28b06033b8f7",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -1800,7 +1800,7 @@
 "木",
 "水"
 ],
-"h_steps": "88ea6c7759574a9c",
+"h_steps": "2b060b81b194f17b",
 "h_layers": "71ef933cc45d7f24",
 "h_tiaohou": "940e8f547548a575"
 },
@@ -1831,7 +1831,7 @@
 "水",
 "金"
 ],
-"h_steps": "e574407dc8c410c8",
+"h_steps": "9f6eb3694de71452",
 "h_layers": "a69c930c5dbe39f3",
 "h_tiaohou": "41d8ad027148e12b"
 },
@@ -1862,7 +1862,7 @@
 "木",
 "水"
 ],
-"h_steps": "ca30d7d6f36bb5f6",
+"h_steps": "cda52df30f08bde3",
 "h_layers": "a8072cd870935a68",
 "h_tiaohou": "6b3f298c841917a5"
 },
@@ -1893,7 +1893,7 @@
 "木",
 "水"
 ],
-"h_steps": "a8af7d25ec564000",
+"h_steps": "873bab1843616d6e",
 "h_layers": "1cb0cb3679e3a548",
 "h_tiaohou": "d37d5c3ef6248189"
 },
@@ -1924,7 +1924,7 @@
 "木",
 "水"
 ],
-"h_steps": "6ecc1253e6fa4053",
+"h_steps": "933a7a910fa04756",
 "h_layers": "212b5939276296e9",
 "h_tiaohou": "97ccaf944f720627"
 },
@@ -1955,7 +1955,7 @@
 "木",
 "火"
 ],
-"h_steps": "602675e70ba28b47",
+"h_steps": "307226bcb4469c5f",
 "h_layers": "4c0c33a52f824550",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -1986,7 +1986,7 @@
 "土",
 "金"
 ],
-"h_steps": "a352100aac0bf8e7",
+"h_steps": "a02d7ba48462cfc9",
 "h_layers": "8b38a7f4ed32123a",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -2017,7 +2017,7 @@
 "土",
 "金"
 ],
-"h_steps": "fe23199a6c649d3c",
+"h_steps": "eb608fa26442b59a",
 "h_layers": "8b38a7f4ed32123a",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -2048,7 +2048,7 @@
 "土",
 "金"
 ],
-"h_steps": "5a7ae8dd44f26c2e",
+"h_steps": "c4e535db5d68b9bc",
 "h_layers": "f2c66b9592ba0eef",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -2079,7 +2079,7 @@
 "水",
 "金"
 ],
-"h_steps": "7c8dda497e8da5b9",
+"h_steps": "42e71f087296acbd",
 "h_layers": "1c095f1b147451f8",
 "h_tiaohou": "b468c1d7d957e74e"
 },
@@ -2110,7 +2110,7 @@
 "木",
 "火"
 ],
-"h_steps": "e683c805fa2cec41",
+"h_steps": "4806809fe64e2f18",
 "h_layers": "94209f8a2917cc31",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -2141,7 +2141,7 @@
 "火",
 "金"
 ],
-"h_steps": "53f396017b4a32e5",
+"h_steps": "126a36a3ce4613d6",
 "h_layers": "1a24a153b9207f35",
 "h_tiaohou": "e4754a0deee39df5"
 },
@@ -2172,7 +2172,7 @@
 "土",
 "金"
 ],
-"h_steps": "9d3c0e22bdc1a53a",
+"h_steps": "09c81d7fe34097b9",
 "h_layers": "26e0f0e8556ff598",
 "h_tiaohou": "52d445ca0715f4f6"
 },
@@ -2203,7 +2203,7 @@
 "火",
 "金"
 ],
-"h_steps": "66863055044e9912",
+"h_steps": "5472350b8e5c80fb",
 "h_layers": "d9dfd43f844be365",
 "h_tiaohou": "042fce63913d13af"
 },
@@ -2234,7 +2234,7 @@
 "水",
 "金"
 ],
-"h_steps": "1b020a169c7965e9",
+"h_steps": "7c1bd6542876ec6b",
 "h_layers": "b6fd3a069694ed35",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -2265,7 +2265,7 @@
 "水",
 "金"
 ],
-"h_steps": "185bb6185bf0fa8d",
+"h_steps": "20e35f2e12a398f2",
 "h_layers": "93f5a39f3e764722",
 "h_tiaohou": "ee426e50e9f11286"
 },
@@ -2296,7 +2296,7 @@
 "火",
 "金"
 ],
-"h_steps": "72fccf749089ea9e",
+"h_steps": "5a2460f6ccd60721",
 "h_layers": "ebdfedac0af89697",
 "h_tiaohou": "444360c61226abc0"
 },
@@ -2327,7 +2327,7 @@
 "水",
 "金"
 ],
-"h_steps": "6b0a73f57b06692f",
+"h_steps": "3165fc7111d5588a",
 "h_layers": "3786cf5b209e7436",
 "h_tiaohou": "e9f0cfec15d0734b"
 },
@@ -2358,7 +2358,7 @@
 "水",
 "金"
 ],
-"h_steps": "0cec9a277cb092a8",
+"h_steps": "4f13c8a8c321f0b1",
 "h_layers": "46fe7fe53784725f",
 "h_tiaohou": "0b732930f164f68c"
 },
@@ -2389,7 +2389,7 @@
 "水",
 "金"
 ],
-"h_steps": "b7f63938c487042b",
+"h_steps": "24f3ba56bb7cf745",
 "h_layers": "46fe7fe53784725f",
 "h_tiaohou": "0b732930f164f68c"
 },
@@ -2420,7 +2420,7 @@
 "木",
 "火"
 ],
-"h_steps": "583ee2b58534b1f4",
+"h_steps": "004a9ffdb43d5dd8",
 "h_layers": "91aaf7611978af5f",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -2451,7 +2451,7 @@
 "土",
 "火"
 ],
-"h_steps": "6cd89af4c101dc19",
+"h_steps": "4de71a0dbe71adeb",
 "h_layers": "d156963d330b2d08",
 "h_tiaohou": "97ccaf944f720627"
 },
@@ -2482,7 +2482,7 @@
 "木",
 "火"
 ],
-"h_steps": "1707dbc07a653062",
+"h_steps": "3a0f75c6fd89958b",
 "h_layers": "9f8df796e2a2364e",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -2513,7 +2513,7 @@
 "木",
 "火"
 ],
-"h_steps": "c30ac575d0d77590",
+"h_steps": "08cc3dd62b8cf328",
 "h_layers": "4842c3064486763d",
 "h_tiaohou": "883cfc04fe0292fb"
 },
@@ -2544,7 +2544,7 @@
 "水",
 "金"
 ],
-"h_steps": "6ee4d4d00379783c",
+"h_steps": "2a5c9ce0cebc942d",
 "h_layers": "e8f0fba8667e9d31",
 "h_tiaohou": "f236fd394a48e66b"
 },
@@ -2575,7 +2575,7 @@
 "木",
 "火"
 ],
-"h_steps": "3ca049ae02b6fe79",
+"h_steps": "e8835af6ddd3fe7e",
 "h_layers": "4a040b2e32a8722e",
 "h_tiaohou": "304adbd8c649e36f"
 },
@@ -2606,39 +2606,39 @@
 "水",
 "金"
 ],
-"h_steps": "cc35d6ed5c321105",
+"h_steps": "26874f540d995990",
 "h_layers": "0a958eec77ad49fb",
 "h_tiaohou": "78e1991ef095eafe"
 },
 "丁酉 癸丑 戊戌 己未": {
-"level": "较旺",
+"level": "旺极",
 "static": {
-"木": 0.7,
-"火": 1.5,
-"土": 22.0,
-"金": 13.5,
-"水": 4.8
+"木": 0.0,
+"火": 0.65,
+"土": 52.0,
+"金": 7.5,
+"水": 1.05
 },
 "final": {
-"木": 0.7,
-"火": 1.5,
-"土": 16.74,
-"金": 13.5,
-"水": 0.0
+"木": 0.0,
+"火": 0.65,
+"土": 41.6,
+"金": 7.5,
+"水": 0.63
 },
-"ge_ju": "zheng",
-"yong_shen": "水",
+"ge_ju": "cong_qiang",
+"yong_shen": "火",
 "favorable": [
+"土",
+"火"
+],
+"avoid": [
+"木",
 "水",
 "金"
 ],
-"avoid": [
-"土",
-"木",
-"火"
-],
-"h_steps": "de6d2762c7e01fa7",
-"h_layers": "24185bf891edbcfd",
+"h_steps": "6e9f627d0e870694",
+"h_layers": "42f8c4c2f5bd701d",
 "h_tiaohou": "7a9577f7ba416455"
 },
 "庚申 戊子 丁丑 己酉": {
@@ -2668,7 +2668,7 @@
 "木",
 "火"
 ],
-"h_steps": "5ab91b9176645083",
+"h_steps": "98e1a0a45655ee26",
 "h_layers": "338518934d35beed",
 "h_tiaohou": "7639a67ebaa015ff"
 },
@@ -2699,7 +2699,7 @@
 "水",
 "金"
 ],
-"h_steps": "63ce1b9e4fb3d421",
+"h_steps": "1b0613856625a796",
 "h_layers": "b9c08de5b7842430",
 "h_tiaohou": "7a9577f7ba416455"
 },
@@ -2730,7 +2730,7 @@
 "水",
 "金"
 ],
-"h_steps": "02ed1e0e36947369",
+"h_steps": "43100a577415ae7d",
 "h_layers": "7a14638fdbace7c0",
 "h_tiaohou": "e4754a0deee39df5"
 },
@@ -2761,7 +2761,7 @@
 "水",
 "火"
 ],
-"h_steps": "6a68fb6b490006c9",
+"h_steps": "70f7ab0eb5f9d747",
 "h_layers": "db40ac015150639d",
 "h_tiaohou": "f236fd394a48e66b"
 },
@@ -2792,7 +2792,7 @@
 "火",
 "金"
 ],
-"h_steps": "2ccba1805cbd936d",
+"h_steps": "bb5a6314fa2408b4",
 "h_layers": "3bc0508ca2b792e2",
 "h_tiaohou": "41d8ad027148e12b"
 },
@@ -2823,7 +2823,7 @@
 "木",
 "火"
 ],
-"h_steps": "a02f6849cd759a0b",
+"h_steps": "ba0c7cac1065d2db",
 "h_layers": "b6fd3a069694ed35",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -2854,7 +2854,7 @@
 "水",
 "金"
 ],
-"h_steps": "c6fa277171c1b365",
+"h_steps": "77a1719b1d0b57ae",
 "h_layers": "40a33ee0d0c08908",
 "h_tiaohou": "f0820b58218d1a12"
 },
@@ -2885,7 +2885,7 @@
 "木",
 "水"
 ],
-"h_steps": "7d95b3a2a442363b",
+"h_steps": "bfdc4853049f26cd",
 "h_layers": "4ae5b4de87300ec4",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -2916,7 +2916,7 @@
 "木",
 "火"
 ],
-"h_steps": "1787b46020ebfe14",
+"h_steps": "d53edcb084b83caa",
 "h_layers": "4c0c33a52f824550",
 "h_tiaohou": "38dc77b5b0437dd6"
 },
@@ -2947,7 +2947,7 @@
 "木",
 "火"
 ],
-"h_steps": "1825c878e896f76e",
+"h_steps": "3b061d25dadd7462",
 "h_layers": "c61957ada5298485",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -2978,7 +2978,7 @@
 "木",
 "火"
 ],
-"h_steps": "7c752330c695616b",
+"h_steps": "2a4192b45a227c28",
 "h_layers": "6e41d4eec4c6ed98",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -3009,7 +3009,7 @@
 "木",
 "火"
 ],
-"h_steps": "1ee827ea36f20463",
+"h_steps": "7decaa04b16ef256",
 "h_layers": "117a64cae11267bd",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -3040,7 +3040,7 @@
 "水",
 "金"
 ],
-"h_steps": "bd147719cacb1490",
+"h_steps": "cb1135c7520893cd",
 "h_layers": "82381533bda5a0ec",
 "h_tiaohou": "8e97b24d3667b958"
 },
@@ -3071,7 +3071,7 @@
 "水",
 "金"
 ],
-"h_steps": "d21c1e0d7fbb115b",
+"h_steps": "4bf784ccdf384760",
 "h_layers": "cf8f000afd7a0587",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -3102,7 +3102,7 @@
 "水",
 "金"
 ],
-"h_steps": "5767ae350dc68b05",
+"h_steps": "cc19973ac9efbcf1",
 "h_layers": "6c3d1e9dff38aeff",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -3133,7 +3133,7 @@
 "木",
 "火"
 ],
-"h_steps": "a2e98deb2b378bc8",
+"h_steps": "18b707888e2588ea",
 "h_layers": "4703833d97c6df48",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -3141,17 +3141,17 @@
 "level": "较旺",
 "static": {
 "木": 0.0,
-"火": 2.5,
-"土": 10.0,
+"火": 1.5,
+"土": 8.0,
 "金": 9.0,
-"水": 19.2
+"水": 17.6
 },
 "final": {
 "木": 0.0,
 "火": 0.0,
-"土": 6.0,
-"金": 3.24,
-"水": 18.25
+"土": 4.0,
+"金": 3.72,
+"水": 16.95
 },
 "ge_ju": "zheng",
 "yong_shen": "火",
@@ -3164,7 +3164,7 @@
 "水",
 "金"
 ],
-"h_steps": "5380edda3ab4b94d",
+"h_steps": "07e70bcac2e07935",
 "h_layers": "a123d658d9f1c464",
 "h_tiaohou": "883cfc04fe0292fb"
 },
@@ -3195,7 +3195,7 @@
 "木",
 "火"
 ],
-"h_steps": "915daf707eb54f8c",
+"h_steps": "a909cb4b88256a16",
 "h_layers": "6de7ee7d7b86fac7",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -3226,7 +3226,7 @@
 "水",
 "金"
 ],
-"h_steps": "1084728c06418e9e",
+"h_steps": "665dbfaddf60b27f",
 "h_layers": "eb67a14704b39148",
 "h_tiaohou": "aae9135997f98171"
 },
@@ -3257,7 +3257,7 @@
 "水",
 "金"
 ],
-"h_steps": "db6dfcb0295db4d7",
+"h_steps": "2976dac2ad0e239f",
 "h_layers": "b914b6d5a40e945e",
 "h_tiaohou": "e9f0cfec15d0734b"
 },
@@ -3265,8 +3265,8 @@
 "level": "较旺",
 "static": {
 "木": 1.6,
-"火": 27.0,
-"土": 12.75,
+"火": 23.0,
+"土": 18.0,
 "金": 0.0,
 "水": 0.7
 },
@@ -3288,7 +3288,7 @@
 "水",
 "金"
 ],
-"h_steps": "efcb7ab5d780b824",
+"h_steps": "100714a5d5be2344",
 "h_layers": "1900f74a53b00cbf",
 "h_tiaohou": "e347f6b609c13a22"
 },
@@ -3319,7 +3319,7 @@
 "火",
 "金"
 ],
-"h_steps": "bbb1f644c39a6d53",
+"h_steps": "1d219e6c24119032",
 "h_layers": "e3d2538cc2e0953b",
 "h_tiaohou": "e36bada40d937758"
 },
@@ -3327,14 +3327,14 @@
 "level": "弱极",
 "static": {
 "木": 2.1,
-"火": 18.0,
+"火": 18.75,
 "土": 22.0,
 "金": 0.0,
 "水": 1.0
 },
 "final": {
 "木": 1.68,
-"火": 18.0,
+"火": 18.75,
 "土": 12.9,
 "金": 0.0,
 "水": 0.0
@@ -3350,7 +3350,7 @@
 "水",
 "金"
 ],
-"h_steps": "8af869e80985b708",
+"h_steps": "7bd3aa4667999280",
 "h_layers": "407590336a5f7f4c",
 "h_tiaohou": "fd1509cd370da526"
 },
@@ -3381,7 +3381,7 @@
 "火",
 "金"
 ],
-"h_steps": "e8afb338ef048725",
+"h_steps": "de0ce4a1967ec47e",
 "h_layers": "cc31c46285c0d1fa",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -3412,7 +3412,7 @@
 "火",
 "金"
 ],
-"h_steps": "56b5dd269d8ef06a",
+"h_steps": "dcb60d4da78ca737",
 "h_layers": "05dd87ce5e078af3",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -3443,7 +3443,7 @@
 "水",
 "金"
 ],
-"h_steps": "27bd67060580f936",
+"h_steps": "a43f855a6ef1363d",
 "h_layers": "906c045df192886a",
 "h_tiaohou": "634ec8f9869cc56f"
 },
@@ -3474,7 +3474,7 @@
 "水",
 "金"
 ],
-"h_steps": "3ebe1df628134470",
+"h_steps": "d80cd3b3db8a3230",
 "h_layers": "f61e2567f470f18a",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -3505,7 +3505,7 @@
 "水",
 "金"
 ],
-"h_steps": "698c530ed7432945",
+"h_steps": "7d15e4b785948c76",
 "h_layers": "9b82b269fbee6297",
 "h_tiaohou": "b456f4c8c5865279"
 },
@@ -3536,7 +3536,7 @@
 "木",
 "水"
 ],
-"h_steps": "77f4041b9a516e0e",
+"h_steps": "f55ae39172b3f1a5",
 "h_layers": "129d652215acd22a",
 "h_tiaohou": "e9f0cfec15d0734b"
 },
@@ -3567,7 +3567,7 @@
 "木",
 "火"
 ],
-"h_steps": "4e08df05a357e281",
+"h_steps": "7b3f4e6b629d4893",
 "h_layers": "5ad3078d97e78ae2",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -3598,7 +3598,7 @@
 "木",
 "火"
 ],
-"h_steps": "341535a6966f69de",
+"h_steps": "254d10477315746c",
 "h_layers": "2b8d0335b0122edc",
 "h_tiaohou": "6be2adcf14eff10e"
 },
@@ -3629,7 +3629,7 @@
 "土",
 "火"
 ],
-"h_steps": "f1b66f32ca1179be",
+"h_steps": "267737e9d5f4f403",
 "h_layers": "89fe8494587044c4",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -3660,7 +3660,7 @@
 "水",
 "金"
 ],
-"h_steps": "5b6850880ee59a3c",
+"h_steps": "9f6eb551c91aae36",
 "h_layers": "57a8785acc49c953",
 "h_tiaohou": "880c105cec39e038"
 },
@@ -3691,7 +3691,7 @@
 "水",
 "金"
 ],
-"h_steps": "af5e00f0d618875c",
+"h_steps": "c20b1442fceae103",
 "h_layers": "b8a9c8bda4069cef",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -3722,7 +3722,7 @@
 "火",
 "金"
 ],
-"h_steps": "e43d31ed91b28370",
+"h_steps": "4e919cd365bb3f07",
 "h_layers": "77b42a686a2e63c2",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -3753,7 +3753,7 @@
 "土",
 "火"
 ],
-"h_steps": "56d1787bfe1be81c",
+"h_steps": "33a9b458f00de50a",
 "h_layers": "0d82db9028b49bca",
 "h_tiaohou": "e4754a0deee39df5"
 },
@@ -3784,7 +3784,7 @@
 "木",
 "火"
 ],
-"h_steps": "4a13a2b46f77a9b3",
+"h_steps": "2262786a3737d2ce",
 "h_layers": "7acc7247d4166bf7",
 "h_tiaohou": "8622f80f0ce669f4"
 },
@@ -3815,7 +3815,7 @@
 "水",
 "火"
 ],
-"h_steps": "d1deb693fbb0d81b",
+"h_steps": "c4cef21c6a65a3c3",
 "h_layers": "5c149d1a4ddba31c",
 "h_tiaohou": "8622f80f0ce669f4"
 },
@@ -3846,7 +3846,7 @@
 "火",
 "金"
 ],
-"h_steps": "a65de70f939724b1",
+"h_steps": "570683c392f98e9c",
 "h_layers": "cc31c46285c0d1fa",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -3877,7 +3877,7 @@
 "木",
 "火"
 ],
-"h_steps": "bd02faa0f4d1e451",
+"h_steps": "c3bdff65dccad4c1",
 "h_layers": "e2542e914e81e307",
 "h_tiaohou": "80511bfd812288d7"
 },
@@ -3908,25 +3908,25 @@
 "土",
 "火"
 ],
-"h_steps": "054a43164f8873ec",
+"h_steps": "301d9a5ed122753f",
 "h_layers": "9658ff67b699d8f1",
 "h_tiaohou": "02e17ad91f0ee112"
 },
 "丁卯 癸卯 辛未 壬辰": {
 "level": "弱极",
 "static": {
-"木": 48.0,
+"木": 40.0,
 "火": 1.5,
-"土": 0.0,
+"土": 1.5,
 "金": 0.7,
-"水": 1.6
+"水": 3.2
 },
 "final": {
-"木": 48.0,
+"木": 40.0,
 "火": 1.5,
-"土": 0.0,
+"土": 1.5,
 "金": 0.7,
-"水": 1.6
+"水": 3.2
 },
 "ge_ju": "cong_cai",
 "yong_shen": "木",
@@ -3939,25 +3939,25 @@
 "土",
 "金"
 ],
-"h_steps": "973d38260aff63a6",
-"h_layers": "72be8d792d775779",
+"h_steps": "fa36780b4941e022",
+"h_layers": "45960110e54b0903",
 "h_tiaohou": "02e17ad91f0ee112"
 },
 "戊子 甲子 戊子 乙卯": {
 "level": "弱极",
 "static": {
-"木": 21.0,
+"木": 10.5,
 "火": 0.0,
 "土": 1.4,
 "金": 0.0,
-"水": 28.0
+"水": 28.02
 },
 "final": {
-"木": 22.65,
+"木": 12.02,
 "火": 0.0,
 "土": 0.0,
 "金": 0.0,
-"水": 25.9
+"水": 26.97
 },
 "ge_ju": "cong_cai",
 "yong_shen": "水",
@@ -3970,7 +3970,7 @@
 "土",
 "火"
 ],
-"h_steps": "4fea9134e539a936",
+"h_steps": "86fde8cc37635125",
 "h_layers": "e51204f02d7ba971",
 "h_tiaohou": "880c105cec39e038"
 },
@@ -4001,7 +4001,7 @@
 "木",
 "水"
 ],
-"h_steps": "1106fa07b56d673a",
+"h_steps": "64854a014cff0f57",
 "h_layers": "c9d7b643b930e632",
 "h_tiaohou": "7a9577f7ba416455"
 },
@@ -4032,7 +4032,7 @@
 "木",
 "水"
 ],
-"h_steps": "c33f74140bf87732",
+"h_steps": "1677caffce906007",
 "h_layers": "df892889b3384624",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -4063,7 +4063,7 @@
 "水",
 "金"
 ],
-"h_steps": "4ad85c1b15cb479f",
+"h_steps": "07155def8008ef69",
 "h_layers": "395425600c018975",
 "h_tiaohou": "41d8ad027148e12b"
 },
@@ -4094,7 +4094,7 @@
 "水",
 "金"
 ],
-"h_steps": "2ec36eaa42e4801d",
+"h_steps": "45e532d31af67331",
 "h_layers": "830425d0a6e7db95",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -4125,7 +4125,7 @@
 "水",
 "金"
 ],
-"h_steps": "f30190918a32c68e",
+"h_steps": "c1e2917012987c21",
 "h_layers": "7f648197288e355f",
 "h_tiaohou": "ca93260940a4b9c9"
 },
@@ -4156,7 +4156,7 @@
 "水",
 "金"
 ],
-"h_steps": "32b4caf868fcebeb",
+"h_steps": "cf29d3207e5fe85e",
 "h_layers": "87c9743f9dd22464",
 "h_tiaohou": "b7253ad01b5c5187"
 },
@@ -4187,7 +4187,7 @@
 "土",
 "金"
 ],
-"h_steps": "6b2cfd3985bee02c",
+"h_steps": "661875b301927b2b",
 "h_layers": "3afffbcb99239778",
 "h_tiaohou": "8e4addc140593a34"
 },
@@ -4218,7 +4218,7 @@
 "水",
 "金"
 ],
-"h_steps": "b787647d49a8aada",
+"h_steps": "6ce084fbfe3ffb17",
 "h_layers": "cc5f1baf01d95769",
 "h_tiaohou": "e9f0cfec15d0734b"
 },
@@ -4249,7 +4249,7 @@
 "土",
 "金"
 ],
-"h_steps": "4d49e4dc53600846",
+"h_steps": "8be688a48bab8afa",
 "h_layers": "5a401a7d04603a55",
 "h_tiaohou": "78e1991ef095eafe"
 },
@@ -4280,7 +4280,7 @@
 "木",
 "水"
 ],
-"h_steps": "0372e87015e03728",
+"h_steps": "302e0163167337f0",
 "h_layers": "542f4d9dff842dde",
 "h_tiaohou": "b7253ad01b5c5187"
 },
@@ -4311,7 +4311,7 @@
 "木",
 "火"
 ],
-"h_steps": "90e0c5be6040eff3",
+"h_steps": "e0c66976ae2c44d5",
 "h_layers": "594535e63e873e14",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -4342,7 +4342,7 @@
 "木",
 "水"
 ],
-"h_steps": "5186e3bd50060b60",
+"h_steps": "30ca12f1244893ed",
 "h_layers": "1cb0cb3679e3a548",
 "h_tiaohou": "ee426e50e9f11286"
 },
@@ -4373,7 +4373,7 @@
 "木",
 "火"
 ],
-"h_steps": "095b70a3f38477ab",
+"h_steps": "bac7c5268129b498",
 "h_layers": "9f8df796e2a2364e",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -4404,7 +4404,7 @@
 "水",
 "火"
 ],
-"h_steps": "14057472e70815e1",
+"h_steps": "095fc26a5c91056b",
 "h_layers": "12cd80b8910586f0",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -4435,7 +4435,7 @@
 "木",
 "水"
 ],
-"h_steps": "7344a214557b128d",
+"h_steps": "fb3aa149bdf9b6e8",
 "h_layers": "df892889b3384624",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -4466,7 +4466,7 @@
 "水",
 "金"
 ],
-"h_steps": "5ad181179660c6ac",
+"h_steps": "6033aebd093d47e4",
 "h_layers": "caebe3e130d0c8d0",
 "h_tiaohou": "8622f80f0ce669f4"
 },
@@ -4497,7 +4497,7 @@
 "木",
 "水"
 ],
-"h_steps": "4e69407593a98315",
+"h_steps": "d41561483ac70b4b",
 "h_layers": "df892889b3384624",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -4528,7 +4528,7 @@
 "木",
 "火"
 ],
-"h_steps": "91f0e1ac8ecae382",
+"h_steps": "148a16d9f471c080",
 "h_layers": "b526ba2a475af00f",
 "h_tiaohou": "779b658c7007a3b2"
 },
@@ -4559,7 +4559,7 @@
 "水",
 "火"
 ],
-"h_steps": "1220d8667ad0745f",
+"h_steps": "768912904c3dfd98",
 "h_layers": "18febbd652869dfc",
 "h_tiaohou": "883cfc04fe0292fb"
 },
@@ -4590,7 +4590,7 @@
 "水",
 "火"
 ],
-"h_steps": "858aa25958a500d8",
+"h_steps": "b96e112741f4d37f",
 "h_layers": "7a91d0a1cf4f323e",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -4621,7 +4621,7 @@
 "火",
 "金"
 ],
-"h_steps": "95e9ca5fd6ac0778",
+"h_steps": "65de58532d74452a",
 "h_layers": "f0dad2e8a15972fc",
 "h_tiaohou": "327bb8d836f17127"
 },
@@ -4652,7 +4652,7 @@
 "水",
 "金"
 ],
-"h_steps": "c8c53cb61a615c06",
+"h_steps": "136f5e45fb6e1727",
 "h_layers": "12cd80b8910586f0",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -4683,7 +4683,7 @@
 "木",
 "火"
 ],
-"h_steps": "7912f0b1b36accc8",
+"h_steps": "2c9f779b91c6d37c",
 "h_layers": "f486c89cf2ef097e",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -4714,7 +4714,7 @@
 "木",
 "火"
 ],
-"h_steps": "ffa396054421166f",
+"h_steps": "9058353eb483f676",
 "h_layers": "aade31d949f70062",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -4745,7 +4745,7 @@
 "水",
 "金"
 ],
-"h_steps": "7e5195712af7c1a7",
+"h_steps": "1d6075c6700c4fc0",
 "h_layers": "4f8ddf5158dd8136",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -4776,7 +4776,7 @@
 "木",
 "火"
 ],
-"h_steps": "21285e7480e31fc2",
+"h_steps": "4b6358f773c44b98",
 "h_layers": "aade31d949f70062",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -4807,7 +4807,7 @@
 "水",
 "金"
 ],
-"h_steps": "3ce24edacecc3fa0",
+"h_steps": "bd0958830115151a",
 "h_layers": "1fd96b95c7c1bc4e",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -4838,7 +4838,7 @@
 "木",
 "水"
 ],
-"h_steps": "e90fc7480faae735",
+"h_steps": "2d1b7246b82ef432",
 "h_layers": "70d4e2b817cc44a4",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -4869,7 +4869,7 @@
 "木",
 "水"
 ],
-"h_steps": "2a11ffc60db0586f",
+"h_steps": "9a383cf7cd9605b0",
 "h_layers": "1cb203288c160c35",
 "h_tiaohou": "5364e9403af9f266"
 },
@@ -4900,7 +4900,7 @@
 "水",
 "金"
 ],
-"h_steps": "ad39bea089f3e00f",
+"h_steps": "d8cf9d17a5f0d6e4",
 "h_layers": "e96e83c08d125339",
 "h_tiaohou": "940e8f547548a575"
 },
@@ -4931,7 +4931,7 @@
 "水",
 "金"
 ],
-"h_steps": "814bbd6f8fc7f212",
+"h_steps": "60bc0c74b9c17a89",
 "h_layers": "830425d0a6e7db95",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -4962,7 +4962,7 @@
 "土",
 "火"
 ],
-"h_steps": "d7adc0f2f970710d",
+"h_steps": "bee8f1f0081ddfeb",
 "h_layers": "5f832a047233a431",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -4993,7 +4993,7 @@
 "土",
 "金"
 ],
-"h_steps": "264316c6a4e4d0a8",
+"h_steps": "43e9296848ce8cb8",
 "h_layers": "db75d0122421e53e",
 "h_tiaohou": "042fce63913d13af"
 },
@@ -5024,7 +5024,7 @@
 "火",
 "金"
 ],
-"h_steps": "e5aab9c1cf3d2fe3",
+"h_steps": "0f43906eb39384db",
 "h_layers": "ce9144bf872a21cd",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -5055,7 +5055,7 @@
 "水",
 "金"
 ],
-"h_steps": "1603d85f1ab0dc8c",
+"h_steps": "7c8ca94e6df9dada",
 "h_layers": "dd1644db23f160d4",
 "h_tiaohou": "41d8ad027148e12b"
 },
@@ -5086,7 +5086,7 @@
 "火",
 "金"
 ],
-"h_steps": "4a7c1bceac16a7c5",
+"h_steps": "3ae24f9d6ea2628e",
 "h_layers": "902646db330cb650",
 "h_tiaohou": "0b732930f164f68c"
 },
@@ -5117,7 +5117,7 @@
 "土",
 "金"
 ],
-"h_steps": "46fd4563c02ce4f7",
+"h_steps": "aa64364120a93c71",
 "h_layers": "adaa3bf5f849da76",
 "h_tiaohou": "72306fba1120ff76"
 },
@@ -5148,7 +5148,7 @@
 "木",
 "火"
 ],
-"h_steps": "265e7fa4077bf1b3",
+"h_steps": "e494638d0b096f33",
 "h_layers": "7a91d0a1cf4f323e",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -5179,7 +5179,7 @@
 "水",
 "火"
 ],
-"h_steps": "b548f82e456e41b8",
+"h_steps": "8f4f3fbdd221ae12",
 "h_layers": "cddd0cc063d0a74a",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -5210,7 +5210,7 @@
 "水",
 "火"
 ],
-"h_steps": "b4f858105ec77dfb",
+"h_steps": "dcd54b394aef19b1",
 "h_layers": "f5d1f987564a99cc",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -5241,7 +5241,7 @@
 "木",
 "火"
 ],
-"h_steps": "878afcf7fbf9f20d",
+"h_steps": "952e7b04ad1a91dc",
 "h_layers": "348e6e7a7b35ed65",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -5249,17 +5249,17 @@
 "level": "太弱",
 "static": {
 "木": 1.0,
-"火": 1.4,
+"火": 2.1,
 "土": 8.0,
-"金": 16.0,
-"水": 4.5
+"金": 20.0,
+"水": 6.0
 },
 "final": {
 "木": 0.0,
-"火": 1.4,
+"火": 2.1,
 "土": 8.0,
-"金": 15.7,
-"水": 4.5
+"金": 19.7,
+"水": 6.0
 },
 "ge_ju": "cong_cai",
 "yong_shen": "金",
@@ -5272,25 +5272,25 @@
 "木",
 "火"
 ],
-"h_steps": "c1ee92b70ae70201",
-"h_layers": "182601b280b18097",
+"h_steps": "7e51886c93c0e070",
+"h_layers": "314f32752be50967",
 "h_tiaohou": "2a641e3664050c5b"
 },
 "庚申 乙酉 戊申 甲寅": {
-"level": "弱极",
+"level": "太弱",
 "static": {
-"木": 4.0,
-"火": 1.4,
-"土": 2.4,
-"金": 24.0,
-"水": 4.5
+"木": 2.5,
+"火": 0.0,
+"土": 0.8,
+"金": 22.0,
+"水": 3.0
 },
 "final": {
-"木": 2.0,
-"火": 1.4,
-"土": 0.0,
-"金": 27.2,
-"水": 4.5
+"木": 1.25,
+"火": 0.0,
+"土": 0.8,
+"金": 24.0,
+"水": 3.0
 },
 "ge_ju": "cong_ruo",
 "yong_shen": "金",
@@ -5303,39 +5303,39 @@
 "土",
 "火"
 ],
-"h_steps": "ba248fd2201e35d0",
+"h_steps": "a88552f1f1b177e7",
 "h_layers": "e2f723450b7c0f5d",
 "h_tiaohou": "0ee19c1673e067e2"
 },
 "乙卯 己丑 甲戌 甲子": {
-"level": "比弱",
+"level": "比旺",
 "static": {
 "木": 9.1,
 "火": 0.0,
-"土": 14.0,
-"金": 3.0,
-"水": 9.6
+"土": 22.0,
+"金": 0.0,
+"水": 5.25
 },
 "final": {
-"木": 5.4,
+"木": 0.0,
 "火": 0.0,
-"土": 3.54,
-"金": 3.0,
-"水": 8.82
+"土": 21.38,
+"金": 0.0,
+"水": 4.41
 },
-"ge_ju": "zheng",
-"yong_shen": "水",
+"ge_ju": "hua",
+"yong_shen": "土",
 "favorable": [
+"土",
+"火"
+],
+"avoid": [
+"木",
 "水",
 "金"
 ],
-"avoid": [
-"土",
-"木",
-"火"
-],
-"h_steps": "9785ab4bfe8c7675",
-"h_layers": "71ef933cc45d7f24",
+"h_steps": "7b2396c2ef8e1c74",
+"h_layers": "522654df0069d11c",
 "h_tiaohou": "19a2b0902088f520"
 },
 "乙巳 丁亥 己丑 辛未": {
@@ -5365,7 +5365,7 @@
 "水",
 "金"
 ],
-"h_steps": "70285fbefd86bab9",
+"h_steps": "9db4f55fbb8f5cf6",
 "h_layers": "ccce82cd36c54a1a",
 "h_tiaohou": "8622f80f0ce669f4"
 },
@@ -5396,7 +5396,7 @@
 "木",
 "火"
 ],
-"h_steps": "67400189fd4cdb42",
+"h_steps": "de327de77baed727",
 "h_layers": "8e1c129eac8de898",
 "h_tiaohou": "78e1991ef095eafe"
 },
@@ -5427,7 +5427,7 @@
 "木",
 "火"
 ],
-"h_steps": "8677c62a0719fe00",
+"h_steps": "c376376fabdcda8c",
 "h_layers": "7baf6865065b5fe9",
 "h_tiaohou": "2f5becbaef9f4718"
 },
@@ -5458,7 +5458,7 @@
 "水",
 "金"
 ],
-"h_steps": "6732173729cd9729",
+"h_steps": "3d3559a446127ffc",
 "h_layers": "964e9f418de343cb",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -5466,16 +5466,16 @@
 "level": "弱极",
 "static": {
 "木": 1.6,
-"火": 10.0,
-"土": 9.0,
+"火": 6.0,
+"土": 7.5,
 "金": 2.5,
-"水": 9.8
+"水": 7.0
 },
 "final": {
 "木": 1.6,
-"火": 8.68,
-"土": 5.8,
-"金": 5.2,
+"火": 5.38,
+"土": 5.0,
+"金": 4.75,
 "水": 0.0
 },
 "ge_ju": "zheng",
@@ -5489,7 +5489,7 @@
 "木",
 "火"
 ],
-"h_steps": "7e2d089f909ac636",
+"h_steps": "ee337ea400555981",
 "h_layers": "906c045df192886a",
 "h_tiaohou": "634ec8f9869cc56f"
 },
@@ -5520,7 +5520,7 @@
 "水",
 "火"
 ],
-"h_steps": "4c0bc6bf50ad13e2",
+"h_steps": "e1b4b388776a1368",
 "h_layers": "7647922538dc10b8",
 "h_tiaohou": "6b8454e082bf667a"
 },
@@ -5551,7 +5551,7 @@
 "木",
 "水"
 ],
-"h_steps": "9a94a7e9a271b61f",
+"h_steps": "3a99f399b8ff46b8",
 "h_layers": "8ad20221bbccc214",
 "h_tiaohou": "78e1991ef095eafe"
 },
@@ -5582,24 +5582,24 @@
 "水",
 "金"
 ],
-"h_steps": "5f43c1a4972f85ae",
+"h_steps": "84f4ef761fbf8507",
 "h_layers": "ec538f3a1b6f9927",
 "h_tiaohou": "4e5bbc6a8e49ec05"
 },
 "乙卯 癸未 甲戌 乙丑": {
-"level": "比弱",
+"level": "太弱",
 "static": {
 "木": 9.1,
-"火": 12.8,
-"土": 14.0,
-"金": 1.0,
+"火": 9.6,
+"土": 16.0,
+"金": 0.0,
 "水": 0.5
 },
 "final": {
-"木": 7.3,
-"火": 12.8,
-"土": 8.95,
-"金": 1.0,
+"木": 6.1,
+"火": 9.6,
+"土": 11.4,
+"金": 0.0,
 "水": 0.0
 },
 "ge_ju": "zheng",
@@ -5613,7 +5613,7 @@
 "木",
 "火"
 ],
-"h_steps": "3d059bd9a280f448",
+"h_steps": "7b1e64fa10ef9ca1",
 "h_layers": "a8072cd870935a68",
 "h_tiaohou": "41d8ad027148e12b"
 },
@@ -5644,22 +5644,22 @@
 "水",
 "金"
 ],
-"h_steps": "b38764514f683765",
+"h_steps": "4ffb0593457469f0",
 "h_layers": "8ee32704e2b83ac4",
 "h_tiaohou": "828ebbc0167092c7"
 },
 "甲辰 丙寅 癸巳 甲寅": {
 "level": "太弱",
 "static": {
-"木": 40.0,
-"火": 12.0,
+"木": 32.0,
+"火": 8.25,
 "土": 2.5,
 "金": 0.0,
 "水": 0.8
 },
 "final": {
-"木": 32.35,
-"火": 18.0,
+"木": 26.6,
+"火": 13.05,
 "土": 1.0,
 "金": 0.0,
 "水": 0.8
@@ -5675,7 +5675,7 @@
 "水",
 "金"
 ],
-"h_steps": "dec4098abb253336",
+"h_steps": "255c74da5047b2fd",
 "h_layers": "eb67a14704b39148",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -5683,20 +5683,20 @@
 "level": "太弱",
 "static": {
 "木": 10.0,
-"火": 13.5,
+"火": 9.75,
 "土": 2.5,
 "金": 0.7,
 "水": 3.2
 },
 "final": {
 "木": 11.92,
-"火": 13.5,
+"火": 9.75,
 "土": 2.5,
 "金": 0.7,
-"水": 1.4
+"水": 1.7
 },
-"ge_ju": "cong_cai",
-"yong_shen": "火",
+"ge_ju": "cong_ruo",
+"yong_shen": "木",
 "favorable": [
 "土",
 "木",
@@ -5706,7 +5706,7 @@
 "水",
 "金"
 ],
-"h_steps": "d330666f21a2ad7a",
+"h_steps": "0845a5472f06c5ef",
 "h_layers": "45a9ac0da6b56d2a",
 "h_tiaohou": "b76a319782fd066c"
 },
@@ -5714,17 +5714,17 @@
 "level": "太弱",
 "static": {
 "木": 4.5,
-"火": 2.75,
+"火": 1.5,
 "土": 0.0,
 "金": 2.4,
 "水": 6.0
 },
 "final": {
 "木": 4.5,
-"火": 2.03,
+"火": 1.5,
 "土": 0.0,
-"金": 1.02,
-"水": 6.0
+"金": 1.2,
+"水": 6.48
 },
 "ge_ju": "cong_ruo",
 "yong_shen": "水",
@@ -5737,24 +5737,24 @@
 "土",
 "金"
 ],
-"h_steps": "4431de94b365ad21",
-"h_layers": "e33adf3bb147db79",
+"h_steps": "eae1059bd4106f80",
+"h_layers": "81b513ccd911ceff",
 "h_tiaohou": "8622f80f0ce669f4"
 },
 "癸丑 丁巳 乙巳 戊寅": {
 "level": "太弱",
 "static": {
-"木": 2.0,
-"火": 18.0,
-"土": 13.5,
-"金": 1.5,
+"木": 0.8,
+"火": 32.0,
+"土": 3.0,
+"金": 1.0,
 "水": 1.4
 },
 "final": {
-"木": 2.0,
-"火": 18.0,
-"土": 13.08,
-"金": 1.5,
+"木": 0.8,
+"火": 32.0,
+"土": 2.58,
+"金": 1.0,
 "水": 0.0
 },
 "ge_ju": "cong_ruo",
@@ -5768,25 +5768,25 @@
 "木",
 "水"
 ],
-"h_steps": "8d6feaaf9c46297f",
+"h_steps": "4678b4db6e53a456",
 "h_layers": "053ba11464f986d4",
 "h_tiaohou": "f236fd394a48e66b"
 },
 "甲子 丁卯 乙卯 戊寅": {
 "level": "太旺",
 "static": {
-"木": 60.0,
+"木": 68.0,
 "火": 3.0,
 "土": 1.0,
 "金": 0.0,
-"水": 3.2
+"水": 1.6
 },
 "final": {
-"木": 57.73,
-"火": 12.0,
+"木": 65.1,
+"火": 13.2,
 "土": 0.0,
 "金": 0.0,
-"水": 0.0
+"水": 1.6
 },
 "ge_ju": "zheng",
 "yong_shen": "火",
@@ -5799,23 +5799,23 @@
 "水",
 "金"
 ],
-"h_steps": "e92d9c35da78fe71",
+"h_steps": "38a885e837e2ad4e",
 "h_layers": "cc31c46285c0d1fa",
 "h_tiaohou": "02e17ad91f0ee112"
 },
 "壬戌 乙巳 甲寅 丙寅": {
 "level": "弱极",
 "static": {
-"木": 5.6,
-"火": 28.0,
-"土": 9.0,
+"木": 4.8,
+"火": 22.0,
+"土": 10.5,
 "金": 0.0,
 "水": 0.7
 },
 "final": {
 "木": 0.0,
-"火": 30.8,
-"土": 8.79,
+"火": 24.4,
+"土": 10.29,
 "金": 0.0,
 "水": 0.0
 },
@@ -5830,7 +5830,7 @@
 "火",
 "金"
 ],
-"h_steps": "e19a1dd4386bcb31",
+"h_steps": "0a99759676f9d305",
 "h_layers": "f1c3bea8483fd758",
 "h_tiaohou": "590a9dffb55094b7"
 },
@@ -5861,7 +5861,7 @@
 "水",
 "金"
 ],
-"h_steps": "c504eafa15e7b94c",
+"h_steps": "0f50ff6a19ebfde0",
 "h_layers": "e8f0fba8667e9d31",
 "h_tiaohou": "8e4addc140593a34"
 },
@@ -5892,7 +5892,7 @@
 "水",
 "金"
 ],
-"h_steps": "3f6fc5d083267be1",
+"h_steps": "8a931f95356d9482",
 "h_layers": "0ed8d25c09e35a2e",
 "h_tiaohou": "5c73c5984189ce1f"
 },
@@ -5923,7 +5923,7 @@
 "木",
 "火"
 ],
-"h_steps": "bb7dc8ee9da784ea",
+"h_steps": "b12ed14153a3b115",
 "h_layers": "6b23f36b7b94994e",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -5954,38 +5954,38 @@
 "水",
 "火"
 ],
-"h_steps": "bff7c8d0db6c2da9",
+"h_steps": "8b7f0ed6b1b89502",
 "h_layers": "7f75b744717ac404",
 "h_tiaohou": "2a641e3664050c5b"
 },
 "戊子 乙卯 癸卯 庚申": {
 "level": "弱极",
 "static": {
-"木": 24.0,
+"木": 28.0,
 "火": 0.0,
 "土": 0.5,
 "金": 2.8,
-"水": 4.4
+"水": 2.8
 },
 "final": {
-"木": 26.54,
+"木": 29.58,
 "火": 0.0,
 "土": 0.0,
-"金": 1.92,
+"金": 2.24,
 "水": 0.0
 },
-"ge_ju": "zheng",
-"yong_shen": "水",
+"ge_ju": "cong_ruo",
+"yong_shen": "木",
 "favorable": [
-"水",
-"金"
-],
-"avoid": [
 "土",
 "木",
 "火"
 ],
-"h_steps": "6f206a5434a8dd10",
+"avoid": [
+"水",
+"金"
+],
+"h_steps": "9c8fc603768b6849",
 "h_layers": "0ead6ba317293892",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -6016,7 +6016,7 @@
 "土",
 "金"
 ],
-"h_steps": "ba2a76d9cdbbdecf",
+"h_steps": "d0b60ba46dc69168",
 "h_layers": "76ec277fa6fc0d10",
 "h_tiaohou": "b7f572db8365a4f1"
 },
@@ -6047,25 +6047,25 @@
 "水",
 "火"
 ],
-"h_steps": "013fbf00d373d454",
+"h_steps": "33a3541c7f07b1ad",
 "h_layers": "a2adc3c69e22c14f",
 "h_tiaohou": "02e17ad91f0ee112"
 },
 "庚寅 戊子 癸卯 乙卯": {
 "level": "弱极",
 "static": {
-"木": 19.5,
+"木": 21.0,
 "火": 1.0,
 "土": 1.05,
 "金": 0.8,
 "水": 10.0
 },
 "final": {
-"木": 23.1,
+"木": 24.6,
 "火": 1.0,
 "土": 0.84,
 "金": 0.8,
-"水": 0.15
+"水": 0.0
 },
 "ge_ju": "zheng",
 "yong_shen": "水",
@@ -6078,7 +6078,7 @@
 "木",
 "火"
 ],
-"h_steps": "9c09ec7776666fda",
+"h_steps": "7745a0a8f3292481",
 "h_layers": "0bd7178c758b2503",
 "h_tiaohou": "880c105cec39e038"
 },
@@ -6109,7 +6109,7 @@
 "火",
 "金"
 ],
-"h_steps": "4b6ce6454d468b59",
+"h_steps": "4cca7b7afcfd29e6",
 "h_layers": "a5dd5e914e658d87",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -6140,39 +6140,39 @@
 "木",
 "火"
 ],
-"h_steps": "364993ccc6f30afa",
+"h_steps": "d639029e3930b455",
 "h_layers": "49d9dc87aa312691",
 "h_tiaohou": "279ea783b9f17de3"
 },
 "乙卯 癸未 丁丑 庚戌": {
-"level": "偏旺",
+"level": "较弱",
 "static": {
 "木": 4.2,
-"火": 13.6,
-"土": 14.0,
-"金": 1.25,
-"水": 0.75
+"火": 7.8,
+"土": 16.0,
+"金": 0.5,
+"水": 0.5
 },
 "final": {
 "木": 4.2,
-"火": 11.55,
-"土": 17.86,
+"火": 5.3,
+"土": 18.19,
 "金": 0.0,
 "水": 0.0
 },
 "ge_ju": "zheng",
-"yong_shen": "水",
+"yong_shen": "木",
 "favorable": [
-"水",
-"金"
+"木",
+"水"
 ],
 "avoid": [
 "土",
-"木",
-"火"
+"火",
+"金"
 ],
-"h_steps": "644f276b7df406f0",
-"h_layers": "3bc0508ca2b792e2",
+"h_steps": "5278ea2767bc5a7e",
+"h_layers": "fc1ec87216848908",
 "h_tiaohou": "41d8ad027148e12b"
 },
 "癸丑 壬戌 乙未 丙戌": {
@@ -6180,15 +6180,15 @@
 "static": {
 "木": 0.7,
 "火": 8.0,
-"土": 24.0,
-"金": 3.0,
-"水": 1.5
+"土": 18.0,
+"金": 0.0,
+"水": 1.0
 },
 "final": {
 "木": 0.7,
-"火": 6.2,
-"土": 25.5,
-"金": 3.0,
+"火": 7.1,
+"土": 19.8,
+"金": 0.0,
 "水": 0.0
 },
 "ge_ju": "cong_cai",
@@ -6202,7 +6202,7 @@
 "木",
 "水"
 ],
-"h_steps": "7974f872d9b4ece4",
+"h_steps": "637625868038e566",
 "h_layers": "1cb0cb3679e3a548",
 "h_tiaohou": "5f485e619596c4aa"
 },
@@ -6233,7 +6233,7 @@
 "木",
 "火"
 ],
-"h_steps": "ad809a98e56ed315",
+"h_steps": "226882008340ed84",
 "h_layers": "594535e63e873e14",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -6264,7 +6264,7 @@
 "水",
 "火"
 ],
-"h_steps": "fb1ca480daf95a75",
+"h_steps": "a4b541de098ed76b",
 "h_layers": "a9e2607835617dc4",
 "h_tiaohou": "7a9577f7ba416455"
 },
@@ -6295,7 +6295,7 @@
 "木",
 "火"
 ],
-"h_steps": "3cfca65a1bdce0c0",
+"h_steps": "baee7c9ab24a9e3a",
 "h_layers": "0953656359e6d4af",
 "h_tiaohou": "042fce63913d13af"
 },
@@ -6326,7 +6326,7 @@
 "木",
 "水"
 ],
-"h_steps": "240b97c5cb675ba4",
+"h_steps": "9b41b64dc3d3520b",
 "h_layers": "a5dd5e914e658d87",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -6357,7 +6357,7 @@
 "木",
 "火"
 ],
-"h_steps": "e3b6bf00968ee5f2",
+"h_steps": "7e54f9f20e0e355c",
 "h_layers": "179e9a66f2a8d07b",
 "h_tiaohou": "b7253ad01b5c5187"
 },
@@ -6388,7 +6388,7 @@
 "水",
 "金"
 ],
-"h_steps": "015d7f420024376a",
+"h_steps": "9d0085a4faf9a55e",
 "h_layers": "a42ca4823f2b9186",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -6419,7 +6419,7 @@
 "土",
 "火"
 ],
-"h_steps": "ee6d46ef63e8bfb8",
+"h_steps": "2bd7b3ad050dba05",
 "h_layers": "487d52c06fca4201",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -6450,7 +6450,7 @@
 "土",
 "金"
 ],
-"h_steps": "64e1100cc0729ddd",
+"h_steps": "44a20973c09eb535",
 "h_layers": "d0602fd917c5b019",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -6481,7 +6481,7 @@
 "木",
 "火"
 ],
-"h_steps": "f4ce18f5821d3d47",
+"h_steps": "3a48ecb97ee95d5f",
 "h_layers": "39c7c95a283b9f50",
 "h_tiaohou": "8622f80f0ce669f4"
 },
@@ -6512,7 +6512,7 @@
 "水",
 "金"
 ],
-"h_steps": "c1589302c7956596",
+"h_steps": "6ef362d2b9a00093",
 "h_layers": "08e424335b570a97",
 "h_tiaohou": "779b658c7007a3b2"
 },
@@ -6543,7 +6543,7 @@
 "水",
 "火"
 ],
-"h_steps": "8929ed35cda22bd2",
+"h_steps": "7a93e1c49c90dadb",
 "h_layers": "4703833d97c6df48",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -6574,7 +6574,7 @@
 "土",
 "金"
 ],
-"h_steps": "778f8ab321aff284",
+"h_steps": "fcef8c300efa832c",
 "h_layers": "95894e3661c2110a",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -6605,7 +6605,7 @@
 "水",
 "金"
 ],
-"h_steps": "020a17d2121f4560",
+"h_steps": "095e7a873ae59330",
 "h_layers": "b629dcaf40bb6134",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -6636,7 +6636,7 @@
 "水",
 "金"
 ],
-"h_steps": "d34f0d565c4e2c06",
+"h_steps": "77ef6cff42f86ab5",
 "h_layers": "964e9f418de343cb",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -6667,7 +6667,7 @@
 "木",
 "水"
 ],
-"h_steps": "d0dfa5fda63aaaa9",
+"h_steps": "e3507cbe6354c5db",
 "h_layers": "ea322bb0e545cf2d",
 "h_tiaohou": "41d8ad027148e12b"
 },
@@ -6698,7 +6698,7 @@
 "木",
 "火"
 ],
-"h_steps": "b994428244e895d5",
+"h_steps": "67afa920e4d4fc38",
 "h_layers": "aade31d949f70062",
 "h_tiaohou": "5db7dd92e3305b62"
 },
@@ -6729,7 +6729,7 @@
 "水",
 "金"
 ],
-"h_steps": "49ebcaf092106762",
+"h_steps": "abddcbeffddc1c16",
 "h_layers": "95a0be2b68ed3372",
 "h_tiaohou": "7a9577f7ba416455"
 },
@@ -6760,7 +6760,7 @@
 "木",
 "水"
 ],
-"h_steps": "01e378b90c51e5b2",
+"h_steps": "ffdfcd85f302abc1",
 "h_layers": "1cb203288c160c35",
 "h_tiaohou": "5364e9403af9f266"
 },
@@ -6791,7 +6791,7 @@
 "木",
 "火"
 ],
-"h_steps": "b84ae1a2998455a8",
+"h_steps": "d1b11d9c5b65c078",
 "h_layers": "c736107d551bbcfc",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -6822,7 +6822,7 @@
 "水",
 "金"
 ],
-"h_steps": "278e625ea654bdf6",
+"h_steps": "772e13e16959887b",
 "h_layers": "6816f0e8e8a1c06c",
 "h_tiaohou": "f236fd394a48e66b"
 },
@@ -6853,7 +6853,7 @@
 "水",
 "火"
 ],
-"h_steps": "69546c5c3d29ce1b",
+"h_steps": "b0e2ada3e3c82368",
 "h_layers": "7f648197288e355f",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -6884,7 +6884,7 @@
 "土",
 "火"
 ],
-"h_steps": "f5ced1ebd2e6d4eb",
+"h_steps": "b7c71bbc1c796b60",
 "h_layers": "487d52c06fca4201",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -6915,7 +6915,7 @@
 "土",
 "火"
 ],
-"h_steps": "973f8043a3f42c86",
+"h_steps": "afd458bca93cce5c",
 "h_layers": "ee7aa9430f17a80e",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -6946,7 +6946,7 @@
 "土",
 "火"
 ],
-"h_steps": "c7f9304f85517be4",
+"h_steps": "0b81ade9df8f986a",
 "h_layers": "7c72aef797136995",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -6977,7 +6977,7 @@
 "火",
 "金"
 ],
-"h_steps": "89de66b39690eda8",
+"h_steps": "e8bfa4d84a29a135",
 "h_layers": "28a2f38e24aebef8",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -7008,7 +7008,7 @@
 "木",
 "火"
 ],
-"h_steps": "90ce13a0ebe52c58",
+"h_steps": "86040b858ab96114",
 "h_layers": "8996c1403c43aa2e",
 "h_tiaohou": "2f07d7503e89feca"
 },
@@ -7039,25 +7039,25 @@
 "水",
 "金"
 ],
-"h_steps": "d2c07e6c6ac26cdd",
+"h_steps": "b748b8537920f53a",
 "h_layers": "12cd80b8910586f0",
 "h_tiaohou": "0ee19c1673e067e2"
 },
 "己酉 壬申 丙寅 戊戌": {
 "level": "弱极",
 "static": {
-"木": 1.5,
-"火": 2.8,
-"土": 9.6,
-"金": 20.0,
-"水": 4.5
+"木": 0.75,
+"火": 1.4,
+"土": 6.4,
+"金": 18.0,
+"水": 3.0
 },
 "final": {
-"木": 1.5,
-"火": 0.01,
-"土": 5.7,
-"金": 20.09,
-"水": 4.74
+"木": 0.75,
+"火": 0.0,
+"土": 3.2,
+"金": 18.06,
+"水": 3.7
 },
 "ge_ju": "cong_cai",
 "yong_shen": "金",
@@ -7070,8 +7070,8 @@
 "木",
 "火"
 ],
-"h_steps": "aea3e85614d08e29",
-"h_layers": "80713193c0331714",
+"h_steps": "4e4bb04c13b6151e",
+"h_layers": "348e6e7a7b35ed65",
 "h_tiaohou": "2a641e3664050c5b"
 },
 "癸卯 丙辰 辛丑 庚寅": {
@@ -7101,7 +7101,7 @@
 "水",
 "金"
 ],
-"h_steps": "a93672272315157c",
+"h_steps": "7e04d188f50032db",
 "h_layers": "37dc7d4d0adc06a2",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -7132,7 +7132,7 @@
 "木",
 "火"
 ],
-"h_steps": "b3f6eb048dfd59d8",
+"h_steps": "4b664822894e801b",
 "h_layers": "d971ea40bd25dcf2",
 "h_tiaohou": "46ba0a7ac17d8b00"
 },
@@ -7163,7 +7163,7 @@
 "木",
 "火"
 ],
-"h_steps": "7010765e9f638386",
+"h_steps": "11c26222ab7ebaf3",
 "h_layers": "dc236c0f83f6c72f",
 "h_tiaohou": "10f35ba6fa757b35"
 },
@@ -7194,7 +7194,7 @@
 "水",
 "火"
 ],
-"h_steps": "0a180169e5f39472",
+"h_steps": "577921a73ab16efa",
 "h_layers": "f1ef6ccc277636ad",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -7225,7 +7225,7 @@
 "木",
 "火"
 ],
-"h_steps": "6a9370dfef3176bc",
+"h_steps": "c368fc761c72cb13",
 "h_layers": "129d652215acd22a",
 "h_tiaohou": "e347f6b609c13a22"
 },
@@ -7256,21 +7256,21 @@
 "木",
 "水"
 ],
-"h_steps": "f5ade61eaf1ca305",
+"h_steps": "83dd0d3144b1493c",
 "h_layers": "1cb0cb3679e3a548",
 "h_tiaohou": "78e1991ef095eafe"
 },
 "乙巳 戊子 乙卯 己卯": {
 "level": "较旺",
 "static": {
-"木": 36.0,
+"木": 39.0,
 "火": 1.5,
 "土": 2.45,
 "金": 0.8,
 "水": 8.0
 },
 "final": {
-"木": 35.09,
+"木": 38.09,
 "火": 1.5,
 "土": 0.0,
 "金": 0.8,
@@ -7287,7 +7287,7 @@
 "水",
 "金"
 ],
-"h_steps": "bc3de0f5567ed5f7",
+"h_steps": "7ea6f18d06f17248",
 "h_layers": "3985f94a3cb6e706",
 "h_tiaohou": "3f34e70172e72934"
 },
@@ -7318,7 +7318,7 @@
 "火",
 "金"
 ],
-"h_steps": "041fdbda031cd169",
+"h_steps": "dbe6cc87eb7d22b1",
 "h_layers": "ce0fa4353a283f48",
 "h_tiaohou": "7a9577f7ba416455"
 },
@@ -7349,7 +7349,7 @@
 "水",
 "金"
 ],
-"h_steps": "48646632324553b5",
+"h_steps": "84e3c13da2e1fc81",
 "h_layers": "378e781f4ffedc80",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -7380,7 +7380,7 @@
 "木",
 "火"
 ],
-"h_steps": "b38eb8b3c79d89af",
+"h_steps": "9e9d2f021dd2e6f7",
 "h_layers": "df892889b3384624",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -7411,7 +7411,7 @@
 "木",
 "水"
 ],
-"h_steps": "b2f90acdc40869a1",
+"h_steps": "8155b4278030ab58",
 "h_layers": "1cb0cb3679e3a548",
 "h_tiaohou": "ee426e50e9f11286"
 },
@@ -7442,7 +7442,7 @@
 "木",
 "火"
 ],
-"h_steps": "1836be1883ef71d1",
+"h_steps": "00535ca6079fab3f",
 "h_layers": "fb7c7910d3b21617",
 "h_tiaohou": "883cfc04fe0292fb"
 },
@@ -7450,17 +7450,17 @@
 "level": "太弱",
 "static": {
 "木": 1.75,
-"火": 1.25,
-"土": 24.0,
-"金": 4.5,
-"水": 3.2
+"火": 1.62,
+"土": 32.0,
+"金": 1.5,
+"水": 1.05
 },
 "final": {
 "木": 1.75,
-"火": 1.25,
-"土": 21.75,
-"金": 9.3,
-"水": 3.2
+"火": 1.62,
+"土": 32.0,
+"金": 1.5,
+"水": 1.05
 },
 "ge_ju": "cong_ruo",
 "yong_shen": "土",
@@ -7473,8 +7473,8 @@
 "木",
 "火"
 ],
-"h_steps": "4ad6b485566971f9",
-"h_layers": "140a0b5ce47b259b",
+"h_steps": "ae56ee5422956d3e",
+"h_layers": "ebec905f08403982",
 "h_tiaohou": "883cfc04fe0292fb"
 },
 "戊子 甲寅 丙寅 庚寅": {
@@ -7504,7 +7504,7 @@
 "木",
 "火"
 ],
-"h_steps": "a612793ae798b245",
+"h_steps": "f294d480e2e4e5f7",
 "h_layers": "7f648197288e355f",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -7535,7 +7535,7 @@
 "木",
 "火"
 ],
-"h_steps": "36e3945b67e483c1",
+"h_steps": "f6d7c04f08782c3f",
 "h_layers": "6fb200c15f1a59a4",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -7566,7 +7566,7 @@
 "木",
 "火"
 ],
-"h_steps": "06554a23351472c0",
+"h_steps": "4517aa8bf3d9843c",
 "h_layers": "cb9608359fa0be97",
 "h_tiaohou": "50967b12f4aa3d76"
 },
@@ -7581,8 +7581,8 @@
 },
 "final": {
 "木": 0.8,
-"火": 9.03,
-"土": 4.1,
+"火": 8.86,
+"土": 4.19,
 "金": 0.0,
 "水": 4.08
 },
@@ -7597,7 +7597,7 @@
 "火",
 "金"
 ],
-"h_steps": "8edde4b89406ddf2",
+"h_steps": "49a63ac70115264c",
 "h_layers": "f04adbef4e6ff4d0",
 "h_tiaohou": "86ee3660aeee71ef"
 },
@@ -7628,7 +7628,7 @@
 "水",
 "金"
 ],
-"h_steps": "173eaa6b5c080cab",
+"h_steps": "2a80f5468905eb71",
 "h_layers": "3f64de7fde8a2a7c",
 "h_tiaohou": "e9f0cfec15d0734b"
 },
@@ -7659,7 +7659,7 @@
 "火",
 "金"
 ],
-"h_steps": "fb610fcea98da937",
+"h_steps": "dde38c7b40ca858d",
 "h_layers": "228381e8188c1aef",
 "h_tiaohou": "e36bada40d937758"
 },
@@ -7690,7 +7690,7 @@
 "木",
 "火"
 ],
-"h_steps": "4a97d4359d743ce4",
+"h_steps": "9880ada2850af88a",
 "h_layers": "f486c89cf2ef097e",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -7721,25 +7721,25 @@
 "火",
 "金"
 ],
-"h_steps": "371dd439af93ca4f",
+"h_steps": "343118d0c9b00aec",
 "h_layers": "2c889dd7ce70bfe2",
 "h_tiaohou": "ee426e50e9f11286"
 },
 "癸巳 甲子 丁酉 癸卯": {
 "level": "弱极",
 "static": {
-"木": 7.5,
+"木": 3.75,
 "火": 0.75,
 "土": 1.4,
-"金": 4.0,
+"金": 3.2,
 "水": 20.0
 },
 "final": {
-"木": 12.5,
+"木": 8.75,
 "火": 0.0,
 "土": 1.4,
-"金": 4.0,
-"水": 14.38
+"金": 3.2,
+"水": 17.0
 },
 "ge_ju": "cong_sha",
 "yong_shen": "水",
@@ -7752,7 +7752,7 @@
 "木",
 "火"
 ],
-"h_steps": "3eb030398d098237",
+"h_steps": "45d1604c3420f406",
 "h_layers": "61f6564fc49a596f",
 "h_tiaohou": "7639a67ebaa015ff"
 },
@@ -7783,7 +7783,7 @@
 "木",
 "火"
 ],
-"h_steps": "6e58723c6f538512",
+"h_steps": "a72b3fb06083e43a",
 "h_layers": "05dd87ce5e078af3",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -7814,7 +7814,7 @@
 "土",
 "火"
 ],
-"h_steps": "d6f745a5aaaf9d06",
+"h_steps": "c53689a2466064e0",
 "h_layers": "07755429873d0ee2",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -7845,7 +7845,7 @@
 "水",
 "火"
 ],
-"h_steps": "83a2577cd31bae78",
+"h_steps": "d37779f4f2f1873f",
 "h_layers": "dc236c0f83f6c72f",
 "h_tiaohou": "ee426e50e9f11286"
 },
@@ -7876,7 +7876,7 @@
 "土",
 "火"
 ],
-"h_steps": "1da66ae4518320cf",
+"h_steps": "1706f71819c00000",
 "h_layers": "487d52c06fca4201",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -7907,7 +7907,7 @@
 "土",
 "火"
 ],
-"h_steps": "c6495b9b81983516",
+"h_steps": "6166887f4f6a3aef",
 "h_layers": "a4a8eeae7695271d",
 "h_tiaohou": "3e5cda14c17fc300"
 },
@@ -7938,21 +7938,21 @@
 "土",
 "火"
 ],
-"h_steps": "a709b4c5b50293e7",
+"h_steps": "be2d43b4fa94eb49",
 "h_layers": "a4a8eeae7695271d",
 "h_tiaohou": "880c105cec39e038"
 },
 "乙亥 己卯 庚辰 辛巳": {
 "level": "弱极",
 "static": {
-"木": 17.5,
+"木": 38.0,
 "火": 4.5,
-"土": 2.0,
+"土": 1.0,
 "金": 2.1,
-"水": 2.4
+"水": 0.0
 },
 "final": {
-"木": 16.94,
+"木": 37.7,
 "火": 4.08,
 "土": 0.0,
 "金": 0.3,
@@ -7969,7 +7969,7 @@
 "土",
 "金"
 ],
-"h_steps": "9e2e2b07aefe7199",
+"h_steps": "f7fc3e70d286840f",
 "h_layers": "f6452990637c8aee",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -8000,7 +8000,7 @@
 "土",
 "金"
 ],
-"h_steps": "8956bba3207a8065",
+"h_steps": "2118d9eeace3fd54",
 "h_layers": "fef7fc3c9b4f6e0e",
 "h_tiaohou": "7d8445f6864c5d28"
 },
@@ -8031,7 +8031,7 @@
 "土",
 "金"
 ],
-"h_steps": "3d7ce2347fd1b02f",
+"h_steps": "eb414c8950d5f0e1",
 "h_layers": "0fae3607567dd318",
 "h_tiaohou": "e4754a0deee39df5"
 },
@@ -8062,7 +8062,7 @@
 "水",
 "金"
 ],
-"h_steps": "e4785f969792c70a",
+"h_steps": "1955d5b3dea5de90",
 "h_layers": "8996c1403c43aa2e",
 "h_tiaohou": "7a9577f7ba416455"
 },
@@ -8093,7 +8093,7 @@
 "水",
 "金"
 ],
-"h_steps": "8c8d646b4830194e",
+"h_steps": "944292af9af9cf20",
 "h_layers": "d6e2fcf38b37ef9f",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -8124,7 +8124,7 @@
 "土",
 "金"
 ],
-"h_steps": "8402888dc1a40ca1",
+"h_steps": "0d40278cc10cb315",
 "h_layers": "60cf0cca86c850da",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -8155,7 +8155,7 @@
 "水",
 "金"
 ],
-"h_steps": "5a473d2746e874a7",
+"h_steps": "e0602f250e4ac000",
 "h_layers": "bd47d6866de2b5a2",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -8186,7 +8186,7 @@
 "土",
 "金"
 ],
-"h_steps": "94922869c3165994",
+"h_steps": "7b5453ffad5edb4c",
 "h_layers": "8b38a7f4ed32123a",
 "h_tiaohou": "880c105cec39e038"
 },
@@ -8217,7 +8217,7 @@
 "土",
 "金"
 ],
-"h_steps": "4539e2987165aee7",
+"h_steps": "6579052097bd4219",
 "h_layers": "c4fee29a2326b51b",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -8248,7 +8248,7 @@
 "土",
 "金"
 ],
-"h_steps": "7668509e64b15504",
+"h_steps": "d87aa9e197a5c360",
 "h_layers": "55de536936c1586b",
 "h_tiaohou": "f15d6c56e7385e60"
 },
@@ -8256,15 +8256,15 @@
 "level": "弱极",
 "static": {
 "木": 0.7,
-"火": 21.0,
+"火": 22.5,
 "土": 24.0,
 "金": 0.5,
 "水": 0.5
 },
 "final": {
 "木": 0.7,
-"火": 19.2,
-"土": 30.15,
+"火": 20.7,
+"土": 30.6,
 "金": 0.5,
 "水": 0.0
 },
@@ -8279,7 +8279,7 @@
 "水",
 "金"
 ],
-"h_steps": "f1e6e61feeeac409",
+"h_steps": "f09aec8792d7874c",
 "h_layers": "0a958eec77ad49fb",
 "h_tiaohou": "78e1991ef095eafe"
 },
@@ -8310,7 +8310,7 @@
 "木",
 "火"
 ],
-"h_steps": "59e181aad8a69eb2",
+"h_steps": "e90aa91a990f866f",
 "h_layers": "0953656359e6d4af",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -8341,7 +8341,7 @@
 "木",
 "火"
 ],
-"h_steps": "dcfed59a53b1f246",
+"h_steps": "2f85682ec63cbf07",
 "h_layers": "0bfabdb806f69293",
 "h_tiaohou": "590a9dffb55094b7"
 },
@@ -8372,25 +8372,25 @@
 "水",
 "金"
 ],
-"h_steps": "7381c14631c985d4",
+"h_steps": "b2202825c87a74d7",
 "h_layers": "0953656359e6d4af",
 "h_tiaohou": "042fce63913d13af"
 },
 "丙子 庚子 癸酉 甲寅": {
-"level": "较旺",
+"level": "比旺",
 "static": {
-"木": 7.5,
+"木": 6.0,
 "火": 0.5,
 "土": 0.7,
 "金": 4.4,
-"水": 20.0
+"水": 22.0
 },
 "final": {
-"木": 11.5,
+"木": 10.4,
 "火": 0.0,
 "土": 0.7,
 "金": 0.0,
-"水": 20.39
+"水": 22.71
 },
 "ge_ju": "zheng",
 "yong_shen": "火",
@@ -8403,7 +8403,7 @@
 "水",
 "金"
 ],
-"h_steps": "360a8354f7a82da6",
+"h_steps": "623df76e1bf81f6f",
 "h_layers": "1fd96b95c7c1bc4e",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -8434,24 +8434,24 @@
 "木",
 "火"
 ],
-"h_steps": "24fef1b1917fe0e9",
+"h_steps": "7cb76d9559cf8207",
 "h_layers": "e30a0e00a2010c45",
 "h_tiaohou": "2a641e3664050c5b"
 },
 "癸巳 丁巳 癸未 甲寅": {
 "level": "弱极",
 "static": {
-"木": 2.4,
+"木": 3.2,
 "火": 30.0,
 "土": 10.5,
-"金": 0.5,
+"金": 1.0,
 "水": 1.4
 },
 "final": {
-"木": 2.4,
+"木": 3.2,
 "火": 30.0,
 "土": 10.29,
-"金": 0.5,
+"金": 1.0,
 "水": 0.7
 },
 "ge_ju": "cong_cai",
@@ -8465,7 +8465,7 @@
 "水",
 "金"
 ],
-"h_steps": "32fe148874baa2e4",
+"h_steps": "f625f4234fcbc816",
 "h_layers": "ca47cd9565964ad3",
 "h_tiaohou": "b2a89518bf2f5563"
 },
@@ -8496,7 +8496,7 @@
 "水",
 "金"
 ],
-"h_steps": "ff4155d2d8bcf810",
+"h_steps": "624ec2e0d2fed0da",
 "h_layers": "9df9eb1af2c292b5",
 "h_tiaohou": "c0171820193aef44"
 },
@@ -8527,23 +8527,23 @@
 "水",
 "火"
 ],
-"h_steps": "622627b2af8f7839",
+"h_steps": "e36f25685bc6254b",
 "h_layers": "840baf704453f740",
 "h_tiaohou": "873fe9cd88293c57"
 },
 "己丑 甲戌 戊戌 壬戌": {
-"level": "太旺",
+"level": "旺极",
 "static": {
 "木": 0.7,
-"火": 13.5,
-"土": 46.0,
+"火": 0.0,
+"土": 84.0,
 "金": 0.0,
 "水": 0.5
 },
 "final": {
 "木": 0.0,
-"火": 13.5,
-"土": 26.7,
+"火": 0.0,
+"土": 45.7,
 "金": 0.0,
 "水": 0.0
 },
@@ -8558,7 +8558,7 @@
 "水",
 "金"
 ],
-"h_steps": "28e04bc62e2db22e",
+"h_steps": "ef4350f655980e1b",
 "h_layers": "8e8f53c25af1cf5d",
 "h_tiaohou": "78e1991ef095eafe"
 },
@@ -8589,7 +8589,7 @@
 "火",
 "金"
 ],
-"h_steps": "4ab16585643731dd",
+"h_steps": "bce3e26e89cd198c",
 "h_layers": "04b2b5699249148c",
 "h_tiaohou": "2639f475687263b0"
 },
@@ -8620,7 +8620,7 @@
 "土",
 "金"
 ],
-"h_steps": "dcd408fdbbd9282a",
+"h_steps": "86d9457a8b810d6d",
 "h_layers": "fbd5eba042daf566",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -8651,7 +8651,7 @@
 "水",
 "火"
 ],
-"h_steps": "bb7c93fa2049fa22",
+"h_steps": "bf53764fa460638e",
 "h_layers": "12cd80b8910586f0",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -8682,7 +8682,7 @@
 "水",
 "金"
 ],
-"h_steps": "c069ff3caacd2dbd",
+"h_steps": "ab3bbd131f5a6e8e",
 "h_layers": "681bba0af010a92d",
 "h_tiaohou": "b7253ad01b5c5187"
 },
@@ -8692,15 +8692,15 @@
 "木": 1.5,
 "火": 0.5,
 "土": 7.35,
-"金": 8.0,
+"金": 7.2,
 "水": 12.0
 },
 "final": {
 "木": 1.5,
 "火": 0.5,
-"土": 3.5,
-"金": 9.16,
-"水": 11.13
+"土": 3.51,
+"金": 8.36,
+"水": 11.04
 },
 "ge_ju": "zheng",
 "yong_shen": "火",
@@ -8713,7 +8713,7 @@
 "水",
 "金"
 ],
-"h_steps": "800bae2cafd3e0b4",
+"h_steps": "9281bc6bb872c8d1",
 "h_layers": "0c928591ef389047",
 "h_tiaohou": "56499c0ab5e55dac"
 },
@@ -8744,39 +8744,39 @@
 "水",
 "金"
 ],
-"h_steps": "2a42f57160f2522c",
+"h_steps": "a9c6e383d586d100",
 "h_layers": "07392f90f67cd959",
 "h_tiaohou": "828ebbc0167092c7"
 },
 "丁酉 丁未 戊戌 癸丑": {
-"level": "较旺",
+"level": "旺极",
 "static": {
 "木": 0.0,
-"火": 16.0,
-"土": 16.0,
-"金": 3.0,
-"水": 1.0
+"火": 1.6,
+"土": 50.0,
+"金": 2.5,
+"水": 0.5
 },
 "final": {
 "木": 0.0,
-"火": 12.69,
-"土": 20.62,
-"金": 0.5,
-"水": 0.0
+"火": 1.6,
+"土": 40.0,
+"金": 2.5,
+"水": 0.3
 },
-"ge_ju": "zheng",
-"yong_shen": "水",
+"ge_ju": "cong_qiang",
+"yong_shen": "火",
 "favorable": [
+"土",
+"火"
+],
+"avoid": [
+"木",
 "水",
 "金"
 ],
-"avoid": [
-"土",
-"木",
-"火"
-],
-"h_steps": "100ad44c60f90cca",
-"h_layers": "1f51e7c6813b4622",
+"h_steps": "a69a67aac314997b",
+"h_layers": "07b020c371d3999e",
 "h_tiaohou": "41d8ad027148e12b"
 },
 "丁酉 丙午 辛亥 丙申": {
@@ -8806,7 +8806,7 @@
 "土",
 "金"
 ],
-"h_steps": "5d2ab41961ee3dd1",
+"h_steps": "c875b776f3f4a8de",
 "h_layers": "725797c00c1fa3eb",
 "h_tiaohou": "284a909e1f33356b"
 },
@@ -8837,25 +8837,25 @@
 "火",
 "金"
 ],
-"h_steps": "a2ade6e633ccb4ac",
+"h_steps": "014e4169f738e358",
 "h_layers": "40a33ee0d0c08908",
 "h_tiaohou": "e36bada40d937758"
 },
 "甲子 丙子 己亥 辛未": {
 "level": "太弱",
 "static": {
-"木": 6.0,
-"火": 0.5,
-"土": 1.75,
+"木": 7.5,
+"火": 1.0,
+"土": 2.45,
 "金": 0.8,
-"水": 23.0
+"水": 28.0
 },
 "final": {
-"木": 7.0,
+"木": 9.5,
 "火": 0.0,
-"土": 1.75,
-"金": 0.8,
-"水": 21.7
+"土": 2.21,
+"金": 1.53,
+"水": 26.3
 },
 "ge_ju": "cong_cai",
 "yong_shen": "水",
@@ -8868,7 +8868,7 @@
 "土",
 "火"
 ],
-"h_steps": "5c19ab1f1850efe2",
+"h_steps": "7402b1ed56beec6f",
 "h_layers": "538aba91913dcc3d",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -8899,7 +8899,7 @@
 "土",
 "火"
 ],
-"h_steps": "cff0ea9e5bb9f6f8",
+"h_steps": "208300bad32cb84b",
 "h_layers": "5f589995745b4a82",
 "h_tiaohou": "2639f475687263b0"
 },
@@ -8930,7 +8930,7 @@
 "水",
 "火"
 ],
-"h_steps": "20495d2ef7fd5186",
+"h_steps": "f15dfe39d6bade6b",
 "h_layers": "9df9eb1af2c292b5",
 "h_tiaohou": "5f485e619596c4aa"
 },
@@ -8961,7 +8961,7 @@
 "木",
 "水"
 ],
-"h_steps": "b01c5f643823ca21",
+"h_steps": "537343f2e386df32",
 "h_layers": "70d4e2b817cc44a4",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -8992,7 +8992,7 @@
 "木",
 "水"
 ],
-"h_steps": "b1f3fc7479cc8e26",
+"h_steps": "257e7f6b9f491ed5",
 "h_layers": "43a6de17d1d98501",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -9023,7 +9023,7 @@
 "木",
 "火"
 ],
-"h_steps": "e087ede6324db470",
+"h_steps": "082743d90f012f1d",
 "h_layers": "94f6cba505bdbe1c",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -9054,7 +9054,7 @@
 "火",
 "金"
 ],
-"h_steps": "a502f14628eadace",
+"h_steps": "bdefce0cd845e939",
 "h_layers": "836cfce3820b8b12",
 "h_tiaohou": "5c73c5984189ce1f"
 },
@@ -9085,7 +9085,7 @@
 "水",
 "火"
 ],
-"h_steps": "f89f3ed6df4b88ce",
+"h_steps": "4a841b8f3998021c",
 "h_layers": "89e727e053267e09",
 "h_tiaohou": "f236fd394a48e66b"
 },
@@ -9116,7 +9116,7 @@
 "木",
 "水"
 ],
-"h_steps": "0d8ed93bda142653",
+"h_steps": "8ce46638aa3afd5b",
 "h_layers": "df892889b3384624",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -9147,7 +9147,7 @@
 "土",
 "火"
 ],
-"h_steps": "bdc74e78cfb9d607",
+"h_steps": "821d0414150f49eb",
 "h_layers": "07755429873d0ee2",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -9178,7 +9178,7 @@
 "土",
 "金"
 ],
-"h_steps": "c936ed8562f238e9",
+"h_steps": "d9e5aea0e7bd46ca",
 "h_layers": "f68ae2ab08ca7cb0",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -9209,7 +9209,7 @@
 "水",
 "金"
 ],
-"h_steps": "d2c5a06e7b8e3859",
+"h_steps": "e9e9297f086a1d30",
 "h_layers": "14c82da7ec745d1e",
 "h_tiaohou": "590a9dffb55094b7"
 },
@@ -9240,7 +9240,7 @@
 "木",
 "火"
 ],
-"h_steps": "39f87cdd3c979dc9",
+"h_steps": "0942076667ab0f93",
 "h_layers": "80e71a211d9eb9a9",
 "h_tiaohou": "8622f80f0ce669f4"
 },
@@ -9271,7 +9271,7 @@
 "土",
 "火"
 ],
-"h_steps": "940aa3ea3dc03e34",
+"h_steps": "ac670e687efd65da",
 "h_layers": "a4a8eeae7695271d",
 "h_tiaohou": "880c105cec39e038"
 },
@@ -9302,7 +9302,7 @@
 "土",
 "金"
 ],
-"h_steps": "c1662ba70b8652d9",
+"h_steps": "254e64c88aa832c9",
 "h_layers": "9df424534f4c3473",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -9333,7 +9333,7 @@
 "火",
 "金"
 ],
-"h_steps": "00f4e267aaf92683",
+"h_steps": "ed3da5a01aed1a4f",
 "h_layers": "f1aea2481aadb423",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -9364,7 +9364,7 @@
 "水",
 "金"
 ],
-"h_steps": "705a3285ae9c8248",
+"h_steps": "cada028acbcf4a65",
 "h_layers": "9df9eb1af2c292b5",
 "h_tiaohou": "279ea783b9f17de3"
 },
@@ -9395,7 +9395,7 @@
 "水",
 "金"
 ],
-"h_steps": "25cdcbd6e91ad640",
+"h_steps": "54aa619c84fcb83f",
 "h_layers": "45a9ac0da6b56d2a",
 "h_tiaohou": "fc21acd21eaa62e3"
 },
@@ -9426,7 +9426,7 @@
 "木",
 "火"
 ],
-"h_steps": "b6df5c8d77d0cdb0",
+"h_steps": "fdc7155e07d00e0d",
 "h_layers": "b8a592da6c2d8da2",
 "h_tiaohou": "880c105cec39e038"
 },
@@ -9457,7 +9457,7 @@
 "火",
 "金"
 ],
-"h_steps": "c52bb4237da826ce",
+"h_steps": "582010e68de81c55",
 "h_layers": "957cd57623e23649",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -9488,7 +9488,7 @@
 "水",
 "金"
 ],
-"h_steps": "b9c19cc82974af75",
+"h_steps": "f5e3657a783db3af",
 "h_layers": "6c5a8c38ee7596c3",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -9519,7 +9519,7 @@
 "木",
 "水"
 ],
-"h_steps": "5609a19d703b0ace",
+"h_steps": "777b0bcce1a9f420",
 "h_layers": "d97b06d0a6399bb8",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -9550,7 +9550,7 @@
 "水",
 "金"
 ],
-"h_steps": "fe4181c1baae8a4a",
+"h_steps": "4fb91ee599a0fb7f",
 "h_layers": "87c9743f9dd22464",
 "h_tiaohou": "0b732930f164f68c"
 },
@@ -9581,7 +9581,7 @@
 "水",
 "金"
 ],
-"h_steps": "d64a7435fbee7a12",
+"h_steps": "9b21e4e810fe9919",
 "h_layers": "d3d8a02b1bd44eb0",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -9612,7 +9612,7 @@
 "水",
 "金"
 ],
-"h_steps": "096ff6119026bc56",
+"h_steps": "97e80b8182c8da3b",
 "h_layers": "943223601eb2d7b6",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -9643,7 +9643,7 @@
 "水",
 "金"
 ],
-"h_steps": "2514ff8de9c05517",
+"h_steps": "b07569d721ac764f",
 "h_layers": "07755429873d0ee2",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -9674,39 +9674,39 @@
 "土",
 "金"
 ],
-"h_steps": "dfef93037039c390",
+"h_steps": "fc1cb88f8d74cd8d",
 "h_layers": "eab368824d030859",
 "h_tiaohou": "b615e6a363442448"
 },
 "乙亥 辛巳 戊戌 癸丑": {
-"level": "中和",
+"level": "较旺",
 "static": {
-"木": 2.4,
-"火": 12.0,
-"土": 12.0,
-"金": 1.0,
-"水": 2.1
+"木": 0.8,
+"火": 3.0,
+"土": 18.0,
+"金": 0.5,
+"水": 1.05
 },
 "final": {
-"木": 2.96,
-"火": 11.8,
-"土": 9.22,
+"木": 0.8,
+"火": 2.9,
+"土": 14.4,
 "金": 0.0,
-"水": 0.0
+"水": 0.63
 },
 "ge_ju": "zheng",
-"yong_shen": "火",
+"yong_shen": "水",
 "favorable": [
-"木",
-"火"
-],
-"avoid": [
-"土",
 "水",
 "金"
 ],
-"h_steps": "729c3ea801345f7c",
-"h_layers": "e8f0fba8667e9d31",
+"avoid": [
+"土",
+"木",
+"火"
+],
+"h_steps": "a70aa123c9cb89bb",
+"h_layers": "220586ac888aa285",
 "h_tiaohou": "f236fd394a48e66b"
 },
 "庚戌 戊子 癸酉 乙卯": {
@@ -9736,7 +9736,7 @@
 "水",
 "火"
 ],
-"h_steps": "c47af4d0ea74e1f1",
+"h_steps": "2d82a5f542b92f18",
 "h_layers": "0bd7178c758b2503",
 "h_tiaohou": "97ccaf944f720627"
 },
@@ -9767,7 +9767,7 @@
 "水",
 "火"
 ],
-"h_steps": "bfdc932c48c57bde",
+"h_steps": "c0c22f27902953fa",
 "h_layers": "0ead6ba317293892",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -9798,7 +9798,7 @@
 "木",
 "火"
 ],
-"h_steps": "dab91b42d535854f",
+"h_steps": "5fd21aa31a398ec1",
 "h_layers": "91aaf7611978af5f",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -9829,7 +9829,7 @@
 "木",
 "火"
 ],
-"h_steps": "a3cb967b3fa34a16",
+"h_steps": "857f8c03b10b8402",
 "h_layers": "6aa1f9c535a1d24e",
 "h_tiaohou": "0d4f1a13e2c2503b"
 },
@@ -9860,7 +9860,7 @@
 "木",
 "水"
 ],
-"h_steps": "de7a1e75f8a7bc51",
+"h_steps": "5721d28d0055511e",
 "h_layers": "d97b06d0a6399bb8",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -9871,12 +9871,12 @@
 "火": 0.0,
 "土": 66.0,
 "金": 3.0,
-"水": 1.6
+"水": 1.05
 },
 "final": {
 "木": 0.0,
 "火": 0.0,
-"土": 65.04,
+"土": 65.37,
 "金": 3.0,
 "水": 0.0
 },
@@ -9891,7 +9891,7 @@
 "水",
 "火"
 ],
-"h_steps": "70b6686c7ed9a3df",
+"h_steps": "ce1a5cc288927ed7",
 "h_layers": "26857dda24e28e43",
 "h_tiaohou": "615e277a38ad6dc8"
 },
@@ -9922,7 +9922,7 @@
 "水",
 "金"
 ],
-"h_steps": "f9e36fa3de16de29",
+"h_steps": "9553e6bfeb33a568",
 "h_layers": "79fcc1838e678f0c",
 "h_tiaohou": "41d8ad027148e12b"
 },
@@ -9953,7 +9953,7 @@
 "木",
 "火"
 ],
-"h_steps": "34b5eb0513977f5f",
+"h_steps": "08ae3540783a55cb",
 "h_layers": "4c0c33a52f824550",
 "h_tiaohou": "78034008fa2314fe"
 },
@@ -9984,7 +9984,7 @@
 "水",
 "金"
 ],
-"h_steps": "f6f94c25ef8bbdf6",
+"h_steps": "5480baa3cc3bc02e",
 "h_layers": "0a958eec77ad49fb",
 "h_tiaohou": "78e1991ef095eafe"
 },
@@ -10015,7 +10015,7 @@
 "木",
 "火"
 ],
-"h_steps": "cba91a257a7671f1",
+"h_steps": "f2cee2a0688b02bb",
 "h_layers": "4318adef8f14f035",
 "h_tiaohou": "5364e9403af9f266"
 },
@@ -10046,7 +10046,7 @@
 "水",
 "金"
 ],
-"h_steps": "e9c3a077c6377a93",
+"h_steps": "2b10e39b708a32e6",
 "h_layers": "bad1b45f37c12c05",
 "h_tiaohou": "590a9dffb55094b7"
 },
@@ -10077,7 +10077,7 @@
 "水",
 "火"
 ],
-"h_steps": "68268caff5721e6a",
+"h_steps": "c0181da25dee80c3",
 "h_layers": "28a45099fad5a3cb",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -10108,7 +10108,7 @@
 "水",
 "金"
 ],
-"h_steps": "74950a94a3ea0e30",
+"h_steps": "9afca87ef9ac68cb",
 "h_layers": "651d4ca76d9b4c0e",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -10139,7 +10139,7 @@
 "木",
 "水"
 ],
-"h_steps": "ccab216d39613158",
+"h_steps": "bdd210d855c8fa2a",
 "h_layers": "1cb0cb3679e3a548",
 "h_tiaohou": "ee426e50e9f11286"
 },
@@ -10170,7 +10170,7 @@
 "土",
 "火"
 ],
-"h_steps": "cdb0c18094664d45",
+"h_steps": "70ff0612a1df715b",
 "h_layers": "e51204f02d7ba971",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -10201,7 +10201,7 @@
 "土",
 "火"
 ],
-"h_steps": "fe5e7844736e7f3b",
+"h_steps": "271283fbe73d5939",
 "h_layers": "e51204f02d7ba971",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -10232,7 +10232,7 @@
 "水",
 "金"
 ],
-"h_steps": "95314140e24be2ac",
+"h_steps": "17a1c4a6998f18e2",
 "h_layers": "e51204f02d7ba971",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -10263,7 +10263,7 @@
 "水",
 "金"
 ],
-"h_steps": "62e43d7cc5ea8d5e",
+"h_steps": "a7e72fa71c98f972",
 "h_layers": "08e424335b570a97",
 "h_tiaohou": "883cfc04fe0292fb"
 },
@@ -10294,7 +10294,7 @@
 "木",
 "火"
 ],
-"h_steps": "1a98e775aa4a54d9",
+"h_steps": "0430cd114d4e21e2",
 "h_layers": "d4b57f3c735565eb",
 "h_tiaohou": "883cfc04fe0292fb"
 },
@@ -10325,38 +10325,38 @@
 "水",
 "金"
 ],
-"h_steps": "c998290c11c9f204",
+"h_steps": "95b73206c44eb21c",
 "h_layers": "82381533bda5a0ec",
 "h_tiaohou": "21991797df12fc59"
 },
 "甲子 丙寅 戊午 庚午": {
-"level": "比弱",
+"level": "太弱",
 "static": {
 "木": 1.4,
-"火": 29.75,
-"土": 2.5,
+"火": 33.25,
+"土": 1.0,
 "金": 0.6,
 "水": 3.75
 },
 "final": {
 "木": 0.0,
-"火": 30.05,
-"土": 2.5,
-"金": 0.0,
+"火": 33.67,
+"土": 1.0,
+"金": 0.6,
 "水": 3.47
 },
-"ge_ju": "zheng",
-"yong_shen": "火",
+"ge_ju": "cong_cai",
+"yong_shen": "水",
 "favorable": [
 "木",
-"火"
-],
-"avoid": [
-"土",
 "水",
 "金"
 ],
-"h_steps": "0ee9a75628207c9c",
+"avoid": [
+"土",
+"火"
+],
+"h_steps": "4d1f578a5cdc74dd",
 "h_layers": "b07b2b82c20e79a1",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -10387,7 +10387,7 @@
 "水",
 "金"
 ],
-"h_steps": "560096a773ed5bd9",
+"h_steps": "8426b3786cfefcd6",
 "h_layers": "82381533bda5a0ec",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -10418,7 +10418,7 @@
 "土",
 "火"
 ],
-"h_steps": "c8df76e1f0cb452b",
+"h_steps": "ce2c07bd1dabfb59",
 "h_layers": "7c72aef797136995",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -10449,7 +10449,7 @@
 "土",
 "火"
 ],
-"h_steps": "83d8bc98434c969a",
+"h_steps": "0f6e2121efe9b7bc",
 "h_layers": "7c72aef797136995",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -10480,7 +10480,7 @@
 "水",
 "金"
 ],
-"h_steps": "537509ed37c508d6",
+"h_steps": "567f6a1f6f7fc5da",
 "h_layers": "84cc768df1a424c6",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -10511,7 +10511,7 @@
 "木",
 "火"
 ],
-"h_steps": "6058becb75c48d75",
+"h_steps": "3e2d3160c57519a1",
 "h_layers": "8244098334b32b5b",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -10542,7 +10542,7 @@
 "水",
 "金"
 ],
-"h_steps": "9e3009bcb6e67424",
+"h_steps": "1de6fbeebbfd9022",
 "h_layers": "51a9c39b72ac7317",
 "h_tiaohou": "689625ef0f6c5e52"
 },
@@ -10573,7 +10573,7 @@
 "木",
 "火"
 ],
-"h_steps": "22d5da30a05b5c33",
+"h_steps": "12a146c8048b20a4",
 "h_layers": "220586ac888aa285",
 "h_tiaohou": "cd9eaef694acf2d2"
 },
@@ -10604,7 +10604,7 @@
 "水",
 "金"
 ],
-"h_steps": "d71c6dfc4a848855",
+"h_steps": "6acfd69664a5ecac",
 "h_layers": "51a9c39b72ac7317",
 "h_tiaohou": "cfe6111733296483"
 },
@@ -10635,7 +10635,7 @@
 "水",
 "金"
 ],
-"h_steps": "18b7fd3032f0b515",
+"h_steps": "0ee3da0e21bb2f34",
 "h_layers": "d65f0830c7bc2b6e",
 "h_tiaohou": "0c05f33560f2771d"
 },
@@ -10666,7 +10666,7 @@
 "水",
 "金"
 ],
-"h_steps": "d6ad8fd21d27165d",
+"h_steps": "abf929d4e3c44af8",
 "h_layers": "d65f0830c7bc2b6e",
 "h_tiaohou": "0c05f33560f2771d"
 },
@@ -10697,7 +10697,7 @@
 "木",
 "火"
 ],
-"h_steps": "ad5fd075f9c0907c",
+"h_steps": "cc24b2b3d0e5117d",
 "h_layers": "07b020c371d3999e",
 "h_tiaohou": "8e9ba91dcd819d50"
 },
@@ -10728,7 +10728,7 @@
 "土",
 "火"
 ],
-"h_steps": "9e528ef0889639e3",
+"h_steps": "28bda323c1321b58",
 "h_layers": "fab7f39b7ee54ade",
 "h_tiaohou": "8e9ba91dcd819d50"
 },
@@ -10759,7 +10759,7 @@
 "土",
 "火"
 ],
-"h_steps": "f05fdd36f06a65b7",
+"h_steps": "ea749cfacf8edb5b",
 "h_layers": "07755429873d0ee2",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -10790,7 +10790,7 @@
 "土",
 "火"
 ],
-"h_steps": "3f5f53fba00d3979",
+"h_steps": "25af3fbf520e605e",
 "h_layers": "07755429873d0ee2",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -10821,7 +10821,7 @@
 "土",
 "火"
 ],
-"h_steps": "effa75be0a6f03ec",
+"h_steps": "967b334f39f3513b",
 "h_layers": "07755429873d0ee2",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -10852,7 +10852,7 @@
 "土",
 "火"
 ],
-"h_steps": "6013f19d19d5fb8f",
+"h_steps": "7a8ce17a9614ea7a",
 "h_layers": "e2f723450b7c0f5d",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -10883,7 +10883,7 @@
 "土",
 "火"
 ],
-"h_steps": "e2dafbe901cc2601",
+"h_steps": "b1c8982795b61603",
 "h_layers": "e2f723450b7c0f5d",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -10914,39 +10914,39 @@
 "木",
 "火"
 ],
-"h_steps": "7cdc0e92e762182a",
+"h_steps": "f28e7cde7fa439fc",
 "h_layers": "6364f6adeddf3b90",
 "h_tiaohou": "86c90eac0a501bde"
 },
 "甲子 丙戌 戊未 庚丑": {
-"level": "比旺",
+"level": "旺极",
 "static": {
 "木": 0.7,
-"火": 5.6,
-"土": 20.0,
-"金": 4.5,
+"火": 0.8,
+"土": 50.0,
+"金": 1.5,
 "水": 2.5
 },
 "final": {
-"木": 0.0,
+"木": 0.79,
 "火": 0.0,
-"土": 21.0,
-"金": 10.5,
+"土": 50.48,
+"金": 1.5,
 "水": 2.36
 },
-"ge_ju": "zheng",
-"yong_shen": "水",
+"ge_ju": "cong_qiang",
+"yong_shen": "火",
 "favorable": [
+"土",
+"火"
+],
+"avoid": [
+"木",
 "水",
 "金"
 ],
-"avoid": [
-"土",
-"木",
-"火"
-],
-"h_steps": "ad1c4effddec5a78",
-"h_layers": "6364f6adeddf3b90",
+"h_steps": "d8dbbb586be51dcf",
+"h_layers": "3a7af1574ff8c717",
 "h_tiaohou": "e5b459970229c155"
 },
 "甲子 丙亥 戊子 庚寅": {
@@ -10956,14 +10956,14 @@
 "火": 1.0,
 "土": 1.05,
 "金": 0.8,
-"水": 24.0
+"水": 26.0
 },
 "final": {
-"木": 9.1,
+"木": 9.5,
 "火": 0.0,
 "土": 1.05,
 "金": 0.8,
-"水": 22.2
+"水": 24.2
 },
 "ge_ju": "cong_cai",
 "yong_shen": "水",
@@ -10976,7 +10976,7 @@
 "土",
 "火"
 ],
-"h_steps": "b3a0a0b11e790b07",
+"h_steps": "c54b32116fbe44b7",
 "h_layers": "3ab06d24b67a6c62",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -11007,7 +11007,7 @@
 "土",
 "火"
 ],
-"h_steps": "db1d8318bab0e943",
+"h_steps": "8fe90f0e549b6f7b",
 "h_layers": "3ab06d24b67a6c62",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -11038,7 +11038,7 @@
 "土",
 "火"
 ],
-"h_steps": "1fe841d6c8cecd92",
+"h_steps": "a005dbe9262a67e8",
 "h_layers": "3ab06d24b67a6c62",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -11069,7 +11069,7 @@
 "土",
 "火"
 ],
-"h_steps": "56d3869d2bb189ed",
+"h_steps": "ec1454901f5966d6",
 "h_layers": "e51204f02d7ba971",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -11100,39 +11100,39 @@
 "土",
 "火"
 ],
-"h_steps": "af607d1f64ac49db",
+"h_steps": "e2635bb9c18cba62",
 "h_layers": "e51204f02d7ba971",
 "h_tiaohou": "d8d548931bddf40c"
 },
 "甲丑 丙丑 戊丑 庚未": {
-"level": "比旺",
+"level": "旺极",
 "static": {
 "木": 0.7,
-"火": 1.0,
-"土": 26.0,
-"金": 9.75,
-"水": 9.6
+"火": 0.65,
+"土": 50.0,
+"金": 1.5,
+"水": 0.0
 },
 "final": {
 "木": 0.7,
-"火": 1.0,
-"土": 21.12,
-"金": 17.55,
-"水": 9.6
+"火": 0.65,
+"土": 50.0,
+"金": 1.5,
+"水": 0.0
 },
-"ge_ju": "zheng",
-"yong_shen": "水",
+"ge_ju": "cong_qiang",
+"yong_shen": "火",
 "favorable": [
+"土",
+"火"
+],
+"avoid": [
+"木",
 "水",
 "金"
 ],
-"avoid": [
-"土",
-"木",
-"火"
-],
-"h_steps": "7bfdc530f21eaaa2",
-"h_layers": "d4b57f3c735565eb",
+"h_steps": "63459414ac66a206",
+"h_layers": "24185bf891edbcfd",
 "h_tiaohou": "883cfc04fe0292fb"
 },
 "甲丑 丙丑 戊午 庚申": {
@@ -11162,7 +11162,7 @@
 "木",
 "火"
 ],
-"h_steps": "8a38d27e6843f7d1",
+"h_steps": "5719b0329fdf9259",
 "h_layers": "d4b57f3c735565eb",
 "h_tiaohou": "883cfc04fe0292fb"
 },
@@ -11193,7 +11193,7 @@
 "水",
 "金"
 ],
-"h_steps": "f3f5c1db44758511",
+"h_steps": "474511ae626f0aa3",
 "h_layers": "08e424335b570a97",
 "h_tiaohou": "883cfc04fe0292fb"
 },
@@ -11224,7 +11224,7 @@
 "水",
 "金"
 ],
-"h_steps": "5daef1b7e6f5382f",
+"h_steps": "37509a949b49221b",
 "h_layers": "82381533bda5a0ec",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -11255,25 +11255,25 @@
 "水",
 "金"
 ],
-"h_steps": "465b7d8565df6ccd",
+"h_steps": "f3efba91a36c6aa6",
 "h_layers": "f2c3119e19cab624",
 "h_tiaohou": "21991797df12fc59"
 },
 "甲丑 丙卯 戊卯 庚子": {
 "level": "弱极",
 "static": {
-"木": 24.0,
+"木": 28.0,
 "火": 1.5,
 "土": 1.5,
 "金": 0.7,
-"水": 3.2
+"水": 1.6
 },
 "final": {
-"木": 23.4,
+"木": 27.4,
 "火": 1.5,
 "土": 0.0,
 "金": 0.7,
-"水": 3.2
+"水": 1.6
 },
 "ge_ju": "cong_sha",
 "yong_shen": "木",
@@ -11286,7 +11286,7 @@
 "土",
 "火"
 ],
-"h_steps": "994eca7b478ce757",
+"h_steps": "e5c89de01034778f",
 "h_layers": "7c72aef797136995",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -11317,7 +11317,7 @@
 "水",
 "金"
 ],
-"h_steps": "2d626000023c4ede",
+"h_steps": "a68619fe8bd9a550",
 "h_layers": "7c72aef797136995",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -11348,7 +11348,7 @@
 "木",
 "火"
 ],
-"h_steps": "31bbdab531c18600",
+"h_steps": "7c030bab08fb2639",
 "h_layers": "24435a6a452d404f",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -11379,7 +11379,7 @@
 "木",
 "火"
 ],
-"h_steps": "aee74a2524121ee7",
+"h_steps": "1f9dba94765f5b1a",
 "h_layers": "8244098334b32b5b",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -11410,7 +11410,7 @@
 "木",
 "火"
 ],
-"h_steps": "39f3ebe8116a645b",
+"h_steps": "95fe58f21b16992c",
 "h_layers": "8244098334b32b5b",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -11441,7 +11441,7 @@
 "木",
 "火"
 ],
-"h_steps": "a869d229dd4dba90",
+"h_steps": "cb4d33c01a198c83",
 "h_layers": "220586ac888aa285",
 "h_tiaohou": "9d1cb4f5fa804753"
 },
@@ -11472,7 +11472,7 @@
 "木",
 "火"
 ],
-"h_steps": "1385ce812212d0cc",
+"h_steps": "778ef659bbcfaeaa",
 "h_layers": "220586ac888aa285",
 "h_tiaohou": "80511bfd812288d7"
 },
@@ -11503,7 +11503,7 @@
 "木",
 "火"
 ],
-"h_steps": "c25aa74072c9fcc4",
+"h_steps": "cae42a8bdbf85e37",
 "h_layers": "1900f74a53b00cbf",
 "h_tiaohou": "444360c61226abc0"
 },
@@ -11534,7 +11534,7 @@
 "木",
 "火"
 ],
-"h_steps": "15a9a5c33b6862d5",
+"h_steps": "7fe51ee3de4097b2",
 "h_layers": "1900f74a53b00cbf",
 "h_tiaohou": "444360c61226abc0"
 },
@@ -11565,7 +11565,7 @@
 "木",
 "火"
 ],
-"h_steps": "5cc9ad8f37b04f04",
+"h_steps": "36e89fdb7c1b55cf",
 "h_layers": "a69c930c5dbe39f3",
 "h_tiaohou": "304adbd8c649e36f"
 },
@@ -11596,38 +11596,38 @@
 "水",
 "金"
 ],
-"h_steps": "ed6172bec01581a1",
+"h_steps": "fd0f73b1411923d4",
 "h_layers": "a69c930c5dbe39f3",
 "h_tiaohou": "a0d55edb8b917ca3"
 },
 "甲丑 丙未 戊戌 庚亥": {
-"level": "比旺",
+"level": "旺极",
 "static": {
 "木": 0.7,
-"火": 14.4,
-"土": 16.0,
+"火": 0.8,
+"土": 50.0,
 "金": 0.5,
 "水": 2.0
 },
 "final": {
 "木": 0.7,
-"火": 9.6,
-"土": 23.2,
+"火": 0.8,
+"土": 50.0,
 "金": 0.5,
 "水": 2.0
 },
-"ge_ju": "zheng",
-"yong_shen": "水",
+"ge_ju": "cong_qiang",
+"yong_shen": "火",
 "favorable": [
+"土",
+"火"
+],
+"avoid": [
+"木",
 "水",
 "金"
 ],
-"avoid": [
-"土",
-"木",
-"火"
-],
-"h_steps": "371c75e8bf4814b3",
+"h_steps": "2159eec5c11068ee",
 "h_layers": "228da741ae6fede3",
 "h_tiaohou": "b4e08860f60f313a"
 },
@@ -11658,7 +11658,7 @@
 "水",
 "金"
 ],
-"h_steps": "4439e024c1a3a8ee",
+"h_steps": "942786edc212b161",
 "h_layers": "07755429873d0ee2",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -11689,7 +11689,7 @@
 "水",
 "金"
 ],
-"h_steps": "46eab624d8ea251f",
+"h_steps": "7107252f2bcf691d",
 "h_layers": "07755429873d0ee2",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -11720,7 +11720,7 @@
 "土",
 "火"
 ],
-"h_steps": "53f985b0057aa6a5",
+"h_steps": "3d7faf6ba7937711",
 "h_layers": "e2f723450b7c0f5d",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -11751,7 +11751,7 @@
 "土",
 "火"
 ],
-"h_steps": "fa75b996ce9a9ab4",
+"h_steps": "56074bdb08e49153",
 "h_layers": "e2f723450b7c0f5d",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -11782,7 +11782,7 @@
 "木",
 "火"
 ],
-"h_steps": "07fdc54e30c67c7f",
+"h_steps": "324ab83b86031f45",
 "h_layers": "dc236c0f83f6c72f",
 "h_tiaohou": "9b336006990ee0d2"
 },
@@ -11813,7 +11813,7 @@
 "水",
 "火"
 ],
-"h_steps": "3447298379935146",
+"h_steps": "1129ba6b3bd69477",
 "h_layers": "dc236c0f83f6c72f",
 "h_tiaohou": "feaf76f23330dac7"
 },
@@ -11844,7 +11844,7 @@
 "木",
 "火"
 ],
-"h_steps": "9099822922abbfd0",
+"h_steps": "9db004d77baf6325",
 "h_layers": "3a7af1574ff8c717",
 "h_tiaohou": "feaf76f23330dac7"
 },
@@ -11875,7 +11875,7 @@
 "土",
 "火"
 ],
-"h_steps": "1103cc0a05b9d91c",
+"h_steps": "3540cbaba78d9dc7",
 "h_layers": "a312d78aed0acf1e",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -11906,7 +11906,7 @@
 "土",
 "火"
 ],
-"h_steps": "4e945fbf21eaeb74",
+"h_steps": "06bd1235a4219a7b",
 "h_layers": "3ab06d24b67a6c62",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -11937,7 +11937,7 @@
 "土",
 "火"
 ],
-"h_steps": "dfb1630ab3c8b02a",
+"h_steps": "6a02431625450c93",
 "h_layers": "e51204f02d7ba971",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -11968,7 +11968,7 @@
 "水",
 "金"
 ],
-"h_steps": "13dbe26915e9d2b3",
+"h_steps": "cd5203c2960b0d61",
 "h_layers": "89fe8494587044c4",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -11999,7 +11999,7 @@
 "土",
 "火"
 ],
-"h_steps": "b911f8e4bd9dd9ed",
+"h_steps": "1f5dfb85a58c58df",
 "h_layers": "e51204f02d7ba971",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -12030,39 +12030,39 @@
 "木",
 "火"
 ],
-"h_steps": "b37bb5a3e942651c",
+"h_steps": "7d1521b037a200e9",
 "h_layers": "fcb1cd9ed2034b5f",
 "h_tiaohou": "883cfc04fe0292fb"
 },
 "甲寅 丙丑 戊戌 庚丑": {
-"level": "比旺",
+"level": "太旺",
 "static": {
 "木": 2.8,
-"火": 1.25,
-"土": 22.0,
-"金": 7.5,
-"水": 4.8
+"火": 1.62,
+"土": 34.0,
+"金": 1.5,
+"水": 0.0
 },
 "final": {
-"木": 2.42,
+"木": 2.31,
 "火": 0.0,
-"土": 18.84,
-"金": 14.1,
-"水": 4.8
+"土": 34.49,
+"金": 1.5,
+"水": 0.0
 },
-"ge_ju": "zheng",
-"yong_shen": "水",
+"ge_ju": "cong_qiang",
+"yong_shen": "火",
 "favorable": [
+"土",
+"火"
+],
+"avoid": [
+"木",
 "水",
 "金"
 ],
-"avoid": [
-"土",
-"木",
-"火"
-],
-"h_steps": "d6b0adaa8c0dee96",
-"h_layers": "fcb1cd9ed2034b5f",
+"h_steps": "bc9cf46e945474d1",
+"h_layers": "03e5083423660e61",
 "h_tiaohou": "883cfc04fe0292fb"
 },
 "甲寅 丙寅 戊卯 庚寅": {
@@ -12092,7 +12092,7 @@
 "土",
 "火"
 ],
-"h_steps": "63d010861a16d1c6",
+"h_steps": "6cdacc1d378a0483",
 "h_layers": "82381533bda5a0ec",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -12102,14 +12102,14 @@
 "木": 17.0,
 "火": 6.0,
 "土": 1.0,
-"金": 1.4,
+"金": 0.7,
 "水": 0.0
 },
 "final": {
 "木": 13.4,
 "火": 11.1,
 "土": 1.0,
-"金": 1.4,
+"金": 0.7,
 "水": 0.0
 },
 "ge_ju": "cong_sha",
@@ -12123,7 +12123,7 @@
 "土",
 "火"
 ],
-"h_steps": "bbcf965acb9cb882",
+"h_steps": "7d37c300ded9877c",
 "h_layers": "82381533bda5a0ec",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -12154,7 +12154,7 @@
 "水",
 "金"
 ],
-"h_steps": "9bcfbdcede2cf2f6",
+"h_steps": "dd05bd8663686290",
 "h_layers": "5f832a047233a431",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -12185,7 +12185,7 @@
 "土",
 "火"
 ],
-"h_steps": "4c17e155d72775d0",
+"h_steps": "549e89bc6c36348b",
 "h_layers": "5f832a047233a431",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -12216,7 +12216,7 @@
 "土",
 "火"
 ],
-"h_steps": "af6f3702146834ff",
+"h_steps": "3144b4563c489f16",
 "h_layers": "7c72aef797136995",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -12247,7 +12247,7 @@
 "水",
 "金"
 ],
-"h_steps": "50e70089fe567cb9",
+"h_steps": "91d07b1af45ea505",
 "h_layers": "6dfc9d80eea983d6",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -12278,39 +12278,39 @@
 "水",
 "金"
 ],
-"h_steps": "6a51566e73d943d6",
+"h_steps": "23b0b4c830b0fc58",
 "h_layers": "84cc768df1a424c6",
 "h_tiaohou": "828ebbc0167092c7"
 },
 "甲寅 丙巳 戊寅 庚酉": {
-"level": "中和",
+"level": "偏旺",
 "static": {
-"木": 4.0,
-"火": 16.0,
-"土": 7.5,
+"木": 3.2,
+"火": 14.0,
+"土": 9.0,
 "金": 3.0,
 "水": 0.0
 },
 "final": {
 "木": 0.0,
-"火": 14.78,
-"土": 9.77,
-"金": 5.25,
+"火": 12.07,
+"土": 11.88,
+"金": 5.7,
 "水": 0.0
 },
 "ge_ju": "zheng",
-"yong_shen": "火",
+"yong_shen": "水",
 "favorable": [
-"木",
-"火"
-],
-"avoid": [
-"土",
 "水",
 "金"
 ],
-"h_steps": "fbb77ad4f017f0c9",
-"h_layers": "14705663c2d40bbc",
+"avoid": [
+"土",
+"木",
+"火"
+],
+"h_steps": "1e582f4e5987dbc1",
+"h_layers": "321c92589d7d1278",
 "h_tiaohou": "72306fba1120ff76"
 },
 "甲寅 丙巳 戊未 庚戌": {
@@ -12340,7 +12340,7 @@
 "木",
 "火"
 ],
-"h_steps": "ac3ce813852cb589",
+"h_steps": "f708188be777e2d2",
 "h_layers": "321c92589d7d1278",
 "h_tiaohou": "72306fba1120ff76"
 },
@@ -12371,39 +12371,39 @@
 "水",
 "金"
 ],
-"h_steps": "84fe034994c8211a",
+"h_steps": "8151814898cb507e",
 "h_layers": "d65f0830c7bc2b6e",
 "h_tiaohou": "adeccf236a5ceca0"
 },
 "甲寅 丙午 戊午 庚子": {
-"level": "中和",
+"level": "偏旺",
 "static": {
 "木": 3.2,
-"火": 20.0,
-"土": 3.0,
+"火": 18.0,
+"土": 7.5,
 "金": 0.5,
 "水": 2.8
 },
 "final": {
 "木": 0.0,
-"火": 19.42,
-"土": 9.0,
+"火": 15.09,
+"土": 12.9,
 "金": 0.5,
 "水": 2.8
 },
 "ge_ju": "zheng",
-"yong_shen": "火",
+"yong_shen": "水",
 "favorable": [
-"木",
-"火"
-],
-"avoid": [
-"土",
 "水",
 "金"
 ],
-"h_steps": "9bef5afc94508582",
-"h_layers": "5c56031a96bce741",
+"avoid": [
+"土",
+"木",
+"火"
+],
+"h_steps": "bd8b9868a0e13b24",
+"h_layers": "c446108cf6950fc3",
 "h_tiaohou": "435eba21812d577a"
 },
 "甲寅 丙午 戊亥 庚丑": {
@@ -12433,7 +12433,7 @@
 "木",
 "火"
 ],
-"h_steps": "a618163ddbc7f8a7",
+"h_steps": "2b40e99eb658db6b",
 "h_layers": "1900f74a53b00cbf",
 "h_tiaohou": "ba9ffbc3dd0fad9d"
 },
@@ -12464,7 +12464,7 @@
 "木",
 "火"
 ],
-"h_steps": "cf16ae63c1fc3acf",
+"h_steps": "bb9acb7f636fd1e5",
 "h_layers": "07b020c371d3999e",
 "h_tiaohou": "5364e9403af9f266"
 },
@@ -12495,7 +12495,7 @@
 "木",
 "火"
 ],
-"h_steps": "18cb16c90e7f4278",
+"h_steps": "26c238b7dc19e814",
 "h_layers": "1f51e7c6813b4622",
 "h_tiaohou": "e36bada40d937758"
 },
@@ -12526,7 +12526,7 @@
 "水",
 "金"
 ],
-"h_steps": "9d8afd61fbedca9a",
+"h_steps": "271c90682f8e0dce",
 "h_layers": "07755429873d0ee2",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -12557,7 +12557,7 @@
 "水",
 "金"
 ],
-"h_steps": "580f31361ac8938b",
+"h_steps": "adeb672cfa8fa5b6",
 "h_layers": "3617458aacbb9e1d",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -12588,7 +12588,7 @@
 "土",
 "火"
 ],
-"h_steps": "cf13945489f0bf9d",
+"h_steps": "c682070147d212f7",
 "h_layers": "e2f723450b7c0f5d",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -12619,7 +12619,7 @@
 "水",
 "金"
 ],
-"h_steps": "3af5e33a75680475",
+"h_steps": "c2a9a112d9038dbe",
 "h_layers": "6c3d1e9dff38aeff",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -12650,7 +12650,7 @@
 "土",
 "火"
 ],
-"h_steps": "4b96fdf345f568d0",
+"h_steps": "bffd6d4a628bd631",
 "h_layers": "6c3d1e9dff38aeff",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -12681,7 +12681,7 @@
 "木",
 "火"
 ],
-"h_steps": "36cb99961172ac88",
+"h_steps": "977bc04f9ead03ba",
 "h_layers": "dc236c0f83f6c72f",
 "h_tiaohou": "ee426e50e9f11286"
 },
@@ -12712,7 +12712,7 @@
 "水",
 "火"
 ],
-"h_steps": "9862f8682e219a8e",
+"h_steps": "d20d313f436f314a",
 "h_layers": "6364f6adeddf3b90",
 "h_tiaohou": "ee426e50e9f11286"
 },
@@ -12743,7 +12743,7 @@
 "土",
 "火"
 ],
-"h_steps": "32d96521bc88430f",
+"h_steps": "9cabf4fbfbcc907a",
 "h_layers": "a312d78aed0acf1e",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -12774,7 +12774,7 @@
 "土",
 "火"
 ],
-"h_steps": "995aae625dd6f517",
+"h_steps": "dd76b361b5fa4d8c",
 "h_layers": "a312d78aed0acf1e",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -12805,7 +12805,7 @@
 "土",
 "火"
 ],
-"h_steps": "78ca69d9666733e4",
+"h_steps": "a052fa1b562e711c",
 "h_layers": "89fe8494587044c4",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -12813,7 +12813,7 @@
 "level": "太弱",
 "static": {
 "木": 10.5,
-"火": 2.25,
+"火": 1.0,
 "土": 1.4,
 "金": 0.8,
 "水": 8.0
@@ -12823,7 +12823,7 @@
 "火": 0.0,
 "土": 1.4,
 "金": 0.8,
-"水": 7.55
+"水": 7.8
 },
 "ge_ju": "cong_sha",
 "yong_shen": "木",
@@ -12836,7 +12836,7 @@
 "土",
 "火"
 ],
-"h_steps": "1c13b4c78028e2bf",
+"h_steps": "cc877019f1f8ab6c",
 "h_layers": "e51204f02d7ba971",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -12867,7 +12867,7 @@
 "土",
 "火"
 ],
-"h_steps": "9da8ef5d245dd47a",
+"h_steps": "bff5530cbc4418fa",
 "h_layers": "e51204f02d7ba971",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -12898,7 +12898,7 @@
 "水",
 "金"
 ],
-"h_steps": "7638f3fe040937d8",
+"h_steps": "acfa1ad129e8d699",
 "h_layers": "e96e83c08d125339",
 "h_tiaohou": "883cfc04fe0292fb"
 },
@@ -12929,7 +12929,7 @@
 "木",
 "火"
 ],
-"h_steps": "1472c78749743786",
+"h_steps": "2b127d1d0673a989",
 "h_layers": "d4b57f3c735565eb",
 "h_tiaohou": "883cfc04fe0292fb"
 },
@@ -12960,7 +12960,7 @@
 "水",
 "金"
 ],
-"h_steps": "34e3858e9a5c1382",
+"h_steps": "14f180a514aa9516",
 "h_layers": "82381533bda5a0ec",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -12991,7 +12991,7 @@
 "水",
 "金"
 ],
-"h_steps": "13a99868ea9cf7de",
+"h_steps": "2b8f2b02c9ae697d",
 "h_layers": "82381533bda5a0ec",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -13022,23 +13022,23 @@
 "土",
 "火"
 ],
-"h_steps": "05e14cf580e8964e",
+"h_steps": "20a8cf6d9421c535",
 "h_layers": "f2c3119e19cab624",
 "h_tiaohou": "21991797df12fc59"
 },
 "甲卯 丙卯 戊辰 庚酉": {
-"level": "太弱",
+"level": "弱极",
 "static": {
-"木": 23.5,
+"木": 38.0,
 "火": 1.5,
-"土": 1.25,
+"土": 0.5,
 "金": 4.2,
 "水": 0.0
 },
 "final": {
-"木": 23.5,
+"木": 38.0,
 "火": 1.5,
-"土": 1.25,
+"土": 0.5,
 "金": 4.2,
 "水": 0.0
 },
@@ -13053,7 +13053,7 @@
 "土",
 "火"
 ],
-"h_steps": "450d3c74763abd80",
+"h_steps": "df1667c24536a4c6",
 "h_layers": "5f832a047233a431",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -13063,14 +13063,14 @@
 "木": 17.0,
 "火": 3.0,
 "土": 1.75,
-"金": 3.5,
+"金": 2.8,
 "水": 0.0
 },
 "final": {
 "木": 15.5,
 "火": 6.68,
-"土": 1.06,
-"金": 4.38,
+"土": 1.38,
+"金": 3.68,
 "水": 0.0
 },
 "ge_ju": "zheng",
@@ -13084,7 +13084,7 @@
 "水",
 "金"
 ],
-"h_steps": "705cf714ebefe6ac",
+"h_steps": "0f0ad749032b1fcb",
 "h_layers": "5f832a047233a431",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -13115,7 +13115,7 @@
 "土",
 "火"
 ],
-"h_steps": "7dab83dedb569ac3",
+"h_steps": "bbef229e63f4a769",
 "h_layers": "84cc768df1a424c6",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -13146,7 +13146,7 @@
 "水",
 "金"
 ],
-"h_steps": "aec9f9c9dd0bef75",
+"h_steps": "bee578884ab9421c",
 "h_layers": "84cc768df1a424c6",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -13177,7 +13177,7 @@
 "木",
 "火"
 ],
-"h_steps": "9c67e2a2c72c8428",
+"h_steps": "a310f8bf5ac35572",
 "h_layers": "220586ac888aa285",
 "h_tiaohou": "dae74e723671c540"
 },
@@ -13208,7 +13208,7 @@
 "木",
 "火"
 ],
-"h_steps": "469a491afe26cf78",
+"h_steps": "0238ad9aa613d613",
 "h_layers": "321c92589d7d1278",
 "h_tiaohou": "72306fba1120ff76"
 },
@@ -13239,23 +13239,23 @@
 "水",
 "金"
 ],
-"h_steps": "4d064b669f6f743d",
+"h_steps": "a16c1f7fd8c39c8e",
 "h_layers": "e8f0fba8667e9d31",
 "h_tiaohou": "50967b12f4aa3d76"
 },
 "甲卯 丙午 戊辰 庚辰": {
-"level": "较旺",
+"level": "比旺",
 "static": {
-"木": 3.8,
+"木": 4.8,
 "火": 10.0,
-"土": 14.25,
+"土": 19.5,
 "金": 0.5,
 "水": 0.0
 },
 "final": {
-"木": 0.8,
-"火": 6.38,
-"土": 17.25,
+"木": 1.8,
+"火": 4.75,
+"土": 22.5,
 "金": 0.5,
 "水": 0.0
 },
@@ -13270,7 +13270,7 @@
 "木",
 "火"
 ],
-"h_steps": "09f59f89cc3eca5f",
+"h_steps": "710ffbcc1ae0f001",
 "h_layers": "a73eba2f9846ec54",
 "h_tiaohou": "b5b6e3868e59ca6a"
 },
@@ -13301,7 +13301,7 @@
 "水",
 "金"
 ],
-"h_steps": "5ed5584f3fd103ef",
+"h_steps": "5a0746ec8e5e4c88",
 "h_layers": "70a0742a1305709c",
 "h_tiaohou": "b7253ad01b5c5187"
 },
@@ -13332,7 +13332,7 @@
 "木",
 "火"
 ],
-"h_steps": "2f127d932f5e1100",
+"h_steps": "33097a47bb2c9fa2",
 "h_layers": "1f51e7c6813b4622",
 "h_tiaohou": "e36bada40d937758"
 },
@@ -13363,7 +13363,7 @@
 "土",
 "火"
 ],
-"h_steps": "336455c97e50b008",
+"h_steps": "a8db272111e9e7dc",
 "h_layers": "47aa7ee9c422051d",
 "h_tiaohou": "e36bada40d937758"
 },
@@ -13394,7 +13394,7 @@
 "土",
 "火"
 ],
-"h_steps": "8e8a06a42e3962e2",
+"h_steps": "455ad8324e0143dd",
 "h_layers": "07755429873d0ee2",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -13425,7 +13425,7 @@
 "土",
 "火"
 ],
-"h_steps": "06400b08dfc9f3f6",
+"h_steps": "bf0661306e90d0d7",
 "h_layers": "07755429873d0ee2",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -13456,7 +13456,7 @@
 "水",
 "金"
 ],
-"h_steps": "a1cfd05b728b60ad",
+"h_steps": "e00e15b2550074b7",
 "h_layers": "07755429873d0ee2",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -13487,7 +13487,7 @@
 "土",
 "火"
 ],
-"h_steps": "209b29a58bb11107",
+"h_steps": "c64796612e3a4147",
 "h_layers": "e2f723450b7c0f5d",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -13497,15 +13497,15 @@
 "木": 1.75,
 "火": 0.7,
 "土": 0.8,
-"金": 21.0,
+"金": 19.0,
 "水": 7.5
 },
 "final": {
 "木": 1.75,
 "火": 0.7,
 "土": 0.8,
-"金": 19.5,
-"水": 11.7
+"金": 17.5,
+"水": 11.3
 },
 "ge_ju": "cong_ruo",
 "yong_shen": "金",
@@ -13518,7 +13518,7 @@
 "土",
 "火"
 ],
-"h_steps": "7b1894dde3b36105",
+"h_steps": "456137208d89fc2e",
 "h_layers": "e2f723450b7c0f5d",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -13549,7 +13549,7 @@
 "木",
 "火"
 ],
-"h_steps": "feca724a984e2cf5",
+"h_steps": "8ccc95c184396b11",
 "h_layers": "3a7af1574ff8c717",
 "h_tiaohou": "feaf76f23330dac7"
 },
@@ -13580,7 +13580,7 @@
 "木",
 "火"
 ],
-"h_steps": "f174aa04ca2c3130",
+"h_steps": "d285ec8d98701904",
 "h_layers": "8e8f53c25af1cf5d",
 "h_tiaohou": "ee426e50e9f11286"
 },
@@ -13611,7 +13611,7 @@
 "土",
 "火"
 ],
-"h_steps": "1bd72b2116a72464",
+"h_steps": "da6f5971cefe3e1e",
 "h_layers": "a312d78aed0acf1e",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -13642,7 +13642,7 @@
 "土",
 "火"
 ],
-"h_steps": "a2b4d813c6017828",
+"h_steps": "572dfa636d35714f",
 "h_layers": "3ab06d24b67a6c62",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -13673,7 +13673,7 @@
 "水",
 "金"
 ],
-"h_steps": "cd18c08493bdb4ba",
+"h_steps": "8750865b36b78a19",
 "h_layers": "31781988ef0a0233",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -13704,7 +13704,7 @@
 "土",
 "火"
 ],
-"h_steps": "09ad1f1e9c6ece34",
+"h_steps": "5bac7029cdf94eb5",
 "h_layers": "e51204f02d7ba971",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -13735,7 +13735,7 @@
 "水",
 "金"
 ],
-"h_steps": "6bade644391dfe56",
+"h_steps": "f402f6910ff86dbe",
 "h_layers": "e51204f02d7ba971",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -13766,7 +13766,7 @@
 "木",
 "火"
 ],
-"h_steps": "06601b69514fc459",
+"h_steps": "2bdffee7d181878f",
 "h_layers": "d4b57f3c735565eb",
 "h_tiaohou": "883cfc04fe0292fb"
 },
@@ -13797,7 +13797,7 @@
 "木",
 "火"
 ],
-"h_steps": "da8812757588e701",
+"h_steps": "68343b34edf5b84a",
 "h_layers": "d4b57f3c735565eb",
 "h_tiaohou": "883cfc04fe0292fb"
 },
@@ -13828,7 +13828,7 @@
 "木",
 "火"
 ],
-"h_steps": "b3d65d06ba402955",
+"h_steps": "f064207343f8b6a3",
 "h_layers": "d4b57f3c735565eb",
 "h_tiaohou": "883cfc04fe0292fb"
 },
@@ -13859,7 +13859,7 @@
 "水",
 "金"
 ],
-"h_steps": "bdf8414bb4ad379d",
+"h_steps": "f5d3ef8f79c46ee0",
 "h_layers": "f2c3119e19cab624",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -13890,23 +13890,23 @@
 "水",
 "金"
 ],
-"h_steps": "33b8104f1b544586",
+"h_steps": "518961669fbbe177",
 "h_layers": "82381533bda5a0ec",
 "h_tiaohou": "21991797df12fc59"
 },
 "甲辰 丙卯 戊卯 庚丑": {
-"level": "弱极",
+"level": "太弱",
 "static": {
-"木": 36.0,
+"木": 38.0,
 "火": 1.5,
 "土": 1.75,
 "金": 2.1,
 "水": 0.8
 },
 "final": {
-"木": 35.65,
+"木": 38.0,
 "火": 1.5,
-"土": 0.0,
+"土": 1.75,
 "金": 2.1,
 "水": 0.8
 },
@@ -13921,8 +13921,8 @@
 "土",
 "火"
 ],
-"h_steps": "f1588c19f3e9166c",
-"h_layers": "7c72aef797136995",
+"h_steps": "f83762c4ef67f85a",
+"h_layers": "5f832a047233a431",
 "h_tiaohou": "02e17ad91f0ee112"
 },
 "甲辰 丙卯 戊申 庚寅": {
@@ -13952,25 +13952,25 @@
 "土",
 "火"
 ],
-"h_steps": "f43a5fd6232577a7",
+"h_steps": "5a0505a47693c1e8",
 "h_layers": "5f832a047233a431",
 "h_tiaohou": "02e17ad91f0ee112"
 },
 "甲辰 丙辰 戊丑 庚卯": {
 "level": "较旺",
 "static": {
-"木": 5.46,
+"木": 12.8,
 "火": 0.8,
-"土": 21.0,
+"土": 20.0,
 "金": 3.75,
-"水": 0.0
+"水": 1.5
 },
 "final": {
-"木": 0.54,
+"木": 7.1,
 "火": 0.8,
-"土": 17.14,
-"金": 9.19,
-"水": 0.0
+"土": 12.88,
+"金": 8.15,
+"水": 1.5
 },
 "ge_ju": "zheng",
 "yong_shen": "水",
@@ -13983,8 +13983,8 @@
 "木",
 "火"
 ],
-"h_steps": "0564211e25d81600",
-"h_layers": "6dfc9d80eea983d6",
+"h_steps": "69ebfe925edc0fac",
+"h_layers": "8244098334b32b5b",
 "h_tiaohou": "828ebbc0167092c7"
 },
 "甲辰 丙辰 戊午 庚辰": {
@@ -14014,7 +14014,7 @@
 "水",
 "金"
 ],
-"h_steps": "a3e8a6024ea63d3c",
+"h_steps": "147336d4e36093ef",
 "h_layers": "8244098334b32b5b",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -14045,7 +14045,7 @@
 "水",
 "金"
 ],
-"h_steps": "f83bce881a39c70f",
+"h_steps": "a650ad78c7964bae",
 "h_layers": "84cc768df1a424c6",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -14076,7 +14076,7 @@
 "木",
 "火"
 ],
-"h_steps": "72b0e5813f5c0509",
+"h_steps": "643f291035cb9a3a",
 "h_layers": "c82d67fe0054cd06",
 "h_tiaohou": "0c57630cd26340c2"
 },
@@ -14107,7 +14107,7 @@
 "木",
 "火"
 ],
-"h_steps": "83c42fc5d82220f5",
+"h_steps": "6a3e603d0deb789a",
 "h_layers": "c82d67fe0054cd06",
 "h_tiaohou": "8e4addc140593a34"
 },
@@ -14138,7 +14138,7 @@
 "木",
 "火"
 ],
-"h_steps": "a2cd4d6123405317",
+"h_steps": "39302fa64f05f342",
 "h_layers": "36e942a377fb9007",
 "h_tiaohou": "e347f6b609c13a22"
 },
@@ -14169,7 +14169,7 @@
 "水",
 "金"
 ],
-"h_steps": "48650879503708e1",
+"h_steps": "a8564485a3ed5d8f",
 "h_layers": "5c56031a96bce741",
 "h_tiaohou": "e347f6b609c13a22"
 },
@@ -14200,7 +14200,7 @@
 "木",
 "火"
 ],
-"h_steps": "e6a84413d92c793f",
+"h_steps": "42f36db396e2c558",
 "h_layers": "a69c930c5dbe39f3",
 "h_tiaohou": "2bf5d958570a78e6"
 },
@@ -14231,7 +14231,7 @@
 "木",
 "火"
 ],
-"h_steps": "9863dd89bd1a85bd",
+"h_steps": "9c05bed8bf822aee",
 "h_layers": "228da741ae6fede3",
 "h_tiaohou": "fb1ba68bef539f37"
 },
@@ -14262,7 +14262,7 @@
 "木",
 "火"
 ],
-"h_steps": "be4c3d8e28a559a1",
+"h_steps": "0262da64840ca9c5",
 "h_layers": "228da741ae6fede3",
 "h_tiaohou": "d59e092834867dd5"
 },
@@ -14293,7 +14293,7 @@
 "水",
 "金"
 ],
-"h_steps": "3c38d777f3cfdb68",
+"h_steps": "9b7e31d868b5a226",
 "h_layers": "07755429873d0ee2",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -14324,7 +14324,7 @@
 "水",
 "金"
 ],
-"h_steps": "fa26c56526a35d97",
+"h_steps": "3a8910d2c35d59bd",
 "h_layers": "07755429873d0ee2",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -14355,7 +14355,7 @@
 "土",
 "火"
 ],
-"h_steps": "0ecb377e32adc233",
+"h_steps": "0164ea116a2a1ba0",
 "h_layers": "e2f723450b7c0f5d",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -14386,7 +14386,7 @@
 "水",
 "金"
 ],
-"h_steps": "d60b6c79abeb9b02",
+"h_steps": "3c23a62b65aa8466",
 "h_layers": "e2f723450b7c0f5d",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -14417,7 +14417,7 @@
 "木",
 "火"
 ],
-"h_steps": "91f33c9f01bb4fa0",
+"h_steps": "c38ddaa92ff09b9c",
 "h_layers": "dc236c0f83f6c72f",
 "h_tiaohou": "591e19ae82977acc"
 },
@@ -14448,23 +14448,23 @@
 "木",
 "火"
 ],
-"h_steps": "6e791ffb0dfc2737",
+"h_steps": "198d23948dcaa640",
 "h_layers": "dc236c0f83f6c72f",
 "h_tiaohou": "5c73c5984189ce1f"
 },
 "甲辰 丙戌 戊戌 庚未": {
-"level": "太旺",
+"level": "旺极",
 "static": {
 "木": 0.7,
-"火": 7.6,
-"土": 26.0,
+"火": 2.4,
+"土": 44.0,
 "金": 1.5,
 "水": 0.0
 },
 "final": {
 "木": 0.7,
 "火": 0.0,
-"土": 30.56,
+"土": 45.44,
 "金": 1.5,
 "水": 0.0
 },
@@ -14479,7 +14479,7 @@
 "水",
 "金"
 ],
-"h_steps": "a5dbeb994d5d520c",
+"h_steps": "e05812580c9a7e88",
 "h_layers": "dc236c0f83f6c72f",
 "h_tiaohou": "5c73c5984189ce1f"
 },
@@ -14510,7 +14510,7 @@
 "土",
 "火"
 ],
-"h_steps": "0c09476f36581442",
+"h_steps": "3ed0184e7cc8ac4a",
 "h_layers": "3ab06d24b67a6c62",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -14541,7 +14541,7 @@
 "土",
 "火"
 ],
-"h_steps": "9a2a61edc086798f",
+"h_steps": "bdd18bf11f90e1c4",
 "h_layers": "3ab06d24b67a6c62",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -14572,7 +14572,7 @@
 "水",
 "金"
 ],
-"h_steps": "d8b3fcaf6157bc81",
+"h_steps": "caf743800fcb6a69",
 "h_layers": "e51204f02d7ba971",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -14603,7 +14603,7 @@
 "水",
 "金"
 ],
-"h_steps": "03b8387f4dba3e07",
+"h_steps": "7009da3e4c6e8d83",
 "h_layers": "e51204f02d7ba971",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -14634,7 +14634,7 @@
 "水",
 "金"
 ],
-"h_steps": "0a5d5791b64bfefd",
+"h_steps": "afb756645a020209",
 "h_layers": "08e424335b570a97",
 "h_tiaohou": "883cfc04fe0292fb"
 },
@@ -14665,39 +14665,39 @@
 "木",
 "火"
 ],
-"h_steps": "cf29b95bf6361823",
+"h_steps": "affb4cb1843e0262",
 "h_layers": "fcb1cd9ed2034b5f",
 "h_tiaohou": "883cfc04fe0292fb"
 },
 "甲巳 丙丑 戊戌 庚寅": {
-"level": "较旺",
+"level": "太旺",
 "static": {
 "木": 1.4,
-"火": 2.5,
-"土": 20.0,
-"金": 5.25,
-"水": 1.6
+"火": 2.93,
+"土": 28.0,
+"金": 1.5,
+"水": 0.0
 },
 "final": {
-"木": 0.0,
+"木": 1.4,
 "火": 0.0,
-"土": 19.62,
-"金": 10.62,
-"水": 1.6
+"土": 28.88,
+"金": 1.5,
+"水": 0.0
 },
-"ge_ju": "zheng",
-"yong_shen": "水",
+"ge_ju": "cong_qiang",
+"yong_shen": "火",
 "favorable": [
+"土",
+"火"
+],
+"avoid": [
+"木",
 "水",
 "金"
 ],
-"avoid": [
-"土",
-"木",
-"火"
-],
-"h_steps": "fe2ea1504f05907d",
-"h_layers": "522654df0069d11c",
+"h_steps": "360b13820ece960e",
+"h_layers": "03e5083423660e61",
 "h_tiaohou": "883cfc04fe0292fb"
 },
 "甲巳 丙寅 戊卯 庚卯": {
@@ -14727,7 +14727,7 @@
 "土",
 "火"
 ],
-"h_steps": "aada4ac1c8a5a29b",
+"h_steps": "e2d1dff0105163ca",
 "h_layers": "82381533bda5a0ec",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -14758,7 +14758,7 @@
 "土",
 "火"
 ],
-"h_steps": "d14978a960af9934",
+"h_steps": "51a3fd0c1783e182",
 "h_layers": "82381533bda5a0ec",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -14789,7 +14789,7 @@
 "水",
 "金"
 ],
-"h_steps": "51403ad199e786cf",
+"h_steps": "076f62a4ef3196b7",
 "h_layers": "5f832a047233a431",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -14820,7 +14820,7 @@
 "水",
 "金"
 ],
-"h_steps": "aec9a4c548273dcc",
+"h_steps": "5e44e0ab1bb79d90",
 "h_layers": "5f832a047233a431",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -14851,7 +14851,7 @@
 "水",
 "金"
 ],
-"h_steps": "e6086f8bbacc492e",
+"h_steps": "084658189d7dc39a",
 "h_layers": "5f832a047233a431",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -14882,7 +14882,7 @@
 "木",
 "火"
 ],
-"h_steps": "e52e05a72a1afac5",
+"h_steps": "9fcb25fe4668b6f3",
 "h_layers": "8244098334b32b5b",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -14913,24 +14913,24 @@
 "土",
 "火"
 ],
-"h_steps": "c71ead723d3df3ed",
+"h_steps": "226530336100aba9",
 "h_layers": "84cc768df1a424c6",
 "h_tiaohou": "828ebbc0167092c7"
 },
 "甲巳 丙巳 戊寅 庚戌": {
-"level": "比旺",
+"level": "较旺",
 "static": {
-"木": 1.6,
-"火": 28.0,
-"土": 13.5,
-"金": 1.0,
+"木": 0.8,
+"火": 40.0,
+"土": 3.75,
+"金": 0.5,
 "水": 0.0
 },
 "final": {
-"木": 1.6,
-"火": 23.95,
-"土": 21.9,
-"金": 1.0,
+"木": 0.8,
+"火": 38.88,
+"土": 15.75,
+"金": 0.5,
 "水": 0.0
 },
 "ge_ju": "zheng",
@@ -14944,7 +14944,7 @@
 "木",
 "火"
 ],
-"h_steps": "04a023e3ff24c509",
+"h_steps": "3c72a4d3515e42c5",
 "h_layers": "285766c6e8835c5c",
 "h_tiaohou": "72306fba1120ff76"
 },
@@ -14975,7 +14975,7 @@
 "木",
 "火"
 ],
-"h_steps": "f3fc8f38e6977116",
+"h_steps": "2ce17754a6a53cb7",
 "h_layers": "220586ac888aa285",
 "h_tiaohou": "50967b12f4aa3d76"
 },
@@ -15006,7 +15006,7 @@
 "木",
 "火"
 ],
-"h_steps": "8c66829c7b214875",
+"h_steps": "6129a1f7e1308f9d",
 "h_layers": "1900f74a53b00cbf",
 "h_tiaohou": "ddaefa5eb2da718b"
 },
@@ -15037,7 +15037,7 @@
 "木",
 "火"
 ],
-"h_steps": "e0a0989e2343921f",
+"h_steps": "cc1f2aef22109b16",
 "h_layers": "1900f74a53b00cbf",
 "h_tiaohou": "444360c61226abc0"
 },
@@ -15068,7 +15068,7 @@
 "木",
 "火"
 ],
-"h_steps": "ae6cb9ba05410a6b",
+"h_steps": "88f6f3cc85183d29",
 "h_layers": "36e942a377fb9007",
 "h_tiaohou": "284a909e1f33356b"
 },
@@ -15099,7 +15099,7 @@
 "木",
 "火"
 ],
-"h_steps": "1538de350805e09b",
+"h_steps": "556112f52a8e4d1b",
 "h_layers": "1f51e7c6813b4622",
 "h_tiaohou": "5364e9403af9f266"
 },
@@ -15130,7 +15130,7 @@
 "木",
 "火"
 ],
-"h_steps": "302a6345f3862838",
+"h_steps": "91909700812f20e0",
 "h_layers": "228da741ae6fede3",
 "h_tiaohou": "5364e9403af9f266"
 },
@@ -15161,7 +15161,7 @@
 "土",
 "火"
 ],
-"h_steps": "03e8334aa0646b20",
+"h_steps": "761a6f0bfaad3a11",
 "h_layers": "07755429873d0ee2",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -15192,7 +15192,7 @@
 "水",
 "金"
 ],
-"h_steps": "ce06ff40d994652b",
+"h_steps": "89a591e80b14a320",
 "h_layers": "3617458aacbb9e1d",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -15223,7 +15223,7 @@
 "土",
 "火"
 ],
-"h_steps": "1a6e06823d530a61",
+"h_steps": "9a964578aa5df2b8",
 "h_layers": "e2f723450b7c0f5d",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -15254,7 +15254,7 @@
 "土",
 "火"
 ],
-"h_steps": "3940e28ccf9858f5",
+"h_steps": "6fea9a929842e9ed",
 "h_layers": "e2f723450b7c0f5d",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -15285,7 +15285,7 @@
 "土",
 "火"
 ],
-"h_steps": "26bbb779b84ab5ca",
+"h_steps": "77c8821d1dd413df",
 "h_layers": "6c3d1e9dff38aeff",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -15316,7 +15316,7 @@
 "木",
 "火"
 ],
-"h_steps": "da184f5819c774b1",
+"h_steps": "6f12d3ea9789c006",
 "h_layers": "dc236c0f83f6c72f",
 "h_tiaohou": "ee426e50e9f11286"
 },
@@ -15347,7 +15347,7 @@
 "木",
 "火"
 ],
-"h_steps": "055d02caff1d962a",
+"h_steps": "e240a660fcfcf699",
 "h_layers": "3a7af1574ff8c717",
 "h_tiaohou": "776d6067085f99ea"
 },
@@ -15378,7 +15378,7 @@
 "土",
 "火"
 ],
-"h_steps": "ba046ebafd2e9b75",
+"h_steps": "1b481f873f2e16b6",
 "h_layers": "3ab06d24b67a6c62",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -15409,25 +15409,25 @@
 "水",
 "金"
 ],
-"h_steps": "cc04137dcee22ab6",
+"h_steps": "6c4d71f15183d135",
 "h_layers": "3ab06d24b67a6c62",
 "h_tiaohou": "b615e6a363442448"
 },
 "甲午 丙子 戊子 庚寅": {
 "level": "弱极",
 "static": {
-"木": 4.5,
+"木": 3.0,
 "火": 1.75,
 "土": 1.05,
 "金": 0.8,
-"水": 14.0
+"水": 18.0
 },
 "final": {
-"木": 3.42,
-"火": 0.57,
+"木": 1.92,
+"火": 0.6,
 "土": 0.0,
 "金": 0.0,
-"水": 13.16
+"水": 17.33
 },
 "ge_ju": "cong_cai",
 "yong_shen": "水",
@@ -15440,7 +15440,7 @@
 "土",
 "火"
 ],
-"h_steps": "812e260cd4f28ba9",
+"h_steps": "acfb827649bfceba",
 "h_layers": "89fe8494587044c4",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -15471,7 +15471,7 @@
 "水",
 "金"
 ],
-"h_steps": "43f2310e7e19dbbb",
+"h_steps": "f9626e26db90bcb6",
 "h_layers": "89fe8494587044c4",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -15502,7 +15502,7 @@
 "土",
 "火"
 ],
-"h_steps": "1d0eff64c57050db",
+"h_steps": "b4b250145808a84a",
 "h_layers": "e51204f02d7ba971",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -15533,7 +15533,7 @@
 "木",
 "火"
 ],
-"h_steps": "44ec50827cd0672b",
+"h_steps": "e61f8122b376c61b",
 "h_layers": "42f8c4c2f5bd701d",
 "h_tiaohou": "883cfc04fe0292fb"
 },
@@ -15564,7 +15564,7 @@
 "木",
 "火"
 ],
-"h_steps": "7b8a04841c381daa",
+"h_steps": "4c8eaadf475c3625",
 "h_layers": "fcb1cd9ed2034b5f",
 "h_tiaohou": "883cfc04fe0292fb"
 },
@@ -15595,7 +15595,7 @@
 "水",
 "金"
 ],
-"h_steps": "70baead4b91cdab2",
+"h_steps": "60bc5277dce2c277",
 "h_layers": "82381533bda5a0ec",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -15626,7 +15626,7 @@
 "土",
 "火"
 ],
-"h_steps": "bfb8a992e53cdda6",
+"h_steps": "4a6b134f81c77f6e",
 "h_layers": "82381533bda5a0ec",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -15657,7 +15657,7 @@
 "土",
 "火"
 ],
-"h_steps": "a64bfed11477a049",
+"h_steps": "dd429de472da2896",
 "h_layers": "b07b2b82c20e79a1",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -15688,7 +15688,7 @@
 "水",
 "金"
 ],
-"h_steps": "2e736b3fc515b989",
+"h_steps": "e0be9cbb92abc759",
 "h_layers": "5f832a047233a431",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -15719,7 +15719,7 @@
 "土",
 "火"
 ],
-"h_steps": "7653e5518dfd0837",
+"h_steps": "0fab2bc1a6160fd4",
 "h_layers": "7c72aef797136995",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -15750,7 +15750,7 @@
 "水",
 "金"
 ],
-"h_steps": "fe3f585a3fb025ca",
+"h_steps": "444e01a88ae1cacb",
 "h_layers": "84cc768df1a424c6",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -15781,7 +15781,7 @@
 "木",
 "火"
 ],
-"h_steps": "6f4fe0f1831558af",
+"h_steps": "9ce37d5d059de9ac",
 "h_layers": "8244098334b32b5b",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -15812,7 +15812,7 @@
 "木",
 "火"
 ],
-"h_steps": "4d34ef8905efd02e",
+"h_steps": "c304145f24b000c7",
 "h_layers": "220586ac888aa285",
 "h_tiaohou": "80511bfd812288d7"
 },
@@ -15843,7 +15843,7 @@
 "木",
 "火"
 ],
-"h_steps": "032076f43000ea43",
+"h_steps": "62a977795670a899",
 "h_layers": "321c92589d7d1278",
 "h_tiaohou": "72306fba1120ff76"
 },
@@ -15874,7 +15874,7 @@
 "木",
 "火"
 ],
-"h_steps": "4930f8d44251bd50",
+"h_steps": "77c48c30a5dc2e01",
 "h_layers": "220586ac888aa285",
 "h_tiaohou": "83109cfe9a8e1a87"
 },
@@ -15905,7 +15905,7 @@
 "木",
 "火"
 ],
-"h_steps": "dc2bc3a0ca6e1e40",
+"h_steps": "7a1726a39ebaca2e",
 "h_layers": "1900f74a53b00cbf",
 "h_tiaohou": "e347f6b609c13a22"
 },
@@ -15936,7 +15936,7 @@
 "木",
 "火"
 ],
-"h_steps": "f6c3cdc3d74b9516",
+"h_steps": "a8e8c71d07269d16",
 "h_layers": "a73eba2f9846ec54",
 "h_tiaohou": "b7253ad01b5c5187"
 },
@@ -15967,7 +15967,7 @@
 "木",
 "火"
 ],
-"h_steps": "0eb5968edc874a48",
+"h_steps": "0731374788b51ea7",
 "h_layers": "a69c930c5dbe39f3",
 "h_tiaohou": "e36bada40d937758"
 },
@@ -15998,7 +15998,7 @@
 "水",
 "金"
 ],
-"h_steps": "ec402174b8ab56ea",
+"h_steps": "eee58b81102322ab",
 "h_layers": "1a3dd884aac478dd",
 "h_tiaohou": "e36bada40d937758"
 },
@@ -16029,7 +16029,7 @@
 "土",
 "火"
 ],
-"h_steps": "4c08fe66dd6c0843",
+"h_steps": "e0d8565d29bba878",
 "h_layers": "07755429873d0ee2",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -16060,7 +16060,7 @@
 "水",
 "金"
 ],
-"h_steps": "c2c0dbc397f17156",
+"h_steps": "86b572f344675c39",
 "h_layers": "07755429873d0ee2",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -16091,7 +16091,7 @@
 "水",
 "金"
 ],
-"h_steps": "6c5cf274202c2bc1",
+"h_steps": "e8d860d713c751bd",
 "h_layers": "07755429873d0ee2",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -16122,7 +16122,7 @@
 "土",
 "火"
 ],
-"h_steps": "029aaf356c7a84e3",
+"h_steps": "64e3678b6c003058",
 "h_layers": "e2f723450b7c0f5d",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -16153,7 +16153,7 @@
 "土",
 "火"
 ],
-"h_steps": "e29c56c7a0f4bdb0",
+"h_steps": "dda58e25bb02071f",
 "h_layers": "6c3d1e9dff38aeff",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -16184,7 +16184,7 @@
 "水",
 "金"
 ],
-"h_steps": "3fb3ced8437f5153",
+"h_steps": "592d1f543c8af0ad",
 "h_layers": "ae4dd30d90bd4559",
 "h_tiaohou": "ee426e50e9f11286"
 },
@@ -16215,7 +16215,7 @@
 "木",
 "火"
 ],
-"h_steps": "55829ea5c85a3877",
+"h_steps": "cc73ed1ed7544110",
 "h_layers": "dc236c0f83f6c72f",
 "h_tiaohou": "ee426e50e9f11286"
 },
@@ -16246,7 +16246,7 @@
 "水",
 "金"
 ],
-"h_steps": "e87f8b9c5a03d69d",
+"h_steps": "3bb264e63e6eb34f",
 "h_layers": "a312d78aed0acf1e",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -16277,7 +16277,7 @@
 "水",
 "金"
 ],
-"h_steps": "69ac5735211aa742",
+"h_steps": "641373c69722436b",
 "h_layers": "a312d78aed0acf1e",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -16308,7 +16308,7 @@
 "水",
 "金"
 ],
-"h_steps": "61c4633acfb0398c",
+"h_steps": "b1e91092c65506fb",
 "h_layers": "a312d78aed0acf1e",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -16339,7 +16339,7 @@
 "土",
 "火"
 ],
-"h_steps": "873661276178f9ab",
+"h_steps": "682cc010a57a701b",
 "h_layers": "e51204f02d7ba971",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -16370,39 +16370,39 @@
 "水",
 "金"
 ],
-"h_steps": "4895cd5f3ffd2a0f",
+"h_steps": "5c3e47ba81cf31a4",
 "h_layers": "e51204f02d7ba971",
 "h_tiaohou": "d8d548931bddf40c"
 },
 "甲未 丙丑 戊丑 庚酉": {
-"level": "弱极",
+"level": "太旺",
 "static": {
-"木": 1.2,
-"火": 1.5,
-"土": 4.2,
-"金": 33.25,
+"木": 0.7,
+"火": 0.65,
+"土": 38.0,
+"金": 9.0,
 "水": 0.0
 },
 "final": {
-"木": 1.2,
-"火": 1.5,
-"土": 0.0,
-"金": 34.51,
+"木": 0.7,
+"火": 0.65,
+"土": 35.3,
+"金": 20.4,
 "水": 0.0
 },
 "ge_ju": "zheng",
-"yong_shen": "土",
+"yong_shen": "金",
 "favorable": [
 "土",
-"火"
+"金"
 ],
 "avoid": [
 "木",
 "水",
-"金"
+"火"
 ],
-"h_steps": "e0d9278c340a22c1",
-"h_layers": "e96e83c08d125339",
+"h_steps": "d5d76a29835ca437",
+"h_layers": "24185bf891edbcfd",
 "h_tiaohou": "883cfc04fe0292fb"
 },
 "甲未 丙丑 戊午 庚戌": {
@@ -16432,7 +16432,7 @@
 "木",
 "火"
 ],
-"h_steps": "b59bbcc93cc48604",
+"h_steps": "1923337294521648",
 "h_layers": "d4b57f3c735565eb",
 "h_tiaohou": "883cfc04fe0292fb"
 },
@@ -16463,7 +16463,7 @@
 "木",
 "火"
 ],
-"h_steps": "e223c9225807fc84",
+"h_steps": "58ccf1e47929acc5",
 "h_layers": "d4b57f3c735565eb",
 "h_tiaohou": "883cfc04fe0292fb"
 },
@@ -16494,7 +16494,7 @@
 "土",
 "火"
 ],
-"h_steps": "da7ee4c3ceaf5f06",
+"h_steps": "07884ce6d551b077",
 "h_layers": "f2c3119e19cab624",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -16525,7 +16525,7 @@
 "水",
 "金"
 ],
-"h_steps": "317a2de980b2b4f5",
+"h_steps": "c1d3f5c79006021d",
 "h_layers": "82381533bda5a0ec",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -16556,7 +16556,7 @@
 "水",
 "金"
 ],
-"h_steps": "cabd089c4dcfdfbb",
+"h_steps": "64bb95d9531a5af9",
 "h_layers": "5f832a047233a431",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -16587,7 +16587,7 @@
 "土",
 "火"
 ],
-"h_steps": "cabbfcbca1149582",
+"h_steps": "216834d0ef5e73cf",
 "h_layers": "7c72aef797136995",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -16618,7 +16618,7 @@
 "木",
 "火"
 ],
-"h_steps": "2a22891367d2a520",
+"h_steps": "df8210259b958404",
 "h_layers": "8244098334b32b5b",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -16649,7 +16649,7 @@
 "木",
 "火"
 ],
-"h_steps": "6dbe4d7f4263014f",
+"h_steps": "f0a22d1ce634040b",
 "h_layers": "8244098334b32b5b",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -16680,7 +16680,7 @@
 "木",
 "火"
 ],
-"h_steps": "576222acc793d7d9",
+"h_steps": "848b5dedeb222a11",
 "h_layers": "6dfc9d80eea983d6",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -16711,7 +16711,7 @@
 "木",
 "火"
 ],
-"h_steps": "7498568853631baa",
+"h_steps": "3a2f004f0fbe33c4",
 "h_layers": "220586ac888aa285",
 "h_tiaohou": "8e4addc140593a34"
 },
@@ -16742,7 +16742,7 @@
 "水",
 "金"
 ],
-"h_steps": "6ceb01a65be83d2e",
+"h_steps": "a7e99659bc26a07a",
 "h_layers": "51a9c39b72ac7317",
 "h_tiaohou": "72306fba1120ff76"
 },
@@ -16773,7 +16773,7 @@
 "水",
 "金"
 ],
-"h_steps": "e0c301354d594319",
+"h_steps": "1ee8b5c4bde6d751",
 "h_layers": "70a0742a1305709c",
 "h_tiaohou": "b7253ad01b5c5187"
 },
@@ -16804,7 +16804,7 @@
 "木",
 "火"
 ],
-"h_steps": "6c1cf454c496016d",
+"h_steps": "737f06c40ba6b370",
 "h_layers": "a73eba2f9846ec54",
 "h_tiaohou": "b7253ad01b5c5187"
 },
@@ -16835,7 +16835,7 @@
 "木",
 "火"
 ],
-"h_steps": "384c9bb836f8b646",
+"h_steps": "1e2d9180efc9db90",
 "h_layers": "228da741ae6fede3",
 "h_tiaohou": "a425ae53b0744d9e"
 },
@@ -16866,7 +16866,7 @@
 "木",
 "火"
 ],
-"h_steps": "9118d38c92ef4768",
+"h_steps": "6b3f60d56a441092",
 "h_layers": "228da741ae6fede3",
 "h_tiaohou": "8e9ba91dcd819d50"
 },
@@ -16897,7 +16897,7 @@
 "木",
 "火"
 ],
-"h_steps": "f3b6dcbb1ec62167",
+"h_steps": "c1216c9b65d2deb8",
 "h_layers": "228da741ae6fede3",
 "h_tiaohou": "ae03cee0d65b0098"
 },
@@ -16928,7 +16928,7 @@
 "水",
 "金"
 ],
-"h_steps": "e72fe34b4a8638b6",
+"h_steps": "26d6e8dd6e204f88",
 "h_layers": "07755429873d0ee2",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -16959,7 +16959,7 @@
 "水",
 "金"
 ],
-"h_steps": "9ead40ff60cd8bf4",
+"h_steps": "c28532d9e9cc48b3",
 "h_layers": "01003019b3b668ff",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -16990,7 +16990,7 @@
 "水",
 "金"
 ],
-"h_steps": "f5405b5624f46ec5",
+"h_steps": "9a25efa09af9468f",
 "h_layers": "e2f723450b7c0f5d",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -17021,7 +17021,7 @@
 "水",
 "金"
 ],
-"h_steps": "8ef238d342efdd75",
+"h_steps": "4561d83f78119ede",
 "h_layers": "6c3d1e9dff38aeff",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -17052,7 +17052,7 @@
 "木",
 "火"
 ],
-"h_steps": "16e517cfe5bffa73",
+"h_steps": "7d39a1de135a6809",
 "h_layers": "dc236c0f83f6c72f",
 "h_tiaohou": "c743cc992669f87a"
 },
@@ -17083,7 +17083,7 @@
 "水",
 "火"
 ],
-"h_steps": "93c69dedcf98601a",
+"h_steps": "d0372bbdb8dacb1d",
 "h_layers": "dc236c0f83f6c72f",
 "h_tiaohou": "ee426e50e9f11286"
 },
@@ -17091,16 +17091,16 @@
 "level": "太旺",
 "static": {
 "木": 0.7,
-"火": 15.0,
+"火": 17.25,
 "土": 22.0,
-"金": 1.25,
+"金": 2.0,
 "水": 1.0
 },
 "final": {
 "木": 0.7,
-"火": 8.4,
-"土": 31.0,
-"金": 1.25,
+"火": 10.65,
+"土": 32.35,
+"金": 2.0,
 "水": 1.0
 },
 "ge_ju": "cong_qiang",
@@ -17114,7 +17114,7 @@
 "水",
 "金"
 ],
-"h_steps": "c7a87d0e8b2718c7",
+"h_steps": "0e584106f034ca23",
 "h_layers": "3a7af1574ff8c717",
 "h_tiaohou": "ee426e50e9f11286"
 },
@@ -17145,7 +17145,7 @@
 "土",
 "火"
 ],
-"h_steps": "4e2052ec44dc1294",
+"h_steps": "7a1abb68c7806091",
 "h_layers": "3ab06d24b67a6c62",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -17176,7 +17176,7 @@
 "水",
 "金"
 ],
-"h_steps": "afa8369734c0a3b7",
+"h_steps": "868166b206488fd4",
 "h_layers": "3ab06d24b67a6c62",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -17207,7 +17207,7 @@
 "土",
 "火"
 ],
-"h_steps": "af345ee3acdcafc4",
+"h_steps": "cf68d2a87664b9b3",
 "h_layers": "89fe8494587044c4",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -17238,7 +17238,7 @@
 "土",
 "火"
 ],
-"h_steps": "bb2cd3ca65dfc06c",
+"h_steps": "1a61e2d6a1061684",
 "h_layers": "e51204f02d7ba971",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -17269,7 +17269,7 @@
 "水",
 "金"
 ],
-"h_steps": "ec67d4e9be754348",
+"h_steps": "4a8b079b377cfcdf",
 "h_layers": "95a0be2b68ed3372",
 "h_tiaohou": "883cfc04fe0292fb"
 },
@@ -17277,14 +17277,14 @@
 "level": "中和",
 "static": {
 "木": 0.7,
-"火": 2.25,
+"火": 1.0,
 "土": 14.0,
 "金": 10.5,
 "水": 6.4
 },
 "final": {
 "木": 0.0,
-"火": 2.25,
+"火": 1.0,
 "土": 10.85,
 "金": 14.07,
 "水": 6.4
@@ -17300,7 +17300,7 @@
 "木",
 "火"
 ],
-"h_steps": "5112355649f2e172",
+"h_steps": "250f2a48e22f44af",
 "h_layers": "42f8c4c2f5bd701d",
 "h_tiaohou": "883cfc04fe0292fb"
 },
@@ -17331,7 +17331,7 @@
 "水",
 "金"
 ],
-"h_steps": "deb7ba4f2254765e",
+"h_steps": "874de2cc412b4abd",
 "h_layers": "47c02edaf955539a",
 "h_tiaohou": "883cfc04fe0292fb"
 },
@@ -17362,7 +17362,7 @@
 "土",
 "火"
 ],
-"h_steps": "3860ab0252f973a5",
+"h_steps": "9a7eec2555734893",
 "h_layers": "82381533bda5a0ec",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -17393,7 +17393,7 @@
 "水",
 "金"
 ],
-"h_steps": "bcf2cdd90ef6238a",
+"h_steps": "bcebc43543f911f0",
 "h_layers": "82381533bda5a0ec",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -17424,7 +17424,7 @@
 "水",
 "金"
 ],
-"h_steps": "958aa561128a3a55",
+"h_steps": "03aa581b2f6778f5",
 "h_layers": "5f832a047233a431",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -17455,7 +17455,7 @@
 "水",
 "金"
 ],
-"h_steps": "224e383dda614e9a",
+"h_steps": "150f29a080dea324",
 "h_layers": "5f832a047233a431",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -17486,7 +17486,7 @@
 "土",
 "火"
 ],
-"h_steps": "9ca9037ee8664fe8",
+"h_steps": "b2378a3fca8b62f5",
 "h_layers": "7c72aef797136995",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -17517,7 +17517,7 @@
 "土",
 "火"
 ],
-"h_steps": "394eaa9f81f0a4d5",
+"h_steps": "0ab80ac02ac26c8e",
 "h_layers": "79955b8ef6445c77",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -17548,7 +17548,7 @@
 "水",
 "金"
 ],
-"h_steps": "289459b30604780d",
+"h_steps": "6d21fdab85c30ca0",
 "h_layers": "84cc768df1a424c6",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -17579,7 +17579,7 @@
 "水",
 "金"
 ],
-"h_steps": "b7bcd4b6c04182bf",
+"h_steps": "f1ba91add14ac6f9",
 "h_layers": "51a9c39b72ac7317",
 "h_tiaohou": "50967b12f4aa3d76"
 },
@@ -17610,7 +17610,7 @@
 "水",
 "金"
 ],
-"h_steps": "afe66788def64f54",
+"h_steps": "7b8a54db9e0d3662",
 "h_layers": "51a9c39b72ac7317",
 "h_tiaohou": "555b4263f84a62ae"
 },
@@ -17641,7 +17641,7 @@
 "木",
 "火"
 ],
-"h_steps": "fa013585a4afdf95",
+"h_steps": "e9e205d763fa57d2",
 "h_layers": "1900f74a53b00cbf",
 "h_tiaohou": "6deec650a907b882"
 },
@@ -17672,7 +17672,7 @@
 "水",
 "金"
 ],
-"h_steps": "e1d515dee91fcf23",
+"h_steps": "fe75b2ce2642410b",
 "h_layers": "d65f0830c7bc2b6e",
 "h_tiaohou": "b7253ad01b5c5187"
 },
@@ -17703,7 +17703,7 @@
 "水",
 "金"
 ],
-"h_steps": "ba5c4c1c8e4e96c3",
+"h_steps": "99046f3ebc52986e",
 "h_layers": "d65f0830c7bc2b6e",
 "h_tiaohou": "284a909e1f33356b"
 },
@@ -17734,7 +17734,7 @@
 "水",
 "金"
 ],
-"h_steps": "b1827db21eb5b53a",
+"h_steps": "58810ec0b635a48f",
 "h_layers": "228da741ae6fede3",
 "h_tiaohou": "1e12f5b059e6054d"
 },
@@ -17765,7 +17765,7 @@
 "木",
 "火"
 ],
-"h_steps": "ad327a20feca15d5",
+"h_steps": "503484798fee8ce7",
 "h_layers": "228da741ae6fede3",
 "h_tiaohou": "e36bada40d937758"
 },
@@ -17796,7 +17796,7 @@
 "水",
 "金"
 ],
-"h_steps": "3422ea2007f6159b",
+"h_steps": "9c732d46a02d693c",
 "h_layers": "01003019b3b668ff",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -17827,7 +17827,7 @@
 "水",
 "金"
 ],
-"h_steps": "579219bb0cc1df53",
+"h_steps": "ca71f28226e7caa0",
 "h_layers": "01003019b3b668ff",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -17858,7 +17858,7 @@
 "土",
 "火"
 ],
-"h_steps": "1025798ce03425e2",
+"h_steps": "1869ec5e304e32fe",
 "h_layers": "f2a97e0d8fe47377",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -17889,7 +17889,7 @@
 "土",
 "火"
 ],
-"h_steps": "884e198598c80c84",
+"h_steps": "5b59117683a13073",
 "h_layers": "f2a97e0d8fe47377",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -17920,7 +17920,7 @@
 "土",
 "火"
 ],
-"h_steps": "5db81ddebb1fd68b",
+"h_steps": "8cd30e14ba159a88",
 "h_layers": "88aaa779086c7d45",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -17951,7 +17951,7 @@
 "木",
 "火"
 ],
-"h_steps": "078c26be224e0e79",
+"h_steps": "b5d671036da1b4d1",
 "h_layers": "3a7af1574ff8c717",
 "h_tiaohou": "776d6067085f99ea"
 },
@@ -17982,7 +17982,7 @@
 "水",
 "金"
 ],
-"h_steps": "d31049713cd11b71",
+"h_steps": "5adc1d9596dfab5e",
 "h_layers": "8cf7e0b35730b138",
 "h_tiaohou": "c743cc992669f87a"
 },
@@ -18013,7 +18013,7 @@
 "土",
 "火"
 ],
-"h_steps": "b3278d8fa93ca262",
+"h_steps": "31528889628ef0b9",
 "h_layers": "3ab06d24b67a6c62",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -18044,7 +18044,7 @@
 "水",
 "金"
 ],
-"h_steps": "ea0a9755c88f0c68",
+"h_steps": "63b25d2a1dbdf206",
 "h_layers": "3ab06d24b67a6c62",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -18055,14 +18055,14 @@
 "火": 0.5,
 "土": 0.7,
 "金": 3.2,
-"水": 18.0
+"水": 16.0
 },
 "final": {
 "木": 4.62,
 "火": 0.0,
 "土": 0.7,
 "金": 0.0,
-"水": 17.9
+"水": 15.9
 },
 "ge_ju": "cong_cai",
 "yong_shen": "水",
@@ -18075,7 +18075,7 @@
 "土",
 "火"
 ],
-"h_steps": "83dd2ea54b9c8d3f",
+"h_steps": "de3492a6975e3d4b",
 "h_layers": "e51204f02d7ba971",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -18106,7 +18106,7 @@
 "土",
 "火"
 ],
-"h_steps": "ba3a0b239b871c00",
+"h_steps": "482815a6634beaad",
 "h_layers": "55d92402047ee74f",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -18137,7 +18137,7 @@
 "水",
 "金"
 ],
-"h_steps": "2e1a0e58a28b3edc",
+"h_steps": "f967b321bb5aac45",
 "h_layers": "55d92402047ee74f",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -18168,7 +18168,7 @@
 "水",
 "金"
 ],
-"h_steps": "40a3d2e7aa43ee78",
+"h_steps": "56b2e8a89146a94c",
 "h_layers": "800c9c98e3368754",
 "h_tiaohou": "883cfc04fe0292fb"
 },
@@ -18199,7 +18199,7 @@
 "水",
 "金"
 ],
-"h_steps": "74b9b751351a4784",
+"h_steps": "ae1c365b86eb6827",
 "h_layers": "95a0be2b68ed3372",
 "h_tiaohou": "883cfc04fe0292fb"
 },
@@ -18230,7 +18230,7 @@
 "水",
 "金"
 ],
-"h_steps": "b20d0de40e100ad0",
+"h_steps": "ee9d596d68644704",
 "h_layers": "f2c3119e19cab624",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -18261,7 +18261,7 @@
 "土",
 "火"
 ],
-"h_steps": "6d46e8b029e67748",
+"h_steps": "1c3a636e86ad1990",
 "h_layers": "82381533bda5a0ec",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -18292,7 +18292,7 @@
 "水",
 "金"
 ],
-"h_steps": "1e0d7352aa4da69f",
+"h_steps": "b48ac7c626a36601",
 "h_layers": "f2c3119e19cab624",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -18323,7 +18323,7 @@
 "土",
 "火"
 ],
-"h_steps": "c53889af9b790e2c",
+"h_steps": "490b1e048c76772f",
 "h_layers": "7c72aef797136995",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -18354,7 +18354,7 @@
 "水",
 "金"
 ],
-"h_steps": "c3349ffced99fd15",
+"h_steps": "9257ba1abd1bf539",
 "h_layers": "7c72aef797136995",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -18385,7 +18385,7 @@
 "水",
 "金"
 ],
-"h_steps": "968b030390ba8e3f",
+"h_steps": "c27ac4f053165f2b",
 "h_layers": "84cc768df1a424c6",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -18416,7 +18416,7 @@
 "水",
 "金"
 ],
-"h_steps": "40891f651ce9edde",
+"h_steps": "25f588d27979f98b",
 "h_layers": "733e03027bd4229e",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -18447,7 +18447,7 @@
 "水",
 "金"
 ],
-"h_steps": "4c52f0ac3da7fc86",
+"h_steps": "5ad77045a861ae2f",
 "h_layers": "51a9c39b72ac7317",
 "h_tiaohou": "80511bfd812288d7"
 },
@@ -18478,7 +18478,7 @@
 "木",
 "火"
 ],
-"h_steps": "d7c10f5db638b41a",
+"h_steps": "eb4726381a40e453",
 "h_layers": "220586ac888aa285",
 "h_tiaohou": "8e4addc140593a34"
 },
@@ -18509,7 +18509,7 @@
 "水",
 "金"
 ],
-"h_steps": "21e0248825e542fd",
+"h_steps": "d59abe16dd8a2167",
 "h_layers": "14705663c2d40bbc",
 "h_tiaohou": "50967b12f4aa3d76"
 },
@@ -18540,7 +18540,7 @@
 "木",
 "火"
 ],
-"h_steps": "676a3171acfc85e9",
+"h_steps": "4da4bbf2c7f04fc4",
 "h_layers": "1900f74a53b00cbf",
 "h_tiaohou": "e347f6b609c13a22"
 },
@@ -18548,16 +18548,16 @@
 "level": "中和",
 "static": {
 "木": 0.8,
-"火": 12.0,
+"火": 14.0,
 "土": 6.75,
-"金": 1.75,
+"金": 3.0,
 "水": 0.0
 },
 "final": {
-"木": 0.8,
-"火": 9.97,
-"土": 9.2,
-"金": 3.77,
+"木": 0.0,
+"火": 11.97,
+"土": 8.89,
+"金": 4.87,
 "水": 0.0
 },
 "ge_ju": "zheng",
@@ -18571,8 +18571,8 @@
 "水",
 "金"
 ],
-"h_steps": "8cea8c27a2154953",
-"h_layers": "70a0742a1305709c",
+"h_steps": "2e1dc60883f98df0",
+"h_layers": "cc5f1baf01d95769",
 "h_tiaohou": "b7253ad01b5c5187"
 },
 "甲酉 丙未 戊寅 庚申": {
@@ -18602,7 +18602,7 @@
 "木",
 "火"
 ],
-"h_steps": "4819ff1da6527411",
+"h_steps": "b96a8fb51608aa65",
 "h_layers": "a69c930c5dbe39f3",
 "h_tiaohou": "e36bada40d937758"
 },
@@ -18633,7 +18633,7 @@
 "木",
 "火"
 ],
-"h_steps": "9ad215923f45d964",
+"h_steps": "488072f0b982b486",
 "h_layers": "a69c930c5dbe39f3",
 "h_tiaohou": "e36bada40d937758"
 },
@@ -18664,7 +18664,7 @@
 "土",
 "火"
 ],
-"h_steps": "e32b40a545bddf0a",
+"h_steps": "bd53081616205c08",
 "h_layers": "01003019b3b668ff",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -18695,7 +18695,7 @@
 "土",
 "火"
 ],
-"h_steps": "83cc520317d71b8f",
+"h_steps": "598574367166786a",
 "h_layers": "01003019b3b668ff",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -18726,7 +18726,7 @@
 "土",
 "火"
 ],
-"h_steps": "08784cc0e650c30b",
+"h_steps": "ab5ddee0e39a5501",
 "h_layers": "01003019b3b668ff",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -18735,30 +18735,30 @@
 "static": {
 "木": 0.5,
 "火": 0.7,
-"土": 4.6,
-"金": 30.0,
-"水": 7.5
+"土": 2.8,
+"金": 41.0,
+"水": 3.0
 },
 "final": {
-"木": 0.0,
+"木": 0.5,
 "火": 0.7,
 "土": 0.0,
-"金": 31.28,
-"水": 7.5
+"金": 41.84,
+"水": 3.0
 },
-"ge_ju": "zheng",
-"yong_shen": "土",
+"ge_ju": "cong_ruo",
+"yong_shen": "金",
 "favorable": [
-"土",
-"火"
-],
-"avoid": [
 "木",
 "水",
 "金"
 ],
-"h_steps": "2b84ead1622980ad",
-"h_layers": "f2a97e0d8fe47377",
+"avoid": [
+"土",
+"火"
+],
+"h_steps": "4e8fd8dd4b2ba567",
+"h_layers": "e2f723450b7c0f5d",
 "h_tiaohou": "0ee19c1673e067e2"
 },
 "甲酉 丙酉 戊酉 庚寅": {
@@ -18788,7 +18788,7 @@
 "土",
 "火"
 ],
-"h_steps": "0a157df0cf15ed78",
+"h_steps": "db42429f159314c1",
 "h_layers": "88aaa779086c7d45",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -18819,7 +18819,7 @@
 "木",
 "火"
 ],
-"h_steps": "fa2c7226a4f2fc87",
+"h_steps": "a082d4447b4829a0",
 "h_layers": "dc236c0f83f6c72f",
 "h_tiaohou": "ee426e50e9f11286"
 },
@@ -18850,7 +18850,7 @@
 "木",
 "火"
 ],
-"h_steps": "47335b13a4b6ba0d",
+"h_steps": "95c4bae6b49b4d10",
 "h_layers": "6364f6adeddf3b90",
 "h_tiaohou": "5c73c5984189ce1f"
 },
@@ -18881,7 +18881,7 @@
 "土",
 "火"
 ],
-"h_steps": "eda7117bf11ec48b",
+"h_steps": "3c066e2aa5eb0ccc",
 "h_layers": "3ab06d24b67a6c62",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -18912,7 +18912,7 @@
 "水",
 "金"
 ],
-"h_steps": "81bac58615610b52",
+"h_steps": "4aa7dd57491d8b12",
 "h_layers": "3ab06d24b67a6c62",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -18943,7 +18943,7 @@
 "水",
 "金"
 ],
-"h_steps": "124576f824e1deb3",
+"h_steps": "c24100c7e3684c0f",
 "h_layers": "3ab06d24b67a6c62",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -18974,7 +18974,7 @@
 "土",
 "火"
 ],
-"h_steps": "68018ba687c51672",
+"h_steps": "2cc254658eee9c0d",
 "h_layers": "e51204f02d7ba971",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -19005,39 +19005,39 @@
 "土",
 "火"
 ],
-"h_steps": "261e478e30bca943",
+"h_steps": "e171809632f942ee",
 "h_layers": "e51204f02d7ba971",
 "h_tiaohou": "d8d548931bddf40c"
 },
 "甲戌 丙丑 戊丑 庚戌": {
-"level": "比旺",
+"level": "旺极",
 "static": {
 "木": 0.7,
-"火": 0.5,
-"土": 26.0,
-"金": 7.5,
-"水": 3.2
+"火": 0.65,
+"土": 42.0,
+"金": 1.5,
+"水": 0.0
 },
 "final": {
 "木": 0.7,
-"火": 0.5,
-"土": 21.5,
-"金": 15.3,
-"水": 3.2
+"火": 0.65,
+"土": 42.0,
+"金": 1.5,
+"水": 0.0
 },
-"ge_ju": "zheng",
-"yong_shen": "水",
+"ge_ju": "cong_qiang",
+"yong_shen": "火",
 "favorable": [
+"土",
+"火"
+],
+"avoid": [
+"木",
 "水",
 "金"
 ],
-"avoid": [
-"土",
-"木",
-"火"
-],
-"h_steps": "c1c7f29ad233655e",
-"h_layers": "d4b57f3c735565eb",
+"h_steps": "24456a72f4d10297",
+"h_layers": "24185bf891edbcfd",
 "h_tiaohou": "883cfc04fe0292fb"
 },
 "甲戌 丙丑 戊午 庚亥": {
@@ -19067,7 +19067,7 @@
 "木",
 "火"
 ],
-"h_steps": "a339c4e4341874a8",
+"h_steps": "adff09c8d274e441",
 "h_layers": "d4b57f3c735565eb",
 "h_tiaohou": "883cfc04fe0292fb"
 },
@@ -19098,7 +19098,7 @@
 "土",
 "火"
 ],
-"h_steps": "d05da58663cbba94",
+"h_steps": "359921fb6b21a590",
 "h_layers": "f2c3119e19cab624",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -19129,7 +19129,7 @@
 "水",
 "金"
 ],
-"h_steps": "ed219da854e4735f",
+"h_steps": "29a334019ed9e937",
 "h_layers": "a1614e983d277465",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -19160,7 +19160,7 @@
 "水",
 "金"
 ],
-"h_steps": "18ff4d0a79805b4b",
+"h_steps": "15a13ec4054551af",
 "h_layers": "a1614e983d277465",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -19191,7 +19191,7 @@
 "土",
 "火"
 ],
-"h_steps": "2c8340f3b7a1b566",
+"h_steps": "cd66ec20a5e2fde2",
 "h_layers": "5f832a047233a431",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -19222,7 +19222,7 @@
 "水",
 "金"
 ],
-"h_steps": "852423e528a7fb5c",
+"h_steps": "bf786fed2b2d25c1",
 "h_layers": "5f832a047233a431",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -19253,7 +19253,7 @@
 "木",
 "火"
 ],
-"h_steps": "5d27076c62a252bb",
+"h_steps": "f3d95df69aadb621",
 "h_layers": "8244098334b32b5b",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -19284,7 +19284,7 @@
 "水",
 "火"
 ],
-"h_steps": "7f1b3413224550eb",
+"h_steps": "d18115142ce2cf61",
 "h_layers": "6dfc9d80eea983d6",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -19315,7 +19315,7 @@
 "木",
 "火"
 ],
-"h_steps": "c48400367fd798b9",
+"h_steps": "c83ed63c75290939",
 "h_layers": "6dfc9d80eea983d6",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -19346,7 +19346,7 @@
 "木",
 "火"
 ],
-"h_steps": "bbd058b3faa4a16f",
+"h_steps": "c57afc02de2c65c3",
 "h_layers": "220586ac888aa285",
 "h_tiaohou": "8e4addc140593a34"
 },
@@ -19377,7 +19377,7 @@
 "水",
 "金"
 ],
-"h_steps": "8dae189af82097d8",
+"h_steps": "908f1868699840ca",
 "h_layers": "e8f0fba8667e9d31",
 "h_tiaohou": "72306fba1120ff76"
 },
@@ -19408,7 +19408,7 @@
 "水",
 "金"
 ],
-"h_steps": "ca1eed0de32ba4de",
+"h_steps": "966cac0dbfbe2f0c",
 "h_layers": "70a0742a1305709c",
 "h_tiaohou": "b7253ad01b5c5187"
 },
@@ -19439,38 +19439,38 @@
 "木",
 "火"
 ],
-"h_steps": "17395e11b0bce518",
+"h_steps": "a69314bbd0faa0fe",
 "h_layers": "1900f74a53b00cbf",
 "h_tiaohou": "284a909e1f33356b"
 },
 "甲戌 丙未 戊丑 庚子": {
-"level": "比旺",
+"level": "旺极",
 "static": {
 "木": 0.7,
-"火": 14.4,
-"土": 16.0,
-"金": 1.25,
-"水": 3.0
+"火": 0.8,
+"土": 50.0,
+"金": 0.5,
+"水": 2.5
 },
 "final": {
 "木": 0.7,
-"火": 9.6,
-"土": 23.2,
-"金": 1.25,
-"水": 3.0
+"火": 0.8,
+"土": 50.0,
+"金": 0.5,
+"水": 2.5
 },
-"ge_ju": "zheng",
-"yong_shen": "水",
+"ge_ju": "cong_qiang",
+"yong_shen": "火",
 "favorable": [
+"土",
+"火"
+],
+"avoid": [
+"木",
 "水",
 "金"
 ],
-"avoid": [
-"土",
-"木",
-"火"
-],
-"h_steps": "2515909847c1a75d",
+"h_steps": "9d3e7bfb0b939fcb",
 "h_layers": "228da741ae6fede3",
 "h_tiaohou": "304adbd8c649e36f"
 },
@@ -19478,7 +19478,7 @@
 "level": "旺极",
 "static": {
 "木": 0.7,
-"火": 7.2,
+"火": 8.0,
 "土": 34.0,
 "金": 1.5,
 "水": 0.5
@@ -19486,7 +19486,7 @@
 "final": {
 "木": 0.7,
 "火": 0.0,
-"土": 36.16,
+"土": 36.4,
 "金": 1.5,
 "水": 0.5
 },
@@ -19501,7 +19501,7 @@
 "水",
 "金"
 ],
-"h_steps": "f936d585f8fc4ac8",
+"h_steps": "ef3fdb0f4e03b1a4",
 "h_layers": "228da741ae6fede3",
 "h_tiaohou": "a0d55edb8b917ca3"
 },
@@ -19532,7 +19532,7 @@
 "木",
 "火"
 ],
-"h_steps": "f7f6aeb8242b5de9",
+"h_steps": "23d4845c9bc3dc91",
 "h_layers": "1f51e7c6813b4622",
 "h_tiaohou": "5fdc50bdce20f8f2"
 },
@@ -19563,7 +19563,7 @@
 "水",
 "金"
 ],
-"h_steps": "16ce7fb36676d0f9",
+"h_steps": "9cb6282b31617081",
 "h_layers": "07755429873d0ee2",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -19594,7 +19594,7 @@
 "土",
 "火"
 ],
-"h_steps": "884b7fce7faf4cfa",
+"h_steps": "658b4b102aa866b4",
 "h_layers": "3617458aacbb9e1d",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -19625,7 +19625,7 @@
 "土",
 "火"
 ],
-"h_steps": "8fe55c68e5495243",
+"h_steps": "b8013f928f3d937f",
 "h_layers": "6c3d1e9dff38aeff",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -19656,7 +19656,7 @@
 "水",
 "金"
 ],
-"h_steps": "6e4c3cabf1a46d9d",
+"h_steps": "560b41790eeb3ac9",
 "h_layers": "6c3d1e9dff38aeff",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -19664,30 +19664,30 @@
 "level": "比旺",
 "static": {
 "木": 0.7,
-"火": 15.0,
-"土": 19.0,
+"火": 11.25,
+"土": 17.0,
 "金": 0.5,
-"水": 2.5
+"水": 1.0
 },
 "final": {
 "木": 0.7,
-"火": 9.3,
-"土": 27.5,
+"火": 6.15,
+"土": 23.55,
 "金": 0.5,
 "水": 0.0
 },
 "ge_ju": "zheng",
-"yong_shen": "金",
+"yong_shen": "水",
 "favorable": [
-"土",
+"水",
 "金"
 ],
 "avoid": [
+"土",
 "木",
-"水",
 "火"
 ],
-"h_steps": "f34012547282a52f",
+"h_steps": "e35349a4b4de3188",
 "h_layers": "dc236c0f83f6c72f",
 "h_tiaohou": "c743cc992669f87a"
 },
@@ -19718,7 +19718,7 @@
 "水",
 "火"
 ],
-"h_steps": "dff0d69568669ed3",
+"h_steps": "fd2ef893fa6ccd3d",
 "h_layers": "dc236c0f83f6c72f",
 "h_tiaohou": "ee426e50e9f11286"
 },
@@ -19749,7 +19749,7 @@
 "水",
 "火"
 ],
-"h_steps": "893c624b06c62f2d",
+"h_steps": "7ad170b422afc1a6",
 "h_layers": "dc236c0f83f6c72f",
 "h_tiaohou": "ee426e50e9f11286"
 },
@@ -19780,7 +19780,7 @@
 "水",
 "金"
 ],
-"h_steps": "10cbc2da0453ad12",
+"h_steps": "a040773799782303",
 "h_layers": "3ab06d24b67a6c62",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -19811,7 +19811,7 @@
 "水",
 "金"
 ],
-"h_steps": "52cc40a05397ba53",
+"h_steps": "c4ce47cd955da76e",
 "h_layers": "3ab06d24b67a6c62",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -19842,7 +19842,7 @@
 "土",
 "火"
 ],
-"h_steps": "519a2a18da5a7376",
+"h_steps": "dcc10095692a9188",
 "h_layers": "e51204f02d7ba971",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -19873,7 +19873,7 @@
 "土",
 "火"
 ],
-"h_steps": "0651564cff3df1bb",
+"h_steps": "b441509ef30b90c1",
 "h_layers": "e51204f02d7ba971",
 "h_tiaohou": "d8d548931bddf40c"
 },
@@ -19883,15 +19883,15 @@
 "木": 1.4,
 "火": 1.0,
 "土": 4.7,
-"金": 2.55,
-"水": 7.52
+"金": 1.5,
+"水": 9.12
 },
 "final": {
 "木": 0.0,
 "火": 1.0,
-"土": 3.33,
-"金": 3.33,
-"水": 5.95
+"土": 3.32,
+"金": 2.28,
+"水": 7.42
 },
 "ge_ju": "zheng",
 "yong_shen": "火",
@@ -19904,7 +19904,7 @@
 "水",
 "金"
 ],
-"h_steps": "8f5e0463e626a1c0",
+"h_steps": "0950be0d5b9d6561",
 "h_layers": "95a0be2b68ed3372",
 "h_tiaohou": "883cfc04fe0292fb"
 },
@@ -19935,7 +19935,7 @@
 "木",
 "火"
 ],
-"h_steps": "0a128616f04f0cde",
+"h_steps": "13de6dd965ea7e79",
 "h_layers": "fcb1cd9ed2034b5f",
 "h_tiaohou": "883cfc04fe0292fb"
 },
@@ -19966,7 +19966,7 @@
 "木",
 "火"
 ],
-"h_steps": "dd14aa736d0fe2c1",
+"h_steps": "10bb9a953b94be41",
 "h_layers": "d4b57f3c735565eb",
 "h_tiaohou": "883cfc04fe0292fb"
 },
@@ -19997,7 +19997,7 @@
 "土",
 "火"
 ],
-"h_steps": "f200d856a830bb42",
+"h_steps": "bfe6d6adc874076a",
 "h_layers": "82381533bda5a0ec",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -20028,7 +20028,7 @@
 "土",
 "火"
 ],
-"h_steps": "26b979bffc9c7af2",
+"h_steps": "7d90367093647b05",
 "h_layers": "82381533bda5a0ec",
 "h_tiaohou": "21991797df12fc59"
 },
@@ -20059,7 +20059,7 @@
 "土",
 "火"
 ],
-"h_steps": "785b4ee3f982e438",
+"h_steps": "7bbf17bc9b6534f5",
 "h_layers": "5f832a047233a431",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -20090,7 +20090,7 @@
 "水",
 "金"
 ],
-"h_steps": "7890a8d31b51b699",
+"h_steps": "113f0d7accad6e67",
 "h_layers": "5f832a047233a431",
 "h_tiaohou": "02e17ad91f0ee112"
 },
@@ -20121,25 +20121,25 @@
 "土",
 "火"
 ],
-"h_steps": "0c67952c8e10bbdc",
+"h_steps": "5c4f95ade27167d2",
 "h_layers": "5f832a047233a431",
 "h_tiaohou": "02e17ad91f0ee112"
 },
 "甲亥 丙辰 戊辰 庚戌": {
-"level": "旺极",
+"level": "太旺",
 "static": {
-"木": 3.45,
+"木": 8.0,
 "火": 0.8,
-"土": 36.0,
+"土": 32.0,
 "金": 1.5,
-"水": 2.0
+"水": 2.5
 },
 "final": {
-"木": 3.45,
+"木": 8.0,
 "火": 0.8,
-"土": 36.0,
+"土": 32.0,
 "金": 1.5,
-"水": 2.0
+"水": 2.5
 },
 "ge_ju": "cong_qiang",
 "yong_shen": "火",
@@ -20152,7 +20152,7 @@
 "水",
 "金"
 ],
-"h_steps": "c5f72305b53c85df",
+"h_steps": "be73f7ada46fefaa",
 "h_layers": "8244098334b32b5b",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -20183,7 +20183,7 @@
 "水",
 "金"
 ],
-"h_steps": "6dd5548a10bf0960",
+"h_steps": "92d88d7b626c5077",
 "h_layers": "ee7aa9430f17a80e",
 "h_tiaohou": "828ebbc0167092c7"
 },
@@ -20214,7 +20214,7 @@
 "水",
 "金"
 ],
-"h_steps": "8b24504990609143",
+"h_steps": "c852b563bda117a1",
 "h_layers": "ba0e8d4c8d9fce6d",
 "h_tiaohou": "86695d316e04b04f"
 },
@@ -20245,7 +20245,7 @@
 "水",
 "金"
 ],
-"h_steps": "3d864e497d027ddd",
+"h_steps": "e014af1bd8cfc876",
 "h_layers": "65df6b8e441f568f",
 "h_tiaohou": "e821d181948b3b45"
 },
@@ -20276,7 +20276,7 @@
 "木",
 "火"
 ],
-"h_steps": "4ee70923f3aacc0e",
+"h_steps": "c14f347d9857e814",
 "h_layers": "1900f74a53b00cbf",
 "h_tiaohou": "ba9ffbc3dd0fad9d"
 },
@@ -20307,7 +20307,7 @@
 "土",
 "火"
 ],
-"h_steps": "91dfe94d0b616be2",
+"h_steps": "56ad6a4b37511f18",
 "h_layers": "5c56031a96bce741",
 "h_tiaohou": "284a909e1f33356b"
 },
@@ -20338,7 +20338,7 @@
 "木",
 "火"
 ],
-"h_steps": "bb9d7758ed44c1e9",
+"h_steps": "5bdaf5081d90229d",
 "h_layers": "1900f74a53b00cbf",
 "h_tiaohou": "dd49c155d01ad8aa"
 },
@@ -20369,7 +20369,7 @@
 "木",
 "火"
 ],
-"h_steps": "8666ba201796372b",
+"h_steps": "6943a40e8885f7b6",
 "h_layers": "228da741ae6fede3",
 "h_tiaohou": "adaea22433ed149b"
 },
@@ -20400,7 +20400,7 @@
 "木",
 "火"
 ],
-"h_steps": "003b715ea4b11aed",
+"h_steps": "041da1d468a4fc1e",
 "h_layers": "228da741ae6fede3",
 "h_tiaohou": "5fdc50bdce20f8f2"
 },
@@ -20431,25 +20431,25 @@
 "水",
 "金"
 ],
-"h_steps": "608ddf125d7eed65",
+"h_steps": "d4ce8ad88d081228",
 "h_layers": "07755429873d0ee2",
 "h_tiaohou": "2a641e3664050c5b"
 },
 "甲亥 丙申 戊未 庚申": {
-"level": "弱极",
+"level": "太弱",
 "static": {
 "木": 0.5,
-"火": 1.75,
-"土": 3.2,
-"金": 10.0,
-"水": 10.5
+"火": 1.05,
+"土": 4.0,
+"金": 9.5,
+"水": 12.0
 },
 "final": {
 "木": 0.5,
-"火": 1.75,
-"土": 0.2,
-"金": 10.96,
-"水": 10.5
+"火": 1.05,
+"土": 1.15,
+"金": 10.7,
+"水": 12.0
 },
 "ge_ju": "zheng",
 "yong_shen": "土",
@@ -20462,7 +20462,7 @@
 "水",
 "金"
 ],
-"h_steps": "9f92bfdd2c2d98a6",
+"h_steps": "7ca018d01d26c0cd",
 "h_layers": "07755429873d0ee2",
 "h_tiaohou": "2a641e3664050c5b"
 },
@@ -20493,7 +20493,7 @@
 "土",
 "火"
 ],
-"h_steps": "20fbedbb2ca41dc4",
+"h_steps": "8ae8009e0120b5ad",
 "h_layers": "e2f723450b7c0f5d",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -20524,7 +20524,7 @@
 "水",
 "金"
 ],
-"h_steps": "48342001a9801eed",
+"h_steps": "cb2bb11199c40c5e",
 "h_layers": "e2f723450b7c0f5d",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -20555,7 +20555,7 @@
 "土",
 "火"
 ],
-"h_steps": "24dfaebfddcfe9c1",
+"h_steps": "197a8cec37f45176",
 "h_layers": "e2f723450b7c0f5d",
 "h_tiaohou": "0ee19c1673e067e2"
 },
@@ -20586,7 +20586,7 @@
 "木",
 "火"
 ],
-"h_steps": "9c7a2dc52467a998",
+"h_steps": "4e7b49193940e4ca",
 "h_layers": "3a7af1574ff8c717",
 "h_tiaohou": "95d8aa595a7c2d02"
 },
@@ -20617,7 +20617,7 @@
 "木",
 "火"
 ],
-"h_steps": "28e8ff770b550f68",
+"h_steps": "e2aea216911928f7",
 "h_layers": "3a7af1574ff8c717",
 "h_tiaohou": "4e08d5999b8751cc"
 },
@@ -20648,7 +20648,7 @@
 "土",
 "火"
 ],
-"h_steps": "2a0b065aa65b4a58",
+"h_steps": "ff42286b0f6e2b2d",
 "h_layers": "31781988ef0a0233",
 "h_tiaohou": "b615e6a363442448"
 },
@@ -20679,7 +20679,7 @@
 "土",
 "火"
 ],
-"h_steps": "8116b73eb0085429",
+"h_steps": "54b46b6c2cba838c",
 "h_layers": "31781988ef0a0233",
 "h_tiaohou": "b615e6a363442448"
 }
