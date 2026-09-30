@@ -316,8 +316,11 @@ def element_degree(cols: list[Col], wx: str, month_zhi: str | None = None) -> fl
                 if GAN_WUXING[g] != wx:
                     continue
                 total += deg
-        pen = _no_stem_penalty(cols, wx)
-        return max(0.0, round(total - pen, 3))
+        # **不透天干：直接取地支藏干合计，不再作「不连续减 1」的整体递减**
+        # （2026-09-30 用户裁定；原 `_no_stem_penalty` 已删）。这是一次**注明与书相反**的
+        # 口径裁定——书 上 631「天干无火……相隔……要减去 1 度，即 2+2-1=3 度」、
+        # 下 0361「（2+3+1）*0.5=3」两处明文算式都支持那条惩罚。依据见 `research.md` R20。
+        return max(0.0, round(total, 3))
 
     seen: set[int] = set()
     total = 0.0
@@ -331,24 +334,11 @@ def element_degree(cols: list[Col], wx: str, month_zhi: str | None = None) -> fl
     return round(total, 3)
 
 
-def _no_stem_penalty(cols: list[Col], wx: str) -> float:
-    """不透干时的整体递减：根支柱位连续则不减，不连续则减 1。
-
-    书《上》第一节 五行旺衰「原局的根=（通根度数-与天干的距离）×月令系数」在无天干时
-    退化为按根的连续性处理（沿用既有引擎 C11 同口径）。
-    """
-    rcols: list[int] = []
-    for j, c in enumerate(cols):
-        if not c.zhi:
-            continue
-        if any(GAN_WUXING[g] == wx for g, _ in hidden_of(cols, c)):
-            rcols.append(j)
-    if not rcols:
-        return 0.0
-    if any(cols[j].key == "month" for j in rcols):
-        return 0.0
-    contiguous = max(rcols) - min(rcols) == len(rcols) - 1
-    return 0.0 if contiguous else 1.0
+# `_no_stem_penalty` **已于 2026-09-30 按用户裁定删除**（原实现：某五行不透干时，根支柱位
+# 不连续则整体减 1 度；其 docstring 曾注「沿用既有引擎 C11 同口径」）。它**有书证**——
+# 书 上 631、下 0361 两处明文算式——故**这是一次注明与书相反的口径裁定**。
+# pipeline 里同源的 `_no_stem_penalty_hidden` 同批删除（两条路径须同值）。
+# 撤销依据与影响面见 `research.md` R20。
 
 
 # ---------------------------------------------------------------

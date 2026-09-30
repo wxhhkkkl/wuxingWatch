@@ -62,19 +62,34 @@ def _pick_by_preference(stem: str, *, strong: bool, month_zhi: str,
 
 def select_yongshen(*, day_master: str, dm_wx: str, final: dict[str, float],
                     static: dict[str, float], cols: list,
-                    ge_ju: dict, month_zhi: str) -> dict:
+                    ge_ju: dict, month_zhi: str,
+                    dm_final: float | None = None) -> dict:
     """三因素取用。返回 data-model §5 的 `yong_shen` 对象骨架。
 
     已落地**因素 1（格局方向）+ 因素 2（日干之性）**；因素 3（寒暖湿燥，`tiaohou`）
     与 `practical` / `tier` / `empty` 由 T046/T047 补齐（当前给出占位默认值）。
+
+    ⚠️ **`dm_final` 与 `final[dm_wx]` 不是同一个量。**
+    `dm_final` 是**日主那一组**的动态旺度（书 上 651「这个 6.4 度就是日干戊土的静态
+    旺度」），`final[dm_wx]` 是该五行的**合计**（含地支本气等其它实例）。
+    012 `data-model.md` §3a：「`day_master_group` —— 含日柱的那一组，**`level`、从格
+    的三条判据一律取它**」，`geju.judge_geju` 早已按此传 `dm_group`；取用这一路原先
+    漏了，读的是合计，于是同一页会出现「档位偏旺、用神却说日主偏弱」（下 4031：
+    本组 11.78 → 偏旺，合计 7.96 → 偏弱，差一个侧）。
+
+    不传 `dm_final` 时退回 `final[dm_wx]`（兼容旧调用，但那样两者仍不一致）。
+    `final` 本身继续按**五行合计**用于**跨五行**的比较——中和时取相对最弱者、第三
+    用神排序、通关——那些地方比的本来就是五行之间，不能换成某一行的一组。
     """
+    if dm_final is None:
+        dm_final = final.get(dm_wx, 0.0)
     gtype = ge_ju.get("type") or "zheng"
     theo = _theoretical(day_master=day_master, dm_wx=dm_wx, final=final,
-                        ge_ju=ge_ju, month_zhi=month_zhi)
+                        dm_final=dm_final, ge_ju=ge_ju, month_zhi=month_zhi)
     if is_empty_candidates([theo.get("element")]):
         return empty_result()
     tier = _assign_tier(theo, day_master=day_master, dm_wx=dm_wx, gtype=gtype,
-                        final=final, month_zhi=month_zhi)
+                        final=final, dm_final=dm_final, month_zhi=month_zhi)
     out = {
         "empty": False,
         "theoretical": theo,
@@ -131,12 +146,21 @@ def _favorable_cands(dm_wx: str, strong: bool) -> list[str]:
 
 
 def _assign_tier(theo: dict, *, day_master: str, dm_wx: str, gtype: str = "zheng",
-                 final: dict, month_zhi: str) -> dict:
-    """第一/第二/第三用神——按日干之性的偏好次序在**同向候选**内排（FR-039）。"""
+                 final: dict, dm_final: float | None = None,
+                 month_zhi: str) -> dict:
+    """第一/第二/第三用神——按日干之性的偏好次序在**同向候选**内排（FR-039）。
+
+    `dm_final` = 日主那一组的旺度（判强弱用）；`final` = 五行合计（第三用神在**同类
+    从神之间取最旺者**时用，那是跨五行的比较）。两者不可互换。
+    不传 `dm_final` 即退回 `final[dm_wx]`——只为兼容直接调本函数的单测；生产路径
+    （`select_yongshen`）一律显式传日主组。
+    """
     first = theo.get("element")
     if not first:
         return {"first": None, "second": None, "third": None}
-    strong = final.get(dm_wx, 0.0) >= NEUTRAL
+    if dm_final is None:
+        dm_final = final.get(dm_wx, 0.0)
+    strong = dm_final >= NEUTRAL
     if theo.get("direction") == "从化神":
         # 化格：用神即化神，第二用神＝生助化神者（书 下 4112「取生助化神的五行为用神」）
         return {"first": first, "second": _yin_of(first) or None, "third": None}
@@ -323,9 +347,12 @@ def _derive_xi_ji(out: dict, dm_wx: str,
 
 
 def _theoretical(*, day_master: str, dm_wx: str, final: dict[str, float],
-                 ge_ju: dict, month_zhi: str) -> dict:
-    """因素 1（格局方向）+ 因素 2（日干之性）→ 理论用神。"""
-    dm_final = final.get(dm_wx, 0.0)
+                 dm_final: float, ge_ju: dict, month_zhi: str) -> dict:
+    """因素 1（格局方向）+ 因素 2（日干之性）→ 理论用神。
+
+    `dm_final` 由调用方给（日主那一组），不在此从 `final` 自取——`final` 是五行合计，
+    见 `select_yongshen` 的说明。函数内对 `final` 的唯一用法是**跨五行**取相对最弱者。
+    """
     strong = dm_final >= NEUTRAL
     yin = _yin_of(dm_wx)
     ke_wo = _ke_wo_of(dm_wx)

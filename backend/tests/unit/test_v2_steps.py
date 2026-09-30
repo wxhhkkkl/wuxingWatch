@@ -247,9 +247,10 @@ def test_tonggen_connected_run_matches_degrees():
     按**最近的那一支**递减 0.5 → 7.5 度；加年支寅的 2.5 度，实际通根 = 10 度，
     静态旺度 =（1＋10）×0.7 = **7.7**。
 
-    > 2026-09-16 起该盘另有乙庚合绊（乙减 4 成、庚减 2 成），且**减力按「整组的
-    > 静态旺度」计**——故书的 7.7 落在**第 5 段（原字）**，第 7 段（合绊后）为
-    > `7.7 × 0.6 = 4.62`；`degrees[木].root` 也随之整组缩放为 `10 × 0.6 = 6`。
+    > 该盘另有乙庚合绊（乙减 4 成、庚减 2 成）。**合绊只减天干那一份**（书 上 1595
+    > 等五处；2026-09-30 订正），故书的 7.7 落在**第 5 段（原字）**，第 6 段（合绊后）
+    > 为 `7.7 − 天干1度 × 系数0.7 × 4成 = 7.7 − 0.28 = 7.42`；`degrees[木].root`
+    > **不动**（通根不受合绊之力）。
     """
     from services.bazi.v2 import degrees
 
@@ -257,31 +258,46 @@ def test_tonggen_connected_run_matches_degrees():
     st = _step(r, "static")
     assert dict((t["target"], t["value"]) for t in st["traces"])["木"] == pytest.approx(7.7),         "第 5 段按原字——正是书 上 621 的 7.7"
     # 本盘**只有合绊、没有合化换字** → 不产生「换字后重算静态」段；
-    # 缩放后的值（7.7 × 0.6 = 4.62）挂在第 6 段的结论行里。
+    # 合绊后的值（7.42）挂在第 6 段的结论行里。
     assert "static_he" not in [x["key"] for x in r["steps"]]
     res6 = _step(r, "stem_he")["result"]
-    assert "木 4.62" in res6, res6
+    assert "木 7.42" in res6, res6
     assert r["degrees"]["木"]["root"] == pytest.approx(10), "契约通根＝第 4 段（原字）"
 
 
-def test_heban_scales_the_whole_group():
-    """合绊的减力按**整组的静态旺度**计（2026-09-16 用户裁定，与 上 1595/1638/1948 相反）。
+def test_heban_cuts_only_the_participating_stem():
+    """合绊只减**参与的那个干自己那 1 度**——通根不动，连片组里的**非参与干**也不动。
 
-    `甲子 己卯 戊午 庚申`：甲减 2 成、己减 4 成。第 5 段（原字）木 14 土 2.5；
-    第 7 段（合绊后）木 `14×0.8=11.2`、土 `2.5×0.6=1.5`——**整组一起缩**，
-    含各自那一组的天干与通根。
+    两条依据（都出自书 上 1595 那句「**1 个** X 减去 0.2 度」）：
+    ① **通根不动**——实证 上 1647：「己土减力 0.4 度变为 0.6 度，日主静态旺度=
+       （0.6+3+3）×1.4=9.24」，己土带 **9 度**通根而分文未动；
+    ② **按「个」算，不按组的连片度数算**——`壬辰 癸丑 戊寅 乙卯 + 己酉运`：
+       壬癸连成一片（天干 2 度），但只有**癸**被戊合绊，故只减癸那 1 度。
+
+    `甲子 己卯 戊午 庚申` 两个点都能验：甲独占一组（减 1 个 = 0.2×系数2 = 0.4）；
+    **月干己、日干戊连成一片**（天干 2 度），但只有己被合绊 → 减 0.4×系数0.5 = **0.2**
+    （若误乘组的 2 度会得 0.4）。
     """
     r = pipeline.compute_strength(_chart("甲子", "己卯", "戊午", "庚申"))
     assert r["stem_he"]["ban_cheng"] == {0: 2.0, 1: 4.0}
-    s5 = dict((t["target"], t["value"]) for t in _step(r, "static")["traces"])
     # 本盘只有合绊、没有合化换字 → **不产生「换字后重算静态」段**，
-    # 缩放后的值挂在第 6 段的结论行里（`_he_result`）。
+    # 合绊后的值挂在第 6 段的结论行与快照里。
     assert "static_he" not in [s["key"] for s in r["steps"]]
     res6 = _step(r, "stem_he")["result"]
     assert "合绊后静态" in res6, res6
-    assert s5["木"] == pytest.approx(14), "第 5 段是原字静态"
-    assert s5["土"] == pytest.approx(2.5), "第 5 段是原字静态"
-    assert "木 11.2" in res6 and "土 1.5" in res6, res6
+    s5 = {p["key"]: p for p in _step(r, "static")["chart"]["pillars"]}
+    s6 = {p["key"]: p for p in _step(r, "stem_he")["chart"]["pillars"]}
+
+    # 甲独占一组：14 − 1 度 × 系数 2 × 2 成 = 13.6
+    assert s5["year"]["gan_degree"] == pytest.approx(14.0)
+    assert s6["year"]["gan_degree"] == pytest.approx(14.0 - 1 * 2 * 0.2)
+    # 己戊连片（2 度）但**只有己参与**：2.5 − 1 度 × 系数 0.5 × 4 成 = 2.3
+    # （误乘组的 2 度会得 2.1）
+    assert s5["month"]["gan_degree"] == pytest.approx(2.5)
+    assert s6["month"]["gan_degree"] == pytest.approx(2.5 - 1 * 0.5 * 0.4),         "连片组只按「参与合绊的那个干」各 1 度算，不按组的 2 度"
+    # 通根两条都不动
+    assert s6["year"]["gan_root"] == pytest.approx(12.0)
+    assert s6["month"]["gan_root"] == pytest.approx(2.0)
 
 
 def test_chart_has_no_stem_root_note():
@@ -401,29 +417,29 @@ def test_no_heban_in_any_snapshot_before_the_wuhe_stage():
 
 
 def test_wuhe_stage_snapshot_shows_the_group_static():
-    """第 6 段（天干五合）的快照主数＝**上一段（第 5 段）的组静态旺度**经整组缩放。
+    """第 6 段（天干五合）的快照主数＝上一段组静态 **减「天干自己那一份」**。
 
     丁卯 乙巳 庚辰 丁亥（乙庚合绊：乙 −4 成、庚 −2 成）：
 
     | 段 | 乙组主数 | 自身 | 根 |
     |---|---|---|---|
     | 第 5 段（原字） | 7.2 | 0.8 | 6.4 |
-    | 第 6 段（合绊后） | **4.32** = 7.2×0.6 | 0.48 | 3.84 |
+    | 第 6 段（合绊后） | **6.88** = 7.2 − 0.8×0.4 | 0.48 | 6.4 |
 
-    合绊作用的对象是**上一段的组静态旺度**（含通根那一份）。旧实现把逐干度数（乙 0.6、
-    庚 0.8）塞进主数——乙 0.6 既不是「1 个干」也不是「组值」（组值 7.2×0.6 = 4.32），
-    与该段结论行的「合绊后静态：木 4.32」自相矛盾。
+    **减的是「自身」那一份，不是整组**（书 上 1595 等五处「1 个 X 减去 0.2 度」；
+    2026-09-30 订正，实证 上 1647）。故组的**根不动**（6.4），只有主数与自身各减 0.32。
+    改前按整组缩（7.2×0.6 = 4.32、根也缩到 3.84），与书相反。
     """
     r = pipeline.compute_strength(_chart("丁卯", "乙巳", "庚辰", "丁亥"))
     s5 = {p["key"]: p for p in _step(r, "static")["chart"]["pillars"]}
     s6 = {p["key"]: p for p in _step(r, "stem_he")["chart"]["pillars"]}
 
     assert s5["month"]["gan_degree"] == pytest.approx(7.2), "第 5 段：乙组原字静态"
-    assert s6["month"]["gan_degree"] == pytest.approx(7.2 * 0.6),         "第 6 段：乙组 = 上一段组静态 × 0.6（减 4 成），不是「1 个干」的 0.6"
-    assert s6["day"]["gan_degree"] == pytest.approx(1.0 * 0.8), "庚组 = 1.0 × 0.8"
-    # 组缩了，组的「自身」也要同缩，`主数 = 自身 + 根` 才与组的实际根一致
-    assert s6["month"]["gan_own"] == pytest.approx(0.8 * 0.6)
-    assert s6["month"]["gan_root"] == pytest.approx(6.4 * 0.6)
+    assert s6["month"]["gan_degree"] == pytest.approx(7.2 - 0.8 * 0.4),         "第 6 段：乙组 = 上一段组静态 − 自身 0.8 × 4 成（通根不动）"
+    assert s6["day"]["gan_degree"] == pytest.approx(1.0 - 0.5 * 0.2), "庚组 = 1.0 − 自身 0.5 × 2 成"
+    # 「自身」减那一份，**根不动**：主数 = 自身 + 根
+    assert s6["month"]["gan_own"] == pytest.approx(0.8 - 0.8 * 0.4)
+    assert s6["month"]["gan_root"] == pytest.approx(6.4), "通根不受合绊之力，根不动"
     for p in s6.values():
         assert p["gan_own"] + p["gan_root"] == pytest.approx(p["gan_degree"])
 
@@ -492,8 +508,13 @@ def test_static_expression_includes_the_dayun_term():
 
     **大运静态旺度是加在「×月令系数之后」的**（`_apply_dayun_layer` 落在实例的 `static`
     上，而那已是乘过系数的量）。算式原先只写「天干 ＋ 藏干」两项，于是
-    `癸卯 癸亥 癸亥 丁巳` + 辛酉运 给出 **「0＋0＝0 ×0.8＝8」** 这种自相矛盾的式子——
-    那个 8 正是大运层给的（运干辛同类相助 1 ＋ 运支酉藏干平加 5 ＋ 运支状态旺 +2）。
+    `癸卯 癸亥 癸亥 丁巳` + 辛酉运 给出 **「0＋0＝0 ×0.8＝7」** 这种自相矛盾的式子——
+    那个 7 正是大运层给的（运干辛同类相助 1 ＋ 运支酉藏干平加 **4** ＋ 运支状态旺 +2）。
+
+    ⚠️ 那 4 度是**关系调整后**的酉藏辛：年支卯与大运支酉成**卯酉六冲**，酉为金、
+    卯为木，酉是主克者，按「主克者本气 −1 度」（书 下 1605 的同款）5 − 1 ＝ 4。
+    改前这一度落空——`_adjusted_hidden` 施 effect 时 `cols` 只含四柱，
+    落在伪列上的 effect 被静默丢掉，酉仍是 5，故算式写着 +8。
 
     三条断言：
     ① 每个五行的算式里都出现「＝ {static[wx]} 度」；
@@ -509,6 +530,6 @@ def test_static_expression_includes_the_dayun_term():
     for wx, val in r["static_scores"].items():
         assert wx in exprs, (wx, exprs)
         assert f"＝ {val:g} 度" in exprs[wx], (wx, val, exprs[wx])
-    # 金：大运带来的 +8 —— 算式必须写出这一项，否则 0×0.8 与 8 对不上
-    assert "大运静态旺度 +8 度" in exprs["金"], exprs["金"]
+    # 金：大运带来的 +7（含卯酉冲对运支酉的 −1）—— 算式必须写出这一项，否则 0×0.8 与 7 对不上
+    assert "大运静态旺度 +7 度" in exprs["金"], exprs["金"]
     assert "大运静态旺度" in exprs["水"], exprs["水"]      # 水 +1

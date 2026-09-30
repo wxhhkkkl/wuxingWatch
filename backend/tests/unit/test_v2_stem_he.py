@@ -138,9 +138,11 @@ def test_shang_1638_heban_lands_in_static():
     line = _he_lines(r)[0]
     assert "合而不化" in line
     assert "日干己 −4 成" in line and "时干甲 −2 成" in line, line
-    # 2026-09-16 起合绊减**整组**（含通根）→ 9.8 × 0.6 = 5.88，
-    # 与 上 1638 的「（0.6+3+3）×1.4=9.24」相反，属有意分歧。
-    assert r["day_master_group"]["static"] == pytest.approx(5.88)
+    # 2026-09-30 订正：合绊减的是**天干自己那 1 度**（书 上 1595 等五处；实证 上 1647/1637），
+    # 通根不动 → (0.6 + 6) × 1.4 = **9.24**，与 上 1638 逐位一致。
+    # （2026-09-16～2026-09-30 期间按「整组静态旺度」缩，得 9.8 × 0.6 = 5.88，
+    #  与本书相反——那是一次**有意分歧**，现已撤销。）
+    assert r["day_master_group"]["static"] == pytest.approx(9.24)
 
 
 @pytest.mark.parametrize("chart,red4,red2", [

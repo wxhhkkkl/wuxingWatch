@@ -109,8 +109,13 @@ def analyze_step(pillars: dict, dayun_ganzhi: str, *, dayun_meta: dict | None = 
     #   实例**各再施一次，同一五行减两次——正是 上 859-860 明令不许的。
     shifted = base["final_scores"]
 
-    cols = degrees.build_cols(pillars)
-    dm = next((c.gan for c in cols if c.key == "day"), None)
+    # **用管线交出来的那一份 cols / day_master**（与 `xiyong_analysis_v2` 同口径）。
+    # 日干可能被天干五合换了字（戊癸化火则戊→丙，书 上 1593/1873）；自行
+    # `degrees.build_cols(pillars)` 会拿到**原字**，后果是本步的 `dm_wx`（十神、
+    # 印/比劫/克泄耗的取法、`_assign_tier` 的偏好）全按原五行算，而格局与旺度却按
+    # 化神算——同一盘两套五行。原局路径早有一模一样的注释与修法，此处是漏网。
+    cols = base["cols"]
+    dm = base["day_master"]          # 换字后的日干（未换字时即原字）
     dm_wx = GAN_WUXING.get(dm or "", "")
     month_zhi = next((c.zhi for c in cols if c.key == "month"), "") or ""
 
@@ -129,9 +134,12 @@ def analyze_step(pillars: dict, dayun_ganzhi: str, *, dayun_meta: dict | None = 
                          dm_group=dm_group, tieshen=tieshen)
 
     # 用神随大运变化（书《下》第一节 用神总则「只要大家结合命主的事实，仔细去分析，就会知道"用神随大运的变化而变化」）——用**该步的**旺度重新取用
+    # `dm_final` 取**日主那一组**（与上面 `level` 同源；012 data-model §3a）——原先
+    # 这里与 `level` 分别读了合计与本组，同一页会出现「档位偏旺、用神却说日主偏弱」。
     ys = xiyong_v2.select_yongshen(day_master=dm or "", dm_wx=dm_wx, final=shifted,
                                    static=base["static_scores"], cols=cols,
-                                   ge_ju=gj, month_zhi=month_zhi)
+                                   ge_ju=gj, month_zhi=month_zhi,
+                                   dm_final=(dm_group or {}).get("final"))
 
     # 调候与格局层次也**按该步同口径重判**（013 期 T035；FR-021b）——不得出现
     # 「格局/取用按大运重判、调候或层次仍按原局」的内部不一致
@@ -177,11 +185,13 @@ def analyze_all(pillars: dict, steps: list[dict]) -> list[dict]:
     from services.bazi.v2 import geju as _geju
     from services.bazi.v2 import pipeline
 
-    cols = degrees.build_cols(pillars)
     # 原局基准必须与 `analyze_step` **同口径**（真实通根 / 关系 / 有生）。
     # 原先用 root 全 0、rel 空、has_sheng 全 False 判原局，与各步的口径不一致，
     # 成格/破格会因此误标（书 上 1598 的「不能独立」三项都须真实判定）。
     base = pipeline.compute_strength(pillars)
+    # `cols` 取**管线那一份**——否则原局这个 `prev_type` 按换字前的日干算，而各步按
+    # 换字后算，成格/破格会被凭空标出来（`analyze_step` 同修）。
+    cols = base["cols"]
     base_root = base["root_scaled"]
     out: list[dict] = []
     prev_type = _geju.judge_geju(

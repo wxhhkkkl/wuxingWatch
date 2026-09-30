@@ -102,9 +102,12 @@ def xiyong_analysis_v2(day_master: str, pillars: dict, da_yun: list | None = Non
                          tieshen=geju.tieshen_instances(
                              cols, stem_groups=r.get("stem_groups") or [],
                              benqi_instances=r.get("benqi_instances") or []))
+    # `dm_final` 取**日主那一组**（与上面 `judge_geju` 的 `dm_group`、与 `r["level"]`
+    # 同源）——本函数开头那条「日主的一切旺度取日主那一组」对取用同样适用。
     ys = xiyong_v2.select_yongshen(day_master=day_master, dm_wx=dm_wx, final=final,
                                    static=r["static_scores"], cols=cols,
-                                   ge_ju=gj, month_zhi=month_zhi)
+                                   ge_ju=gj, month_zhi=month_zhi,
+                                   dm_final=(r.get("day_master_group") or {}).get("final"))
     ys["tiaohou"] = xiyong_v2.judge_tiaohou(cols, month_zhi) if cols else None
     ys = xiyong_v2.apply_xunkong(ys, cols)
 

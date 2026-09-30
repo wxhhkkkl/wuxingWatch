@@ -34,7 +34,7 @@ def test_condition4_uses_dynamic_degree_not_static():
     2026-09-17 加回拱合后，这条链在本引擎里**逐环可验**：
     ① 亥未拱合成立（相邻、中神卯不在盘、**甲透**）→ 亥中甲木去除；
     ② 合绊前静态 木 = **2.1** 度（只余辰中乙木 2 度通根）< 2.4、无强根 → 条件④成立；
-    ③ 试探趟日干甲 = **1.68** 度；
+    ③ 试探趟日干甲 = **1.96** 度（合绊只减天干那 1 度，2026-09-30 订正）；
     ④ 五合结论 = 合化土成功（甲→戊）。
     """
     r = pipeline.compute_strength(_chart("癸亥", "己未", "甲辰", "辛未"))
@@ -53,7 +53,7 @@ def test_condition4_uses_dynamic_degree_not_static():
                                       pipeline._muku_ctx(rel, cols, "未", h0))
     trial = pipeline._stem_he_trial(cols, rel, "未", None, frozenset())
     assert static0["木"] == pytest.approx(2.1), "拱合去掉亥中甲后，木只剩辰的 2 度通根"
-    assert trial["day"] == pytest.approx(1.68), "先按合绊算到底后日干甲剩 1.68 度"
+    assert trial["day"] == pytest.approx(1.96), "先按合绊算到底后日干甲剩 1.96 度（合绊只减天干那 1 度）"
 
 
 def test_shang_2053_just_enough_is_not_zhenghe():
@@ -90,12 +90,14 @@ def test_condition4_uses_weak_party_instance_not_element_total():
     「火」的**五行合计**动态是 2.5（含时支午本气丁被木生抬到 3.2），≥2.4 会判反；
     弱方问的是「**丁**」那个字——不是五行合计（合计含时支午本气丁，会把数抬上去）。
 
-    > **2026-09-16 有意分歧**：合绊减力改按「整组静态旺度」后，试探趟里年干**丁**的
-    > 动态为 **3.75 度 ≥ 2.4**（旧口径 1.3），条件④「不能独立」不再满足 → 引擎判
-    > **未化**，与 书 上 2008「丁壬合化木成功」相反。用户裁定保留该口径。
+    > **2026-09-16～2026-09-30 曾是有意分歧**：那段时间合绊减力按「整组静态旺度」缩，
+    > 试探趟里年干**丁**的动态被压到 3.75 ≥ 2.4，条件④「不能独立」不再满足 → 引擎判
+    > **未化**，与 书 上 2008「丁壬合化木成功」相反。
+    > **2026-09-30 订正**（合绊只减天干那 1 度、通根不动）后，丁的动态回到太弱以下，
+    > 条件④重新满足 → **恢复到书的判定**。
     """
     r = pipeline.compute_strength(_chart("丁卯", "壬子", "辛丑", "甲午"))
-    assert not _hua(r), "新口径下判未化（书 上 2008 判成功——有意分歧）"
+    assert _hua(r), "书 上 2008：丁火太弱不能独立，丁壬合化木成功"
 
 
 def test_trial_pass_does_not_mutate_cols():

@@ -163,16 +163,24 @@ def test_analyze_step_uses_step_has_sheng():
     """
     from services.bazi.v2 import degrees, geju, pipeline
     p = _pillars(*SENSUO_PILLARS)
-    base = pipeline.compute_strength(p, dayun_ganzhi="丙子")
-    cols = degrees.build_cols(p)
-    all_false = geju.judge_geju(cols=cols, final=base["final_scores"],
-                                root={w: base["degrees"][w]["root"] for w in base["degrees"]},
-                                has_sheng={w: False for w in base["final_scores"]},
-                                rel=base["relations"], month_zhi="寅")["type"]
     real = _real_geju(p, dayun_ganzhi="丙子")
-    assert real != all_false, "该命例须能区分「真 has_sheng」与「全 False」（否则断言空转）"
     assert real == "zheng", "书 下 4518：丙子运得根不再相从"
     assert dayun.analyze_step(p, "丙子")["ge_ju"]["type"] == real
+
+    # **非空转守卫**：另取一张「真 has_sheng」与「全 False」会**翻转格局**的盘，
+    # 证明确有盘能分辨这两者。
+    # ⚠️ 守卫原用本盘（书 下 4518），但 2026-09-30 合绊订正（合绊只减**参与的那个干**
+    # 自己那 1 度）后该盘两种读法都判「正格」，守卫退化为恒真 → 换盘。
+    guard = _pillars("甲寅", "庚午", "癸巳", "丙辰")
+    gbase = pipeline.compute_strength(guard, dayun_ganzhi="庚申")
+    gcols = degrees.build_cols(guard)
+    g_false = geju.judge_geju(
+        cols=gcols, final=gbase["final_scores"],
+        root={w: gbase["degrees"][w]["root"] for w in gbase["degrees"]},
+        has_sheng={w: False for w in gbase["final_scores"]},
+        rel=gbase["relations"], month_zhi="午")["type"]
+    assert g_false != _real_geju(guard, dayun_ganzhi="庚申"), \
+        "须存在能区分「真 has_sheng」与「全 False」的盘，否则本断言空转"
 
 
 def test_analyze_all_origin_geju_uses_same_caliber_as_analyze_step():

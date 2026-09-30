@@ -93,7 +93,9 @@ _PURE_GAN = {"木": "甲", "火": "丙", "土": "戊", "金": "庚", "水": "壬
 
 
 def _adjusted_hidden(rel: dict, cols: list[degrees.Col],
-                     month_zhi: str) -> dict[str, list[tuple[str, float]]]:
+                     month_zhi: str,
+                     extra_cols: list[degrees.Col] | None = None
+                     ) -> dict[str, list[tuple[str, float]]]:
     """把关系的 `effects` 施加到各支藏干度数上（FR-008）。
 
     `effect` 中的 `delta` 为定值增减；带 `scale` 的（如「减半」「减 1/4」）
@@ -102,18 +104,47 @@ def _adjusted_hidden(rel: dict, cols: list[degrees.Col],
     **摊分**：标了 `split` 的 effect 给的是**总量**，按命中柱数均分。书 上 883
     「卯戌合绊火增力 1 度，**平均每个戌土增力 0.5 度火**」（1 卯 2 戌）——若按每支
     各加 1 度，把 +2 当成了 +1，正是该例从 11.25 涨到 12.75 的原因。
+
+    `extra_cols`：**只用于解析摊分除数**、不进 `out`。岁运在场时传岁运两列，
+    使同一条关系的分母与本关系全部参与柱一致（见 `_apply_effects` 的订正说明）。
     """
     out: dict[str, list[tuple[str, float]]] = {
         c.key: list(degrees.hidden_of(cols, c, month_zhi)) for c in cols
     }
+    return _apply_effects(out, rel, list(cols) + list(extra_cols or []), month_zhi)
+
+
+def _apply_effects(out: dict[str, list[tuple[str, float]]], rel: dict,
+                   resolve_cols: list[degrees.Col], month_zhi: str
+                   ) -> dict[str, list[tuple[str, float]]]:
+    """把 `rel` 各条已成立关系的 `effects` 就地施加到 `out`（柱位 → 藏干表）上。
+
+    抽出供**两处**复用：四柱（`_adjusted_hidden`）与**岁运两列**（`_suiyun_adjusted_hidden`）。
+    两处必须走同一套施加逻辑——否则岁运支的效果只落一处，**同源**保证即破。
+
+    `resolve_cols` 是**解析 `e["cols"]` 各柱之支用的全集**，**必须含岁运伪列**。
+    摊分除数 `share` 按「该关系**实际命中**几个同支柱」算（书 上 883「平均每个戌土增力
+    0.5 度」是 1 卯 2 戌摊出来的），其分母必须是**该关系的全部参与柱**，
+    而不是调用方 `out` 里恰好装了几柱。
+
+    ⚠️ **2026-09-30 订正**：改前 `resolve_cols` 与 `out` 是同一个 `cols`——四柱那一趟只有
+    四柱，于是**同一条 effect 在两条路径上摊出不同的数**。实测
+    `丁酉 丙午 己卯 癸酉 + 己酉运`：酉卯冲的「酉辛**共** −1.8 度」（`split`）里有**两个酉**
+    参与（时酉·大运酉），四柱那趟只认得时酉 → 摊 1.8；岁运那趟认得两支 → 摊 0.9。
+    同一个支在两条路径上被摊了两个数。修法与 `out` 解耦：`out` 说「改哪些」，
+    `resolve_cols` 说「分母算几支」。
+    """
     for e in rel["established"]:
         for fx in e.get("effects", []):
+            # 命中柱 = 该关系**自己的**参与柱里，支与 effect 相符的那些
             matched = [k for k in e["cols"]
-                       if any(c.key == k and c.zhi == fx["zhi"] for c in cols)]
+                       if any(c.key == k and c.zhi == fx["zhi"] for c in resolve_cols)]
             share = len(matched) if fx.get("split") and matched else 1
             for key in matched:
-                col = next((c for c in cols if c.key == key), None)
-                if col is None or col.zhi != fx["zhi"]:
+                # `out` 可能只装一部分柱位（四柱那趟没有伪列、岁运那趟只装伪列）——
+                # 落在别的柱上的 effect 跳过即可。**`matched` 绝不能按 `out` 过滤**：
+                # 摊分除数的分母要按**该关系的命中柱数**算。
+                if key not in out:
                     continue
                 # 合化成功：该支**整支换成纯化神 6 度**，原有藏干一律不再保留
                 #（书：合化成功后「都变为了纯粹的 X（里面不再含有其他五行）」）
@@ -201,8 +232,19 @@ def _element_degree_with_hidden(cols: list[degrees.Col],
     """
     stems = [i for i, c in enumerate(cols) if c.gan and GAN_WUXING[c.gan] == wx]
     if not stems:
-        total = sum(d for c in cols for g, d in hidden[c.key] if GAN_WUXING[g] == wx)
-        return max(0.0, round(total - _no_stem_penalty_hidden(cols, hidden, wx), 3))
+        # **不透天干：直接取地支藏干合计，不作「相隔减 1 度」的惩罚**——2026-09-30 用户裁定。
+        #
+        # ⚠️ **这是一次「明知与书相反」的口径裁定，须随代码保留此说明。**
+        # 原实现有一条 `_no_stem_penalty_hidden`（含该五行的地支不相连时减 1 度），
+        # **书里有两条明文算式支持它**：
+        #   书 上 631：「天干无火，年支寅藏 2 度，日支寅藏 2 度，它们是**相隔**的关系，
+        #               **要减去 1 度**，即 2+2-1=3 度……乘以 0.5 得 1.5 度」；
+        #   书 下 0361：「地支土静态旺度=（**2**+3+1）*0.5=3 度」（那个 2 即年丑 3 度减 1）。
+        # 实测去掉它对书证对拍为 **-1 例**（77.4% → 76.3%）。**用户仍裁定去掉**：
+        # 该惩罚只在「某五行不透天干」时生效，属边缘修正，不值当为它保留一条会波及
+        # **105/667 盘**的规则。撤销依据见 `research.md` R20。
+        return max(0.0, round(
+            sum(d for c in cols for g, d in hidden[c.key] if GAN_WUXING[g] == wx), 3))
 
     total = 0.0
     for idxs in degrees.stem_group_indexes(cols, wx):
@@ -403,13 +445,10 @@ def _roots(cols: list[degrees.Col], hidden: dict[str, list[tuple[str, float]]],
     return out
 
 
-def _no_stem_penalty_hidden(cols: list[degrees.Col],
-                            hidden: dict[str, list[tuple[str, float]]], wx: str) -> float:
-    rcols = [j for j, c in enumerate(cols)
-             if any(GAN_WUXING[g] == wx for g, _ in hidden[c.key])]
-    if not rcols or any(cols[j].key == "month" for j in rcols):
-        return 0.0
-    return 0.0 if max(rcols) - min(rcols) == len(rcols) - 1 else 1.0
+# `_no_stem_penalty_hidden` **已于 2026-09-30 按用户裁定删除**（原实现：某五行不透天干时，
+# 含它的地支若不相连则减 1 度）。它**有书证**——书 上 631「天干无火……相隔……要减去 1 度，
+# 即 2+2-1=3 度」、书 下 0361「（2+3+1）*0.5=3」——故**这是一次注明与书相反的口径裁定**，
+# 不是缺陷修复。撤销依据与影响面（105/667 盘）见 `research.md` R20。
 
 
 # ---------------------------------------------------------------
@@ -1482,7 +1521,9 @@ def _degradations(cols: list[degrees.Col]) -> list[str]:
 
 def _apply_dayun_layer(grps: list[degrees.StemGroup], static: dict[str, float],
                        dayun_ganzhi: str | None, liunian_ganzhi: str | None,
-                       month_zhi: str) -> tuple[dict[str, float], dict[str, float]]:
+                       month_zhi: str,
+                       sy_hidden: dict[str, list[tuple[str, float]]] | None = None
+                       ) -> tuple[dict[str, float], dict[str, float]]:
     """把**大运静态旺度**的两项（书 上 847-853）落到**实例层**——**每五行一次**。
 
     书 上 847「五行在大运的**静态**旺度等于在原局**静态**旺度的基础上进行增减」、
@@ -1534,7 +1575,12 @@ def _apply_dayun_layer(grps: list[degrees.StemGroup], static: dict[str, float],
             if GAN_WUXING.get(dayun_ganzhi[0]) == wx:
                 d += 1.0                                # 上 851 同类相助
             _add(wx, d)
-    for wx, d in _suiyun_hidden(dayun_ganzhi, liunian_ganzhi, month_zhi).items():
+    # ② **岁运之支自身藏干的平加**——取**经关系调整后**的那一份（`sy_hidden`，由
+    # `_suiyun_adjusted_hidden` 算好）。传空时才退回纯查表（`_suiyun_hidden`）：
+    # 查表看不到关系效果，会让落到岁运支上的 effect（如上 884「卯未合绊增力 1 度」）落空。
+    sy_wx = (_hidden_by_wx(sy_hidden) if sy_hidden is not None
+             else _suiyun_hidden(dayun_ganzhi, liunian_ganzhi, month_zhi))
+    for wx, d in sy_wx.items():
         if wx in out:
             _add(wx, d)
     return out, deltas
@@ -1557,7 +1603,11 @@ def _layers(cols: list[degrees.Col], rel: dict, month_zhi: str,
     """
     import services.bazi.v2.tables as _t
 
-    hidden = _adjusted_hidden(rel, cols, month_zhi)
+    # `extra_cols` 传岁运两列：**只用于摊分除数的解析**，使「一条关系同时命中原局支与
+    # 岁运支」时（如 `丁酉 丙午 己卯 癸酉 + 己酉运` 的酉卯冲），四柱那一趟也能把岁运支
+    # 计入分母——否则同一 effect 在两条路径上摊出不同的数（见 `_apply_effects`）。
+    hidden = _adjusted_hidden(rel, cols, month_zhi,
+                              extra_cols=_suiyun_cols(dayun_ganzhi, liunian_ganzhi, month_zhi))
     # 月支为四库时的刑冲害背景——决定它在书 上 1044-1107 分支表里取哪一档。
     muku = _muku_ctx(rel, cols, month_zhi, hidden)
     # 静态旺度按**原字**算（每个干 1 度、通根照旧）；**合绊的减力另算**——见下。
@@ -1579,11 +1629,25 @@ def _layers(cols: list[degrees.Col], rel: dict, month_zhi: str,
     # **赶在合绊缩放之前**，因为合绊缩的是「该干所在组的**静态**旺度」。
     sy_deltas: dict[str, float] = {}
     if dayun_ganzhi or liunian_ganzhi:
-        static, sy_deltas = _apply_dayun_layer(grps, static, dayun_ganzhi,
-                                               liunian_ganzhi, month_zhi)
-    # **合绊减的是「该干所在组的静态旺度」（含通根那一份）**——2026-09-16 用户裁定。
-    # `ban` 是柱位下标 → 减几**成**；组按 `组静态 × (1 − 成数/10)` 整体缩放，
-    # 组通根与乘系数根**同步缩**（否则「根 ≤ 静态」不变量会破）。一组内多个干都合绊时成数相加。
+        # 岁运之支的藏干取**经关系调整后**的那一份（`_suiyun_adjusted_hidden`）——
+        # 与 `hidden`（四柱）走同一套 effect 施加，两处同源。
+        static, sy_deltas = _apply_dayun_layer(
+            grps, static, dayun_ganzhi, liunian_ganzhi, month_zhi,
+            sy_hidden=_suiyun_adjusted_hidden(rel, cols, dayun_ganzhi,
+                                              liunian_ganzhi, month_zhi))
+    # **天干五合的合绊减的是「天干自己那 1 度」，通根分文不动**（2026-09-30 订正）。
+    #
+    # 书 上 1595/1777/1874/1991/2089 五处措辞一致：「X 减去**2成**的力量**即 1 个 X 减去
+    # 0.2 度**变为 0.8 度」——「即」字点明两者等价，因为 **1 个天干＝1 度**；减的是干自己。
+    # 实证 上 1647（坤 壬戌 癸丑 己亥 甲戌，日时甲己合绊）：己土**带 9 度通根**，书只写
+    # 「己土减去 0.4 度变为 0.6 度」，算式「（**0.6**+6+3−0.5）×2＝18.2」里通根 8.5
+    # 分文未动。
+    #
+    # 故减量 = **天干度数 × 月令系数 × 成数/10**（成数按柱位；一组内多个干都合绊时相加）。
+    # 改前是「组静态 × (1 − 成数/10)」整体缩放、**把通根也缩了**（上 1647 会给 11.4，
+    # 书是 18.2，差 6.8）——那是把「2成」误读成了「占整组的两成」。
+    # **`root` / `root_scaled` 因此不再跟着缩**（通根没动），「根 ≤ 静态」仍成立
+    # （减量至多 4 成 × 系数，远小于通根那一份）。
     _ban = ban or {}
     if _ban:
         _hit: set[str] = set()
@@ -1591,20 +1655,21 @@ def _layers(cols: list[degrees.Col], rel: dict, month_zhi: str,
             c = sum(_ban.get(i, 0.0) for i in g.cols)
             if not c:
                 continue
-            k = max(0.0, 1.0 - min(c, 10.0) / 10.0)
-            _old_root = g.root
-            g.static = round(g.static * k, 3)
-            g.root = round(g.root * k, 3)
-            g.root_scaled = round(g.root_scaled * k, 3)
+            # **每个参与合绊的干各出「自己那 1 度」**——书 上 1595 说的是「**1 个** X 减去
+            # 0.2 度」，是「1 个干」，不是「这一组连成一片的那几度」。`c` 是该组各**参与柱**
+            # 的成数之和，故减量 ＝ 月令系数 × Σ(成数)/10 × 1 度。
+            # ⚠️ **不可乘 `g.stem_degree`**：那会把连片组里**没参与合绊**的同片干也算进去
+            # （壬辰 癸丑 戊寅 乙卯 + 己酉运：只癸被戊合绊，壬并不参与；乘了 2 度会把
+            # 壬那 1 度也减掉，得 9.32 而非 9.96）。
+            cut = coef_by_wx.get(g.wx, 1.0) * (min(c, 10.0) / 10.0)
+            g.static = round(max(0.0, g.static - cut), 3)
             # ⚠️ **`final` 必须一起改**——生克结算读的是 `_node_final`（＝`final`），
             # 漏了这一行，第 7 段的成数用五合后值、主方损耗却扣在**第 5 段的原字静态**上
             # （实测 月干乙 成数按 4.32、损耗扣在 7.2），两个数打架。
             g.final = g.static
-            root[g.wx] = round(root.get(g.wx, 0.0) - _old_root + g.root, 3)
             _hit.add(g.wx)
         for wx in _hit:
             static[wx] = round(sum(g.static for g in grps if g.wx == wx), 2)
-        root_scaled = _roots_scaled(root, coef_by_wx)
     insts = _benqi_instances(cols, hidden, coef_by_wx)
     return {"hidden": hidden, "muku": muku, "static": static, "root": root,
             "coef_by_wx": coef_by_wx, "root_scaled": root_scaled, "qi_by_wx": qi_by_wx,
@@ -1679,18 +1744,63 @@ def _suiyun_hidden_detail(dayun_ganzhi: str | None, liunian_ganzhi: str | None,
     return out
 
 
+def _suiyun_adjusted_hidden(rel: dict, cols: list[degrees.Col],
+                            dayun_ganzhi: str | None, liunian_ganzhi: str | None,
+                            month_zhi: str) -> dict[str, list[tuple[str, float]]]:
+    """岁运之支的藏干表（柱位 key → [(干, 度)]），**经关系调整**——入旺度池的那一份。
+
+    **为什么不能只用 `_suiyun_hidden`。** 那个是**纯查表**（`tables.hidden_degrees` 的
+    `is_dayun`/`is_liunian` 档），看不到关系的效果；而 `_adjusted_hidden` 施 effect 时要求
+    `cols` 里真有那个柱位，原先只传四柱，于是**落在岁运支上的 effect 被静默丢掉**。
+
+    书 上 884 就是受害者：它写「未本身藏丁火 3 度，**卯未合绊增力 1 度**，变为 4 度火」
+    ——第 2 段确实算出了「未中丁 +1 度」（卯未合绊），但岁运池只拿查表的 3 度，
+    于是那一度落空（该例的火增量书给 +5.5、引擎给 +4.5）。
+
+    `cols` 须含伪列（`_dayun`/`_liunian`）；二者皆无时返回空字典（**原局路径分文不动**）。
+    """
+    sy_cols = _suiyun_cols(dayun_ganzhi, liunian_ganzhi, month_zhi)
+    if not sy_cols:
+        return {}
+    out = {c.key: list(c.flat_hidden or []) for c in sy_cols}
+    return _apply_effects(out, rel, list(cols) + sy_cols, month_zhi)
+
+
+def _suiyun_cols(dayun_ganzhi: str | None, liunian_ganzhi: str | None,
+                 month_zhi: str) -> list[degrees.Col]:
+    """岁运两列的 `degrees.Col`（`flat_hidden` 取 `_suiyun_hidden_detail` 的**查表**值）。
+
+    两个用途：① `_suiyun_adjusted_hidden` 的 `out`；② 传给 `_adjusted_hidden` 的
+    `extra_cols`——**只当摊分除数的解析全集**，使四柱那一趟也能看见岁运支参与了同一关系。
+    """
+    detail = _suiyun_hidden_detail(dayun_ganzhi, liunian_ganzhi, month_zhi)
+    out: list[degrees.Col] = []
+    for key, gz in (("_dayun", dayun_ganzhi), ("_liunian", liunian_ganzhi)):
+        if key in detail and gz and len(gz) >= 2:
+            out.append(degrees.Col(key=key, gan=gz[0], zhi=gz[1], orig_gan=None,
+                                   flat_hidden=list(detail[key])))
+    return out
+
+
+def _hidden_by_wx(hid_by_key: dict[str, list[tuple[str, float]]]) -> dict[str, float]:
+    """把「柱位 → [(干, 度)]」按**五行合计**。`_suiyun_hidden` 与 `_apply_dayun_layer` 共用。"""
+    out: dict[str, float] = {}
+    for hid in hid_by_key.values():
+        for gan, deg in hid:
+            out[GAN_WUXING[gan]] = out.get(GAN_WUXING[gan], 0.0) + deg
+    return out
+
+
 def _suiyun_hidden(dayun_ganzhi: str | None, liunian_ganzhi: str | None,
                    month_zhi: str) -> dict[str, float]:
     """岁运之支自身藏干的**五行合计**（= `_suiyun_hidden_detail` 按五行求和）。
 
     两者皆无时返回空字典，故**原局路径分文不动**（FR-023 零回归）。
+
+    ⚠️ **纯查表，看不到关系效果**。入旺度池的那一份须走 `_suiyun_adjusted_hidden`
+    （`_apply_dayun_layer` 现在正是这么接的）——本函数留给「只要查表值」的场合。
     """
-    out: dict[str, float] = {}
-    for hid in _suiyun_hidden_detail(dayun_ganzhi, liunian_ganzhi, month_zhi).values():
-        for gan, deg in hid:
-            wx = GAN_WUXING[gan]
-            out[wx] = out.get(wx, 0.0) + deg
-    return out
+    return _hidden_by_wx(_suiyun_hidden_detail(dayun_ganzhi, liunian_ganzhi, month_zhi))
 
 
 def compute_strength(pillars: dict, *, dayun_ganzhi: str | None = None,
@@ -2032,8 +2142,8 @@ def _he_result(he: dict, ban: dict[int, float], ban_cheng: dict[int, float] | No
                static: dict[str, float] | None = None) -> str:
     """第 6 段的结果行——合化换字 / 合绊减力，以及**合绊后**的静态旺度。
 
-    合绊减的是「该干所在组的静态旺度」（含通根那一份，2026-09-16 用户裁定），故本段
-    要把缩放后的值写出来——**只合绊不换字**时「换字后重算静态」段不产生，那份值就
+    合绊减的是「**天干自己那 1 度**」（书 上 1595 等五处；2026-09-30 订正，实证 上 1647），
+    故本段要把减后的值写出来——**只合绊不换字**时「换字后重算静态」段不产生，那份值就
     只挂在这里。
     """
     est = he.get("established") or []
@@ -2047,7 +2157,8 @@ def _he_result(he: dict, ban: dict[int, float], ban_cheng: dict[int, float] | No
         import services.bazi.v2.tables as _t
         parts.append(f"合绊 {len(ban_cheng)} 个干（减 "
                      + "、".join(f"{c:g} 成" for _, c in sorted(ban_cheng.items()))
-                     + "），减的是该干所在「组的静态旺度」（含通根那一份）")
+                     + "），减的是**天干自己那 1 度**（通根不动；书 上 1595「1 个 X 减去 "
+                       "0.2 度」／实证 上 1647）")
         if static is not None:
             parts.append("合绊后静态：" + "；".join(
                 f"{wx} {static.get(wx, 0.0):g}" for wx in _t.WUXING_ORDER))

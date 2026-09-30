@@ -159,6 +159,62 @@ def _nominal_hua(tier: int, members: list[str]) -> str | None:
     return None
 
 
+def _is_maowei(tier: int, members: list[str]) -> bool:
+    """该条是否为**卯未**（墓地半三合，tier 13）。"""
+    return tier == 13 and frozenset(members) == frozenset(("卯", "未"))
+
+
+def _is_maoxu(tier: int, members: list[str]) -> bool:
+    """该条是否为**卯戌**（六合，tier 12）。"""
+    return tier == 12 and frozenset(members) == frozenset(("卯", "戌"))
+
+
+def _maowei_maoxu_month_ok(cols: list) -> bool:
+    """下 376 的地支前提：生于**巳午未戌月或戌运**。
+
+    书 下 374-376（《四柱精髓（下）》「二、卯未半合」的第 ③ 小节）：
+
+    > 理论：生于**巳午未戌月或戌运**（**不看综合状态**），卯未合绊与卯戌合绊可以并存
+    >（卯未合绊**不能**与卯戌**合化**并存，卯未合化也不能与卯戌合绊并存）。
+
+    「不看综合状态」→ 取**本支**（月令/运支的字面），不取折中后的状态。
+
+    上 884（辛酉 戊戌 丁卯 庚戌 + 乙未运）生于**戌月**，正命中本条——那一处「卯戌合绊
+    与卯未合绊并存」的依据就是**这条规则**，不是「化神一致」（卯戌化火、卯未化木，
+    名义化神并不一致；下 3286 那句括注「（化神一致）」是书里的宽松写法）。
+    """
+    month_zhi = next((c.zhi for c in cols if c.key == "month"), "")
+    if month_zhi in ("巳", "午", "未", "戌"):
+        return True
+    dy = _SUIYUN_CTX.get("dayun")
+    return bool(dy) and dy[1] == "戌"          # 「或戌运」
+
+
+def _maowei_maoxu_coexist(cand: _Cand, bt: int, bt_members: list[str],
+                          blocking_entry: dict, cols: list) -> bool:
+    """卯未 ↔ 卯戌 的专门并存规则（下 376）——**独立于化神一致**。
+
+    须同时满足三条：
+      ① 两条恰为 {卯,未}(13) 与 {卯,戌}(12)；
+      ② **双方都是合绊**——「卯未合绊不能与卯戌合化并存，卯未合化也不能与卯戌合绊并存」；
+         已成立条目的 `hua` 非空即为化成功（`_judge_pass` 会把化不成的置 None）；
+      ③ 生于巳午未戌月或戌运（`_maowei_maoxu_month_ok`）。
+
+    化神一致那一条检查**必须跳过**——两者名义化神本就不同（火 vs 木），
+    放进化神检查里永远为假。故调用方命中本函数即 `continue`。
+    """
+    pair_ok = ((_is_maowei(cand.tier, cand.members) and _is_maoxu(bt, bt_members))
+               or (_is_maoxu(cand.tier, cand.members) and _is_maowei(bt, bt_members)))
+    if not pair_ok:
+        return False
+    if blocking_entry.get("hua"):              # 抢占者已化成功 → 不能与合绊并存
+        return False
+    month_zhi = next((c.zhi for c in cols if c.key == "month"), "")
+    if cand.hua and _hua_ok(cand, cols, month_zhi):
+        return False                           # 候选自己化得成 → 同上
+    return _maowei_maoxu_month_ok(cols)
+
+
 def may_coexist(cand: _Cand, blocking: list[tuple[str, dict]], cols: list) -> bool:
     """候选关系与被消费关系能否**并存**（FR-003；O-5 严格让位的唯一例外）。
 
@@ -173,6 +229,10 @@ def may_coexist(cand: _Cand, blocking: list[tuple[str, dict]], cols: list) -> bo
     for _, e in blocking:
         bt = e["tier"]
         bt_members = e.get("members", [])
+        # 下 376：卯未 ↔ 卯戌 的专门并存规则。**必须短路**——它不要求化神一致
+        #（两者名义化神本就不同），放进下面那条检查里恒为假。
+        if _maowei_maoxu_coexist(cand, bt, bt_members, e, cols):
+            continue
         bt_hua = (e.get("hua") or _nominal_hua(bt, bt_members)
                   or _chong_hua(bt, bt_members, cols,
                                 list(e["cols"]) if e.get("cols") else None))
@@ -1111,7 +1171,21 @@ def _pure_wx_of(zhi: str) -> str | None:
     return None
 
 
-def _dang_ling(hua: str, month_zhi: str) -> bool:
+def _suiyun_involved(keys: list[str] | None) -> bool:
+    """本关系的参与柱里有没有**岁运伪列**——即书所谓的「岁运介入」。
+
+    书 上 2480 注：「所谓"岁运介入"，指**相合之支只要有一支在岁运出现**，就为岁运介入」。
+    判据取**柱位**（`_dayun`/`_liunian`），不是支的名字——同名支可能同时在原局与岁运出现，
+    只有参与柱位才说得清「这支是不是岁运来的」。
+
+    `keys is None` 表示调用方未能提供参与柱位（沿用旧行为：有大运即视为介入）。
+    """
+    if keys is None:
+        return True
+    return any(k in ("_dayun", "_liunian") for k in keys)
+
+
+def _dang_ling(hua: str, month_zhi: str, keys: list[str] | None = None) -> bool:
     """化神是否**当令**——**岁运介入时改看综合（折中）状态**，否则只看月令。
 
     书 上 907-963 定折中＝(月令参数 + 大运参数) / 2，参数 旺1/余气2/相3/休4/囚5/死6，
@@ -1147,6 +1221,18 @@ def _dang_ling(hua: str, month_zhi: str) -> bool:
     if dy is None:
         return tables.COMPROMISE_PARAM[tables.month_state(hua, month_zhi)] <= 3
 
+    # **岁运介入才走折中**（`_suiyun_involved`）。「岁运介入」的定义是「相合之支**只要
+    # 有一支在岁运出现**」——`keys` 是本关系的参与柱位，里面没有伪列就说明这组相合
+    # 与原局内部的关系无异，**只看月令**即可。
+    #
+    # ⚠️ **改前查不了这一条**：`_dang_ling` 的签名里没有参与支，实现成了「**只要传了
+    # 大运就看折中**」。上 886（壬子 癸丑 辛酉 己亥 + 甲寅运）正是受害者——酉、丑
+    # 两支都不在岁运里（大运是甲寅），本该只看月令（金在丑月为**相**，当令）而合化成功，
+    # 却被折中判失令：月令丑(相=3) 折中 大运寅(金囚=5) → 4 > 3 → 不化 → 月令丑不改宗
+    # → 金系数回落 1.5（书：保留改宗后的 1.75）→ 日主静态 12（书：21.25）。
+    if not _suiyun_involved(keys):
+        return tables.COMPROMISE_PARAM[tables.month_state(hua, month_zhi)] <= 3
+
     from services.bazi.v2 import dayun as _dyun      # 惰性导入：dayun 依赖 degrees/tables
 
     def _state(zhi: str, is_month: bool) -> str:
@@ -1166,7 +1252,7 @@ def _generic_hua_ok(hua: str, cols: list[_Col], month_zhi: str,
     或 全局地支化神 ≥26）。"""
     if not hua:
         return False
-    if not _dang_ling(hua, month_zhi):
+    if not _dang_ling(hua, month_zhi, keys):
         return False
     if _tou_gan(cols, hua, keys):
         return True
@@ -1307,7 +1393,7 @@ def _zixing_ok(cand: _Cand, cols: list[_Col], month_zhi: str) -> bool:
     hua = ZIXING_HUA[z][0]
 
     # ② 化神当令（岁运介入时看折中——书 下 2574 的条件② 同此）
-    if not _dang_ling(hua, month_zhi):
+    if not _dang_ling(hua, month_zhi, list(cand.cols)):
         return False
 
     if z == "辰":
@@ -1350,7 +1436,7 @@ def _hua_ok(cand: _Cand, cols: list[_Col], month_zhi: str,
 
     # ② 化神当令：旺/余气/相 为当令（参数 ≤3），休/囚/死 为失令。
     # **岁运介入时改看月令与大运的折中**（书 上 907-963；流年不参与，见 `_dang_ling`）
-    if not _dang_ling(hua, month_zhi):
+    if not _dang_ling(hua, month_zhi, list(cand.cols)):
         return False
 
     # ---- 半三合条件④「党众」（书 下 第六节各局明文）；卯辰半会同此条 ----
@@ -2260,7 +2346,7 @@ _TU_DRY_MONTHS = frozenset("巳午未戌")     # 「太过干燥」的月（书 
 _TU_WINTER = frozenset("亥子丑")           # 「原局生于冬天」则不算干燥
 
 
-def _tu_dang(mz: str) -> bool:
+def _tu_dang(mz: str, keys: list[str] | None = None) -> bool:
     """化神土在月令是否**当令**——**月令被合化改宗时按改宗后的五行取**。
 
     与 `_dang_ling` 只差一处：后者在**无大运**时直接看月令的**原始**状态、不走改宗
@@ -2278,7 +2364,7 @@ def _tu_dang(mz: str) -> bool:
     pure = _pure_wx_of(mz)
     if pure:                                  # 月令已改宗 → 土相对化神取状态
         return tables.COMPROMISE_PARAM[tables.element_state("土", pure)] <= 3
-    return _dang_ling("土", mz)
+    return _dang_ling("土", mz, keys)
 
 
 def _xing_tu_ok(members: list[str], cols: list, keys: list[str],
@@ -2302,7 +2388,7 @@ def _xing_tu_ok(members: list[str], cols: list, keys: list[str],
     pair = frozenset(members)
     if pair not in _XING_TU_DEG:
         return False
-    if not _tu_dang(mz):
+    if not _tu_dang(mz, keys):
         return False
     if not _tou_gan(cols, "土", list(keys)):
         if _zhi_degrees(cols, mz).get("土", 0.0) < 26.0:
@@ -2362,7 +2448,7 @@ def _muku_chong_ok(members: list[str], cols: list, keys: list[str] | None = None
     # ② 月令必须是化神土的当令之地（书 下 1718；同条「辰丑含土量不为0」见 docstring）
     # **岁运介入时改看折中**——书 下 1864 的四库土局同注「如果有岁运介入则其综合状态
     # 必须为土的当令之地」
-    if not _dang_ling("土", mz):
+    if not _dang_ling("土", mz, keys):
         return False
 
     # ③ 本柱透土；不透则全局地支土的静态旺度 ≥26
@@ -2705,7 +2791,7 @@ def _effects_for(cand: _Cand, hua_succeeded: bool = False) -> list[dict]:
         if cand.mid == "巳":
             def _dang(wx: str) -> bool:
                 # 书 上 3017「申金临旺地（**包括综合状态**）时…」——岁运介入时走折中
-                return _dang_ling(wx, mz)
+                return _dang_ling(wx, mz, list(cand.cols))
 
             n_yin = sum(1 for k in keys
                         if (c := next((x for x in cs if x.key == k), None)) and c.zhi == "寅")
