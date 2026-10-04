@@ -160,3 +160,59 @@ def test_negative_result_clamped_to_zero():
     c = _cols(("庚", "申"), ("丙", "戌"), ("癸", "未"), ("壬", "午"))
     assert degrees.stem_tonggen(c, 3, "戌") == 0.0
     assert degrees.stem_tonggen(c, 3, "戌") >= 0.0
+
+
+# ---------------------------------------------------------------
+# 甲子特例（教师 2026-10-04 裁定；R25-f）
+# ---------------------------------------------------------------
+
+def test_jiazi_special_gives_wood_a_two_degree_root():
+    """乾 戊戌 甲子 壬戌 己酉（初级答疑 337 的同型）：**子水作甲木的 2 度根**。
+
+    教师原话：「甲子柱是一个特例，当**子水当令**且**没有被刑冲合害和特殊生克介入**时，
+    子水可以当做 **2 度根**。所以甲木静态旺度=（1+2）×1.5=**4.5** 度」。
+
+    产线复现：木静态 4.5（改前 1.5——只认「同类藏干」为根，子中癸是甲的**印**不算根）；
+    子水**自身不减**（水仍 12 度 =（壬 1＋子癸 5）×2，与书「日主静态旺度 12 度」同）。
+    """
+    from services.bazi.v2 import pipeline
+
+    p = _chart("戊戌", "甲子", "壬戌", "己酉")
+    r = pipeline.compute_strength(p)
+    assert r["static_scores"]["木"] == pytest.approx(4.5)
+    assert r["static_scores"]["水"] == pytest.approx(12.0), "子水自身不减（教师：并不是 5−2）"
+    assert [c.jiazi_root for c in r["cols"] if c.gan == "甲"] == [2.0]
+    # 第 4 段依据行须把这 2 度单列（FR-050 可追溯）
+    tg = next(s for s in r["steps"] if s["key"] == "tonggen")
+    assert any("甲子特例" in t["expression"] for t in tg["traces"]), tg["traces"]
+
+
+def test_jiazi_special_is_void_when_the_branch_is_involved():
+    """子被刑冲合害介入时不成立——甲子 丙午 戊寅 庚申（**子午冲**）木仍 1.2 度。"""
+    from services.bazi.v2 import pipeline
+
+    p = _chart("甲子", "丙午", "戊寅", "庚申")
+    r = pipeline.compute_strength(p)
+    assert not any(c.jiazi_root for c in r["cols"])
+    assert r["static_scores"]["木"] == pytest.approx(1.2)
+
+
+def test_jiazi_special_needs_water_in_season():
+    """「子水当令」按 书 上 353 的自家定义取**旺／余气／相**——巳月水「囚」故不成立。
+
+    > 书 上 353：「五行在月令或大运处于'旺、余气、相'的状态，**称为当令或有气**；
+    > 处于'休、囚、死'的状态，称为失令**或无气**。」
+    《初级答疑》337 那一例生于**酉**月（水只到「相」）教师当年亦判成立，与本定义吻合。
+    """
+    from services.bazi.v2 import pipeline
+
+    no_rel = {"established": []}
+    # 巳月：火旺 土相 木休 水囚 → 水失令
+    a = _cols(("丁", "卯"), ("乙", "巳"), ("甲", "子"), ("丁", "卯"))
+    pipeline._mark_jiazi(a, no_rel, "巳", None, None)
+    assert not any(c.jiazi_root for c in a), "巳月水囚 → 特例不成立"
+    # 酉月：金旺 水相 → 水有气（《初级答疑》337 的月令）
+    b = _cols(("乙", "酉"), ("乙", "酉"), ("甲", "子"), ("甲", "戌"))
+    pipeline._mark_jiazi(b, no_rel, "酉", None, None)
+    assert [c.jiazi_root for c in b if c.gan == "甲" and c.zhi == "子"] == [2.0], \
+        "酉月水相 → 成立（时干甲坐戌，不在此列）"

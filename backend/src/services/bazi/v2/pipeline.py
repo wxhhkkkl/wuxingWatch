@@ -13,7 +13,7 @@
 「刑冲合害增减地支度数 → 通根相加 → ×月令系数 → 其它干支的**生克泄耗**
 （须相邻紧贴）」。本管线的 ①-④ 即其前三步，⑤ 即第四步。
 
-第 ⑤ 步**内部**的次序见 `stem_layer`：**合优先**（书 上 1595「贪合忘生克」），其后
+第 ⑤ 步**内部**的次序见 `stem_layer`：**合优先**（合化成功者及其让位者不再论生克），其后
 **全盘逐实例「先受后施」**——每个实例先结算它**受到的**生克，再结算它**施出的**生、
 最后它**施出的**克。书源：《初级答疑》L2072-2073 的「从日主的角度来看…**先看生日干和
 克日干（这是同时进行的）**，然后才是看日干生它干，最后是日干克它干」，与《四柱预测学
@@ -368,23 +368,24 @@ def _tonggen_with_hidden(cols: list[degrees.Col],
 
     `pure` 内的柱位是**合化成功**后变纯的支——书给的是**定值**（「各含火 6 度，
     一共 12 度」），与天干远近无关，故这一整段**不计递减**。
+
+    **甲子特例**（`Col.jiazi_root`，教师 2026-10-04）也在此并入：那是「子水作甲木的
+    2 度根」，在既有的通根之外**另加**，和通根一样进 `(天干+根)×月令系数`
+    （Q4：`(1+2)×1.5 = 4.5`，与教师同值）。
     """
-    total = 0.0
-    for run, deg in _tonggen_runs_with_hidden(cols, hidden, wx):
-        total += _run_split(cols, index, run, deg, wx, pure)[1]
-    return round(total, 3)
-
-
-def _stem_anchor(index: int | tuple[int, ...], run: list[int]) -> tuple[int, int]:
-    """(根段里参照的那一支, 参照它的那个天干)。单干时两者等价。"""
     idxs = (index,) if isinstance(index, int) else tuple(index)
-    near = degrees.nearest_in_run(idxs, run)
-    return near, min(idxs, key=lambda k: abs(k - near))
+    runs = _tonggen_runs_with_hidden(cols, hidden, wx)
+    anchor = degrees.anchor_run(cols, idxs, [r for r, _ in runs])
+    total = sum(cols[i].jiazi_root for i in idxs)
+    for run, deg in runs:
+        total += _run_split(cols, index, run, deg, wx, pure, anchor)[1]
+    return round(total, 3)
 
 
 def _run_split(cols: list[degrees.Col], index: int | tuple[int, ...], run: list[int],
                deg: float, wx: str,
-               pure: frozenset[str] = frozenset()) -> tuple[float, float, str]:
+               pure: frozenset[str] = frozenset(),
+               anchor: list[int] | None = None) -> tuple[float, float, str]:
     """单段通根的 (递减度数, 实得度数, 说明)。
 
     **递减规则只在这里定义一次**——第 4 段的逐行依据与 `_tonggen_with_hidden`
@@ -402,14 +403,25 @@ def _run_split(cols: list[degrees.Col], index: int | tuple[int, ...], run: list[
     """
     if pure and all(cols[j].key in pure for j in run):
         return 0.0, deg, "合化成功、书给定值，不计递减"
-    near, anchor = _stem_anchor(index, run)
-    pen = degrees.root_penalty(cols, anchor, near, wx)
-    dist = abs(anchor - near)
-    where = ("月令，视同同柱" if cols[near].key == "month"
-             else {0: "同柱", 1: "相邻", 2: "相隔"}.get(dist, "远隔"))
-    if len(run) > 1:
-        return pen, max(0.0, deg - pen), f"连成一片，按最近一支（{where}）递减"
-    return pen, max(0.0, deg - pen), f"距 {dist} 柱（{where}）"
+    idxs = (index,) if isinstance(index, int) else tuple(index)
+    near, ref = degrees.run_reference(cols, idxs, run, anchor)
+    pen = degrees.run_penalty(cols, idxs, run, anchor, wx)
+    dist = abs(ref - near)
+    if anchor is not None and run == anchor:
+        where = ("月令，视同同柱" if cols[near].key == "month"
+                 else {0: "同柱", 1: "相邻", 2: "相隔"}.get(dist, "远隔"))
+        tail = (f"连成一片，按最近一支（{where}）递减" if len(run) > 1
+                else f"距 {dist} 柱（{where}）")
+    else:
+        # 脱离主根段：参照点在天干组里则为该**天干**、在主根段里则为那一**支**
+        ref_ch = cols[ref].gan if ref in idxs else (cols[ref].zhi or "")
+        if any(cols[j].key == "month" for j in run):
+            where = "段内含月令，视同同柱"
+        else:
+            where = {0: "同柱", 1: "相邻", 2: "相隔"}.get(dist, "远隔")
+        tail = (f"脱离主根段，与{ref_ch}相距 {dist} 柱（{where}）"
+                if pen else f"脱离主根段，{where}，不计递减")
+    return pen, max(0.0, deg - pen), tail
 
 
 def _roots_scaled(root: dict[str, float], coef: dict[str, float]) -> dict[str, float]:
@@ -595,6 +607,35 @@ def _node_final(node) -> float:
 
 def _node_wx(node) -> str:
     return node.wx if isinstance(node, degrees.StemGroup) else node["wx"]
+
+
+def _node_polarity(node) -> str | None:
+    """节点的阴阳：`"阳"` / `"阴"` / **None＝混**（连片天干组里阴阳兼有 → 取强，见 `_same_party`）。"""
+    if isinstance(node, degrees.StemGroup):
+        ys = {GAN_YIN_YANG.get(g, "阳") for g in node.gans}
+        return next(iter(ys)) if len(ys) == 1 else None
+    return GAN_YIN_YANG.get(node.get("gan") or "", "阳")
+
+
+def _same_party(main, sub) -> bool:
+    """这一对走**同性**还是异性（书 上 1584「同性相斥、异性相吸…同性的相生、相克其力最大」）。
+
+    **连片天干组里一阴一阳时以谁为准，书上没有明文**（书 上 651 只说「紧贴…当做一个整体」
+    「一个大的金」）。**教师 2026-10-04 裁定「以增力或者减力强的作为选择」**，用户同日拍板
+    按此实施（R26-a 定案）：同性相生/相克的基数**恒大于**异性（生 3＞2；克 主方 3＞2、
+    受方 5＞4），且基数一取同时决定主、受两侧——故**混合阴阳的连片组一律按同性论**。
+
+    这一读法对上 下 4016「丑土 7 度增日 **2 成**」等三处书例，唯一不合的是 **书 上 793**
+    （乾 癸巳 甲寅 己丑 戊辰：日主 5 度受官星 8 度克 → **1.8 度**＝4×(8÷5)，要的是异性）。
+    该例按「书例松笔」**进逐例裁定**（登记在 research.md R26-a；394 例书证对拍因此由
+    92/69 变为 91/70，落差即此一例）。
+
+    单干组（全阳或全阴）与支本气不受影响，仍按两个字的阴阳比。
+    """
+    a, b = _node_polarity(main), _node_polarity(sub)
+    if a is None or b is None:
+        return True                     # 混合组 → 取强（同性基数恒大于异性）
+    return a == b
 
 
 def _set_node_final(node, value: float) -> None:
@@ -918,7 +959,7 @@ def _settle_receiving(node, pairs: list[_Pair], *, has_power,
                               f"（{_node_wx(p.main)}）无生克权（片动态 "
                               f"{_node_final(p.main):g} 度、无强根、无生），不{p.kind}")
                 continue
-            same = GAN_YIN_YANG[p.mgan] == GAN_YIN_YANG[p.sgan]
+            same = _same_party(p.main, p.sub)
             p.sub_c = shengke.cheng(p.kind, same=same, main_deg=p.mdeg_at,
                                     sub_deg=p.sdeg_at, party="sub")
             if p.kind == "克":
@@ -1022,7 +1063,7 @@ def _settle_unit(node, pairs: list[_Pair], *, kind: str,
                               f"{_node_qi_state(p.sub, qi_by_wx)}，"
                               f"而主生者{mlab}超过其 4 倍，不受生")
                 continue
-        same = GAN_YIN_YANG[p.mgan] == GAN_YIN_YANG[p.sgan]
+        same = _same_party(p.main, p.sub)
         sub_c = shengke.cheng(kind, same=same, main_deg=mstat, sub_deg=sstat, party="sub")
         main_c = shengke.cheng(kind, same=same, main_deg=mstat, sub_deg=sstat, party="main")
         p.sub_c = sub_c if kind == "生" else -sub_c
@@ -1082,8 +1123,10 @@ def stem_layer(cols: list[degrees.Col], static: dict[str, float],
 
     ### 结算次序：**合 → 生 → 克 三段**（2026-09-16 用户规格，C26-23）
 
-    ① **合**——`blocked` 里的对（天干五合，无论合化还是合绊）「贪合忘生克」，不再出结算对
-    （书 上 1595）。五合的**判定与减力已在第 6 段完成**且已进生克基数，此处只消费。
+    ① **合**——`blocked` 里的对（**合化成功者及其让位者**：换了字就不再是原来那两个五行）
+    不再出结算对。**合绊不在此列**：合绊的两条力并存（下 949「申中庚金减去 1 度
+    （生克之力）……同时还要再减去 0.25 度的合绊之力」），照常结算生克，
+    合绊之力另由第 6 段的 `ban_cheng` 扣（2026-10-04 用户裁定，R24-b）。
     ② **生批 → 克批**：每批算完得出一个新值供下一批使用——《入门》1498「戊土生完庚辛金
     之后，**还有余力（13.2 度）**，才能去克壬水和子水」。**批内不分先后、取同一快照**
     （同书「这两者没有先后顺序，是同时进行的」），故每批只施加一次。
@@ -1197,8 +1240,8 @@ def stem_layer(cols: list[degrees.Col], static: dict[str, float],
     traces: list[str] = []
 
     # ① 合：天干五合已由**第 6 段**（`stem_he.judge_stem_he`）判定完毕——合化者已换字、
-    #    合绊者已减力且已计入静态旺度。此处只消费它的 `blocked`：合了的对
-    #    **贪合忘生克**（书 上 1595），不再出结算对。
+    #    合绊者已减力且已计入静态旺度。此处只消费它的 `blocked`：**合化成功（及其让位者）**
+    #    的对不再出结算对；**合绊照常出**（下 949 的两条力并存，2026-10-04 用户裁定）。
     #    合化成功的一对换字后必然同类（甲己→戊己…），`_ke_or_sheng` 本就返回 None；
     #    显式列出是为了让「合优先」在代码里可见，不必依赖那个巧合。
 
@@ -1209,7 +1252,7 @@ def stem_layer(cols: list[degrees.Col], static: dict[str, float],
     pairs: list[_Pair] = []
     for i, j, g1, g2 in stem_pairs:
         if (i, j) in blocked:
-            continue                    # 合优先——这一对不再论生克（书 上 1595 等）
+            continue                    # 合化成功（及其让位者）——换了字，这一对不再论生克
         rel = _ke_or_sheng(g1.wx, g2.wx)
         if not rel:
             continue
@@ -1519,10 +1562,47 @@ def _degradations(cols: list[degrees.Col]) -> list[str]:
     ]
 
 
+def _opaque_stem_penalty(cols: list[degrees.Col], hidden: dict,
+                         grps: list[degrees.StemGroup],
+                         dayun_ganzhi: str | None, liunian_ganzhi: str | None,
+                         coef_by_wx: dict[str, float]) -> dict[str, float]:
+    """**岁运天干替「不透干」的五行当根锚**时，该五行原局通根的相邻递减（五行合计）。
+
+    书 上 575「岁运的天干到原局任何一柱的天干的距离都是相同的，**都是相邻的关系**」、
+    上 576「在原局，天干在月令的通根均以同柱论，但是**岁运的天干在月令的通根不能以
+    同柱论，以相邻通根论**」——原局某五行**不透干**时，其通根此前只作「藏干合计」、
+    分文不减（R20，2026-09-30 用户裁定）；岁运天干一到，该五行即有了天干，其**每一个
+    根段**都要按相邻递减 0.5（岁运天干与原局每柱皆相邻，故段段皆「相邻」）。递减发生在
+    乘月令系数**之前**（书 上 589 例 2 的算法：先递减再乘系数），故此处连同系数折算。
+
+    **书 上 3123**（坤 壬申 癸丑 壬子 丙午 + 辛亥运）：金不透干，原局金根 4 度
+    （申庚 3 经申亥害 −1 得 2、丑辛 2；两支柱位相连，是**一段**）→ 4 − 0.5 = 3.5，
+    ×1.5 = 5.25，再 +1（运干辛同类，书 上 851）−1（运支亥，金休）= **5.25 度**。
+    教师 2026-10-04 裁定以 5.25 为准；书那一例印 5.5（把 −0.5 放在乘系数之后），
+    与书自身通则（上 589 例 2）不符，该例进逐例裁定。
+
+    ⚠️ **只对「原局不透干」生效**：透干五行的递减由原局天干组给，运干只按 上 851 加
+    1 度——书里四条大运算例（上 874/884/892/900）无一涉及「运干重锚透干五行的根」，
+    该分支**无书证**，登记为开放项（research.md R23）。
+    """
+    out: dict[str, float] = {}
+    for gz in (dayun_ganzhi, liunian_ganzhi):
+        if not gz or len(gz) < 2:
+            continue
+        wx = GAN_WUXING.get(gz[0])
+        if not wx or any(g.wx == wx for g in grps):
+            continue
+        runs = [r for r, deg in _tonggen_runs_with_hidden(cols, hidden, wx) if deg > 0]
+        if runs:
+            out[wx] = round(0.5 * len(runs) * coef_by_wx.get(wx, 1.0), 3)
+    return out
+
+
 def _apply_dayun_layer(grps: list[degrees.StemGroup], static: dict[str, float],
                        dayun_ganzhi: str | None, liunian_ganzhi: str | None,
                        month_zhi: str,
-                       sy_hidden: dict[str, list[tuple[str, float]]] | None = None
+                       sy_hidden: dict[str, list[tuple[str, float]]] | None = None,
+                       opaque_stem_pen: dict[str, float] | None = None
                        ) -> tuple[dict[str, float], dict[str, float]]:
     """把**大运静态旺度**的两项（书 上 847-853）落到**实例层**——**每五行一次**。
 
@@ -1568,6 +1648,12 @@ def _apply_dayun_layer(grps: list[degrees.StemGroup], static: dict[str, float],
         else:
             out[wx] = round(max(0.0, out.get(wx, 0.0) + d), 2)
 
+    # ③ **岁运天干替「不透干」的五行当根锚**（书 上 575/576；2026-10-04 教师裁定）——
+    #    先于状态增减施加：它改的是**原局那一侧的根**，不是大运侧的增减。
+    #    依据见 `_opaque_stem_penalty`。
+    for wx, pen in (opaque_stem_pen or {}).items():
+        _add(wx, -pen)
+
     if dayun_ganzhi and len(dayun_ganzhi) >= 2:
         from services.bazi.v2 import dayun as _dy      # 惰性：dayun 反向按需 import 本模块
         for wx in list(out):
@@ -1584,6 +1670,36 @@ def _apply_dayun_layer(grps: list[degrees.StemGroup], static: dict[str, float],
         if wx in out:
             _add(wx, d)
     return out, deltas
+
+
+def _mark_jiazi(cols: list[degrees.Col], rel: dict, month_zhi: str,
+                effective: str | None, muku: tables.MukuCtx | None) -> None:
+    """给「甲子」柱打上**甲子特例**的额外通根（教师 2026-10-04 裁定；R25-f）。
+
+    教师原话：「甲子柱是一个特例，当**子水当令**且**没有被刑冲合害和特殊生克介入**时，
+    子水可以当做 **2 度根**」。三处口径：
+
+    - 「当令」按 书 上 353 的自家定义取「**旺／余气／相**」（原文：「五行在月令或大运
+      处于'旺、余气、相'的状态，**称为当令或有气**」）——即 `tables.element_has_qi`。
+      取这条定义是为了对上《初级答疑》337 那一例：它生于**酉**月（水只到「相」），
+      教师当年亦判「水当令」；
+    - 「介入」＝该柱出现在任何 **established** 关系里（含岁运参与的）——依据行照旧原样
+      列出，不为之另造关系；
+    - 子水**自身**的度数**不减**（教师：「按 5×1.5 算……并不是 5−2 那么简单的事情」）。
+
+    本函数只**打标**（`Col.jiazi_root`），消费方是 `_tonggen_with_hidden`（数值）与
+    `_tonggen_static_traces`（第 4 段依据行）——两处读同一个字段，不会漂移。
+    """
+    import services.bazi.v2.tables as _t
+
+    for c in cols:
+        if c.gan != "甲" or c.zhi != "子":
+            continue
+        if not _t.element_has_qi("水", month_zhi, effective, muku):
+            continue
+        if any(c.key in e.get("cols", []) for e in rel["established"]):
+            continue
+        c.jiazi_root = 2.0
 
 
 def _layers(cols: list[degrees.Col], rel: dict, month_zhi: str,
@@ -1610,6 +1726,8 @@ def _layers(cols: list[degrees.Col], rel: dict, month_zhi: str,
                               extra_cols=_suiyun_cols(dayun_ganzhi, liunian_ganzhi, month_zhi))
     # 月支为四库时的刑冲害背景——决定它在书 上 1044-1107 分支表里取哪一档。
     muku = _muku_ctx(rel, cols, month_zhi, hidden)
+    # 甲子特例：打完标再算静态旺度与通根（两者都从 `Col.jiazi_root` 读，见 `_mark_jiazi`）。
+    _mark_jiazi(cols, rel, month_zhi, effective, muku)
     # 静态旺度按**原字**算（每个干 1 度、通根照旧）；**合绊的减力另算**——见下。
     static = _static_scores(cols, hidden, month_zhi, effective, pure, muku, None)
     # 通根先行算出——生克权（书《上》第一节 五行旺衰）的「有强根」要用，而它必须在
@@ -1634,7 +1752,9 @@ def _layers(cols: list[degrees.Col], rel: dict, month_zhi: str,
         static, sy_deltas = _apply_dayun_layer(
             grps, static, dayun_ganzhi, liunian_ganzhi, month_zhi,
             sy_hidden=_suiyun_adjusted_hidden(rel, cols, dayun_ganzhi,
-                                              liunian_ganzhi, month_zhi))
+                                              liunian_ganzhi, month_zhi),
+            opaque_stem_pen=_opaque_stem_penalty(cols, hidden, grps, dayun_ganzhi,
+                                                 liunian_ganzhi, coef_by_wx))
     # **天干五合的合绊减的是「天干自己那 1 度」，通根分文不动**（2026-09-30 订正）。
     #
     # 书 上 1595/1777/1874/1991/2089 五处措辞一致：「X 减去**2成**的力量**即 1 个 X 减去
@@ -2384,10 +2504,14 @@ def _tonggen_static_traces(cols: list[degrees.Col], hidden: dict, deg_detail: di
                 continue
             gans = degrees.stem_run(cols, i)
             seen.update(gans)
+            # 递减的**参照点**按整段连片组算（与 `_tonggen_with_hidden` 同口径）——
+            # 主根段在天干组里找参照点，「脱离主根段」的段在「天干组 ∪ 主根段」里找；
+            # 只传单个 `i` 会与 `_tonggen_with_hidden` 的组口径漂移（FR-050 可追溯）。
+            anchor = degrees.anchor_run(cols, tuple(gans), [r for r, _ in runs])
             # 同一五行若有多个**不相邻**的天干，各自分别通根，故分段小计
             sub = 0.0
             for run, deg in runs:
-                pen, got, note = _run_split(cols, i, run, deg, wx, pure)
+                pen, got, note = _run_split(cols, tuple(gans), run, deg, wx, pure, anchor)
                 sub += got
                 zhis = "、".join(cols[j].zhi for j in run)
                 # 度数构成逐支列出——「9 度」是四支之和，不写出来读者会以为按一支算
@@ -2396,6 +2520,14 @@ def _tonggen_static_traces(cols: list[degrees.Col], hidden: dict, deg_detail: di
                 tg_tr.append(_tr(
                     "".join(cols[j].gan for j in gans),
                     f"根在 {zhis}（{comp}），{note}：{deg:g} 度 − {pen:g} = {got:g} 度", got))
+            # 甲子特例（教师 2026-10-04）：子水**另作**甲木的 2 度根，加在既有通根之外
+            _jz = sum(cols[j].jiazi_root for j in gans)
+            if _jz:
+                sub += _jz
+                tg_tr.append(_tr(
+                    "".join(cols[j].gan for j in gans),
+                    f"甲子特例：子水作甲木的 {_jz:g} 度根（当子水当令且未被刑冲合害介入；"
+                    f"子水自身不减）＋{_jz:g} 度", _jz))
             total += sub
             brief.append(f"{'、'.join(f'{_PILLAR_CN[cols[j].key]}干{cols[j].gan}' for j in gans)}"
                          f" {sub:g}")

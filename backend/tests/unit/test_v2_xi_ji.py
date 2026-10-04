@@ -439,20 +439,24 @@ def test_book_case_xia_4261_tongguan_given_book_premises():
 def test_tongguan_end_to_end_real_chart():
     """通关＋泄用神者入忌，在**真实四柱**上的生产路径回归。
 
-    取自样本集 `jingsui-xia-0171`（乾 壬寅 癸卯 乙巳 庚辰，书 下 1116 例；书该处只论
-    寅卯辰会木成否，未论用神）——引擎：乙木中和、火（食伤）与金（官杀）同为用而
-    相战、局中有土（财）→ 实际用神改取土通关。
+    取自样本集（坤 癸亥 丙辰 己丑 己巳）——引擎：己土偏旺、官杀（木）与食伤（金）
+    同为用而相战、局中有水（财）→ 实际用神改取水通关。
 
-    用神＝土 → 喜＝生土者火；忌＝水（土克）、木（克土）、**金（土生＝泄用神者）**。
-    修复前金会落在 `xian_shen`，实际用神却已是土——同一条「泄用神者入忌」
+    用神＝水 → 喜＝生水者金；忌＝火（水克）、土（克水）、**木（水生＝泄用神者）**。
+    修复前木会落在 `xian_shen`，实际用神却已是水——同一条「泄用神者入忌」
     （书 下 3693）在生产路径上的验证。
+
+    > **2026-10-04 换盘（R24-c/d）**：原用 `jingsui-xia-0171`（乾 壬寅 癸卯 乙巳 庚辰，
+    > 书 下 1116 只论寅卯辰会木成否、未论用神）。该造乙木的寅根改按「与主根段最近成员」
+    > 测距后由远隔 −2 变相邻 −0.5，日主由中和转偏旺，通关不再触发（`practical` 为 None）。
+    > 通关本身的覆盖另见 `test_book_case_xia_4261_tongguan_given_book_premises`。
     """
-    pillars = _pillars("壬寅", "癸卯", "乙巳", "庚辰")
-    r = xiyong_analysis_v2("乙", pillars)
+    pillars = _pillars("癸亥", "丙辰", "己丑", "己巳")
+    r = xiyong_analysis_v2("己", pillars)
     ys = r["yong_shen"]
 
-    assert ys["theoretical"]["element"] == "金", "偏旺取克泄耗，首取金"
-    assert ys["practical"]["element"] == "土", "火金相战 → 财星土通关"
-    assert ys["xi_shen"] == ["火"], "生土者火为喜神"
-    assert ys["ji_shen"] == ["水", "木", "金"], "土所克(水)、克土(木)、土所生(金＝泄用神者)"
+    assert ys["theoretical"]["element"] == "木", "偏旺取克泄耗，首取木"
+    assert ys["practical"]["element"] == "水", "金木相战 → 财星水通关"
+    assert ys["xi_shen"] == ["金"], "生水者金为喜神"
+    assert ys["ji_shen"] == ["火", "土", "木"], "水所克(火)、克水(土)、水生(木＝泄用神者)"
     assert ys["xian_shen"] == []

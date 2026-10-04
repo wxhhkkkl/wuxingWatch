@@ -338,36 +338,49 @@ def _geju(ganzhi: str):
                            month_zhi=month_zhi)
 
 
-def test_wu_gui_hua_only_huo_declared():
-    """戊癸**只有一个化神「火」**（裁定），五合表不再有候选元组与下标重载。
+def test_wu_gui_hua_has_two_candidates():
+    """戊癸**双化神**（书 上 2078「既能合化为火，又能合化为土」）：候选按序试，先火后土。
 
-    书 上 1577/2078 记作「戊癸合化火（或土）」、并单列化土五条件（上 2124-2135）——
-    本实现按裁定只取化火，故该条文不予落地；此处钉住表本身。
+    `GAN_HE_HUA` 保留**首候选**（火）供成员判定与旧读法；候选集在 `HUA_CANDIDATES`。
+    其余四组各只有一个，`hua_candidates` 回落到单值。
+
+    （2026-09-11 曾裁定「只取化火」，2026-09-30 恢复化土，见 research.md R22。）
     """
-    raw = dict(relations.GAN_HE_HUA)
-    assert raw[frozenset("甲己")] == "土"
-    assert raw[frozenset("戊癸")] == "火"
-    assert relations.GAN_HE_HUA[frozenset("戊癸")] == "火"
+    assert relations.GAN_HE_HUA[frozenset("甲己")] == "土"
+    assert relations.GAN_HE_HUA[frozenset("戊癸")] == "火", "首候选仍是火"
+    assert relations.hua_candidates(frozenset("戊癸")) == ("火", "土"), "按序试"
+    assert relations.hua_candidates(frozenset("甲己")) == ("土",), "其余四组单值"
 
 
-def test_wu_gui_hua_tu_cases_no_longer_hua():
-    """书里三个「戊癸化土格」实例，按裁定**不再判化格**（书内冲突，已知差异）。
+def test_wu_gui_hua_tu_cases():
+    """书里「戊癸化土格」的实例——2026-09-30 恢复化土后，能判的已对上。
 
     | 书位 | 四柱 | 书判 | 现在 |
     |---|---|---|---|
-    | 下 4133 | 甲申 戊辰 癸酉 己未 | 戊癸化土格 | 非化格 |
-    | 下 4138 | 丁酉 丁未 戊戌 癸丑 | 戊癸化土格 | 非化格 |
-    | 上 2620 | 乙巳 辛巳 戊子 癸丑 | 戊癸（与子丑合土）同化 | 非化格 |
+    | 下 4138 | 丁酉 丁未 戊戌 癸丑 | 戊癸化土格 | **化土** ✓ |
+    | 上 2659 | 丁酉 癸丑 戊戌 己未 | 戊癸合化土也成功 | **化土** ✓ |
+    | 下 4133 | 甲申 戊辰 癸酉 己未 | 戊癸化土格 | 仍不化 |
+    | 上 2620 | 乙巳 辛巳 戊子 癸丑 | 戊癸（与子丑合土）同化 | 仍不化 |
 
-    三例的坐支都不满足**化火**的③「一支为火（燥土可当火看）、另一支为木或火」，
-    故一律落合绊。这不是实现缺陷而是裁定结果——测试在此**显式记录**该差异，
-    避免日后被当成回归误修。
+    **两例仍判不出，各有各的原因**：
+
+    - **上 2620**：书里的机理是「**子丑合化土成功** → 子变纯粹土」（下/上 2616-2620），
+      于是戊癸化土的③「戊坐子（**已改宗为土**）、癸坐丑（土）」才成立。
+      本引擎的③ 读的是**坐支原字**（`ZHI_WUXING[c.zhi]`），**没有坐支改宗**——这是
+      **已知缺口**，与 `effective_month`（只覆盖**月令**改宗）不同层。
+    - **下 4133**：戊坐辰（土）、癸坐**酉（金）**——按书自己 上 2126 的③
+      「至少一支为土，另一支为**火或土**」，酉 既非火也非土，**本不该化**。
+      命例分析（下 4133）没给算式，像是松笔，未据此改规则。
     """
-    for gz, book in (("甲申 戊辰 癸酉 己未", "下 4133"),
-                     ("丁酉 丁未 戊戌 癸丑", "下 4138"),
-                     ("乙巳 辛巳 戊子 癸丑", "上 2620")):
+    for gz, book, expect_hua in (("丁酉 丁未 戊戌 癸丑", "下 4138", True),
+                                 ("丁酉 癸丑 戊戌 己未", "上 2659", True),
+                                 ("甲申 戊辰 癸酉 己未", "下 4133", False),
+                                 ("乙巳 辛巳 戊子 癸丑", "上 2620", False)):
         gj = _geju(gz)
-        assert gj["type"] != "hua" and gj["hua_shen"] is None, (book, gz, gj)
+        if expect_hua:
+            assert gj["type"] == "hua" and gj["hua_shen"] == "土", (book, gz, gj)
+        else:
+            assert gj["type"] != "hua", (book, gz, gj)
 
 
 def test_wu_gui_hua_huo_case_shang_2116():
@@ -378,17 +391,30 @@ def test_wu_gui_hua_huo_case_shang_2116():
     assert gj["hua_shen"] == "火", gj
 
 
-def test_wu_gui_hua_huo_zuozhi_matrix():
-    """化火条件③：一支坐支为火（**燥土可当火看**，书 上 2122）、另一支为木或火。
+def test_wu_gui_hua_zuozhi_matrix():
+    """坐支决定**走哪条化神**——戊癸双化神，按序试火后土（书 上 2078）。
 
-    本盘戊坐**戌**（戌月＝燥土 → 当火看，书 上 2116-2122 即此例），同盘只换癸的坐支：
-    坐**木**（卯）成；坐**燥土**（未）亦成（燥土当火看）；坐**湿土**（丑/辰）与
-    **金**（酉）不成——土/金既不属火也不属木。
+    本盘戊坐**戌**：化火时「戌生于戌月为燥土，**可以当成火看**」（书 上 2122）；
+    化土时按本气**土**。同盘只换癸的坐支：
+
+    | 癸坐支 | ③ 化火「火 ＋（木/火）」 | ③ 化土「土 ＋（火/土）」 | 结果 |
+    |---|---|---|---|
+    | 卯 / 寅（木） | ✓ | ✗ | **化火** |
+    | 未（燥土） | ✓（燥土当火看） | ✓ | **化火**（先试火） |
+    | 丑 / 辰（湿土） | ✗ | ✓ | **化土** |
+    | 酉（金） | ✗ | ✗ | 不化 |
+
+    ⚠️ 丑/辰 的 ⑤ 燥湿过得去：戌月 + 戊坐未戌土 ✓，但「另一支为火、木或未戌土」
+    两条都不满足（丑/辰 既非火木也非未戌）→ **不算太过干燥**（书 上 2137）。
     """
-    for zuozhi, ok in (("卯", True), ("未", True), ("寅", True),
-                       ("丑", False), ("辰", False), ("酉", False)):
+    for zuozhi, hua_shen in (("卯", "火"), ("未", "火"), ("寅", "火"),
+                             ("丑", "土"), ("辰", "土"), ("酉", None)):
         got = _geju(f"辛卯 戊戌 癸{zuozhi} 辛酉")
-        assert (got["type"] == "hua") is ok, (zuozhi, ok, got)
+        assert got["type"] == ("hua" if hua_shen else got["type"]), (zuozhi, got)
+        if hua_shen:
+            assert got["type"] == "hua" and got["hua_shen"] == hua_shen, (zuozhi, got)
+        else:
+            assert got["type"] != "hua", (zuozhi, got)
 
 
 def test_wu_gui_no_hua_when_month_not_dang_ling():

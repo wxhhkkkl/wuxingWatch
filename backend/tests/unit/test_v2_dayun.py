@@ -154,6 +154,10 @@ def test_dayun_zhi_hidden_stems_are_added_to_the_scores():
     # 2026-09-24 订正点 ①：改前只加第 2 项，第 1 项被加在生克**之后**的动态旺度上。
     shift = {wx: dayun.STATE_DELTA[dayun.dayun_state(wx, "辰")] for wx in a["static_scores"]}
     shift["火"] += 1.0                       # 运干丙（火）同类相助，上 851
+    # 2026-10-04 新规（书 上 575/576，教师裁定）：原局**不透干**的五行（本例火——天干
+    # 戊庚戊戊），运干丙为火，其原局通根与岁运天干按**相邻**递减 0.5（乘系数之前）：
+    # 午午连成一片是**一段** → 0.5 × 0.7（申月火囚）= 0.35。
+    shift["火"] -= 0.5 * 0.7
     # 运支辰的 ④ 档（上 449-451）：癸1 乙2 戊3 → 水 +1、木 +2、土 +3
     hidden = {"水": 1.0, "木": 2.0, "土": 3.0}
     for wx in a["static_scores"]:
@@ -193,3 +197,54 @@ def test_dayun_column_scores_without_extra_columns():
     steps = [{"ganzhi": "甲子", "start_age": 8}, {"ganzhi": "丙寅", "start_age": 28}]
     items = _dayun.analyze_all(p, steps)
     assert [i["ganzhi"] for i in items] == ["甲子", "丙寅"]
+
+
+# ---------------------------------------------------------------
+# 岁运天干替「不透干」的五行当根锚（书 上 576；2026-10-04 教师裁定）
+# ---------------------------------------------------------------
+
+def test_dayun_stem_gives_adjacent_tonggen_to_an_opaque_element():
+    """坤 壬申 癸丑 壬子 丙午 + 辛亥运（**书 上 3123** 例 10）。
+
+    原局**金不透干**（天干壬癸壬丙），按 R20 其通根只作「藏干合计」不减（申庚 3 经申亥害
+    −1 得 2、丑辛 2 → 4）。大运**辛金**一到，金即有了天干——**通根与岁运天干按相邻递减**
+    （书 上 576「岁运的天干在月令的通根**不能以同柱论，以相邻通根论**」；书 上 575
+    「岁运的天干到原局任何一柱的天干的距离都是相同的，都是相邻的关系」）：
+
+        辛金静态旺度 =（2 + 2 − 0.5）× 1.5（丑月金相）+ 1（运干同类，上 851）
+                        − 1（运支亥，金休）= **5.25** 度
+
+    **教师 2026-10-04 裁定以 5.25 为准**——书 上 3123 印的是 5.5（把那 −0.5 放在了
+    乘系数**之后**），与书自己的通则（上 589 例 2：先递减再乘系数）不符，该例进逐例裁定。
+
+    水那一列同批校验：申亥害使申壬减半（2→1）、亥壬增力 1（4→5），
+    （3 + 1 + 2 + 4）× 1.6 + 2（运支亥，水旺）+ 5（亥藏壬平加）= **23** 度
+    ——书 上 3123 印的 24.6 未扣申壬减半，教师本次答复 23 与书通则一致。
+    """
+    from services.bazi.v2 import pipeline
+
+    p = _pillars("壬申", "癸丑", "壬子", "丙午")
+    a = pipeline.compute_strength(p)
+    # 原局：金不透干 → 藏干合计不递减（R20 定案，2026-10-04 用户维持）
+    # 申庚 3（含丑申特殊生克的 +1）＋ 丑辛 2 ＝ 6，× 1.5 ＝ 9
+    assert a["static_scores"]["金"] == pytest.approx(9.0)
+    b = pipeline.compute_strength(p, dayun_ganzhi="辛亥")
+    assert b["static_scores"]["金"] == pytest.approx(5.25)
+    assert b["static_scores"]["水"] == pytest.approx(23.0)
+
+
+def test_dayun_stem_penalty_is_not_applied_when_the_element_already_has_stems():
+    """原局**透干**的五行不受这一条影响：递减仍由原局天干组给，运干只按 上 851 加 1 度。
+
+    戊申 庚申 戊午 戊午 + 丙辰运：土透三干（日干戊与时干戊连片、年干戊自成一组），
+    各组通根照旧，运干丙为火非土——土的静态旺度只走「运支状态增减」一项。
+    """
+    from services.bazi.v2 import pipeline
+
+    p = _pillars("戊申", "庚申", "戊午", "戊午")
+    a = pipeline.compute_strength(p)
+    b = pipeline.compute_strength(p, dayun_ganzhi="丙辰")
+    # 土只拿两项：运支辰（土旺 +2）＋ 运支辰藏戊 3（上 449-451 岁运档）——
+    # 若把「岁运天干作根锚」的相邻递减误加到透干五行上，这里会少 0.5×0.8=0.4。
+    assert b["static_scores"]["土"] == pytest.approx(
+        a["static_scores"]["土"] + 2.0 + 3.0)

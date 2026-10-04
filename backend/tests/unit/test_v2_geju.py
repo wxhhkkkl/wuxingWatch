@@ -171,31 +171,30 @@ def test_xiyong_analysis_v2_passes_real_has_sheng():
     ——有生本身就能授予生克权，故「有生」可沿相生链传递（本实现取**单调最小不动点**，
     见 `pipeline.stem_layer`）。
 
-    本例 乾 乙丑 丁亥 己巳 丁卯（书 上 418）：年柱**同柱**乙木生巳火（书 上 1537
-    「天干和地支之间只有同柱…才能作用即论生克」）→ 火有生 → 丁火得生克权 → 丁火
-    （月干）紧贴生日元己土 → **土有生**，日主「不能独立」不成立 → 正格。
-    包装层若传 `has_sheng={全 False}`，这条链全断 → 误判 `cong_cai`。
+    本例 乾 庚申 甲申 丁巳 癸卯（书 上 3083 例 5）：月干甲木静态 2.5 度（≥2.4，
+    有生克权，书 上 980）又紧贴日干丁火 → **火有生**；同理木亦得水生。
+    日主「不能独立」三项里「无生」不成立 → 正格；包装层若传
+    `has_sheng={全 False}`，这条链全断 → 误判 `cong_cai`（从财）。
 
-    > 第一轮同名测试拿 乙巳 己丑 丙子 己丑（书 上 2564）断言 `has_sheng['火'] is True`，
-    > 理由是「乙木同柱生巳火」——该造乙木静态 0.7 度、通根 0 度，按 上 982 例1
-    > **没有生克权**，连巳火都生不了；那个期望本身就是错的（书 上 982
-    > 「丙火没有生克权，丙火不能生日元己土」）。该口径已另立锚点：
-    > `test_v2_has_sheng.py::test_has_sheng_for_day_master_is_about_the_day_pillar_itself`。
+    > **2026-10-04 换盘（R24-c/d）**：原用 乾 乙丑 丁亥 己巳 丁卯（书 上 418）。
+    > 该造乙木通根在亥（月令，段内免递减）与卯（脱段改按「与主根段最近成员」测距）——
+    > 两处递减都变小，乙木 7.5 → 9.0 度，超过火（2.0 度）的 4 倍，
+    > 受生范围（书 上 3859）不再成立 → 火、土皆无生，**真 has_sheng 与全 False 同判
+    > `cong_cai`**，断言会空转。故换 书 上 3083 这一张仍能分辨两者的盘。
     """
     from services.bazi.v2 import degrees as _deg
     from services.bazi.v2 import pipeline, xiyong_analysis_v2
 
-    pillars = {"year": {"gan": "乙", "zhi": "丑"}, "month": {"gan": "丁", "zhi": "亥"},
-               "day": {"gan": "己", "zhi": "巳"}, "time": {"gan": "丁", "zhi": "卯"}}
-    r = xiyong_analysis_v2("己", pillars)
+    pillars = {"year": {"gan": "庚", "zhi": "申"}, "month": {"gan": "甲", "zhi": "申"},
+               "day": {"gan": "丁", "zhi": "巳"}, "time": {"gan": "癸", "zhi": "卯"}}
+    r = xiyong_analysis_v2("丁", pillars)
 
     base = pipeline.compute_strength(pillars)
-    assert base["has_sheng"]["火"] is True, "乙木同柱生巳火 → 火有生（书 上 1537）"
-    assert base["has_sheng"]["土"] is True, "丁火得生克权 → 可生日元己土（书 上 980）"
+    assert base["has_sheng"]["火"] is True, "甲木有生克权又紧贴丁火 → 火有生（书 上 980）"
     cols = _deg.build_cols(pillars)
     args = dict(cols=cols, final=base["final_scores"],
                 root={w: base["degrees"][w]["root"] for w in base["degrees"]},
-                rel=base["relations"], month_zhi="亥")
+                rel=base["relations"], month_zhi="申")
     expected = geju.judge_geju(has_sheng=base["has_sheng"], **args)["type"]
     all_false = geju.judge_geju(has_sheng={w: False for w in base["final_scores"]},
                                 **args)["type"]

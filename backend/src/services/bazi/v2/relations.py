@@ -300,16 +300,33 @@ _PILLAR_ORDER = _ordered.PILLAR_ORDER
 
 # 天干五合（书 上 1577「甲己合化土，乙庚合化金，丙辛合化水，丁壬合化木，戊癸合化火（或土）」）。
 #
-# **戊癸只取化火**（2026-09-11 用户裁定）。
-# ⚠️ 书内冲突留痕：书上 2078 明写「戊癸**既能合化为火，又能合化为土**」，上 2124-2135
-# 另有整节「②戊癸合化土成功的条件」（五条件俱全），下 3969 列「戊癸化火（化土）格」，
-# 下 4134/4138 两例亦明判「戊癸化土格」。本实现**按裁定只认化火**——
-# 上述化土条文与两例因此判不出（差异可追溯至此条）。
+# **戊癸双化神**（书 上 2078）：「戊癸**既能合化为火，又能合化为土**，至于合化为什么，
+# 要看满足什么条件」——故戊癸的化神是**候选集**，按序试（书 上 2078 先讲化火）。
+# 其余四组各只有一个化神。
+#
+# 历次沿革：
+#   2026-09-11 曾**只取化火**（用户裁定；当时的留痕记在旧注释里）。
+#   2026-09-30 用户裁定**恢复化土**——书有整节五条件（上 2124-2135）、
+#   下 3969 列「戊癸化火（化土）格」、下 4134/4138 两例明判「戊癸化土格」、
+#   上 2659 亦判「戊癸合化土也成功」。见 research.md R22。
 GAN_HE_HUA: dict[frozenset, str] = {
     frozenset("甲己"): "土", frozenset("乙庚"): "金",
     frozenset("丙辛"): "水", frozenset("丁壬"): "木",
-    frozenset("戊癸"): "火",
+    frozenset("戊癸"): "火",          # **首候选**；戊癸另有「土」，见 HUA_CANDIDATES
 }
+
+# 化神**候选集**（按序试）。只有戊癸有两个；其余四组走 `GAN_HE_HUA` 的单值。
+HUA_CANDIDATES: dict[frozenset, tuple[str, ...]] = {
+    frozenset("戊癸"): ("火", "土"),
+}
+
+
+def hua_candidates(pair: frozenset) -> tuple[str, ...]:
+    """该五合对的化神候选（**按序试**）。非戊癸只有唯一化神。"""
+    if pair in HUA_CANDIDATES:
+        return HUA_CANDIDATES[pair]
+    h = GAN_HE_HUA.get(pair)
+    return (h,) if h else ()
 # 天干相冲（书：天干无相冲，此即「同性相克」的四组）
 # 天干**相克**（同性）——天克地冲的「天克」即此。
 #
@@ -1045,7 +1062,13 @@ def _gan_hua_one(g1: str, c1: _Col, g2: str, c2: _Col, month_zhi: str, hua: str,
     sheng_hua = next(w for w, v in SHENG.items() if v == hua)
     z1 = ZHI_WUXING.get(c1.zhi or "", "")
     z2 = ZHI_WUXING.get(c2.zhi or "", "")
-    if pair == frozenset("戊癸"):
+    # **戊癸的坐支口径随化神而变**：
+    #   · 化**火**：书 上 2122「戊土的坐支为**戌土**，戌土生于戌月为**燥土，可以当成火看**」
+    #     ——故走 `_zuozhi_wx`（未/戌 含火 ≥3 度时按火计），条件③ 要「一支为火、另一支为木或火」；
+    #   · 化**土**：书 上 2151/2163/2168 的算例里坐支按**本气原样**判（「戊癸的坐支均为土」
+    #     「戊土的坐支为火，癸水的坐支为**丑土**」），条件③ 要「一支为土、另一支为火或土」。
+    #     若这里也套 `_zuozhi_wx`，丑→土 ✓ 但戌在戌月会被当成火，反而两头不满足。
+    if pair == frozenset("戊癸") and hua == "火":
         z1, z2 = _zuozhi_wx(c1.zhi, month_zhi), _zuozhi_wx(c2.zhi, month_zhi)
     if not ((z1 == hua and z2 in (sheng_hua, hua))
             or (z2 == hua and z1 in (sheng_hua, hua))):
@@ -1060,8 +1083,10 @@ def _gan_hua_one(g1: str, c1: _Col, g2: str, c2: _Col, month_zhi: str, hua: str,
         weak_deg = final.get(GAN_WUXING.get(weak_gan, ""), 0.0)
     if weak_deg is not None and weak_deg >= WEAK_LINE:
         return False                          # 弱方能独立 → 不合化
-    # ⑤ 燥湿（只甲己一组）——须判**全盘**，故由调用方传入完整 `cols`；未传则跳过该条件。
-    if cols and pair == frozenset("甲己"):
+    # ⑤ 燥湿——须判**全盘**，故由调用方传入完整 `cols`；未传则跳过该条件。
+    # **凡化土者都有这一条**：甲己化土（上 1589/1620）与戊癸化土（上 2129）；
+    # 戊癸化**火**只有四条件，无此条（上 2080-2085）。
+    if cols and hua == "土" and pair in (frozenset("甲己"), frozenset("戊癸")):
         if _too_wet(cols=cols, month_zhi=month_zhi) or _too_dry(
                 cols=cols, c1=c1, c2=c2, month_zhi=month_zhi):
             return False
@@ -1073,15 +1098,15 @@ def _gan_hua_resolve(g1: str, c1: _Col, g2: str, c2: _Col, month_zhi: str,
                      effective_month: str | None = None) -> str | None:
     """该五合对的化神；化不成返回 None。
 
-    > 每组五合只有一个化神（戊癸原按书 上 2078 有火/土两个候选，2026-09-11 用户裁定
-    > **只取化火**，见 `GAN_HE_HUA` 处的书内冲突留痕）。
+    **按序试候选**（`hua_candidates`）：戊癸先火后土（书 上 2078 的讲解顺序），
+    其余四组候选只有一个。
     """
     pair = frozenset((g1, g2))
-    hua = GAN_HE_HUA.get(pair)
-    if not hua:
-        return None
-    return (hua if _gan_hua_one(g1, c1, g2, c2, month_zhi, hua, final, cols,
-                                effective_month) else None)
+    for hua in hua_candidates(pair):
+        if _gan_hua_one(g1, c1, g2, c2, month_zhi, hua, final, cols,
+                        effective_month):
+            return hua
+    return None
 
 
 def _gan_hua_ok(g1: str, c1: _Col, g2: str, c2: _Col, month_zhi: str,
@@ -1566,6 +1591,31 @@ def _touching(st: _State, a: _Col, b: _Col) -> bool:
     return abs(st.idx(a.key) - st.idx(b.key)) == 1
 
 
+def _same_zhi_runs(st: _State, zhi: str, cols_z: list[_Col]) -> list[list[_Col]]:
+    """同一支按「**连成一片**」串成的分组（六冲筛参与柱用）。
+
+    相邻（`_touching`；**岁运列与原局任何一柱都相邻**，书 上 575）者并成一片。
+    书 下 1684「由于运支午火的介入，使得年支跟日支变为紧贴的关系」——年午与日支子
+    盘面相隔，但年午与**运午**相邻、运午又与子相邻，故三者成一片，年午也算参与此冲。
+
+    反例守得住：同一例的**原局**（无运）年午与时午盘面不相邻，各自成片，年午那片与子
+    不相邻 → 不进参与柱（书 下 1683「只有日时子午冲（**年日子午不冲**）」）。
+    """
+    runs: list[list[_Col]] = [[c] for c in cols_z]
+    changed = True
+    while changed:                       # 小块，并查集式合并即可
+        changed = False
+        for i in range(len(runs)):
+            for j in range(i + 1, len(runs)):
+                if any(_touching(st, x, y) for x in runs[i] for y in runs[j]):
+                    runs[i] += runs.pop(j)
+                    changed = True
+                    break
+            if changed:
+                break
+    return runs
+
+
 def _tier11_groups(st: _State) -> list[tuple[_Col, list[_Col]]]:
     """寅巳申三刑：返回 `(中支, 全部参与柱)`（书 下 2186-2196 的两条构成条件）。
 
@@ -1771,8 +1821,15 @@ def _tkc_groups(st: _State) -> list[tuple[tuple[str, str], tuple[str, str], list
                     x = stack.pop()
                     comp.append(x)
                     for y in nodes:
-                        if (y.key not in done and {x.zhi, y.zhi} == {za, zb}
-                                and _tkc_act(st, x, y)):
+                        if y.key in done:
+                            continue
+                        # **同支**之间的边＝「连成一片」（`_touching`，岁运对任何一柱皆相邻）
+                        # ——岁运**桥接**（2026-10-04 教师裁定）：下 1684「由于运支午火的介入，
+                        # 使得年支跟日支变为紧贴的关系」，两颗午由**运午**串成一片，年午因此
+                        # 也进这一条冲（与 tier 8 的 `_same_zhi_runs` 同旨）。
+                        linked = (_touching(st, x, y) if x.zhi == y.zhi
+                                  else _tkc_act(st, x, y))
+                        if linked:
                             done.add(y.key)
                             stack.append(y)
                 if {c.zhi for c in comp} == {za, zb}:
@@ -2140,8 +2197,12 @@ def _candidates(tier: int, st: _State) -> list[_Cand]:
         # ——下 1656「日时子午相冲（**年时子午不冲**）」、下 1683 原局「年日子午不冲」
         # 都明示不相邻者不计入。故先按「是否至少与对方某一支相邻」筛出参与柱，
         # 再并成一条；这样 `cand.cols` 含全部参与支，`split` 的摊分才落得下去。
-        # ⚠️ 岁运**桥接**（下 1684「运支午火的介入，使得年支跟日支变为紧贴」）
-        # 未实现——大运列接在四柱之后，只按盘面柱距判定相邻。
+        #
+        # **岁运桥接**（2026-10-04 教师裁定，R26-b）：同一支若**连成一片**，则整片同进同出
+        # ——下 1684「由于运支午火的介入，使得年支跟日支变为紧贴的关系」：年午与日支子
+        # 盘面相隔，可**运支午与原局任何一柱都相邻**（书 上 575），年午—运午—子成一条可走
+        # 的链，故年午也算参与（该书例「年时两支午火，使子水减力2度」）。判定见
+        # `_same_zhi_runs`：先按「相邻」把同支串成片，**片里任一支与对方相邻，整片都算**。
         for pair in ZHI_CHONG:
             z1, z2 = sorted(pair, key=lambda z: _ordered.ZHI_ORDER.index(z))
             c1, c2 = _cols_with(st, z1), _cols_with(st, z2)
@@ -2151,13 +2212,19 @@ def _candidates(tier: int, st: _State) -> list[_Cand]:
             # 不再参与本冲；某对的两支都被合住同理。整条都被解掉时产出一条带 `jie` 的候选，
             # 由 `_judge_pass` 送进 rejected（与「破局」同一形制）。
             mz0 = _MONTH_CTX.get("zhi", "")
-            adj = [(a, b) for a in c1 for b in c2 if _touching(st, a, b)]
+            runs1, runs2 = _same_zhi_runs(st, z1, c1), _same_zhi_runs(st, z2, c2)
+            adj: list[tuple[_Col, _Col]] = [
+                (a, b) for r1 in runs1 for r2 in runs2
+                if any(_touching(st, x, y) for x in r1 for y in r2)
+                for a in r1 for b in r2]
             kept: set[str] = set()
             jied: list[tuple[str, str]] = []            # (理由, 柱位标签)
             for a, b in adj:
                 why = _jie_reason(st, a.key, b.key, z1, z2, mz0)
                 if why:
-                    jied.append((why, _ordered.col_zhis_label(st.cols, [a.key, b.key])))
+                    item = (why, _ordered.col_zhis_label(st.cols, [a.key, b.key]))
+                    if item not in jied:                # 连成一片后同一对会重复出现
+                        jied.append(item)
                     continue
                 kept.update((a.key, b.key))
             if not kept:

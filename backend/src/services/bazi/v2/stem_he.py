@@ -116,7 +116,10 @@ def judge_stem_he(cols: list, month_zhi: str, rel: dict,
     - ``hua``       柱位下标 → (化神五行, 换字后的干)
     - ``ban_cheng`` 柱位下标 → 减几**成**（下游按整组静态旺度缩放；`ban` 那一份逐干度数是
   旧口径遗留，调用点一律忽略）
-    - ``blocked``   因合而不再论生克的对（书 上 1595「贪合忘生克」）
+    - ``blocked``   **合化成功（含其让位者）**而不再论生克的对——换了字就不再是原来那两
+      个五行，故整对不作用。**合绊（合而不化）不在其中**：合绊的两条力并存
+      （下 949「减去 1 度（生克之力）……再减去 0.25 度的合绊之力」），照常出结算对，
+      仅由 `ban_cheng` 另扣合绊之力（2026-10-04 用户裁定，见 R24-b）
     - ``established`` 结构化结论，供依据行与前端
     - ``traces``    人读的依据行
     """
@@ -227,9 +230,9 @@ def judge_stem_he(cols: list, month_zhi: str, rel: dict,
             winner, losers = (None, list(grp)) if top == second else (ranked[0], ranked[1:])
 
         is_hua = False
+        hua_wx: str | None = None
         if winner is not None and not force_ban:
             a, b, pair = winner
-            hua_wx = GAN_HE_HUA[pair]
             # 条件④取**弱方那个字所在连片组**的动态终值——书 上 1588 说的是「甲」这个字，
             # 不是「木」这个五行（五行合计会把同行的别的实例也算进来，实测书 上 2006
             # 丁卯 壬子 辛丑 甲午 就因此被误判成「能独立」）。
@@ -238,14 +241,20 @@ def judge_stem_he(cols: list, month_zhi: str, rel: dict,
             if final_by_col is not None and weak_weak is not None:
                 weak_deg = final_by_col.get(
                     work[a].key if work[a].src_gan == weak_weak else work[b].key)
-            is_hua = rel_mod._gan_hua_one(
-                work[a].src_gan, work[a], work[b].src_gan, work[b],
-                month_zhi, hua_wx, weak_deg=weak_deg, cols=cols,
-                effective_month=effective)
+            # **按序试候选化神**（`hua_candidates`）——戊癸先火后土（书 上 2078），
+            # 其余四组只有一个候选。原来的 `GAN_HE_HUA[pair]` 只取首候选，戊癸化土判不出。
+            for _h in rel_mod.hua_candidates(pair):
+                if rel_mod._gan_hua_one(
+                        work[a].src_gan, work[a], work[b].src_gan, work[b],
+                        month_zhi, _h, weak_deg=weak_deg, cols=cols,
+                        effective_month=effective):
+                    hua_wx = _h
+                    break
+            is_hua = hua_wx is not None
 
         if is_hua:
             a, b, pair = winner
-            hua_wx = GAN_HE_HUA[pair]
+            assert hua_wx is not None
             for k in (a, b):
                 src = work[k].src_gan
                 hua[k] = (hua_wx, _HUA_GAN[hua_wx][GAN_YIN_YANG[src]])
@@ -267,9 +276,14 @@ def judge_stem_he(cols: list, month_zhi: str, rel: dict,
             })
             continue
 
-        # 未化（含争合失败）→ 全部按合绊，且贪合忘生克（书 上 1699 e「与争合失败的一起论合绊」）
-        for x, y, _ in grp:
-            blocked.add((x, y))
+        # 未化（含争合失败）→ 全部按合绊（书 上 1699 e「与争合失败的一起论合绊」）。
+        #
+        # ⚠️ **合绊不屏蔽生克**（2026-10-04 用户裁定；R24-b）。改前此处 `blocked.add((x, y))`
+        #    ——挂「贪合忘生克（书 上 1595）」，而该说法**两册《精髓》全文无**，上 1595 讲的
+        #   是**合绊减力**（「甲木减去 2 成…变为 0.8 度」）。书里的反证是 下 949：
+        #   「2申与1子合绊——申中庚金减去 1 度（**生克之力**）……同时每个申金还要再减去
+        #   0.25 度的**合绊之力**」——两条力**并存**、两条都扣。故合绊的对照常出结算对，
+        #   合绊自身的减力仍走 `ban_cheng`（第 6 段，另有其账）。
         side4: dict[int, float] = {}
         side2: list[int] = []
         for a, b, pair in grp:

@@ -302,7 +302,12 @@ def _day_master_he_hua(cols: list[degrees.Col], dm: str, month_zhi: str,
         pair = frozenset((g1, g2))
         if pair not in _rel.GAN_HE_HUA:
             continue
-        if _rel._gan_hua_ok(g1, a, g2, b, month_zhi, final=final,
-                            effective_month=effective):
-            return _rel.GAN_HE_HUA[pair]
+        # **返回 `_gan_hua_resolve` 试出来的那个化神**，不能回读 `GAN_HE_HUA[pair]`——
+        # 戊癸双化神（书 上 2078），回读只会拿到首候选「火」，化土格静默失效。
+        # `cols` 一并传：条件⑤（燥湿）须判**全盘**，而化土（甲己/戊癸）都有这一条
+        # （上 1589 / 上 2129）——不传会把条件⑤整条跳过（此前的已知遗留项 C26-22）。
+        hua = _rel._gan_hua_resolve(g1, a, g2, b, month_zhi, final=final,
+                                    cols=cols, effective_month=effective)
+        if hua:
+            return hua
     return None

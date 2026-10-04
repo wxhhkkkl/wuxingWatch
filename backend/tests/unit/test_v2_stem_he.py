@@ -212,18 +212,39 @@ def test_diqi_ranking_follows_zuozhi_wuxing():
 
 
 # ---------------------------------------------------------------
-# 贪合忘生克
+# 合与生克：**合化不结算、合绊照常结算**（2026-10-04 用户裁定，R24-b）
 # ---------------------------------------------------------------
 
-def test_combined_pair_never_produces_a_shengke_pair():
-    """合了的对不再论生克（书 上 1595「贪合忘生克」）——第 7 段里不出现这一对。
+def test_ban_pair_still_produces_a_shengke_pair():
+    """**合绊**（合而不化）的对**照常**论生克——两条力并存。
 
-    `甲子 己卯 戊午 庚申`：年甲（木）与月己（土）本是一对「木克土」，合绊后不再结算。
+    书 下 949：「2申与1子合绊——申中庚金减去 1 度（**生克之力**）……同时每个申金还要
+    再减去 0.25 度的**合绊之力**」。原实现按「贪合忘生克」把这一对整对跳过，而该说法
+    两册《精髓》全文无（引用挂 上 1595，1595 讲的是**合绊减力**）。
+
+    `甲子 己卯 戊午 庚申`：年甲（木）与月己（土）判「甲己合而不化，以合绊论」
+    （`ban_cheng` = 甲 2 成、己 4 成，上 1595）——这一对仍要出「木克土」。
     """
     r = pipeline.compute_strength(_chart("甲子", "己卯", "戊午", "庚申"))
+    assert [e["result"] for e in r["stem_he"]["established"]] == ["合绊"]
+    assert not r["stem_he"]["blocked"], "合绊不进 blocked"
     lines = [t["expression"] for t in
              next(s for s in r["steps"] if s["key"] == "stem_shengke")["traces"]]
-    assert not any("年干甲" in x and "克" in x and "月干己" in x for x in lines), lines
+    assert any("木克土" in x and "年干甲" in x for x in lines), lines
+
+
+def test_hua_pair_never_produces_a_shengke_pair():
+    """**合化成功**的对（换了字）不再论生克——`blocked` 里只剩这一类。
+
+    `辛亥 癸巳 戊戌 丙辰`：月干癸与日干戊「戊癸合化火成功」，戊木…戊土换字为丙（火）。
+    换字后这一对是「水克火」，但它属合化的一对，**不**出结算对。
+    """
+    r = pipeline.compute_strength(_chart("辛亥", "癸巳", "戊戌", "丙辰"))
+    assert [e["result"] for e in r["stem_he"]["established"]] == ["合化"]
+    assert r["stem_he"]["blocked"], "合化（及其让位者）仍在 blocked 里"
+    lines = [t["expression"] for t in
+             next(s for s in r["steps"] if s["key"] == "stem_shengke")["traces"]]
+    assert not any("月干癸" in x and "日干丙" in x for x in lines), lines
 
 
 # ---------------------------------------------------------------

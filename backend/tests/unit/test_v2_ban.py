@@ -709,24 +709,19 @@ def test_weak_party_table():
 # ---------------------------------------------------------------
 
 def test_chong_zisi_dead_place_only_when_si_not_xiu():
-    """寅月（水**休**）子午冲：主克者子水 −1 度，**不是** −1.8（书 下 1651）。
+    """寅月（水**休**）子午冲、**午临大运**：主克者子水 −1.5 度（临大运档），**不是** −1.8。
 
-    > 书 下 1651「在个数比为l：1的情况下：主克者减去l度（若受克者临月令则主克者
-    >   减去2度，若受克者临大运则主克者减力1.5度——**若主克者在原局处于死地则减力
-    >   1.8度**），受克者的本气减半…」
+    > 书 下 1651「…若受克者临大运则主克者减力**1.5**度——**若主克者在原局处于死地
+    >   则减力 1.8 度**」——1.8 是「临大运」这一支里的加重档。
     > 上 201 起「旺相休囚死」表的寅月行（上 215）：木旺、火相、土**死**、金**囚**、
     > 水**休**——水是「休」不是死；水真死者是辰/未/戌月（同表水列作「死」）。
-    > 反证：旧实现写的是 `not _dang(水, 寅)`，而 `_dang`＝当令（旺/余气/相，参数 ≤3，
-    > 上 930「▲状态判断：当令≤3   失令＞3」），补集把**休、囚、死**一并算进去，
-    > 故旧行为是 −1.8。
+
+    该盘两午齐冲：**运支午**（临大运 → 1.5）＋ **时支午**（在原局 → 1.0）＝ 共 −2.5 度
+    （多支按「逐支累计、总量摊分」，书 下 1684）。
     """
-    r = pipeline.compute_strength(_chart("丙寅", "甲寅", "戊子", "丙午"))
+    r = pipeline.compute_strength(_chart("丙寅", "甲寅", "戊子", "丙午"), dayun_ganzhi="甲午")
     eff = _effects(r["relations"], (2, 8), ["子", "午"])
-    assert _pick(eff, "子", "癸")["delta"] == -1.0, "寅月水休 → 主克者只减 1 度"
-    # 生产链路：子中癸水 5 度 → 4 度（只减 1 度）；寅月水「休」（系数 0.8）→ 静态 3.2
-    d = r["degrees"]["水"]
-    assert (d["base"], d["after_relations"], d["state"]) == (5.0, 4.0, "休")
-    assert d["static"] == pytest.approx(3.2)
+    assert _pick(eff, "子", "癸")["delta"] == -2.5, "寅月水休 → 临大运档 1.5，不加重到 1.8"
 
 
 @pytest.mark.parametrize("spec", [
@@ -735,24 +730,40 @@ def test_chong_zisi_dead_place_only_when_si_not_xiu():
     ("甲戌", "甲戌", "戊子", "戊午"),     # 戌月：水「死」
 ])
 def test_chong_zisi_dead_place_minus_1_8(spec):
-    """辰/未/戌月（水**死**）子午冲：主克者子水 −1.8 度（书 下 1651）。"""
-    r = pipeline.compute_strength(_chart(*spec))
+    """辰/未/戌月（水**死**）子午冲 + **午临大运**：主克者子水 −1.8 ＋ 1.0 = **−2.8**。
+
+    1.8 是「受克者临大运」里的加重档（书 下 1651 括号句；唯一的 1.8 算例 下 1707
+    「午火临大运，子水在原局处死地」两条齐备）。
+    """
+    r = pipeline.compute_strength(_chart(*spec), dayun_ganzhi="甲午")
     eff = _effects(r["relations"], (2, 8), ["子", "午"])
-    assert _pick(eff, "子", "癸")["delta"] == -1.8, "水死于辰/未/戌月 → 才走 1.8"
-    d = r["degrees"]["水"]
-    assert d["state"] == "死", "辰/未/戌月水为死地"
-    assert d["base"] - d["after_relations"] == pytest.approx(1.8), "生产链路：冲去 1.8 度"
+    assert _pick(eff, "子", "癸")["delta"] == -2.8, "水死于辰/未/戌月 + 午临大运 → 1.8+1.0"
+    assert r["degrees"]["水"]["state"] == "死", "辰/未/戌月水为死地"
 
 
 def test_chong_maoyou_dead_place_qiu_vs_si():
-    """卯酉冲主克者（酉金）：**寅月（金囚）−1 度**、**巳月（金死）−1.8 度**（书 下 1651）。
+    """卯酉冲主克者（酉金）、**卯临大运**：**寅月（金囚）−1.5**、**巳月（金死）−1.8**（书 下 1651）。
 
     > 与上一条同一判据——只认「死」。寅月金「囚」（上 204-299 表）不得加重到 1.8。
+    > 两盘都是「运卯 + 时卯」齐冲：囚盘 1.5＋1.0 = **2.5**、死盘 1.8＋1.0 = **2.8**。
     """
-    r1 = pipeline.compute_strength(_chart("甲寅", "辛酉", "丁卯", "丙寅"))
-    assert _pick(_effects(r1["relations"], (2, 8), ["卯", "酉"]), "酉", "辛")["delta"] == -1.0
-    r2 = pipeline.compute_strength(_chart("丙寅", "己巳", "丁卯", "辛酉"))
-    assert _pick(_effects(r2["relations"], (2, 8), ["卯", "酉"]), "酉", "辛")["delta"] == -1.8
+    r1 = pipeline.compute_strength(_chart("甲寅", "辛酉", "丁卯", "丙寅"), dayun_ganzhi="己卯")
+    assert _pick(_effects(r1["relations"], (2, 8), ["卯", "酉"]), "酉", "辛")["delta"] == -2.5
+    r2 = pipeline.compute_strength(_chart("丙寅", "己巳", "丁卯", "辛酉"), dayun_ganzhi="己卯")
+    assert _pick(_effects(r2["relations"], (2, 8), ["卯", "酉"]), "酉", "辛")["delta"] == -2.8
+
+
+def test_chong_dead_place_needs_the_sub_side_in_dayun():
+    """**受克者不在大运**时，主克者即便在原局死地也只减 **1 度**（教师 2026-10-04 Q2）。
+
+    书 下 1651 的括号句有两种读法；教师对「坤 丁酉 丙午 己卯 癸酉 + 己酉运」的答复
+    给出了定论：「3酉冲1卯，酉金**总共减力 1 度**，平均每个酉金减去 0.33 度」
+    ——酉金在午月是**死**地，可是受克的卯在原局、不临大运，故只走基准的 1 度。
+    """
+    r = pipeline.compute_strength(_chart("丁酉", "丙午", "己卯", "癸酉"), dayun_ganzhi="己酉")
+    eff = _effects(r["relations"], (2, 8), ["卯", "酉"])
+    assert _pick(eff, "酉", "辛")["delta"] == -1.0, "受克者不临大运 → 死地也不加重"
+    assert r["degrees"]["金"]["state"] == "死", "酉金确在午月死地（前提成立）"
 
 
 def test_chong_multi_sub_main_deducts_per_sub():
@@ -840,3 +851,37 @@ def test_shang_1948_heban_reduces_the_stem_itself_only():
     # 同上：合绊减整组 → 丙 =（1+8）×2.0 × 0.9? 实测 18.0
     assert r["static_scores"]["火"] == 20.0, r["static_scores"]
     assert r["static_scores"]["金"] == 5.5, r["static_scores"]
+
+
+# ---------------------------------------------------------------
+# R26 · 六冲的「连成一片」参与（岁运桥接，教师 2026-10-04）
+# ---------------------------------------------------------------
+
+def test_chong_suiyun_bridge_pulls_in_the_whole_run():
+    """同支**连成一片**者同进同出——年酉因大运酉而参与此冲（教师 2026-10-04）。
+
+    坤 丁酉 丙午 己卯 癸酉 + 己酉运（《初级答疑》15）。老师给的算法
+    「酉金总共减力 1 度，平均每个酉金减去 0.33 度…（4.67＋4.67）×0.5＋4.67＋2＝**11.34**」
+    **只有把年支酉也摊进去才凑得出**：年酉与卯盘面相隔（中隔月午），但年酉与大运酉
+    同支、而**岁运之支与原局任何一柱都相邻**（书 上 575），年酉—运酉—卯成一条可走的
+    链——正是书 下 1684「由于运支午火的介入，使得年支跟日支变为紧贴的关系」。
+    """
+    r = pipeline.compute_strength(_chart("丁酉", "丙午", "己卯", "癸酉"), dayun_ganzhi="己酉")
+    tie = [e for e in r["relations"]["established"] if e.get("tier") in (2, 8)]
+    assert tie and "year" in tie[0]["cols"], tie and tie[0]["cols"]
+    assert _pick(_effects(r["relations"], (2, 8), ["卯", "酉"]), "酉", "辛")["delta"] == -1.0
+    assert r["static_scores"]["金"] == pytest.approx(11.34), \
+        "摊给三支酉（含年酉）才与老师同值；只摊参与紧贴的两支是 11.25"
+
+
+def test_chong_no_bridge_without_suiyun():
+    """**无岁运则不桥接**——书 下 1683 原局「年日子午不冲」（下 1656 同旨）。
+
+    甲午 丙寅 庚子 壬午：年午与时午盘面不相邻（中隔月寅），各自成片；年午那片与子
+    不相邻，故只有日时子午冲——本盘正是书 下 1684 用来演示「运支介入」的那一盘，
+    去掉大运即退回原局口径。
+    """
+    r = pipeline.compute_strength(_chart("甲午", "丙寅", "庚子", "壬午"))
+    tie = [e for e in r["relations"]["established"] if e.get("tier") in (2, 8)]
+    assert tie, "原局应有日时子午冲"
+    assert all("year" not in e["cols"] for e in tie), [e["cols"] for e in tie]

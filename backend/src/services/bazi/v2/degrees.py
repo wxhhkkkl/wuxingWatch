@@ -67,6 +67,10 @@ class Col:
     # `cols`），其藏干按 `is_dayun`/`is_liunian` 独立档**平加**进旺度、不乘月令系数
     # （书 上 884）。给定时快照直接取它，不再走 `_raw_hidden`/月令系数那条路。
     flat_hidden: list[tuple[str, float]] | None = None
+    # **甲子特例**：本柱为「甲子」且子水当令、又未被刑冲合害介入时，子水作甲木的
+    # **2 度根**（教师 2026-10-04 裁定）——由 `pipeline._mark_jiazi` 在关系判定之后打标，
+    # 通根（`pipeline._tonggen_with_hidden`）与「第 4 段」依据行都读它。
+    jiazi_root: float = 0.0
 
     @property
     def src_gan(self) -> str:
@@ -206,14 +210,65 @@ def _bridged(cols: list[Col], stem_idx: int, root_idx: int, wx: str) -> bool:
     return bool(target.gan and GAN_WUXING[target.gan] == wx)
 
 
-def root_penalty(cols: list[Col], stem_idx: int, root_idx: int, wx: str) -> float:
-    """该天干对该通根支的递减度数。"""
-    if _bridged(cols, stem_idx, root_idx, wx):
+def root_penalty(cols: list[Col], stem_idx: int, root_idx: int, wx: str,
+                 *, run: list[int] | None = None, bridged: bool = True) -> float:
+    """**一个参照点**对某通根段里 `root_idx` 这一支的递减度数。
+
+    `run` 为该根段的柱位（供 ⑥ 判「**段内**含月令」）；`bridged=False` 时绕过 ⑤ 的窄
+    口径——**脱离主根段的段**必须绕（回见 `run_penalty`：那里的参照点可能是**支**，
+    而 ⑤ 说的是「中隔之干／支藏有同类」对天干的滑动，对支不适用）。
+    """
+    if bridged and _bridged(cols, stem_idx, root_idx, wx):
+        return 0.0
+    # ⑥ 通根于月令者不按远近计，均按同柱论——**段内含月令柱即整段免**：
+    # 书 上 589 例 2（戊寅 乙丑 庚寅 己卯）「时干与这些土虽然不是同柱的关系，**但通根于
+    # 月令相当于同柱通根，所以不需要减力**」，整段 5 度不减（书给时干己土 12 度）。
+    # 改前只看段内**最近支**是不是月令，同一例给 4.5 —— 2026-10-04 用户裁定（R24-c）。
+    if run and any(cols[j].key == "month" for j in run):
         return 0.0
     if cols[root_idx].key == "month":
-        return 0.0          # ⑥ 通根月令视同柱
+        return 0.0          # ⑥（未给 `run` 时的回退，口径同上）
     d = abs(stem_idx - root_idx)
     return PENALTY_BY_DISTANCE.get(d, FAR_PENALTY)
+
+
+def anchor_run(cols: list[Col], idxs: tuple[int, ...] | list[int],
+               runs: list[list[int]]) -> list[int] | None:
+    """**主根段**——距天干组最近的那一段（并列取靠前者）。"""
+    if not runs:
+        return None
+
+    def _d(r: list[int]) -> int:
+        return min(abs(j - i) for j in r for i in idxs)
+
+    return min(runs, key=lambda r: (_d(r), r[0]))
+
+
+def run_reference(cols: list[Col], idxs: tuple[int, ...] | list[int],
+                  run: list[int], anchor: list[int] | None) -> tuple[int, int]:
+    """该根段的**（参照支, 参照点）**。
+
+    - **主根段**——参照点在**天干组**里（同柱 0／相邻 0.5／相隔 1／远隔 2 四档）；
+    - **脱离的段**——参照点在「**天干组 ∪ 主根段**」里取最近者。书里两处算例的参照点
+      分别是天干与主根段的支：书 上 583 例 1（庚申 丙戌 癸未 壬子）的申按**癸**（日干）
+      相隔 −1；下 4025（坤 壬辰 癸丑 戊寅 乙卯）的辰按**寅**（主根段 [寅,卯] 内离辰最近
+      的一支）相隔 −1——教师 2026-10-04 原话「辰藏 2 度，**与寅木相隔**减去 1 度」。
+      改前一律按天干测距（辰到**时干乙**是远隔 −2 → 那一段归 0，给乙木 6.3 而非 7）。
+    """
+    if anchor is not None and run == anchor:
+        near = nearest_in_run(idxs, run)
+        return near, min(idxs, key=lambda k: abs(k - near))
+    pool = list(idxs) + list(anchor or [])
+    near = min(run, key=lambda j: min(abs(j - p) for p in pool))
+    return near, min(pool, key=lambda k: abs(k - near))
+
+
+def run_penalty(cols: list[Col], idxs: tuple[int, ...] | list[int],
+                run: list[int], anchor: list[int] | None, wx: str) -> float:
+    """一个**通根段**的递减度数（递减规则的定义处，`_run_split` 与 `group_tonggen` 共用）。"""
+    main = anchor is not None and run == anchor
+    near, p = run_reference(cols, idxs, run, anchor)
+    return root_penalty(cols, p, near, wx, run=run, bridged=main)
 
 
 def root_runs(cols: list[Col], wx: str) -> list[list[int]]:
@@ -259,13 +314,12 @@ def group_tonggen(cols: list[Col], idxs: tuple[int, ...] | list[int],
         return 0.0
     wx = GAN_WUXING[cols[idxs[0]].gan]
     total = 0.0
-    for run in root_runs(cols, wx):
+    runs = root_runs(cols, wx)
+    anchor = anchor_run(cols, idxs, runs)
+    for run in runs:
         deg = sum(d for j in run
                   for g, d in hidden_of(cols, cols[j], month_zhi) if GAN_WUXING[g] == wx)
-        near = nearest_in_run(idxs, run)
-        # 递减参照**组内最近的那个天干**；该干与 `near` 同柱时不减（书 上 1008 根午=1.4）。
-        i = min(idxs, key=lambda k: abs(k - near))
-        total += max(0.0, deg - root_penalty(cols, i, near, wx))
+        total += max(0.0, deg - run_penalty(cols, idxs, run, anchor, wx))
     return round(total, 3)
 
 
