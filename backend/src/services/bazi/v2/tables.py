@@ -150,51 +150,112 @@ def _month_group(zhi: str, month_zhi: str) -> str:
     return "other"
 
 
+SUIYUN_KEYS = ("_dayun", "_liunian")
+
+
 def dangzhong_run(cols: list, wx: str, col_key: str) -> int:
-    """含 `col_key` 之支在内的**「连成一片」连续段长度**（书 上 413-414）。
+    """含 `col_key` 之支在内的「连成一片」**连通分量大小**（书 上 413-414）。
 
     书 上 412-414 例 3：乾 己丑 乙亥 乙丑 丁丑——三个丑**未连成一片**，故丑仍「含土 0 度」；
     注：「如果把时柱换成己丑，那么日、时支丑…还连成一片，此时日时的丑含土 3 度，
-    但**年支的丑还是藏土 0 度**」。
+    但**年支的丑还是藏土 0 度**」。天干与地支同计——书 上 423「2丑及**己土**党众3个」、
+    470「辰、未、**己、戊**党众4个」、486「辰土党众（**辰-戊-辰**）」。
 
-    故「连成一片」= 在**干支线性序列**（年干·年支·月干·月支·日干·日支·时干·时支）上
-    与该支相邻的同类（同五行）单位构成连续段；本函数返回该段长度。
-    天干与地支同计——书 上 423「2丑及**己土**党众3个」、470「辰、未、**己、戊**党众4个」、
-    486「辰土党众（**辰-戊-辰**）」。
+    **图模型**（2026-10-14 R27 订正）：节点 = 各柱的干与支；边 =
 
-    **岁运之支不入该序列**（013 期）：序列明写为「年干·年支·…·时干·时支」八位，
-    是**原局**的连片概念。实测若不排除伪列，书例 下 1819（丙寅 庚子 戊子 丙辰 + 戊戌运）
-    会把「日干戊 + 时支辰 + 大运戊戌」串成 3 个土，使辰的含土由 **0** 误算为 3
-    ——而书该例明写「**辰土原始含土量为 0**」。无岁运时无可排除者，故原局路径不变。
+    ① 同柱的干 ↔ 支；
+    ② **原局**相邻柱按扁平序相邻（支_i ↔ 干_{i+1}，与原实现逐位相同）；
+    ③ **岁运柱的每一个单位 ↔ 原局每一柱的每一个单位**（枢纽），④ 大运柱 ↔ 流年柱。
+
+    「连成一片」＝同五行单位在该图上的**连通分量大小**。
+
+    **为什么不是「岁运柱接在时柱之后」**（改前的线性序列）：大运与原局**每一柱都相邻**
+    （书 上 575「岁运的天干到原局任何一柱的天干的距离都是相同的，都是相邻的关系」），
+    把它钉在序列末尾会让年支那头的库支永远够不着。书里三条例证要求它能接上去——
+    上 423 例4（己丑运把**年支丑**顶成含土 3）、上 486 例6（戊辰运把**时支辰**顶成含土 3）、
+    上 470（辰、未、己、戊党众 4 个，两干两支混计）。**同一个毛病关系层 013 已修过一次**
+    （R26-b：`relations._touching` 让岁运列对任何一柱皆相邻）。
+
+    **退化不变量**：`cols` 不含岁运伪列时没有边③④ → 图退化成旧线性链 → **逐位不变**
+    （原局 667 盘基线的守门）。要「原局八位」那个量（书 下 1819 的「**原始**含土量」），
+    用 `dangzhong_natal`，不要在这儿调。
     """
     from services.bazi.constants import GAN_WUXING
 
-    seq: list[tuple[bool, str | None]] = []      # (是否同类, 所属柱位)
+    # 节点：每个单位 = (是否同类, 所属柱位)；岁运节点单独记下来做枢纽边
+    units: list[tuple[bool, str | None]] = []
     idx = -1
+    chain: list[tuple[int, int]] = []            # 扁平序里**原局**相邻的单位对
+    natal_last: int | None = None
     for c in cols:
-        if c.key in ("_dayun", "_liunian"):      # 岁运不入原局连片
-            continue
+        first = len(units)
         if c.gan:
-            seq.append((GAN_WUXING.get(c.gan) == wx, c.key))
+            units.append((GAN_WUXING.get(c.gan) == wx, c.key))
         if c.zhi:
-            seq.append((BRANCH_WUXING_BENQI.get(c.zhi) == wx, c.key))
+            units.append((BRANCH_WUXING_BENQI.get(c.zhi) == wx, c.key))
             if c.key == col_key:                 # 以该柱的**地支**位为基准
-                idx = len(seq) - 1
-    if idx == -1 or not seq[idx][0]:
+                idx = len(units) - 1
+        if first == len(units):
+            continue
+        if c.key in SUIYUN_KEYS:
+            continue                             # 岁运柱不进扁平链，只做枢纽
+        if natal_last is not None:
+            chain.append((natal_last, first))    # ② 相邻柱：上一柱的末位 ↔ 本柱的首位
+        for k in range(first + 1, len(units)):   # ① 同柱内部逐位相接
+            chain.append((k - 1, k))
+        natal_last = len(units) - 1
+
+    if idx == -1 or not units[idx][0]:
         return 0
-    lo = idx
-    while lo > 0 and seq[lo - 1][0]:
-        lo -= 1
-    hi = idx
-    while hi + 1 < len(seq) and seq[hi + 1][0]:
-        hi += 1
-    return hi - lo + 1
+
+    adj: dict[int, set[int]] = {i: set() for i in range(len(units))}
+    for a, b in chain:
+        adj[a].add(b)
+        adj[b].add(a)
+    hubs = [i for i, (_, key) in enumerate(units) if key in SUIYUN_KEYS]
+    natal = [i for i, (_, key) in enumerate(units) if key not in SUIYUN_KEYS]
+    for h in hubs:                               # ③ 岁运柱 ↔ 原局每一柱的每一个单位
+        for n in natal:
+            adj[h].add(n)
+            adj[n].add(h)
+    for a in hubs:                               # ④ 大运 ↔ 流年
+        for b in hubs:
+            if a != b:
+                adj[a].add(b)
+
+    seen, stack, size = {idx}, [idx], 0
+    while stack:
+        i = stack.pop()
+        if not units[i][0]:
+            continue                             # 同类才计入党众，也才继续走
+        size += 1
+        for j in adj[i]:
+            if j not in seen and units[j][0]:
+                seen.add(j)
+                stack.append(j)
+    return size
+
+
+def dangzhong_natal(cols: list, wx: str, col_key: str) -> int:
+    """**原局八位**的连片段长——书 下 1819 说的「**原始**含土量」就是它。
+
+    与 `dangzhong_run` 只差一件事：把岁运伪列摘掉再跑同一个图（没有枢纽边）。
+    用途是**条件判定**（「库支原始含土量不为 0」才能冲/合），不是值——
+    值走 `dangzhong_run`（岁运能把原局库支顶起来，上 423/486）。
+    """
+    return dangzhong_run([c for c in cols if c.key not in SUIYUN_KEYS], wx, col_key)
 
 
 def dangzhong_for(cols: list, zhi: str) -> int:
-    """盘上某支的党众连续段长度（取第一个匹配柱）。非土支恒为 0。"""
-    key = next((c.key for c in cols if c.zhi == zhi), None)
+    """盘上某支的党众段长（取**原局**第一个匹配柱）。非土支恒为 0。"""
+    key = next((c.key for c in cols if c.zhi == zhi and c.key not in SUIYUN_KEYS), None)
     return dangzhong_run(cols, "土", key) if key else 0
+
+
+def dangzhong_natal_for(cols: list, zhi: str) -> int:
+    """`dangzhong_natal` 的按支名版本——「原始含土量」条件专用。"""
+    key = next((c.key for c in cols if c.zhi == zhi and c.key not in SUIYUN_KEYS), None)
+    return dangzhong_natal(cols, "土", key) if key else 0
 
 
 def hidden_degrees(

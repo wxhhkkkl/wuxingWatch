@@ -5,10 +5,10 @@ import { ganZhiColor } from '../utils/wuxing'
 
 /** 大运/流年/流月/流日/流时联动横条：逐级点击下钻，下级列表由父组件按需加载。 */
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   steps: DaYunStep[]
   selectedDayunIndex: number
-  selectedLiunianYear: number | null
+  selectedLiunianYear?: number | null
   startAge?: number | null
   startMonth?: number | null
   startDay?: number | null
@@ -22,7 +22,10 @@ const props = defineProps<{
   liushi?: LiuShiItem[]
   selectedLiushiZhi?: string | null
   loadingLevel?: 'month' | 'day' | 'hour' | null
-}>()
+  /** **只要大运那一条横条**（014 的引擎2 页）：该页只按大运步取数、没有流年维度，
+   *  故 `steps[].liu_nian` 里即便有数据也不画流年横条（那属于现引擎的岁运维度）。 */
+  dayunOnly?: boolean
+}>(), { dayunOnly: false })
 
 const emit = defineEmits<{
   'select-dayun': [index: number]
@@ -93,8 +96,8 @@ watch(
       </div>
     </div>
 
-    <!-- 流年横条 -->
-    <div v-if="liunianList.length" class="fs-strip liunian">
+    <!-- 流年横条（`dayun-only` 时整条不画：那个维度不属于这一页） -->
+    <div v-if="!props.dayunOnly && liunianList.length" class="fs-strip liunian">
       <div
         v-for="n in liunianList"
         :key="n.year"

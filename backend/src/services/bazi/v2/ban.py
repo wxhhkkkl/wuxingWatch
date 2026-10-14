@@ -565,6 +565,9 @@ def _muku_fail_effects(members: list[str], cols: list,
         **按该支所在的列取档**：落在岁运列时取其岁运档（如辰临大运为「含水1乙2戊3」
         → 含土 3 → 以土论），不能用原局档（亥子月的辰本含土 0）——书例 下 1826 的辰
         正是**大运辰**，书明写它「以土论」。
+
+        **党众读「原始含土量」（原局八位）**：这是**条件**，不是值——书 下 1819 的辰
+        虽有大运戊戌在场，书仍按「辰土**原始**含土量为 0」论，其癸水走通例（不以土论）。
         """
         if z not in _MUKU_CHENCHOU or month_zhi not in _MUKU_SHUIFU:
             return False
@@ -572,7 +575,7 @@ def _muku_fail_effects(members: list[str], cols: list,
         flag = {"dayun": {"is_dayun": True}, "liunian": {"is_liunian": True}}.get(lane, {})
         return any(GAN_WUXING[g] == "土" and d > 0 for g, d in
                    tables.hidden_degrees(z, month_zhi,
-                                         dangzhong=tables.dangzhong_for(cols, z),
+                                         dangzhong=tables.dangzhong_natal_for(cols, z),
                                          **flag))
 
     # 「四库土均减半」是**全局**判定：四库之一以土论即适用（书 下 1746 括注）
@@ -861,7 +864,9 @@ def hai_effects(members: list[str], cols: list, month_zhi: str,
         # ②当辰含土量为0：「卯木增力1度，辰中癸水减力1度，同时还要减去0.25度的会绊之力；
         #   辰中乙木不变」。
         # 「辰含土量为 0」＝辰生于亥子月（书 上 444「当辰生于亥子月：含水3度，含木2度，含土0度」）。
-        chen_tu = sum(d for g, d in _hidden_of(cols, "辰", month_zhi)
+        # 读的是**原始**含土量（原局八位）——与书 下 1819「辰土原始含土量为 0」同量。
+        chen_tu = sum(d for g, d in tables.hidden_degrees(
+            "辰", month_zhi, dangzhong=tables.dangzhong_natal_for(cols, "辰"))
                       if GAN_WUXING[g] == "土")
         if chen_tu:
             out.append({"zhi": "卯", "gan": "乙", "delta": -1.25,

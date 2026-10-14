@@ -36,6 +36,13 @@ const router = createRouter({
       name: 'liunian-detail',
       component: () => import('../pages/LiunianDetail.vue'),
     },
+    // ---------- 大运引擎2（014-dayun-engine2）----------
+    // 按教师八步流程（R30 起含天干五合）独立算出的另一套大运旺度；单独入口，**不做对比页**（裁定④）
+    {
+      path: '/dayun2',
+      name: 'dayun2-detail',
+      component: () => import('../pages/Dayun2Detail.vue'),
+    },
     {
       path: '/login',
       name: 'login',

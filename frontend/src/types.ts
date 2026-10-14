@@ -641,3 +641,52 @@ export interface WangduV2 {
 export function isWangduV2(s: unknown): s is WangduV2 {
   return !!s && typeof s === 'object' && (s as { engine?: string }).engine === 'wangdu-v2'
 }
+
+// ---------- 大运引擎2（014-dayun-engine2）----------
+
+/** 一步大运的三个层次之一：五行合计。 */
+export interface Dayun2Element {
+  static: number
+  dynamic: number
+  delta: number
+}
+
+/** 引擎2 的实例明细（天干连片组 / 不透干的地支 / 大运的干与支）。 */
+export interface Dayun2Instance {
+  key: string
+  kind: 'stem_group' | 'branch' | 'dayun_stem' | 'dayun_branch'
+  wx: string
+  label: string
+  static: number
+  dynamic: number
+}
+
+/** 逐步依据之一段（八段；换字时另有 static_he）——**形状与现引擎的 `V2Step` 逐字段一致**，故直接复用 `StepList`。
+ *
+ *  比 `V2Step` 多一个 `shared`：为 true 表示该段与现引擎**共用**同一份判定（第 1 步）。 */
+export type Dayun2Phase = V2Step & { shared?: boolean }
+
+export interface Dayun2Step {
+  ganzhi: string
+  start_year: number | null
+  start_age_xu: number | null
+  elements: Record<string, Dayun2Element>
+  day_master: {
+    stem: string
+    wx: string
+    members: string[]
+    static: number
+    dynamic: number
+    level: string
+  }
+  instances: Dayun2Instance[]
+  phases: Dayun2Phase[]
+}
+
+export interface Dayun2Response {
+  engine: 'dayun-engine2'
+  engine_version: number
+  input_scope: 'four_pillars' | 'three_pillars'
+  degradations: string[]
+  dayun_steps: Dayun2Step[]
+}

@@ -1427,7 +1427,7 @@ def _zixing_ok(cand: _Cand, cols: list[_Col], month_zhi: str) -> bool:
             if c.zhi != "辰":
                 continue
             tu = sum(d for g, d in tables.hidden_degrees("辰", month_zhi,
-                                                        dangzhong=tables.dangzhong_for(cols, "辰"))
+                                                        dangzhong=tables.dangzhong_natal_for(cols, "辰"))
                      if GAN_WUXING[g] == "土")
             if tu == 0.0:
                 return False
@@ -1491,7 +1491,7 @@ def _hua_ok(cand: _Cand, cols: list[_Col], month_zhi: str,
             # ① 辰的原始含土量不能为 0（亥子月的辰含土 0；书 上 444）——
             #    卯辰半会「辰的原始含土量不能为0」与三会同条
             tu = sum(d for g, d in tables.hidden_degrees("辰", month_zhi,
-                                                        dangzhong=tables.dangzhong_for(cols, "辰"))
+                                                        dangzhong=tables.dangzhong_natal_for(cols, "辰"))
                      if GAN_WUXING[g] == "土")
             if tu == 0.0:
                 return False
@@ -1509,7 +1509,7 @@ def _hua_ok(cand: _Cand, cols: list[_Col], month_zhi: str,
             counts = {c.zhi: sum(1 for d in cols if d.zhi == c.zhi) for c in cols if c.zhi}
             has_tu = any(g == "戊" and d > 0
                          for g, d in tables.hidden_degrees("辰", month_zhi,
-                                                           dangzhong=tables.dangzhong_for(cols, "辰")))
+                                                           dangzhong=tables.dangzhong_natal_for(cols, "辰")))
             if not has_tu:
                 return False
         # 条件 4：辰土（含丑）个数不能是酉金的 3 倍或以上
@@ -2754,7 +2754,7 @@ def _effects_for(cand: _Cand, hua_succeeded: bool = False) -> list[dict]:
         cs = cols_of(_MONTH_CTX)
         mz = _MONTH_CTX["zhi"]
         tu = sum(d for g, d in tables.hidden_degrees("辰", mz,
-                                                     dangzhong=tables.dangzhong_for(cs, "辰"))
+                                                     dangzhong=tables.dangzhong_natal_for(cs, "辰"))
                  if GAN_WUXING[g] == "土")
         if tu != 0.0:
             # ① 辰含土量不为 0：卯木 −1 度、再 −0.25 度会绊之力；

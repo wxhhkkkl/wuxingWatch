@@ -105,13 +105,15 @@ def _adjusted_hidden(rel: dict, cols: list[degrees.Col],
     「卯戌合绊火增力 1 度，**平均每个戌土增力 0.5 度火**」（1 卯 2 戌）——若按每支
     各加 1 度，把 +2 当成了 +1，正是该例从 11.25 涨到 12.75 的原因。
 
-    `extra_cols`：**只用于解析摊分除数**、不进 `out`。岁运在场时传岁运两列，
-    使同一条关系的分母与本关系全部参与柱一致（见 `_apply_effects` 的订正说明）。
+    `extra_cols`：岁运在场时传岁运两列。它有两个用途：**解析摊分除数**（不进 `out`），
+    以及 **R27 起作为连片范围**（四库党众的图要把岁运柱当枢纽接上——书 上 423 例4 的年支丑
+    靠运干己才连成一片）。两者同用一份，免得同一张盘上出现两套党众。
     """
+    area = list(cols) + list(extra_cols or [])
     out: dict[str, list[tuple[str, float]]] = {
-        c.key: list(degrees.hidden_of(cols, c, month_zhi)) for c in cols
+        c.key: list(degrees.hidden_of(cols, c, month_zhi, area_cols=area)) for c in cols
     }
-    return _apply_effects(out, rel, list(cols) + list(extra_cols or []), month_zhi)
+    return _apply_effects(out, rel, area, month_zhi)
 
 
 def _apply_effects(out: dict[str, list[tuple[str, float]]], rel: dict,
@@ -1508,7 +1510,8 @@ def _deg_detail(cols: list[degrees.Col], hidden: dict, wx: str, month_zhi: str,
                 static: dict, final: dict, effective: str | None = None,
                 root: float = 0.0, ctx: tables.MukuCtx | None = None,
                 root_scaled: float | None = None,
-                instances: list[dict] | None = None) -> dict:
+                instances: list[dict] | None = None,
+                area_cols: list[degrees.Col] | None = None) -> dict:
     """按 data-model §3 输出某五行的各阶段度数。`root` 由调用方从 `_roots` 传入。
 
     `instances` 为 S7 新增的**实例明细**（连片天干组 + 同柱本气藏干）——
@@ -1518,7 +1521,8 @@ def _deg_detail(cols: list[degrees.Col], hidden: dict, wx: str, month_zhi: str,
 
     # base：天干度数 + **原始**藏干度数（未施加关系影响）
     base = float(sum(1 for c in cols if c.gan and GAN_WUXING[c.gan] == wx))
-    base += sum(d for c in cols for g, d in _raw_hidden(cols, c, month_zhi)
+    base += sum(d for c in cols for g, d in _raw_hidden(cols, c, month_zhi,
+                                                        area_cols=area_cols)
                 if GAN_WUXING[g] == wx)
     after = sum(d for c in cols for g, d in hidden[c.key] if GAN_WUXING[g] == wx)
     # `coef` / `state` 须与 `_static_scores` 实际采用的一致——库支走刑冲害分支，
@@ -1541,14 +1545,18 @@ def _deg_detail(cols: list[degrees.Col], hidden: dict, wx: str, month_zhi: str,
     }
 
 
-def _raw_hidden(cols: list[degrees.Col], col: degrees.Col, month_zhi: str):
-    """未施加关系影响的原始藏干（用于 `degrees[wx].base`）。"""
+def _raw_hidden(cols: list[degrees.Col], col: degrees.Col, month_zhi: str,
+                area_cols: list[degrees.Col] | None = None):
+    """未施加关系影响的原始藏干（用于 `degrees[wx].base`）。
+
+    `area_cols`：**连片范围**（该阶段全盘列，含岁运）——见 `degrees.hidden_of`。
+    """
     import services.bazi.v2.tables as tables
 
     if not col.zhi:
         return []
     return tables.hidden_degrees(col.zhi, month_zhi,
-                                 dangzhong=tables.dangzhong_run(cols, "土", col.key))
+                                 dangzhong=tables.dangzhong_run(area_cols or cols, "土", col.key))
 
 
 def _degradations(cols: list[degrees.Col]) -> list[str]:
@@ -2085,10 +2093,12 @@ def compute_strength(pillars: dict, *, dayun_ganzhi: str | None = None,
     # （2026-09-24 订正点 ①；`lay0` 与定案趟同传岁运参数），故此处直接取用。
     # **无岁运时 `lay0["static"]` 与改前逐位相同**，原局分文不动（FR-023 / SC-003）。
     _static0 = lay0["static"]
+    # 连片范围＝本趟的全盘列（四柱 ＋ 岁运两列，与 `_layers` 内部传给摊分的那一份同源）。
+    _area0 = cols0 + _suiyun_cols(dayun_ganzhi, liunian_ganzhi, month_zhi)
     deg_detail = {wx: _deg_detail(cols0, lay0["hidden"], wx, month_zhi, _static0, final,
                                   effective, lay0["root"].get(wx, 0.0), lay0["muku"],
                                   lay0["root_scaled"].get(wx, 0.0),
-                                  instances=inst_by_wx[wx])
+                                  instances=inst_by_wx[wx], area_cols=_area0)
                   for wx in _t.WUXING_ORDER}
 
     return {
@@ -2332,9 +2342,10 @@ def _step_chart(cols: list[degrees.Col], hidden: dict, month_zhi: str,
     import services.bazi.v2.tables as tables
 
     is_sy = {c.key for c in (extra_cols or [])}
-    orig = {c.key: (_raw_hidden(cols, c, month_zhi) if c.key not in is_sy
+    area = list(cols) + list(extra_cols or [])
+    orig = {c.key: (_raw_hidden(cols, c, month_zhi, area_cols=area) if c.key not in is_sy
                     else list(c.flat_hidden or []))
-            for c in list(cols) + list(extra_cols or [])}
+            for c in area}
     pure_notes = _pure_branch_notes(rel, cols, hidden)
     grp_by_key = {k: g for g in grps for k in g.keys}
     inst_by_col = {n["col"]: n for n in insts}

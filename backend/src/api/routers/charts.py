@@ -3,7 +3,8 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response
 
-from api.schemas import BirthInput, LiuShiLevel, LiuShiRequest, SuiyunRequest
+from api.schemas import (BirthInput, Dayun2Request, LiuShiLevel, LiuShiRequest,
+                         SuiyunRequest)
 from services import chart_service, share_service
 from services.bazi import liushi
 
@@ -59,3 +60,18 @@ def suiyun(payload: SuiyunRequest):
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
+
+
+@router.post("/dayun2")
+def dayun2(payload: Dayun2Request):
+    """**大运引擎2**（014 期 T024）——按教师八步流程（R30 起含天干五合）独立算出的另一套大运旺度。
+
+    与 `/suiyun` **并存**、**互不影响**：现引擎的数一字不改（FR-005），本端点给的是
+    第二套（`engine: "dayun-engine2"`）。**按需实时计算、不落库**（FR-008）。
+
+    `dayun_ganzhi` 可选——不给则返回该盘全部大运步；给了则只算那一步。
+    """
+    try:
+        return chart_service.dayun2_conclusion(payload, payload.dayun_ganzhi)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc

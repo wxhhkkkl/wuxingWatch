@@ -186,3 +186,14 @@ class SuiyunRequest(BirthInput):
 
     dayun_ganzhi: str = Field(description="选中的大运干支，如 '辛丑'（须是该盘的合法步）")
     liunian_year: int | None = Field(default=None, description="选中的流年年份（公历）")
+
+
+class Dayun2Request(BirthInput):
+    """大运引擎2 请求（014 期）——出生信息同 `BirthInput`，另**可选**指定某一步大运。
+
+    不给 `dayun_ganzhi` 即返回该盘**全部**大运步；给了则只算那一步。
+    **按需实时计算、不落库**（FR-008）——不写记录，也不读记录里存过的旺度结论。
+    """
+
+    dayun_ganzhi: str | None = Field(
+        default=None, description="只算该步（如 '辛亥'，须是该盘的合法步）；不给则返回全部大运步")

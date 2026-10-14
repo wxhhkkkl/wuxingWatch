@@ -161,3 +161,46 @@ def suiyun_conclusion(payload, dayun_ganzhi: str, liunian_year: int | None = Non
                               liunian_ganzhi=ln)
     out["degradations"] = list(base.get("degradations") or [])
     return out
+
+
+def dayun2_conclusion(payload, dayun_ganzhi: str | None = None) -> dict:
+    """**大运引擎2**（014 期 T022；FR-001 / FR-008）。
+
+    按教师八步流程（R30 起含天干五合）独立算出某一步（或全部大运步）的三层数（五行合计 / 日主那一组 /
+    实例明细）与逐步依据。**按需实时计算、不落库**——不写记录，也不读记录里存过的
+    旺度结论（与 `suiyun_conclusion` 同旨）。
+
+    **不触碰现引擎**：`compute()` 只用来拿四柱与该盘的大运步（那是本引擎的**输入**），
+    第 2–7 步全部走 `services.bazi.v2.dayun2`，不读 `strength.dayun[]` 里的任何数。
+    """
+    from services.bazi.v2 import dayun2 as _d2
+
+    result, _ = compute(payload)
+    pillars = result.get("pillars") or {}
+    if not pillars or not pillars.get("day"):
+        raise ValueError("该盘无可用的四柱，无法进行大运引擎2 推导")
+
+    steps = (result.get("da_yun") or {}).get("steps") or []
+    legal = [s.get("ganzhi") for s in steps if s.get("ganzhi")]
+    if dayun_ganzhi and dayun_ganzhi not in legal:
+        raise ValueError("所选大运 %r 不在该盘的大运步内（合法步：%s）"
+                         % (dayun_ganzhi, "、".join(legal) or "无"))
+
+    degradations: list[str] = []
+    if len(pillars) < 4:
+        degradations.append("缺时柱：以三柱推大运，可靠度下降")
+    if not legal:
+        degradations.append("该盘无起运信息，无法给出大运步")
+    if not pillars.get("time"):
+        degradations.append("缺时柱：时干支不参与第 3 步的五柱通根与后续生克")
+
+    chosen = [dayun_ganzhi] if dayun_ganzhi else legal
+    meta_of = {s.get("ganzhi"): s for s in steps if s.get("ganzhi")}
+    return {
+        "engine": "dayun-engine2",
+        "engine_version": 1,
+        "input_scope": "three_pillars" if len(pillars) < 4 else "four_pillars",
+        "degradations": degradations,
+        "dayun_steps": [_d2.analyze_step(pillars, gz, dayun_meta=meta_of.get(gz))
+                        for gz in chosen],
+    }

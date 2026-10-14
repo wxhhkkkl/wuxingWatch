@@ -46,6 +46,19 @@ PENALTY_BY_DISTANCE = {0: 0.0, 1: 0.5, 2: 1.0}
 FAR_PENALTY = 2.0
 
 
+def col_dist(cols: list["Col"], a: int, b: int) -> int:
+    """两个柱位的「距离」——**岁运柱与任何一柱皆相邻**（书 上 575）。
+
+    凡有一头是 `_dayun`/`_liunian` 就记 1（即 −0.5 度），不看盘面柱距。原局路径的
+    `cols` 里没有岁运列，故这条对现引擎的既有结论**逐位无影响**。
+    """
+    if a == b:
+        return 0
+    if cols[a].key in ("_dayun", "_liunian") or cols[b].key in ("_dayun", "_liunian"):
+        return 1
+    return abs(a - b)
+
+
 @dataclass
 class Col:
     """一柱。`gan` 是**当前有效**的天干——天干五合合化成功后会被换成化神干支
@@ -141,16 +154,22 @@ def _month_zhi(cols: list[Col]) -> str:
     return next((c.zhi for c in cols if c.key == "month"), "") or ""
 
 
-def hidden_of(cols: list[Col], col: Col, month_zhi: str | None = None) -> list[tuple[str, float]]:
+def hidden_of(cols: list[Col], col: Col, month_zhi: str | None = None, *,
+              area_cols: list[Col] | None = None) -> list[tuple[str, float]]:
     """某柱地支的藏干度数（四墓库随月令）。
 
-    四库的「党众 ≥3 **又连成一片**」分支按书 上 395/444/413 判定（`tables.dangzhong_run`）。
+    四库的「党众 ≥3 **又连成一片**」分支按书 上 395/444/413 判定（`tables.dangzhong_run`，
+    R27 起走**联通图**：岁运柱与原局每一柱相邻）。
+
+    `area_cols`：**连片范围**——该阶段的全盘列（含岁运伪列）。默认只按 `cols`，
+    即原局路径。岁运阶段要把岁运两列传进来，否则原局库支的连片少一段
+    （书 上 423 例4 的年支丑正是靠运干己接上的）。
     """
     if not col.zhi:
         return []
     mz = month_zhi if month_zhi is not None else _month_zhi(cols)
     return tables.hidden_degrees(col.zhi, mz,
-                                 dangzhong=tables.dangzhong_run(cols, "土", col.key))
+                                 dangzhong=tables.dangzhong_run(area_cols or cols, "土", col.key))
 
 
 # ---------------------------------------------------------------
@@ -228,7 +247,7 @@ def root_penalty(cols: list[Col], stem_idx: int, root_idx: int, wx: str,
         return 0.0
     if cols[root_idx].key == "month":
         return 0.0          # ⑥（未给 `run` 时的回退，口径同上）
-    d = abs(stem_idx - root_idx)
+    d = col_dist(cols, stem_idx, root_idx)
     return PENALTY_BY_DISTANCE.get(d, FAR_PENALTY)
 
 
@@ -239,7 +258,7 @@ def anchor_run(cols: list[Col], idxs: tuple[int, ...] | list[int],
         return None
 
     def _d(r: list[int]) -> int:
-        return min(abs(j - i) for j in r for i in idxs)
+        return min(col_dist(cols, j, i) for j in r for i in idxs)
 
     return min(runs, key=lambda r: (_d(r), r[0]))
 
@@ -257,10 +276,10 @@ def run_reference(cols: list[Col], idxs: tuple[int, ...] | list[int],
     """
     if anchor is not None and run == anchor:
         near = nearest_in_run(idxs, run)
-        return near, min(idxs, key=lambda k: abs(k - near))
+        return near, min(idxs, key=lambda k: col_dist(cols, k, near))
     pool = list(idxs) + list(anchor or [])
-    near = min(run, key=lambda j: min(abs(j - p) for p in pool))
-    return near, min(pool, key=lambda k: abs(k - near))
+    near = min(run, key=lambda j: min(col_dist(cols, j, p) for p in pool))
+    return near, min(pool, key=lambda k: col_dist(cols, k, near))
 
 
 def run_penalty(cols: list[Col], idxs: tuple[int, ...] | list[int],

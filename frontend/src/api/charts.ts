@@ -6,6 +6,7 @@ import type {
   LiuShiRequest,
   LiuShiResponse,
   LiuYueResponse,
+  Dayun2Response,
   SuiyunResponse,
 } from '../types'
 
@@ -40,4 +41,16 @@ export async function fetchChartImage(input: BirthInput): Promise<Blob> {
   })
   if (!resp.ok) throw new Error('命盘图片生成失败')
   return resp.blob()
+}
+
+/** **大运引擎2**（014 T027）——按教师八步流程（R30 起含天干五合）独立算出的另一套大运旺度。
+ *
+ *  与 `fetchSuiyun` **并存**、互不影响；**按需实时算、不落库**（FR-008）。
+ *  不给 `dayun_ganzhi` 即得该盘**全部**大运步。 */
+export function fetchDayun2(
+  input: BirthInput & { dayun_ganzhi?: string },
+): Promise<Dayun2Response> {
+  return request<Dayun2Response>('/api/charts/dayun2', {
+    method: 'POST', body: JSON.stringify(input),
+  })
 }

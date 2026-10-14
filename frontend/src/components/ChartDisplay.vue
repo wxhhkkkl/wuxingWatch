@@ -332,6 +332,21 @@ function fmtDateTime(s: string): string {
       </p>
     </section>
 
+    <!-- 大运引擎2（014）：按教师八步流程（R30 起含天干五合）独立算出的**另一套**大运旺度。
+         单独入口、单独成页；**不并排、不打差异标记**（裁定④）。 -->
+    <section class="wx-card">
+      <p class="wx-card-title">大运引擎2</p>
+      <div class="stage-links">
+        <span class="stage-link" data-testid="dayun2-link" @click="gotoStage('/dayun2')">
+          引擎2 的大运旺度<van-icon name="arrow" size="12" />
+        </span>
+      </div>
+      <p class="muted">
+        按「十八层判断 → 月令系数 → 五柱通根 → 静态旺度 → 运干与运支 → 运干与四柱 → 动态旺度」
+        逐步独立计算的另一套数，附逐步依据；与上面的现引擎互不影响。
+      </p>
+    </section>
+
     <!-- 人元司令与宫位 -->
     <section class="wx-card">
       <p class="wx-card-title">人元司令 · 胎元 · 宫位</p>
