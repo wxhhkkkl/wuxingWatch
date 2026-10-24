@@ -177,11 +177,11 @@ def test_the_ninth_phase_records_snapshots_from_the_settlement():
 
 
 def test_the_sixth_phase_acts_on_the_benqi_instance_only():
-    """癸卯 癸亥 癸亥 丁巳 ＋ 壬戌（**O5 定案**）：
+    """癸卯 癸亥 癸亥 丁巳 ＋ 壬戌（**O5 定案**；R32 起生克权改按五行）：
 
     只算**运支本气**——戌本气戊 0.875 度（＝1.25 × 0.7，书 上 1008 的「本气实例」）；
-    辛 0、丁 1 那两个藏根**不参与**。且 0.875 度无生克权（< 2.4 又无强根）→ 这一对**不成立**，
-    运干保持生效视图的 18.6 度。
+    辛 0、丁 1 那两个藏根**不参与**。生克权按**整体土** 2.88 度判（≥2.4，书 上 980/985）
+    → 土克水成立：主方 0.875 → 0、运干 18.6 → **18.163**（受克 0.235 成）。
     """
     pl = {"year": {"gan": "癸", "zhi": "卯"}, "month": {"gan": "癸", "zhi": "亥"},
           "day": {"gan": "癸", "zhi": "亥"}, "time": {"gan": "丁", "zhi": "巳"}}
@@ -194,12 +194,40 @@ def test_the_sixth_phase_acts_on_the_benqi_instance_only():
     assert snap == {"戊": 0.875, "辛": 0.0, "丁": 1.0}
 
     # R30 起本盘还有**丁壬合而不化（合绊）**：运干壬再扣 2 成（水系数 2 × 2/10 = 0.4）
-    assert st["dayun_own"] == pytest.approx({"壬": 18.6, "戌": 0.875})
-    # 本气戊（0.875 度）**无生克权**（书 上 980）——连主克者都当不了，故这一对不成立
+    # → 第 6 步起点 18.6；R32 的土克水再减 0.235 成 → 18.163
+    assert st["dayun_own"] == pytest.approx({"壬": 18.163, "戌": 0.0})
     texts = "".join(t["expression"] for t in phase["traces"])
-    assert "戌本气戊" in texts and "无生克权" in texts
+    # 生克权按整体土（2.88），成数取本气（0.875）——两条口径都要在依据里
+    assert "整体土 2.88 度" in texts and "戌本气戊 0.875 度" in texts
     assert "戌中辛" not in texts and "戌中丁" not in texts   # 藏根不再参与（O5 定案）
-    assert "18.6" in phase["result"]
+    assert "18.163" in phase["result"]
+    # 段末快照跟着这一对走：运干 18.163、戌本气戊 0
+    chart = {c["key"]: c for c in phase["chart"]["pillars"]}
+    assert chart["_dayun"]["gan_degree"] == pytest.approx(18.163)
+    assert next(h for h in chart["_dayun"]["hidden"] if h["gan"] == "戊")["degree"] == 0.0
+
+
+def test_shengke_power_is_judged_on_the_whole_element_r32():
+    """戊辰 甲寅 辛丑 丙申 ＋ 庚戌（R32）：整体土 6.25 有生克权 → 土生金成立。
+
+    成数仍取本气：戌本气戊 1.0 度 生 运干庚 4.32 度（同性）→ 主方减 12.96 成（满 10 归零），
+    受方增 0.694 成 → 庚 4.32 → **4.62**。
+    """
+    pl = {"year": {"gan": "戊", "zhi": "辰"}, "month": {"gan": "甲", "zhi": "寅"},
+          "day": {"gan": "辛", "zhi": "丑"}, "time": {"gan": "丙", "zhi": "申"}}
+    st = dayun2.analyze_step(pl, "庚戌")
+    phase = next(p for p in st["phases"] if p["key"] == "dayun_pair")
+
+    assert st["elements"]["土"]["static"] == pytest.approx(6.25)   # 整体土
+    assert st["dayun_own"] == pytest.approx({"庚": 4.62, "戌": 0.0})
+    texts = "".join(t["expression"] for t in phase["traces"])
+    assert "生克权按整体土 6.25 度判" in texts
+    assert "成数取戌本气戊 1 度" in texts
+    assert "无生克权" not in texts
+    # 段末快照与结果一致：运干 4.62、戌本气戊 0
+    chart = {c["key"]: c for c in phase["chart"]["pillars"]}
+    assert chart["_dayun"]["gan_degree"] == pytest.approx(4.62)
+    assert next(h for h in chart["_dayun"]["hidden"] if h["gan"] == "戊")["degree"] == 0.0
 
 
 def test_steps_six_and_seven_follow_the_book_sign_convention():

@@ -61,6 +61,23 @@ def test_snapshot_degrees_are_scaled_from_the_fourth_phase_on():
     assert chen_earth(by["tonggen5"]) != chen_earth(by["static"])
 
 
+def test_third_phase_writes_the_tonggen_result_on_the_stems():
+    """第 3 段的段末快照要把**通根**写回天干（与现引擎「通根递减」段同一观感）。
+
+    本盘通根：火 2、水 12（另有木 0、土 4.5、金 3.5——三者不透干，无干可写）。
+    天干的主数 ＝ 该干所在连片组的（干数 ＋ 根）：
+      水三干连片（年壬·月癸·日壬）→ 3 ＋ 12 ＝ 15；时干丙 → 1 ＋ 2 ＝ 3。
+    运干不进分子（D12），仍是它自己那 1 度。
+    """
+    st = _st()
+    phase = next(p for p in st["phases"] if p["key"] == "tonggen5")
+    by = {c["key"]: c for c in phase["chart"]["pillars"]}
+    for key in ("year", "month", "day"):
+        assert by[key]["gan_degree"] == pytest.approx(15.0), key
+    assert by["time"]["gan_degree"] == pytest.approx(3.0)
+    assert by["_dayun"]["gan_degree"] == pytest.approx(1.0)
+
+
 def test_final_phase_carries_a_five_element_summary_row():
     """第 7 段补五行行——速览格据此出现（`stepScores` 要求 ≥2 个五行带数值）。"""
     phase = next(p for p in _st()["phases"] if p["key"] == "natal_internal")

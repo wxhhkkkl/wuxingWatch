@@ -298,11 +298,27 @@ def tonggen5(cols5, hidden: dict, month_zhi: str, wx: str) -> tuple[float, list[
 # 前端因此可以直接复用 `StepList` / `StepChart` 两个组件（013 期抽出的共享件）。
 # ---------------------------------------------------------------
 
+def _tonggen_stem_deg(detail: dict) -> dict[int, float]:
+    """第 3 段的段末快照：**把通根写回天干**——每根干显示其所在连片组的（干数 ＋ 根）。
+
+    与现引擎「通根递减」段同一观感：天干栏不再只剩「1 度」，否则刚算出的通根
+    （如本例水 12 度）在盘上完全看不见。不透干的五行没有干可写，只出现在结果行里；
+    运干不进分子（D12），不在此表内，故仍显示它自己那 1 度。
+    """
+    out: dict[int, float] = {}
+    for wx in tables.WUXING_ORDER:
+        for grp, sub in (detail[wx]["groups"] or []):
+            for i in grp:
+                out[i] = round(len(grp) + sub, 3)
+    return out
+
+
 def _snapshot(cols5, hidden: dict, coef: dict, *, scaled: bool,
               col_deg: dict[int, float] | None = None) -> dict:
     """五柱快照。
 
-    `scaled=False`（第 1–3 段）：藏干给**原始度数**、天干给 1 度；
+    `scaled=False`（第 1–3 段）：藏干给**原始度数**、天干默认 1 度（第 3 段由
+    `col_deg` 传入「干数 ＋ 根」——通根刚算完，要写回天干上）；
     `scaled=True`（第 4 段起）：藏干**乘月令系数**、天干给该干所在**连片组的静态**
     ——与现引擎「月令系数自引入它的那一段起一直乘到底」的口径同旨（2026-09-28 裁定）。
     """
@@ -339,6 +355,32 @@ def _snapshot(cols5, hidden: dict, coef: dict, *, scaled: bool,
             "note": None,
         })
     return {"pillars": pillars}
+
+
+def _pair_snapshot(cols5, hidden: dict, coef: dict, col_deg: dict[int, float],
+                   pair_vals: dict[str, float]) -> dict:
+    """第 6 步的段末快照：把**运干 ↔ 运支**这一对的结果落回图上。
+
+    运干列取 `out[gan]`；运支**本气**取 `out[zhi]`（`_snapshot` 会把藏干再乘一次
+    系数，故先除回原始度数）。未被这一对改动的字照旧——否则段末图与同段的依据行
+    会对不上（改前 4.32/4.6 与结果 4.62/0 并存）。
+    """
+    from services.bazi.v2 import pipeline
+
+    c = cols5[DAYUN_IDX] if len(cols5) > DAYUN_IDX else None
+    if c is None or not pair_vals:
+        return _snapshot(cols5, hidden, coef, scaled=True, col_deg=col_deg)
+    hid = {k: list(v) for k, v in hidden.items()}
+    b_gan = pipeline._benqi_gan(c.zhi)
+    b_wx = GAN_WUXING.get(b_gan, "")
+    k = coef.get(b_wx, 1.0) or 1.0
+    if c.key in hid and b_gan:
+        hid[c.key] = [(g, round(pair_vals.get(c.zhi, d * k) / k, 6) if g == b_gan else d)
+                      for g, d in hid[c.key]]
+    deg = dict(col_deg)
+    if c.gan in pair_vals:
+        deg[DAYUN_IDX] = pair_vals[c.gan]
+    return _snapshot(cols5, hid, coef, scaled=True, col_deg=deg)
 
 
 def _col_degrees(cols5, static: dict, coef: dict, delta: dict) -> dict[int, float]:
@@ -435,6 +477,12 @@ def dayun_pair(cols5, static: dict[str, float], hidden: dict,
 
     运干取**生效视图**的静态旺度（裁定②：每次分别计算都取同一值，不因先前施出而递减）；
     成数的符号按书 上 673-722（主方一律减力、克时受方亦减力，R29）。
+
+    **R32（2026-10-23 用户裁定）：生克权按五行判，成数按本气算。** 书 上 985/990 的
+    生克权都是对**五行**说的（「丙火静态旺度太弱……无生克权」「壬水……有生克权」），
+    上 1008 注③也说「要判断该根有无生克权，必须先计算**整个地支的静态旺度**」。
+    故主方在运支本气这一头时，喂给 `_power_ok` 的是该五行的**整体静态**（本盘土 6.25），
+    成数仍取**本气实例**的度（本盘戌本气戊 1.0）；运干那一头本来就是五行静态。
     """
     from services.bazi.v2 import pipeline
 
@@ -460,9 +508,19 @@ def dayun_pair(cols5, static: dict[str, float], hidden: dict,
     k = "生" if SHENG.get(g_wx) == b_wx or SHENG.get(b_wx) == g_wx else "克"
     m_wx, s_wx = (g_wx, b_wx) if main_is_gan else (b_wx, g_wx)
     m_deg, s_deg = (g_deg, b_deg) if main_is_gan else (b_deg, g_deg)
-    # ---- 生克权与受生范围（书 上 714 / 689；与现引擎同判据）----
-    why = f"运干{gan}（{g_deg:g} 度）无生克权" if main_is_gan else f"{label}（{b_deg:g} 度）无生克权"
-    ok = _power_ok(g_deg, gan_root) if main_is_gan else _power_ok(b_deg)
+    # ---- 生克权与受生范围（书 上 714 / 689；R32：生克权按五行、成数按本气）----
+    # 书 上 985/990 的生克权都落在**五行**上；上 1008 注③「整个地支的静态旺度」。
+    # 故主方是运支本气时，用该五行的整体静态判资格，成数仍用本气实例的度（上 1008）。
+    if main_is_gan:
+        why = f"运干{gan}（{g_deg:g} 度）无生克权"
+        ok = _power_ok(g_deg, gan_root)
+        caliber = ""
+    else:
+        m_total = static.get(b_wx, 0.0)
+        why = f"{b_wx}（整体 {m_total:g} 度）无生克权"
+        ok = _power_ok(m_total)
+        caliber = (f"；生克权按整体{b_wx} {m_total:g} 度判（书 上 980/985），"
+                   f"成数取{label} {b_deg:g} 度（上 1008，R32）")
     if ok and k == "生":
         ok = _receive_ok(sub_deg=s_deg, sub_root=(gan_root if main_is_gan else 0.0),
                          wx=s_wx, month_zhi=month_zhi, main_deg=m_deg)
@@ -486,7 +544,7 @@ def dayun_pair(cols5, static: dict[str, float], hidden: dict,
         f"→ 主方减力 {c_main:g} 成、受方{'增' if k == '生' else '减'}力 {c_sub:g} 成；"
         f"运干 {g_deg:g} → {out[gan]:g} 度、{label} {b_deg:g} → {out[zhi]:g} 度"
         f"（书 上 673-722：主方一律减力{'' if k == '生' else '、克时受方亦减力'}；"
-        f"受方取**本气实例**，书 上 1008）", None)]
+        f"受方取**本气实例**，书 上 1008）{caliber}", None)]
 
 
 # ---------------------------------------------------------------
@@ -903,9 +961,13 @@ def _open_notes() -> dict[str, list[dict]]:
         "dayun_pair": [
             _tr("口径 O5", "**O5 定案**（2026-10-14 用户裁定）：本步按「干 ↔ 支**本气**」一对"
                             "生克——受方取**本气实例**＝本气藏干 × 月令系数（书 上 1008"
-                            "「**戌土本身** = 3×0.7 = 2.1 度」），与现引擎四柱的同柱对同口径。"
-                            "运干每次取生效视图的静态旺度、不因施出而变（裁定②）；成数符号按"
-                            "书 上 673-722（主方一律减力，R29）", None),
+                            "「**戌土本身** = 3×0.7 = 2.1 度」）。运干每次取生效视图的静态旺度、"
+                            "不因施出而变（裁定②）；成数符号按书 上 673-722（主方一律减力，R29）",
+                None),
+            _tr("口径 R32", "**生克权按五行、成数按本气**（2026-10-23 用户裁定）：主方是运支"
+                            "本气时，生克权用该五行的**整体静态**判（书 上 980/985；上 1008 注③"
+                            "「整个地支的静态旺度」），成数仍取本气实例的度（上 1008）。"
+                            "现引擎四柱的同柱对与第 9 步仍按「片」判，不随本条改动。", None),
         ],
         "dayun_to_pillars": [
             _tr("开放项 O2", "运干在四次分别计算中的取值＝**第 4 步的静态旺度**"
@@ -1128,17 +1190,23 @@ def _phases(*, rel, coef, coef_traces, detail, static, static_traces, delta,
     前端因此可以**直接复用** `StepList` / `StepChart`（013 期抽出的共享组件），
     两套展示的观感与信息密度不靠对齐、靠只有一份。
 
-    段末快照：第 1–3 段给**原始度数**（系数尚未引入），第 4 段起给**乘过系数**的值
+    段末快照：第 1–3 段给**原始度数**（系数尚未引入；第 3 段的天干已含通根），
+    第 4 段起给**乘过系数**的值
     ——与现引擎「月令系数自引入它的那一段起一直乘到底」同口径（2026-09-28 裁定）。
     **第 5 段（天干五合）起**改用**生效视图**：换过字用换字后的字，且带上合绊的减力；
     第 1–4 段一律用 `cols5_src`（原字、未换字）。
     """
     chart_raw = _snapshot(cols5_src, hidden, coef, scaled=False)
+    # 第 3 段：把**通根结果**写回天干（干数 ＋ 根）——系数尚未乘，与藏干的原始度数同档
+    chart_tonggen = _snapshot(cols5_src, hidden, coef, scaled=False,
+                              col_deg=_tonggen_stem_deg(detail))
     col_deg = _col_degrees(cols5_src, static, coef, delta)
     chart_static = _snapshot(cols5_src, hidden, coef, scaled=True, col_deg=col_deg)
     # 生效视图（第 5 段起）：换字后 ＋ 合绊
     col_deg_f = _col_degrees(cols5, f_static, f_coef, f_delta)
     chart_f = _snapshot(cols5, f_hidden, f_coef, scaled=True, col_deg=col_deg_f)
+    # 第 6 步（运干 ↔ 运支）的段末图要带这一对的成数结果，不能停在生效静态
+    chart_pair = _pair_snapshot(cols5, f_hidden, f_coef, col_deg_f, pair_vals)
 
     def _points(ckpt) -> list[dict]:
         """逐实例快照——`after` ＝ 该实例结算完时依据行已产出的条数。
@@ -1187,11 +1255,12 @@ def _phases(*, rel, coef, coef_traces, detail, static, static_traces, delta,
 
         {"key": "tonggen5", "title": "第 3 步 · 五柱通根（含大运柱）",
          "rule": "五柱＝原局四柱＋大运柱；根段按柱位连续「连成一片」；原局不透干者由运干"
-                 "当根锚（书 上 575/576）。",
+                 "当根锚（书 上 575/576）。段末快照把**通根写回天干**——天干 ＝ 该干所在"
+                 "连片组的（干数 ＋ 根）；不透干者无干可写，只出现在结果行。",
          "traces": ([t for wx in tables.WUXING_ORDER for t in detail[wx]["traces"]]
                     + notes["tonggen5"]),
          "result": f"五柱通根：{_fmt({wx: detail[wx]['root'] for wx in tables.WUXING_ORDER})}",
-         "chart": chart_raw},
+         "chart": chart_tonggen},
 
         {"key": "static", "title": "第 4 步 · 大运静态旺度",
          "rule": "（原局天干度数 ＋ 五柱通根）× 月令系数，再施加运支状态增减与运干同类相助"
@@ -1217,11 +1286,12 @@ def _phases(*, rel, coef, coef_traces, detail, static, static_traces, delta,
 
         {"key": "dayun_pair", "title": "第 7 步 · 运干与运支",
          "rule": "运干 ↔ 运支**本气**的同柱生克（O5 定案）：受方取**本气实例**＝本气藏干 × "
-                 "月令系数（书 上 1008），与现引擎四柱的同柱对同口径；成数走书 上 673-722 的"
-                 "四公式，运干在每一次分别计算中都取生效视图的静态旺度（与下一步同思路）。",
+                 "月令系数（书 上 1008）；**生克权按五行判、成数按本气算**（R32：书 上 980/985；"
+                 "上 1008 注③）。成数走书 上 673-722 的四公式，运干在每一次分别计算中都取"
+                 "生效视图的静态旺度（与下一步同思路）。",
          "traces": pair_traces + notes["dayun_pair"],
          "result": "；".join(f"{k} {v:g} 度" for k, v in pair_vals.items()) or "无生克",
-         "chart": chart_f},
+         "chart": chart_pair},
 
         {"key": "dayun_to_pillars", "title": "第 8 步 · 运干对四柱分别生克",
          "rule": "四柱**各自独立**受作用，运干在每一次分别计算中取生效视图的静态旺度"

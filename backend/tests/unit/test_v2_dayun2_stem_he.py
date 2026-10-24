@@ -57,10 +57,15 @@ def test_the_contract_static_excludes_the_ban_but_the_dynamic_does_not():
 
 
 def test_the_ban_survives_into_the_sixth_phase():
-    """第 6 段（运干与运支）的运干起点取**生效视图**：19 经丁壬合绊 −2 成 → **18.6**。"""
+    """第 6 段（运干与运支）的运干起点取**生效视图**：19 经丁壬合绊 −2 成 → **18.6**。
+
+    该起点再被 R32 的「土克水」减 0.235 成 → 18.163（见 steps567 的 O5 用例）。
+    """
     st = dayun2.analyze_step(_PL, "壬戌")
     assert st["elements"]["水"]["static"] == pytest.approx(19.0)
-    assert st["dayun_own"]["壬"] == pytest.approx(18.6)
+    assert st["dayun_own"]["壬"] == pytest.approx(18.163)
+    line = next(t for t in _phase(st, "dayun_pair")["traces"])
+    assert "18.6 → 18.163 度" in line["expression"]
 
 
 # ---------- 合化成功：换字 ＋ 第 6 段 ----------

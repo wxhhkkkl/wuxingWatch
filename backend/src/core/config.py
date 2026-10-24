@@ -8,7 +8,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     """Runtime settings, overridable via environment variables / .env."""
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    # 生产 `.env` 与部署脚本共用，可能带有应用不消费的运维键（SERVER_IP/PSW/NAME）。
+    # 这些键不该让服务起不来——未知键一律忽略（2026-10-23 线上启动报 extra_forbidden）。
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8",
+                                      extra="ignore")
 
     app_name: str = "wuxingwatch"
     debug: bool = False
