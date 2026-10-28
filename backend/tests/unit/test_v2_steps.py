@@ -13,7 +13,6 @@
 import pytest
 
 from services.bazi.v2 import pipeline
-from services.bazi.v2 import xiyong_analysis_v2
 
 
 def _chart(y, m, d, t):

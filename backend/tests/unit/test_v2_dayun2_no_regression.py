@@ -104,7 +104,13 @@ def test_v2_package_does_not_export_dayun2():
     init = V2_DIR / "__init__.py"
     if not init.exists():
         return
-    assert "dayun2" not in init.read_text(encoding="utf-8")
+    import ast
+    tree = ast.parse(init.read_text(encoding="utf-8"))
+    touched = [
+        n for n in ast.walk(tree)
+        if isinstance(n, ast.ImportFrom) and "dayun2" in (n.module or "")
+    ]
+    assert not touched, "包入口不得 import 引擎2"
 
 
 def test_the_gap_adapters_have_no_switch_argument():

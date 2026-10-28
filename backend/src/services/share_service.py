@@ -76,12 +76,13 @@ def render_long_image(result: dict, person_name: str | None = None) -> bytes:
     lines.append(p_line)
 
     day_master = result["day_master"]
-    xi = result["xi_yong"]["conclusion"]
+    wd = result["wan_du"]
+    dm_wx = wd["day_master_wuxing"]
+    scores = "  ".join(f"{w}{wd['final_scores'].get(w, 0):g}" for w in ("木", "火", "土", "金", "水"))
     lines.append(
-        f"喜忌：{day_master}日主 {'身强' if xi['summary'] == '身强' else '身弱'}，"
-        f"用神 {xi['yong_shen']}，喜 {('、'.join(xi['xi_shen']) or '—')}，"
-        f"忌 {('、'.join(xi['ji_shen']) or '—')}"
+        f"旺度：{day_master}日主（{dm_wx}）动态 {wd['final_scores'].get(dm_wx, 0):g} 度 · {wd['level']}"
     )
+    lines.append(f"五行：{scores}")
 
     dayun = result["da_yun"]
     if dayun.get("start_age"):

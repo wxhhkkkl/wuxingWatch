@@ -26,10 +26,10 @@ CHART = {"year": {"gan": "甲", "zhi": "子"},
 SCRIPT = """
 import json, sys
 sys.path.insert(0, {src!r})
-from services.bazi.v2 import xiyong_analysis_v2
+from services.bazi.v2 import wan_du_analysis
 chart = json.load(open({chart_file!r}, encoding="utf-8"))
-r = xiyong_analysis_v2({dm!r}, chart)
-print(json.dumps({{"level": r["level"], "ge_ju": r["ge_ju"], "steps": r["steps"]}},
+r = wan_du_analysis(chart)
+print(json.dumps({{"level": r["level"], "steps": r["steps"]}},
                  ensure_ascii=False, sort_keys=False))
 """
 

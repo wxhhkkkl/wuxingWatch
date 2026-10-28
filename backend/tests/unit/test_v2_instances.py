@@ -25,18 +25,13 @@ from __future__ import annotations
 import pytest
 
 from services.bazi.constants import GAN_WUXING
-from services.bazi.v2 import pipeline, xiyong_analysis_v2
+from services.bazi.v2 import pipeline
 
 
 def _pillars(*gz: str) -> dict:
     items = " ".join(gz).split()
     return {k: {"gan": s[0], "zhi": s[1]}
             for k, s in zip(("year", "month", "day", "time"), items)}
-
-
-def _geju(dm: str, *gz: str) -> dict:
-    """走**生产路径**取格局子树。"""
-    return xiyong_analysis_v2(dm, _pillars(*gz))["ge_ju"]
 
 
 def _groups(r: dict) -> list[dict]:
@@ -160,8 +155,6 @@ def test_shang_1008_dm_root_is_day_group_root():
     dm = _group_of(r, "day")
     assert dm["static"] == pytest.approx(4.2), "（2 天干 + 通根 4）×0.7"
     assert dm["root_scaled"] == pytest.approx(2.8), "戌 1.4 + 午 1.4（书 上 1008）"
-    gj = _geju("戊", "壬戌", "壬子", "戊辰", "戊午")
-    assert gj["type"] == "zheng", "有强根 → 不从弱"
 
 
 def test_shang_1008_xu_earth_itself_has_no_power():
@@ -208,8 +201,6 @@ def test_xia_4263_is_cong_ruo():
     assert dm["gans"] == ["己"]
     assert dm["root_scaled"] == pytest.approx(2.0), "日主组：丑 3 + 寅 1 = 4；×0.5"
     assert dm["static"] == pytest.approx(2.5)
-    gj = _geju("己", "己丑", "丙寅", "己卯", "丁卯")
-    assert gj["type"] in ("cong_ruo", "cong_cai", "cong_sha"), gj["basis"]
 
 
 # ---------------------------------------------------------------
@@ -222,8 +213,6 @@ def test_xia_4090_cong_ruo_root_by_day_group():
     dm = _group_of(r, "day")
     assert dm["gans"] == ["癸"]
     assert dm["root_scaled"] < 2.4
-    gj = _geju("癸", "乙丑", "乙酉", "癸酉", "辛酉")
-    assert gj["type"] in ("cong_ruo", "cong_cai", "cong_sha"), gj["basis"]
 
 
 # ---------------------------------------------------------------

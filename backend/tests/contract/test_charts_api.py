@@ -185,30 +185,21 @@ def test_liushi_hour_date_out_of_month(client):
     assert resp.status_code == 422
 
 
-def test_predict_xiyong_wangdu_contract(client):
-    """T014 — xi_yong 新契约（008 旺度法）：双用神结论 + strength 新形状 + 步骤顺序 + 大运修正对齐。"""
+def test_predict_wandu_contract(client):
+    """原局旺度契约：`wan_du` 直接挂在排盘结果上，只含旺度相关字段。"""
     resp = client.post(
         "/api/charts/predict",
         json={"gender": "M", "calendar": "solar", "birth_date": "1990-05-20", "birth_time": "10:30"},
     )
     assert resp.status_code == 200
-    xi = resp.json()["xi_yong"]
-    c = xi["conclusion"]
-    assert c["yong_shen"] in ("木", "火", "土", "金", "水")
-    assert "tiaohou_yong_shen" in c and "element" in c["tiaohou_yong_shen"]
-    assert "basis" in c and "yong_shen" in c["basis"] and "tiaohou" in c["basis"]
-    # 012 起预测走 **v2 契约**（engine=wangdu-v2）；旧 `method=sizhu-jingsui`
-    # 只出现在改造前落库的历史记录里，由前端按标识分流（FR-053/054）。
-    s = xi["strength"]
-    assert s["engine"] == "wangdu-v2", "012 起默认产出 v2 结论"
-    assert s["contract_version"] == 2
-    assert set(s["final_scores"]) == {"木", "火", "土", "金", "水"}
-    assert all(v >= 0 for v in s["final_scores"].values())
-    assert s["ge_ju"]["type"] in ("zheng", "cong_ruo", "cong_qiang", "cong_yin", "cong_sha", "cong_cai", "hua")
-    assert s["input_scope"] in ("four_pillars", "three_pillars")
-    da_yun_gz = [d["ganzhi"] for d in resp.json()["da_yun"]["steps"]]
-    # v2 契约里逐步大运结论落在 `strength.dayun`（旧契约的 `dayun_adjustments` 已被取代）
-    assert [a["ganzhi"] for a in s["dayun"]] == da_yun_gz
+    wd = resp.json()["wan_du"]
+    assert wd["engine"] == "wangdu-v2"
+    assert wd["contract_version"] == 2
+    assert set(wd["final_scores"]) == {"木", "火", "土", "金", "水"}
+    assert all(v >= 0 for v in wd["final_scores"].values())
+    assert wd["input_scope"] in ("four_pillars", "three_pillars")
+    for k in ("ge_ju", "yong_shen", "layers", "dayun", "xi_yong"):
+        assert k not in wd, k
 
 
 # ---------------------------------------------------------------
@@ -220,7 +211,7 @@ BASELINE = Path(__file__).resolve().parents[1] / "fixtures" / "yuanju_baseline.j
 
 # 原局部分里**承诺一字不变**的字段（FR-023）。`dayun[]` 与调候/层次的岁运重判
 # 不在其中——那属岁运结论、允许变（FR-022a）。
-YUANJU_KEYS = ("level", "ge_ju", "static_scores", "final_scores", "degrees", "relations")
+YUANJU_KEYS = ("level", "static_scores", "final_scores", "degrees", "relations")
 
 
 def _sizhu_payload(pz: str) -> dict:
@@ -249,7 +240,7 @@ def test_existing_record_keeps_its_yuanju_part(client, login_user, monkeypatch):
     def _strength() -> dict:
         resp = client.get(f"/api/records/{rid}", headers=headers)
         assert resp.status_code == 200, resp.text
-        return resp.json()["chart_result"]["xi_yong"]["strength"]
+        return resp.json()["chart_result"]["wan_du"]
 
     saved = _strength()
     assert saved["engine"] == "wangdu-v2"
@@ -274,7 +265,5 @@ def test_existing_record_keeps_its_yuanju_part(client, login_user, monkeypatch):
     # 且与**改动前**留下的基准逐项相同（SC-003）
     base = json.loads(BASELINE.read_text(encoding="utf-8"))["cases"][BOOK_CHART]
     assert reopened["level"] == base["level"]
-    assert reopened["ge_ju"]["type"] == base["ge_ju"]
-    assert (reopened["yong_shen"].get("theoretical") or {}).get("element") == base["yong_shen"]
     assert {k: round(v, 6) for k, v in reopened["final_scores"].items()} == base["final"]
     assert {k: round(v, 6) for k, v in reopened["static_scores"].items()} == base["static"]

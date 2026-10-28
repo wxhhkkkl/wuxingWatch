@@ -251,7 +251,7 @@ async function onSubmit() {
   <div class="home-page">
     <header class="hero">
       <h1>五行 · 八字排盘</h1>
-      <p>输入出生信息 · 一窥命局喜忌</p>
+      <p>输入出生信息 · 一窥命局旺度</p>
     </header>
 
     <div class="wx-card">

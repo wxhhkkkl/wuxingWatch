@@ -24,18 +24,6 @@ const router = createRouter({
       name: 'strength',
       component: () => import('../pages/StrengthDetail.vue'),
     },
-    // ---------- 岁运推导三阶段（013-dayun-liunian-judgment）----------
-    // 原局 → 加入大运 → 加入流年，各成一页（FR-021）；`?record=<id>` 时从记录进入
-    {
-      path: '/dayun',
-      name: 'dayun-detail',
-      component: () => import('../pages/DayunDetail.vue'),
-    },
-    {
-      path: '/liunian',
-      name: 'liunian-detail',
-      component: () => import('../pages/LiunianDetail.vue'),
-    },
     // ---------- 大运引擎2（014-dayun-engine2）----------
     // 按教师八步流程（R30 起含天干五合）独立算出的另一套大运旺度；单独入口，**不做对比页**（裁定④）
     {

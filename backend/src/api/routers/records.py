@@ -207,34 +207,12 @@ def delete_record(record_id: int, user: CurrentUser, db: DbDep):
     db.commit()
     return None
 
-@router.get("/{record_id}/suiyun")
-def record_suiyun(record_id: int, dayun_ganzhi: str, user: CurrentUser, db: DbDep,
-                  liunian_year: int | None = None):
-    """**从已保存记录进岁运推导**（013 期 T034；FR-021a）。
-
-    因岁运结论**不落库**（FR-026），此处用该记录的**输入信息当场重推大运与流年**
-    （`_load_result` 已含「版本不符则重算」的语义），**不读记录里可能存过的岁运结论**。
-    """
-    record = _get_owned(db, record_id, user.id)
-    _, payload = _load_result(record, db)
-    if not payload:
-        raise HTTPException(status_code=422,
-                            detail="该记录未保存完整入参，无法重推岁运")
-    try:
-        return chart_service.suiyun_conclusion(RecordCreate(**payload),
-                                               dayun_ganzhi, liunian_year)
-    except ValueError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
-
-
-
 @router.get("/{record_id}/dayun2")
 def record_dayun2(record_id: int, user: CurrentUser, db: DbDep,
                   dayun_ganzhi: str | None = None):
     """**从已保存记录进大运引擎2**（014 期 T025）。
 
-    与 `/{id}/suiyun` 同一实现路径——由该记录的输入信息**当场重推**四柱与大运步，
-    不读记录里可能存过的任何旺度结论（FR-008）。
+    由该记录的输入信息**当场重推**四柱与大运步，不读记录里可能存过的任何旺度结论（FR-008）。
     """
     record = _get_owned(db, record_id, user.id)
     _, payload = _load_result(record, db)

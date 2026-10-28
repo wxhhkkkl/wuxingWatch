@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import type { ChartResult, LiuRiItem, LiuShiContext, LiuShiItem, LiuYueItem, V2Relation } from '../types'
-import { fetchLiuShi, fetchSuiyun } from '../api/charts'
-import { getRecordSuiyun } from '../api/records'
+import type { ChartResult, Dayun2Step, LiuRiItem, LiuShiContext, LiuShiItem, LiuYueItem } from '../types'
+import { fetchDayun2, fetchLiuShi } from '../api/charts'
+import { getRecordDayun2 } from '../api/records'
 import { wxColor } from '../utils/wuxing'
 import {
   defaultDayunIndex,
@@ -15,7 +15,6 @@ import {
 import PillarTable from './PillarTable.vue'
 import FortuneStrip from './FortuneStrip.vue'
 import RelationDiagram from './RelationDiagram.vue'
-import { isWangduStrength, isWangduV2 } from '../types'
 import { useChartStore } from '../stores/chart'
 
 // `recordId` 由「记录详情」传入——不带它时 `/strength` 会去读**会话 store**，
@@ -24,8 +23,6 @@ const props = defineProps<{ result: ChartResult; recordId?: number }>()
 
 const router = useRouter()
 const chartStore = useChartStore()
-
-const xi = computed(() => props.result.xi_yong)
 
 // 大运/流年联动选中态（默认跟随当前日期）
 const currentYear = new Date().getFullYear()
@@ -152,7 +149,6 @@ watch(
   (i) => {
     const s = steps.value[i]
     selectedLiunianYear.value = s ? defaultLiunianYear(s, currentYear) : null
-    chartStore.setViewingDayun(s?.ganzhi ?? null)  // 喜忌"大运介入"步联动（008）
   },
   { immediate: true },
 )
@@ -161,44 +157,44 @@ const birthYear = computed(() =>
   props.result.solar_birth ? new Date(props.result.solar_birth).getFullYear() : null,
 )
 
-/** 进「加入大运」/「加入流年」页（013 FR-021a）——从记录进入时带上 id，
- *  使那两页按记录的输入**当场重推**岁运（岁运结论不落库，FR-026）。 */
-function gotoStage(path: string) {
+// ---- 原局旺度 / 当前大运旺度（引擎2）----
+const WUXING = ['木', '火', '土', '金', '水'] as const
+const wanDu = computed(() => props.result.wan_du)
+const wanDuRows = computed(() =>
+  WUXING.map((wx) => ({ wx, value: wanDu.value?.final_scores[wx] ?? 0 })),
+)
+
+/** 当前大运：按当前日期定位（不随横条选择变化——横条只驱动流年展示）。 */
+const currentDayunIndex = computed(() => defaultDayunIndex(steps.value, currentYear))
+const currentDayunStep = computed(() => steps.value[currentDayunIndex.value] ?? null)
+
+const dayun2Steps = ref<Dayun2Step[]>([])
+const dayun2Error = ref('')
+const dayun2Current = computed(() =>
+  dayun2Steps.value.find((s) => s.ganzhi === currentDayunStep.value?.ganzhi) ?? null,
+)
+const dayun2Rows = computed(() =>
+  WUXING.map((wx) => ({ wx, value: dayun2Current.value?.elements[wx]?.dynamic ?? 0 })),
+)
+
+onMounted(async () => {
+  if (!currentDayunStep.value) return
+  try {
+    const resp = props.recordId != null
+      ? await getRecordDayun2(props.recordId)
+      : chartStore.inputs
+        ? await fetchDayun2({ ...chartStore.inputs })
+        : null
+    dayun2Steps.value = resp?.dayun_steps ?? []
+  } catch (e) {
+    dayun2Error.value = (e as Error).message
+  }
+})
+
+/** 进详情页——从记录进入时带上 id，使详情页按记录的输入重推。 */
+function gotoDetail(path: string) {
   router.push(props.recordId != null ? { path, query: { record: String(props.recordId) } } : path)
 }
-
-// ---- 阶段 3（加入流年）的后端关系裁定：命盘图的岁运维度**只消费后端产出**（013 T040）----
-//
-// 013 起流年的本地判定副本退役（方案 A）——否则同一命盘同一年份会在「加入流年」页
-// 与命盘图上显示不同结论（违 FR-024 / SC-008）。取不到时传 null，命盘图退回
-// 「该步大运」的后端裁定（仍非本地判定）。
-const suiyun = ref<{
-  ganzhi: string; year: number
-  relations: { established: V2Relation[]; rejected: V2Relation[] }
-} | null>(null)
-let suiyunToken = 0
-
-watch(
-  [() => selectedStep.value?.ganzhi, selectedLiunianYear] as const,
-  async ([gz, year]) => {
-    suiyun.value = null                       // 换步 / 换年即失效，避免显示别年结论
-    if (!hasYears.value || !gz || year == null) return
-    if (!isWangduV2(xi.value.strength)) return // 非 v2：命盘图本就走本地兜底，无须请求
-    const t = ++suiyunToken
-    try {
-      const res = props.recordId != null
-        ? await getRecordSuiyun(props.recordId, gz, year)
-        : chartStore.inputs
-          ? await fetchSuiyun({ ...chartStore.inputs, dayun_ganzhi: gz, liunian_year: year })
-          : null
-      if (t !== suiyunToken || !res?.liunian) return
-      suiyun.value = { ganzhi: gz, year, relations: res.liunian.relations }
-    } catch {
-      /* 取不到（未登录 / 无出生日期等）就退回该步大运的后端裁定 */
-    }
-  },
-  { immediate: true },
-)
 
 function fmtDateTime(s: string): string {
   const d = new Date(s)
@@ -285,7 +281,6 @@ function fmtDateTime(s: string): string {
       :result="result"
       :selected-dayun="hasYears ? selectedStep : null"
       :selected-liunian="hasYears ? selectedLiunian : null"
-      :suiyun="suiyun"
     />
 
     <!-- 大运 · 流年联动 -->
@@ -316,35 +311,47 @@ function fmtDateTime(s: string): string {
       />
     </section>
 
-    <!-- 岁运推导（013 三阶段）：原局 → 加入大运 → 加入流年，各成一页 -->
-    <section class="wx-card">
-      <p class="wx-card-title">岁运推导</p>
-      <div class="stage-links">
-        <span class="stage-link" data-testid="dayun-link" @click="gotoStage('/dayun')">
-          加入大运<van-icon name="arrow" size="12" />
+    <!-- 原局动态旺度 -->
+    <section class="wx-card" data-testid="wan-du-card">
+      <p class="wx-card-title">
+        原局动态旺度
+        <span v-if="wanDu" class="strength-link" data-testid="strength-link" @click="gotoDetail('/strength')">
+          查看计算过程<van-icon name="arrow" size="12" />
         </span>
-        <span class="stage-link" data-testid="liunian-link" @click="gotoStage('/liunian')">
-          加入流年<van-icon name="arrow" size="12" />
-        </span>
+      </p>
+      <div class="step-scores">
+        <div v-for="r in wanDuRows" :key="r.wx" class="score-cell" :data-wx="r.wx">
+          <span class="score-wx step-score-wx" :style="{ color: wxColor(r.wx) }">{{ r.wx }}</span>
+          <span class="score-val">{{ r.value }}</span>
+        </div>
       </div>
-      <p class="muted">
-        在原局之上逐步加入大运与流年重判；两阶段的同名判断并列罗列，引擎不合成吉凶。
+      <p v-if="wanDu" class="muted">
+        日主 {{ wanDu.day_master }}（{{ wanDu.day_master_wuxing }}）· 动态
+        {{ wanDu.final_scores[wanDu.day_master_wuxing] }} 度 · {{ wanDu.level }}
       </p>
     </section>
 
-    <!-- 大运引擎2（014）：按教师八步流程（R30 起含天干五合）独立算出的**另一套**大运旺度。
-         单独入口、单独成页；**不并排、不打差异标记**（裁定④）。 -->
-    <section class="wx-card">
-      <p class="wx-card-title">大运引擎2</p>
-      <div class="stage-links">
-        <span class="stage-link" data-testid="dayun2-link" @click="gotoStage('/dayun2')">
-          引擎2 的大运旺度<van-icon name="arrow" size="12" />
+    <!-- 当前大运动态旺度（引擎2） -->
+    <section class="wx-card" data-testid="dayun2-wandu-card">
+      <p class="wx-card-title">
+        大运动态旺度<template v-if="currentDayunStep"> · {{ currentDayunStep.ganzhi }}</template>
+        <span v-if="currentDayunStep" class="strength-link" data-testid="dayun2-link" @click="gotoDetail('/dayun2')">
+          查看计算过程<van-icon name="arrow" size="12" />
         </span>
-      </div>
-      <p class="muted">
-        按「十八层判断 → 月令系数 → 五柱通根 → 静态旺度 → 运干与运支 → 运干与四柱 → 动态旺度」
-        逐步独立计算的另一套数，附逐步依据；与上面的现引擎互不影响。
       </p>
+      <template v-if="dayun2Current">
+        <div class="step-scores">
+          <div v-for="r in dayun2Rows" :key="r.wx" class="score-cell" :data-wx="r.wx">
+            <span class="score-wx step-score-wx" :style="{ color: wxColor(r.wx) }">{{ r.wx }}</span>
+            <span class="score-val">{{ r.value }}</span>
+          </div>
+        </div>
+        <p class="muted">
+          日主 {{ dayun2Current.day_master.stem }}（{{ dayun2Current.day_master.wx }}）· 动态
+          {{ dayun2Current.day_master.dynamic }} 度 · {{ dayun2Current.day_master.level }}
+        </p>
+      </template>
+      <p v-else class="muted">{{ dayun2Error || '大运旺度暂无数据' }}</p>
     </section>
 
     <!-- 人元司令与宫位 -->
@@ -368,60 +375,6 @@ function fmtDateTime(s: string): string {
       <p class="muted">{{ result.hidden_stems.source }}</p>
     </section>
 
-    <!-- 喜忌分析（008 旺度法：结论先行，双用神并列） -->
-    <section class="wx-card">
-      <p class="wx-card-title">
-        喜忌分析
-        <span
-          v-if="isWangduStrength(xi.strength) || isWangduV2(xi.strength)"
-          class="strength-link"
-          data-testid="strength-link"
-          @click="router.push(props.recordId != null
-            ? { path: '/strength', query: { record: String(props.recordId) } }
-            : '/strength')"
-        >
-          {{ xi.conclusion.summary }} · 查看计算过程<van-icon name="arrow" size="12" />
-        </span>
-        <span v-else-if="xi.strength" class="strength-fallback">
-          · {{ xi.conclusion.summary }}（旧版口径，重新排盘可查看新法推演）
-        </span>
-        <span v-else class="strength-fallback"> · {{ xi.conclusion.summary }}</span>
-      </p>
-      <div class="xi-summary">
-        <div class="xi-item">
-          <span class="xi-label">用神</span>
-          <span class="xi-value" :style="{ color: wxColor(xi.conclusion.yong_shen) }">
-            {{ xi.conclusion.yong_shen }}
-          </span>
-        </div>
-        <div v-if="xi.conclusion.tiaohou_yong_shen" class="xi-item">
-          <span class="xi-label">调候</span>
-          <span
-            class="xi-value"
-            :style="{ color: xi.conclusion.tiaohou_yong_shen.element ? wxColor(xi.conclusion.tiaohou_yong_shen.element) : undefined }"
-          >
-            {{ xi.conclusion.tiaohou_yong_shen.element ?? '不需调候' }}
-          </span>
-        </div>
-        <div class="xi-item">
-          <span class="xi-label">喜神</span>
-          <span class="xi-value">{{ xi.conclusion.xi_shen.join('、') || '—' }}</span>
-        </div>
-        <div class="xi-item">
-          <span class="xi-label">忌神</span>
-          <span class="xi-value avoid">{{ xi.conclusion.ji_shen.join('、') || '—' }}</span>
-        </div>
-      </div>
-      <p class="xi-line">
-        宜用五行：<b>{{ xi.favorable_elements.join('、') }}</b>
-        <span class="muted"> · 忌用：{{ xi.avoid_elements.join('、') || '—' }}</span>
-      </p>
-      <p class="muted">{{ xi.reasoning }}</p>
-      <p class="muted">
-        事业：{{ xi.direction.career as string }}；财运：{{ xi.direction.fortune as string }}
-      </p>
-      <p class="disclaimer">{{ xi.disclaimer }}</p>
-    </section>
   </div>
 </template>
 
@@ -500,8 +453,7 @@ function fmtDateTime(s: string): string {
   margin-right: 6px;
 }
 
-/* 喜忌 */
-/* 喜忌区强弱标签（可点击进详情） */
+/* 旺度卡片的「查看计算过程」入口 */
 .strength-link {
   margin-left: 6px;
   display: inline-flex;
@@ -516,70 +468,8 @@ function fmtDateTime(s: string): string {
   cursor: pointer;
   vertical-align: middle;
 }
-.strength-fallback {
-  font-size: 14px;
-  font-weight: 600;
-}
-.xi-summary {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-.xi-item {
-  flex: 1;
-  background: #faf6ee;
-  border-radius: 10px;
-  text-align: center;
-  padding: 8px 4px;
-}
-.xi-label {
-  display: block;
-  font-size: 11px;
-  color: var(--wx-muted);
-}
-.xi-value {
-  font-size: 20px;
-  font-weight: 600;
-}
-.xi-value.avoid {
-  color: var(--wx-primary-2);
-}
-.xi-line {
-  font-size: 14px;
-  margin: 6px 0;
-}
 .muted {
   color: var(--wx-muted);
   font-size: 13px;
-}
-/* 岁运推导两个入口（013） */
-.stage-links {
-  display: flex;
-  gap: 10px;
-  margin: 6px 0;
-}
-.stage-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--wx-primary-2, #a63431);
-  background: #fbf3f3;
-  border-radius: 12px;
-  padding: 4px 12px;
-  cursor: pointer;
-}
-.warn {
-  color: #b8860b;
-  font-size: 13px;
-  margin-top: 8px;
-}
-.disclaimer {
-  color: var(--wx-muted);
-  font-size: 12px;
-  margin-top: 8px;
-  border-top: 1px dashed var(--wx-line);
-  padding-top: 8px;
 }
 </style>

@@ -253,12 +253,11 @@ def test_hua_pair_never_produces_a_shengke_pair():
 
 def test_day_master_wuxing_follows_the_swap():
     """日干合化换字后日主五行跟着改宗（甲己化土 → 日主属土），取用按新五行。"""
-    from services.bazi.v2 import xiyong_analysis_v2
+    from services.bazi.v2 import wan_du_analysis
 
-    r = xiyong_analysis_v2("戊", _chart("辛亥", "癸巳", "戊戌", "丙辰"))
+    r = wan_du_analysis(_chart("辛亥", "癸巳", "戊戌", "丙辰"))
     assert r["day_master"] == "丙" and r["day_master_original"] == "戊"
     assert r["day_master_wuxing"] == "火"
-    assert r["ge_ju"]["type"] == "hua" and r["ge_ju"]["hua_shen"] == "火"
 
 
 def test_ten_gods_use_the_swapped_day_master():
@@ -267,8 +266,9 @@ def test_ten_gods_use_the_swapped_day_master():
     `辛亥 癸巳 戊戌 丙辰`：日主戊（土）→ 丙（火）；月干癸对照 丙 为「正官」
     （水克火、阴阳不同），若仍按 戊 算会是「正财」。
     """
-    from services.bazi.v2 import xiyong_analysis
+    from services.bazi.constants import shishen
+    from services.bazi.v2 import wan_du_analysis
 
-    x = xiyong_analysis("戊", _chart("辛亥", "癸巳", "戊戌", "丙辰"))
-    assert x["ten_gods"]["month"] == "正官"
-    assert x["strength"]["day_master"] == "丙"
+    r = wan_du_analysis(_chart("辛亥", "癸巳", "戊戌", "丙辰"))
+    assert r["day_master"] == "丙"
+    assert shishen(r["day_master"], "癸") == "正官"

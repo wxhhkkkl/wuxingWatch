@@ -10,11 +10,12 @@ vi.mock('vue-router', () => ({
 }))
 
 vi.mock('../src/api/records', () => ({ saveRecord: vi.fn(), updateRecord: vi.fn() }))
-vi.mock('../src/api/charts', () => ({ fetchChartImage: vi.fn(), fetchLiuShi: vi.fn() }))
+vi.mock('../src/api/charts', () => ({ fetchChartImage: vi.fn(), fetchLiuShi: vi.fn(),
+  fetchDayun2: vi.fn().mockResolvedValue({ dayun_steps: [] }) }))
 
 import { useChartStore } from '../src/stores/chart'
 import { useAuthStore } from '../src/stores/auth'
-import { fetchLiuShi } from '../src/api/charts'
+import { fetchLiuShi, fetchDayun2 } from '../src/api/charts'
 import { saveRecord, updateRecord } from '../src/api/records'
 import ChartResult from '../src/pages/ChartResult.vue'
 
@@ -30,9 +31,10 @@ describe('ChartResult', () => {
     useChartStore().set(mockResult, mockInputs)
     const wrapper = mount(ChartResult)
     expect(wrapper.text()).toContain('四柱')
-    expect(wrapper.text()).toContain('喜忌分析')
+    expect(wrapper.text()).toContain('原局动态旺度')
+    expect(wrapper.text()).toContain('大运动态旺度')
     expect(wrapper.text()).toContain('庚') // 年柱天干（明细表格分列渲染）
-    expect(wrapper.text()).toContain('身强')
+    expect(wrapper.text()).toContain('偏弱')
   })
 
   it('renders the 命盘图 relation diagram card with tabs', async () => {
@@ -249,72 +251,58 @@ describe('ChartResult', () => {
     })
   })
 
-  it('shows wangdu conclusion with dual yongshen and clickable 查看计算过程 entry', async () => {
-    const withWangdu = {
-      ...mockResult,
-      xi_yong: {
-        ...mockResult.xi_yong,
-        conclusion: {
-          yong_shen: '金',
-          tiaohou_yong_shen: { element: '火', basis: '生于丑月，寒湿需火调候' },
-          xi_shen: ['土'],
-          ji_shen: ['木', '水'],
-          summary: '较弱·正格',
-          basis: { yong_shen: '身弱取生扶', tiaohou: '丑月需火' },
-        },
-        strength: {
-          method: 'sizhu-jingsui',
-          level: '较弱',
-          day_master: '庚',
-          day_master_wuxing: '金',
-          static_scores: { 木: 4.55, 火: 5.6, 土: 18, 金: 4.5, 水: 3.2 },
-          final_scores: { 木: 4.55, 火: 4.0, 土: 18, 金: 4.5, 水: 3.2 },
-          ge_ju: { type: 'zheng', hua_shen: null, basis: ['日主庚金 4.5 度'], neng_duli: true },
-          steps: [
-            { key: 'month_coef', title: '旺相休囚系数', rule: 'r', traces: [{ target: '金', expression: '庚1+丑辛2', value: 3 }], result: '金 4.5' },
-          ],
-          dayun_adjustments: [],
-        },
-      },
-    } as never
-    useChartStore().set(withWangdu, mockInputs)
+  it('shows 原局旺度 card with a clickable 查看计算过程 entry', async () => {
+    useChartStore().set(mockResult, mockInputs)
     const wrapper = mount(ChartResult)
-    // 双用神并列：格局用神 + 调候用神
-    expect(wrapper.text()).toContain('用神')
-    expect(wrapper.text()).toContain('调候')
-    expect(wrapper.text()).toContain('较弱·正格')
-    // 查看计算过程入口 → /strength
+    const card = wrapper.find('[data-testid="wan-du-card"]')
+    expect(card.exists()).toBe(true)
+    expect(card.text()).toContain('偏弱')
     const link = wrapper.find('[data-testid="strength-link"]')
     expect(link.exists()).toBe(true)
-    expect(link.text()).toContain('较弱')
     await link.trigger('click')
     expect(push).toHaveBeenCalledWith('/strength')
   })
 
-  it('shows legacy hint and hides 计算过程 entry for old-format strength records', () => {
-    const withLegacy = {
-      ...mockResult,
-      xi_yong: {
-        ...mockResult.xi_yong,
-        strength: {
-          level: '偏旺', classification: '身强', cong_ge: false,
-          day_master: '乙', day_master_wuxing: '木', day_master_score: 132.4, balance_line: 109,
-          scores: { 木: 132.4, 火: 98.2, 土: 120.1, 金: 95.3, 水: 98.0 },
-          steps: [{ title: '天干基础分', description: 'd', values: { 木: 72 } }],
+  it('shows current dayun 旺度 card with engine2 dynamic scores', async () => {
+    vi.mocked(fetchDayun2).mockResolvedValueOnce({
+      engine: 'dayun-engine2',
+      engine_version: 1,
+      input_scope: 'four_pillars',
+      degradations: [],
+      dayun_steps: [{
+        ganzhi: '壬午',
+        start_year: 1995,
+        start_age_xu: 6,
+        elements: {
+          木: { static: 4, dynamic: 6, delta: 0 },
+          火: { static: 1, dynamic: 1, delta: 0 },
+          土: { static: 1, dynamic: 1, delta: 0 },
+          金: { static: 3, dynamic: 3, delta: 0 },
+          水: { static: 1, dynamic: 1, delta: 0 },
         },
-      },
-    } as never
-    useChartStore().set(withLegacy, mockInputs)
+        day_master: { stem: '乙', wx: '木', members: ['乙'], static: 4, dynamic: 6, level: '偏弱' },
+        instances: [],
+        phases: [],
+      }],
+    } as never)
+    useChartStore().set(mockResult, mockInputs)
     const wrapper = mount(ChartResult)
-    expect(wrapper.find('[data-testid="strength-link"]').exists()).toBe(false)
-    expect(wrapper.text()).toContain('旧版口径')
+    await flushPromises()
+    const card = wrapper.find('[data-testid="dayun2-wandu-card"]')
+    expect(card.exists()).toBe(true)
+    expect(card.text()).toContain('壬午')
+    expect(card.text()).toContain('偏弱')
   })
 
-  it('falls back to summary and hides strength link for old records', () => {
-    useChartStore().set(mockResult, mockInputs) // mockResult 无 strength
+  it('hides the detail links when no wan_du exists', () => {
+    const noWan = {
+      ...mockResult,
+      wan_du: undefined,
+      da_yun: { ...mockResult.da_yun, steps: [] },
+    } as never
+    useChartStore().set(noWan, mockInputs)
     const wrapper = mount(ChartResult)
     expect(wrapper.find('[data-testid="strength-link"]').exists()).toBe(false)
-    expect(wrapper.text()).toContain('喜忌分析')
-    expect(wrapper.text()).toContain('身强') // conclusion.summary 回退
+    expect(wrapper.find('[data-testid="dayun2-link"]').exists()).toBe(false)
   })
 })

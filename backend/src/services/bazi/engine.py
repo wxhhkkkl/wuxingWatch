@@ -1,7 +1,7 @@
 """BaZi chart computation orchestration using lunar-python.
 
 Produces the full ChartResult: 四柱、大运、流年、人元司令、胎元、命宫、身宫、
-喜忌分析. 时制口径：年月柱按钟表时间（solar_birth）；日时柱按真太阳时
+原局旺度。时制口径：年月柱按钟表时间（solar_birth）；日时柱按真太阳时
 （birth，经出生地经度修正）。当未提供经度时两者相同。
 """
 
@@ -10,12 +10,8 @@ from datetime import datetime, timedelta
 from lunar_python import Solar
 from lunar_python.eightchar import Yun
 
-from services.bazi import hidden_stems, pillar_detail, shichen, xiyong  # 旧引擎（保留）
-from services.bazi.v2 import xiyong_analysis as _v2_analysis  # noqa: F401  (012 v2)
-
-
-class xiyong_v2:  # noqa: N801  薄命名空间，便于调用点写作 xiyong_v2.xiyong_analysis
-    xiyong_analysis = staticmethod(_v2_analysis)
+from services.bazi import hidden_stems, pillar_detail, shichen
+from services.bazi.v2 import wan_du_analysis
 from services.bazi.constants import (
     GAN_LIST,
     GAN_WUXING,
@@ -214,7 +210,7 @@ def compute_chart(
 ) -> dict:
     """Compute the full ChartResult dict for a solar birth time.
 
-    `hour_known=False` 表示**时辰不详**（上游仍以午时占位排盘）。此时旺度/喜忌
+    `hour_known=False` 表示**时辰不详**（上游仍以午时占位排盘）。此时旺度
     按**三柱**计算并给出降级说明（FR-057），但排盘字段本身**不变**。
     
 
@@ -370,12 +366,11 @@ def compute_chart(
     ]
 
     hidden = hidden_stems.ruling_info(month_zhi, solar_birth, lunar_c.getJieQiTable())
-    # 012：切换到 v2 引擎（旧 xiyong/wangdu 原封保留，见 spec C26-3）
-    xi = xiyong_v2.xiyong_analysis(day_master, pillars, da_yun["steps"],
-                                   hour_known=hour_known)
+    # 原局旺度（v2 管线）；大运旺度另由引擎2 按需计算，不在此处落库。
+    wandu = wan_du_analysis(pillars, hour_known=hour_known)
     # 日干参与天干五合且化成功 → 日主已换字（甲→戊），十神/星运按新日主重算，
     # 否则页面上会出现「日主五行=土、十神却按甲木算」的自相矛盾。
-    _dm_after = (xi.get("strength") or {}).get("day_master")
+    _dm_after = wandu.get("day_master")
     if _dm_after and _dm_after != day_master:
         _attach_pillar_details(pillars, gender, day_master=_dm_after)
 
@@ -392,7 +387,7 @@ def compute_chart(
         "shen_gong": _shen_gong(year_gan, month_zhi, time_zhi),
         "da_yun": da_yun,
         "liu_nian": liu_nian,
-        "xi_yong": xi,
+        "wan_du": wandu,
         "dst": dst_info,
         "sun": sun,
         "shichen": shichen_block,
@@ -480,9 +475,9 @@ def compute_from_pillars(pillars: dict[str, str], gender: str) -> dict:
         {"year": y, "ganzhi": liunian_ganzhi(y)}
         for y in range(current_year, current_year + LIU_NIAN_SPAN + 1)
     ]
-    xi = xiyong_v2.xiyong_analysis(day_master, pillar_dicts, steps)
+    wandu = wan_du_analysis(pillar_dicts)
     # 日干被天干五合换字时十神/星运按新日主重算（与 `compute_chart` 同一处理）
-    _dm_after = (xi.get("strength") or {}).get("day_master")
+    _dm_after = wandu.get("day_master")
     if _dm_after and _dm_after != day_master:
         _attach_pillar_details(pillar_dicts, gender, day_master=_dm_after)
 
@@ -506,7 +501,7 @@ def compute_from_pillars(pillars: dict[str, str], gender: str) -> dict:
             "steps": steps,
         },
         "liu_nian": liu_nian,
-        "xi_yong": xi,
+        "wan_du": wandu,
         "missing_parts": ["da_yun_start_age", "absolute_years"],
         "note": "四柱输入模式：无法精确计算起运岁数与各步大运对应年份，大运仅展示干支顺序。",
         "dst": None,

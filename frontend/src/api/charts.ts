@@ -7,22 +7,10 @@ import type {
   LiuShiResponse,
   LiuYueResponse,
   Dayun2Response,
-  SuiyunResponse,
 } from '../types'
 
 export function predictChart(input: BirthInput): Promise<ChartResult> {
   return request<ChartResult>('/api/charts/predict', { method: 'POST', body: JSON.stringify(input) })
-}
-
-/** 岁运推导（013 T034；FR-021a）——**按需实时算、不落库**（FR-026）。
- *
- *  给 `liunian_year` 即得**阶段 3**（另含 `pairs`），不给只算**阶段 2**。 */
-export function fetchSuiyun(
-  input: BirthInput & { dayun_ganzhi: string; liunian_year?: number },
-): Promise<SuiyunResponse> {
-  return request<SuiyunResponse>('/api/charts/suiyun', {
-    method: 'POST', body: JSON.stringify(input),
-  })
 }
 
 /** 流月/流日/流时下钻（level=month → LiuYueResponse，day → LiuRiResponse，hour → LiuShiResponse）。 */
@@ -45,7 +33,7 @@ export async function fetchChartImage(input: BirthInput): Promise<Blob> {
 
 /** **大运引擎2**（014 T027）——按教师八步流程（R30 起含天干五合）独立算出的另一套大运旺度。
  *
- *  与 `fetchSuiyun` **并存**、互不影响；**按需实时算、不落库**（FR-008）。
+ *  **按需实时算、不落库**（FR-008）。
  *  不给 `dayun_ganzhi` 即得该盘**全部**大运步。 */
 export function fetchDayun2(
   input: BirthInput & { dayun_ganzhi?: string },

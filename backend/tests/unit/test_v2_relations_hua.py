@@ -325,17 +325,38 @@ def test_wuhe_condition5_too_dry_detected():
 # 下 4133/4138/2620 三例亦明判「戊癸化土格」。本实现按裁定**只认化火**——
 # 上述化土条文与三例因此判不出，差异可追溯至 `relations.GAN_HE_HUA` 的注释。
 
-def _geju(ganzhi: str):
-    """走**生产路径**（pipeline → geju）判格局——与 `xiyong_analysis_v2` 同口径。"""
-    from services.bazi.v2 import degrees, geju, pipeline
+def _day_hua(ganzhi: str):
+    """日干参与的五合是否化成功、化神是什么——**直接走关系层**（格局层已移除）。
+
+    与原先 `geju.judge_geju` 的化格分支同口径：先看天合地合（tier 1），
+    再看日干与紧贴邻干的五合；化神解析用 `relations._gan_hua_resolve`。
+    """
+    from services.bazi.v2 import pipeline, relations
+    from services.bazi.v2.pipeline import _month_effective_wx
+
     pillars = _chart(*ganzhi.split())
     r = pipeline.compute_strength(pillars)
-    cols = degrees.build_cols(pillars)
+    cols = r["cols"]
     month_zhi = next((c.zhi for c in cols if c.key == "month"), "") or ""
-    return geju.judge_geju(cols=cols, final=r["final_scores"],
-                           root={w: r["degrees"][w]["root"] for w in r["degrees"]},
-                           has_sheng=r["has_sheng"], rel=r["relations"],
-                           month_zhi=month_zhi)
+    effective = _month_effective_wx(r["relations"], cols)
+    for e in r["relations"].get("established", []):
+        if e.get("type") == "天合地合" and e.get("hua"):
+            return e["hua"]
+    idx = next(i for i, c in enumerate(cols) if c.key == "day")
+    for j in (idx - 1, idx + 1):
+        if not 0 <= j < len(cols):
+            continue
+        a, b = cols[idx], cols[j]
+        if not (a.src_gan and b.src_gan):
+            continue
+        if frozenset((a.src_gan, b.src_gan)) not in relations.GAN_HE_HUA:
+            continue
+        hua = relations._gan_hua_resolve(a.src_gan, a, b.src_gan, b, month_zhi,
+                                         final=r["final_scores"], cols=cols,
+                                         effective_month=effective)
+        if hua:
+            return hua
+    return None
 
 
 def test_wu_gui_hua_has_two_candidates():
@@ -376,19 +397,17 @@ def test_wu_gui_hua_tu_cases():
                                  ("丁酉 癸丑 戊戌 己未", "上 2659", True),
                                  ("甲申 戊辰 癸酉 己未", "下 4133", False),
                                  ("乙巳 辛巳 戊子 癸丑", "上 2620", False)):
-        gj = _geju(gz)
+        hua = _day_hua(gz)
         if expect_hua:
-            assert gj["type"] == "hua" and gj["hua_shen"] == "土", (book, gz, gj)
+            assert hua == "土", (book, gz, hua)
         else:
-            assert gj["type"] != "hua", (book, gz, gj)
+            assert hua is None, (book, gz, hua)
 
 
 def test_wu_gui_hua_huo_case_shang_2116():
     """化火仍须过全部条件。书 上 2116 乾 辛卯 戊戌 癸卯 辛酉：戌月戌为**燥土**，
     「可以当成火看」（上 2122），癸坐卯木 → 化火成功 → 化气格，化神为**火**。"""
-    gj = _geju("辛卯 戊戌 癸卯 辛酉")
-    assert gj["type"] == "hua", gj
-    assert gj["hua_shen"] == "火", gj
+    assert _day_hua("辛卯 戊戌 癸卯 辛酉") == "火"
 
 
 def test_wu_gui_hua_zuozhi_matrix():
@@ -409,12 +428,8 @@ def test_wu_gui_hua_zuozhi_matrix():
     """
     for zuozhi, hua_shen in (("卯", "火"), ("未", "火"), ("寅", "火"),
                              ("丑", "土"), ("辰", "土"), ("酉", None)):
-        got = _geju(f"辛卯 戊戌 癸{zuozhi} 辛酉")
-        assert got["type"] == ("hua" if hua_shen else got["type"]), (zuozhi, got)
-        if hua_shen:
-            assert got["type"] == "hua" and got["hua_shen"] == hua_shen, (zuozhi, got)
-        else:
-            assert got["type"] != "hua", (zuozhi, got)
+        got = _day_hua(f"辛卯 戊戌 癸{zuozhi} 辛酉")
+        assert got == hua_shen, (zuozhi, got)
 
 
 def test_wu_gui_no_hua_when_month_not_dang_ling():
@@ -540,8 +555,7 @@ def test_wu_gui_tianhedihe_down_2620_no_longer_hua():
     坐支 子水/丑土 不属「火或木」而不成）；裁定只取化火后，天干腿化不成，
     天合地合随之不成立（**不消费支位**），盘落正格。属已知差异，见本节开头的留痕。
     """
-    gj = _geju("乙巳 辛巳 戊子 癸丑")
-    assert gj["type"] != "hua" and gj["hua_shen"] is None, gj
+    assert _day_hua("乙巳 辛巳 戊子 癸丑") is None
     r = relations.judge_relations(_chart("乙巳", "辛巳", "戊子", "癸丑"))
     assert not [e for e in r["established"] if e["tier"] == 1], \
         [e for e in r["established"] if e["tier"] == 1]

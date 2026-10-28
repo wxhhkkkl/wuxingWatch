@@ -31,14 +31,14 @@ def test_chart_contains_required_sections():
         "shen_gong",
         "da_yun",
         "liu_nian",
-        "xi_yong",
+        "wan_du",
         "lunar_birth",
     ):
         assert key in result
     assert len(result["da_yun"]["steps"]) == 9  # 10 步扣除起运前空档
     assert len(result["liu_nian"]) == 11  # 当前 + 未来 10 年（FR-004）
     assert result["hidden_stems"]["source"]
-    assert result["xi_yong"]["disclaimer"]
+    assert result["wan_du"]["level"]
 
 
 def test_wang_xiang_in_chart_solar_mode():
@@ -136,8 +136,8 @@ def test_compute_from_pillars_known_chart():
     assert result["da_yun"]["steps"][0]["ganzhi"] == "壬午"
     assert result["da_yun"]["steps"][1]["ganzhi"] == "癸未"
     assert result["da_yun"]["start_age"] is None
-    # 喜忌可用
-    assert result["xi_yong"]["conclusion"]["yong_shen"]
+    # 原局旺度可用
+    assert result["wan_du"]["level"]
     assert result["missing_parts"] == ["da_yun_start_age", "absolute_years"]
 
 

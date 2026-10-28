@@ -12,7 +12,7 @@
 1. 012 期样本集的 394 例四柱（领域相关、且是书例）；
 2. 12⁴ 地支全枚举按固定步长抽样（覆盖盘面空间的随机样本）。
 
-**存什么**：标量直接存值（失败时好诊断），体积大的（`steps` 依据、`layers`、`tiaohou`）
+**存什么**：标量直接存值（失败时好诊断），体积大的（`steps` 依据）
 存**规范化 JSON 的哈希**——足以验证「逐位一致」，且不把 fixture 撑到几 MB。
 """
 
@@ -40,23 +40,15 @@ def _canon_hash(x) -> str:
 
 
 def snapshot(pillars: dict) -> dict:
-    from services.bazi.v2 import xiyong_analysis
+    from services.bazi.v2 import wan_du_analysis
 
-    dm = pillars["day"]["gan"]
-    r = xiyong_analysis(dm, pillars)
-    st = r["strength"]
+    st = wan_du_analysis(pillars)
     return {
         "level": st["level"],
         "static": {k: round(v, 6) for k, v in st["static_scores"].items()},
         "final": {k: round(v, 6) for k, v in st["final_scores"].items()},
-        "ge_ju": st["ge_ju"]["type"],
-        "yong_shen": (st["yong_shen"].get("theoretical") or {}).get("element"),
-        "favorable": sorted(r.get("favorable_elements") or []),
-        "avoid": sorted(r.get("avoid_elements") or []),
         # 体积大的存哈希：足以验「逐位一致」，失败时由测试打印现值人工 diff
         "h_steps": _canon_hash(st["steps"]),
-        "h_layers": _canon_hash(st["layers"]),
-        "h_tiaohou": _canon_hash(st["yong_shen"].get("tiaohou")),
     }
 
 

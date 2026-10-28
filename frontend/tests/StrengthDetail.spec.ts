@@ -1,149 +1,85 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { mockResult, mockInputs } from './fixtures'
+import { mockResult } from './fixtures'
 
 const back = vi.fn()
 const push = vi.fn()
-
 vi.mock('vue-router', () => ({
   useRouter: () => ({ back, push }),
-  // 无 `record` 查询参数 → 页面走会话 store（本文件测的就是这条路）
   useRoute: () => ({ query: {} }),
 }))
 
 import { useChartStore } from '../src/stores/chart'
 import StrengthDetail from '../src/pages/StrengthDetail.vue'
 
-const wangduSteps = [
-  {
-    key: 'month_state', title: '月令旺相休囚死', rule: '以月令有效五行判状态',
-    traces: [{ target: '火', expression: '天干丁×2 = 2 度；巳中丙 3 度', value: 6 }],
-    result: '火：6 度 × 0.7 = 4.2 度',
-  },
-  {
-    key: 'branch_effects', title: '地支刑冲破害数值', rule: '相邻方论',
-    traces: [{ target: '', expression: '巳申合绊：巳−1', value: null }],
-    result: '巳申合绊：巳−1',
-  },
-  {
-    key: 'total', title: '总分数', rule: '对照分类表',
-    traces: [{ target: '火', expression: '火 4.2 度 → 较弱', value: 4.2 }],
-    result: '日主丁（火）4.2 度 → 较弱',
-  },
-  {
-    key: 'dayun', title: '当前大运介入', rule: '运支状态增减',
-    traces: [], result: '随当前选中大运展示',
-  },
-  {
-    key: 'yongshen', title: '取用神与喜忌结论', rule: '正格扶抑',
-    traces: [{ target: '格局用神', expression: '身弱取生扶', value: '木' }],
-    result: '用神 木',
-  },
-]
+function mountWith(result: unknown = mockResult) {
+  setActivePinia(createPinia())
+  useChartStore().result = result as never
+  return mount(StrengthDetail)
+}
 
-const dayunAdjustments = [
-  {
-    ganzhi: '癸亥', start_year: 2030, start_age_xu: 5,
-    deltas: [{ target: '木', expression: '运支亥为木之相地 +1', value: 1 }],
-    scores_after: { 木: 12, 火: 4.2, 土: 2, 金: 3, 水: 1 },
-    level_after: '偏旺',
-  },
-  {
-    ganzhi: '壬戌', start_year: 2040, start_age_xu: 15,
-    deltas: [{ target: '木', expression: '运支戌为木之囚地 −1.5', value: -1.5 }],
-    scores_after: { 木: 7.5, 火: 4.2, 土: 2, 金: 3, 水: 1 },
-    level_after: '偏弱',
-  },
-]
-
-const withWangdu = {
-  ...mockResult,
-  xi_yong: {
-    ...mockResult.xi_yong,
-    conclusion: {
-      ...mockResult.xi_yong.conclusion,
-      tiaohou_yong_shen: { element: null, basis: '八月不需调候' },
-      summary: '较弱·正格',
-      basis: { yong_shen: '身弱取生扶', tiaohou: '八月不需调候' },
-    },
-    strength: {
-      method: 'sizhu-jingsui',
-      level: '较弱',
-      day_master: '丁',
-      day_master_wuxing: '火',
-      static_scores: { 木: 3.5, 火: 4.9, 土: 2.0, 金: 3.0, 水: 1.0 },
-      final_scores: { 木: 3.5, 火: 4.2, 土: 2.0, 金: 3.0, 水: 1.0 },
-      ge_ju: { type: 'zheng', hua_shen: null, basis: ['日主丁火 4.2 度（较弱），有根能独立'], neng_duli: true },
-      steps: wangduSteps,
-      dayun_adjustments: dayunAdjustments,
-    },
-  },
-} as never
-
-describe('StrengthDetail（旺度法）', () => {
+describe('StrengthDetail — 原局旺度（精简版）', () => {
   beforeEach(() => {
-    setActivePinia(createPinia())
     back.mockClear()
     push.mockClear()
   })
 
-  it('renders verdict and step cards with full numeric traces', () => {
-    useChartStore().set(withWangdu as never, mockInputs)
-    const wrapper = mount(StrengthDetail)
-    expect(wrapper.find('[data-testid="strength-level"]').text()).toBe('较弱')
-    expect(wrapper.text()).toContain('正格')
-    // 步骤卡片含完整数值轨迹
-    expect(wrapper.text()).toContain('月令旺相休囚死')
-    expect(wrapper.text()).toContain('巳申合绊：巳−1')
-    expect(wrapper.text()).toContain('4.2')
+  it('renders level, day master and five element bars', () => {
+    const w = mountWith()
+    const verdict = w.find('[data-testid="strength-level"]')
+    expect(verdict.exists()).toBe(true)
+    expect(verdict.text()).toBe('偏弱')
+    expect(w.text()).toContain('日主 乙')
+    expect(w.text()).toContain('木')
+    expect(w.findAll('.bar-row')).toHaveLength(5)
+    expect(w.text()).toContain('静态旺度')
   })
 
-  it('renders dayun step from the selected dayun adjustment and updates on switch', async () => {
-    const store = useChartStore()
-    store.set(withWangdu as never, mockInputs)
-    store.setViewingDayun('癸亥')
-    const wrapper = mount(StrengthDetail)
-    expect(wrapper.text()).toContain('癸亥')
-    expect(wrapper.text()).toContain('运支亥为木之相地 +1')
-    expect(wrapper.text()).toContain('偏旺')
-    // 切换大运 → 该步内容更新
-    store.setViewingDayun('壬戌')
-    await wrapper.vm.$nextTick()
-    expect(wrapper.text()).toContain('壬戌')
-    expect(wrapper.text()).toContain('运支戌为木之囚地 −1.5')
-    // 喜忌结论不随大运变化（结论区不在本页改动，等级标签仍为原局判定）
-    expect(wrapper.find('[data-testid="strength-level"]').text()).toBe('较弱')
+  it('renders each step and its traces', () => {
+    const w = mountWith()
+    expect(w.find('[data-testid="wd-step-relations"]').exists()).toBe(true)
+    expect(w.find('[data-testid="wd-step-total"]').exists()).toBe(true)
+    expect(w.text()).toContain('六冲成立：子午冲')
+    expect(w.text()).toContain('日主 乙（木）6 度 → 偏弱')
   })
 
-  it('falls back to current-year dayun when none selected', () => {
-    const store = useChartStore()
-    store.set(withWangdu as never, mockInputs)
-    store.setViewingDayun(null)
-    const wrapper = mount(StrengthDetail)
-    // 当前年份(2026)不在任何 step 区间 → 回退第一步
-    expect(wrapper.text()).toContain('癸亥')
+  it('renders a step-end chart snapshot when the step carries one', () => {
+    const withChart = JSON.parse(JSON.stringify(mockResult))
+    withChart.wan_du.steps[0].chart = {
+      pillars: [
+        { key: 'year', label: '年柱', gan: '庚', gan_wx: '金', gan_original: null,
+          ganzhi: '庚午', zhi: '午', zhi_wx: '火', hidden: [] },
+        { key: 'month', label: '月柱', gan: '辛', gan_wx: '金', gan_original: null,
+          ganzhi: '辛巳', zhi: '巳', zhi_wx: '火', hidden: [] },
+        { key: 'day', label: '日柱', gan: '乙', gan_wx: '木', gan_original: null,
+          ganzhi: '乙酉', zhi: '酉', zhi_wx: '金', hidden: [] },
+        { key: 'time', label: '时柱', gan: '辛', gan_wx: '金', gan_original: null,
+          ganzhi: '辛巳', zhi: '巳', zhi_wx: '火', hidden: [] },
+      ],
+    }
+    const w = mountWith(withChart)
+    expect(w.find('[data-testid="wd-step-chart-relations"]').exists()).toBe(true)
   })
 
-  it('shows legacy hint for old-format strength data', () => {
-    const withLegacy = {
-      ...mockResult,
-      xi_yong: {
-        ...mockResult.xi_yong,
-        strength: {
-          level: '偏旺', classification: '身强', cong_ge: false,
-          day_master: '乙', day_master_wuxing: '木', day_master_score: 132.4, balance_line: 109,
-          scores: { 木: 132.4 }, steps: [],
-        },
-      },
-    } as never
-    useChartStore().set(withLegacy as never, mockInputs)
-    const wrapper = mount(StrengthDetail)
-    expect(wrapper.text()).toContain('旧版口径')
+  it('marks the original day stem when 五合 swapped it', () => {
+    const swapped = JSON.parse(JSON.stringify(mockResult))
+    swapped.wan_du.day_master = '丙'
+    swapped.wan_du.day_master_original = '戊'
+    swapped.wan_du.day_master_wuxing = '火'
+    const w = mountWith(swapped)
+    expect(w.text()).toContain('（原戊）')
   })
 
-  it('shows an empty state when no strength data', () => {
-    const wrapper = mount(StrengthDetail)
-    expect(wrapper.text()).toContain('暂无强弱分析数据')
+  it('shows an empty state when no wan_du exists', () => {
+    const w = mountWith({ ...mockResult, wan_du: undefined })
+    expect(w.text()).toContain('暂无原局旺度结果')
+  })
+
+  it('does not render removed sections', () => {
+    const w = mountWith()
+    for (const word of ['格局', '用神', '喜神', '忌神', '调候', '喜忌']) {
+      expect(w.text()).not.toContain(word)
+    }
   })
 })

@@ -27,8 +27,6 @@ export const useChartStore = defineStore('chart', {
     inputs: null as BirthInput | null,
     editDraft: null as EditDraft | null,
     savedRecord: null as SavedRecordMeta | null,
-    /** 结果页当前选中大运干支（喜忌“大运介入”步联动） */
-    viewingDayun: null as string | null,
   }),
   actions: {
     set(result: ChartResult, inputs: BirthInput) {
@@ -37,9 +35,6 @@ export const useChartStore = defineStore('chart', {
     },
     setSavedRecord(record: SavedRecordMeta | null) {
       this.savedRecord = record
-    },
-    setViewingDayun(ganzhi: string | null) {
-      this.viewingDayun = ganzhi
     },
     setEditDraft(draft: EditDraft) {
       this.editDraft = draft

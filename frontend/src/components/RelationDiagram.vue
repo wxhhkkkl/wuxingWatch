@@ -19,16 +19,11 @@ import {
 import { GAN_WUXING, wxColor, ZHI_WUXING } from '../utils/wuxing'
 import { v2RelationsToJudgments } from '../utils/v2relations'
 import { isWangduV2 } from '../types'
-import type { V2Relation } from '../types'
 
 const props = defineProps<{
   result: ChartResult
   selectedDayun?: DaYunStep | null
   selectedLiunian?: LiuNianStep | null
-  /** 阶段 3（加入流年）的**后端裁定**（013 T040；FR-021a）。父组件从岁运端点取回后传入；
-   *  `ganzhi`/`year` 用于**自校验**——与当前选中不符时视为不可用，避免显示别步的结论。 */
-  suiyun?: { ganzhi: string; year: number;
-             relations: { established: V2Relation[]; rejected: V2Relation[] } } | null
 }>()
 
 type TabKey = 'guanxi' | 'liutong' | 'gongwei' | 'liuqin'
@@ -97,7 +92,7 @@ const relCols = computed<RelCol[]>(() => {
 // 构成双实现，且两份已经漂移（丑·水状态、丑/辰党众取度）。012 裁定改为消费后端
 // 裁定（research R7 方案 A）——后端 `strength.relations` 即唯一口径来源。
 const v2Strength = computed(() => {
-  const s = (props.result as { xi_yong?: { strength?: unknown } })?.xi_yong?.strength
+  const s = (props.result as { wan_du?: unknown })?.wan_du
   return isWangduV2(s) ? s : null
 })
 
@@ -107,40 +102,22 @@ const backendJudgments = computed(() => {
   return s ? v2RelationsToJudgments(s.relations) : null
 })
 
-/** 选中大运那一步的裁定（后端已把该步干支并入判定）——含大运维度由此走后端。 */
-const backendDayunJudgments = computed(() => {
-  const s = v2Strength.value
-  const gz = props.selectedDayun?.ganzhi
-  if (!s || !gz) return null
-  const step = (s.dayun ?? []).find((d) => d.ganzhi === gz)
-  return step ? v2RelationsToJudgments(step.relations) : null
-})
-
-/** 阶段 3（含流年）的后端裁定——**自校验**：与当前选中的步/年不符时视为不可用。 */
-const suiyunJudgments = computed(() => {
-  const s = props.suiyun
-  if (!s) return null
-  if (props.selectedDayun?.ganzhi !== s.ganzhi) return null
-  if (props.selectedLiunian?.year !== s.year) return null
-  return v2RelationsToJudgments(s.relations)
-})
-
 // 008：条件判定（成立/未成立）→ 连线只画成立关系
 //
-// **013 方案 A（续）**：命盘图的岁运维度**只消费后端产出**，三个阶段的来源各自唯一——
-//   · 阶段 1 原局：`strength.relations`；
-//   · 阶段 2 加入大运：`strength.dayun[]` 中该步的 `relations`；
-//   · 阶段 3 加入流年：`suiyun` 属性（父组件从岁运端点取回，FR-021a）。
-// 本地判定**只在后端裁定不可用**（非 v2 旧记录）时兜底。**流年的本地判定副本自 013 起退役**
-// ——否则同一命盘同一年份会在「加入流年」页与命盘图上显示不同结论（违 FR-024 / SC-008）。
+// 命盘图：**原局**优先消费后端裁定（方案 A）；选中大运/流年时，岁运维度改由
+// 本地判定绘制（后端岁运裁定已随 013 期的大运/流年引擎一起移除）。
+// 这是**展示层**的关系连线，不参与旺度结算。
+const hasSuiyun = computed(() =>
+  !!(props.selectedDayun?.ganzhi || props.selectedLiunian?.ganzhi),
+)
 const relJudgments = computed(() => {
   const back = backendJudgments.value
   const local = buildRelationJudgments(relCols.value, {
     excludeColIds: includeDayunLiunian.value ? [] : ['dayun', 'liunian'],
   })
-  if (!back) return local
-  if (!includeDayunLiunian.value) return back
-  return suiyunJudgments.value ?? backendDayunJudgments.value ?? back
+  // 原局：后端裁定；选中大运/流年时：本地判定补出岁运维度（后端岁运裁定已移除）。
+  if (!hasSuiyun.value || !includeDayunLiunian.value) return back ?? local
+  return local
 })
 
 /** 判定条目 → 连线/汇总用的 RelPair（显示文案在此组装）。 */

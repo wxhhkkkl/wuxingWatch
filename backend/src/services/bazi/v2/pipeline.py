@@ -35,7 +35,7 @@ effects 落到各支**藏干度数**上（`_adjusted_hidden`），再由 `_stati
 **不另立支↔支的通用生克**——那正与通则相悖。实测上 2316（乾 丁酉 丁未 壬午 庚子）：
 未土当令脆酉金，酉中辛 = **2.5** 度 ✓（书 上 2317）。
 
-`ge_ju` / `yong_shen` 段落随 US3 追加到 `steps`。
+只输出旺度链（关系 → 静态 → 生克 → 动态与定级）的逐步依据。
 """
 
 from __future__ import annotations

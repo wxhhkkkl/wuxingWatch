@@ -121,101 +121,32 @@ export interface LiuShiResponse {
   hours: LiuShiItem[]
 }
 
-export interface TiaohouYongShen {
-  element: string | null
-  basis: string
-}
-
-export interface XiYongConclusion {
-  yong_shen: string
-  tiaohou_yong_shen?: TiaohouYongShen
-  xi_shen: string[]
-  ji_shen: string[]
-  summary: string
-  basis?: { yong_shen: string; tiaohou: string }
-}
-
-export interface StrengthScoreStep {
-  title: string
-  description: string
-  values?: Record<string, number>
-}
-
-/** 005 期旧评分法形状（旧记录）；008 起由 WangduVerdict 取代。 */
-export interface LegacyStrengthVerdict {
-  level: string
-  classification: '身强' | '身弱' | '中和' | '从格'
-  cong_ge: boolean
-  day_master: string
-  day_master_wuxing: string
-  day_master_score: number
-  balance_line: number
-  scores: Record<string, number>
-  steps: StrengthScoreStep[]
-  method?: undefined
-}
-
 export interface StepTrace {
   target: string
   expression: string
   value: number | string | null
 }
 
-export interface WangduStep {
-  // 010 定性 1-5 → 定量 6-11 → 下游沿用（14 键，废弃 static/dynamic_a/dynamic_b/final）
-  key: 'month_hua' | 'month_state' | 'branch_rel' | 'branch_root' | 'stem_hua'
-    | 'base_score' | 'branch_effects' | 'tonggen' | 'month_coef' | 'stem_shengke' | 'total'
-    | 'geju' | 'dayun' | 'yongshen'
-  title: string
-  rule: string
-  traces: StepTrace[]
-  result: string
-}
-
-export interface GeJuVerdict {
-  type: 'zheng' | 'cong_ruo' | 'cong_qiang' | 'cong_yin' | 'cong_sha' | 'cong_cai' | 'hua'
-  hua_shen: string | null
-  basis: string[]
-  neng_duli: boolean
-}
-
-export interface DayunAdjustment {
-  ganzhi: string
-  start_year: number | null
-  start_age_xu: number | null
-  deltas: StepTrace[]
-  scores_after: Record<string, number>
-  level_after: string
-}
-
-/** 008 期《四柱精髓》旺度法输出（method === 'sizhu-jingsui'）。 */
-export interface WangduVerdict {
-  method: 'sizhu-jingsui'
-  level: string
+/** 原局旺度（`POST /api/charts/predict` 的 `wan_du`）——只含旺度，不含格局/用神/调候。 */
+export interface WanDu {
+  engine: 'wangdu-v2'
+  contract_version: 2
+  /** **换字后**的日干——日干参与天干五合且化成功时已改宗（甲→戊），否则即原字。 */
   day_master: string
+  /** 原局的日干字；未换字时与 `day_master` 相同。 */
+  day_master_original?: string
   day_master_wuxing: string
+  input_scope: 'four_pillars' | 'three_pillars'
+  degradations: string[]
+  relations: { established: V2Relation[]; rejected: V2Relation[] }
+  degrees: Record<string, V2Degrees>
   static_scores: Record<string, number>
   final_scores: Record<string, number>
-  ge_ju: GeJuVerdict
-  steps: WangduStep[]
-  dayun_adjustments: DayunAdjustment[]
-}
-
-export type StrengthVerdict = WangduVerdict | LegacyStrengthVerdict
-
-export function isWangduStrength(s: StrengthVerdict | undefined | null): s is WangduVerdict {
-  return !!s && s.method === 'sizhu-jingsui'
-}
-
-export interface XiYong {
-  conclusion: XiYongConclusion
-  favorable_elements: string[]
-  avoid_elements: string[]
-  reasoning: string
-  ten_gods: Record<string, string>
-  direction: Record<string, unknown>
-  disclaimer: string
-  strength?: StrengthVerdict
+  level: string
+  steps: V2Step[]
+  stem_groups?: unknown[]
+  day_master_group?: unknown
+  benqi_instances?: unknown[]
 }
 
 export interface ShichenMoments {
@@ -285,7 +216,7 @@ export interface ChartResult {
     steps: DaYunStep[]
   }
   liu_nian: LiuNian[]
-  xi_yong: XiYong
+  wan_du: WanDu
   missing_parts: string[]
   note?: string
   birth_place?: string
@@ -408,8 +339,8 @@ export interface BirthInput {
 // ============================================================
 // 012 期 v2 结论契约（engine === 'wangdu-v2'）
 // ============================================================
-// **独立设计、不与旧契约耦合**（spec FR-053）——字段名与嵌套均与 `WangduVerdict`
-// 不同，展示层按 `engine` 分流（FR-054）。data-model.md §1 为准。
+// 原局旺度契约（`WanDu`）与引擎2 契约（`Dayun2Response`）是当前**仅有的两套**
+// 旺度输出；格局/喜忌/用神/调候/岁运推导已从产品中移除。
 //
 // 排盘字段（pillars / lunar_birth 等）**不属于本契约**，一律不变。
 
@@ -446,55 +377,6 @@ export interface V2Degrees {
   final: number
   coef: number
   state: string
-}
-
-export interface V2GeJu {
-  type: 'zheng' | 'cong_ruo' | 'cong_qiang' | 'cong_yin' | 'cong_sha' | 'cong_cai' | 'hua'
-  hua_shen: string | null
-  cong_targets: string[]
-  neng_duli: boolean
-  liang_qi: string[] | null
-  basis: string[]
-}
-
-export interface V2YongShenBlock {
-  element: string | null
-  basis: string
-  direction?: string
-  reason?: string
-}
-
-export interface V2Tiaohou {
-  element: string | null
-  basis: string
-  met: boolean
-  quantified: string
-  position: string | null
-}
-
-export interface V2YongShen {
-  empty: boolean
-  theoretical: V2YongShenBlock | null
-  practical: V2YongShenBlock | null
-  tiaohou: V2Tiaohou | null
-  xi_shen: string[]
-  ji_shen: string[]
-  xian_shen: string[]
-  /** 第一/第二/第三用神（FR-039）。**刻度未定**，见下。 */
-  tier: { first: string | null; second: string | null; third: string | null }
-  direction: string | null
-  basis: string
-  /** 旬空标注：**无削弱系数**（书中无量化）。只标「逢旬空·受制」。 */
-  xunkong?: { kong: string[]; notes: string[] }
-}
-
-export interface V2Layers {
-  /** 层次等级刻度**属书中未量化项**，须 C26-n 裁定；裁定前恒为空串。 */
-  verdict: string
-  met: string[]
-  missing: string[]
-  penalties: { reason: string; delta: string }[]
-  basis: string
 }
 
 /** 藏干在**该段结束时**的度数，以及它相对**原始藏干表**的变化。 */
@@ -553,7 +435,7 @@ export interface V2Step {
   rule: string
   /** 该段生效的**口径裁定编号**（C26-n / O-n），可在 research.md 定位（FR-056）。 */
   rulings?: string[]
-  /** 该段结束时的命盘快照——第 1–8 段有，第 9/10 段（格局/取用）无。 */
+  /** 该段结束时的命盘快照。 */
   chart?: V2StepChart
   /** 结算过程中的逐实例快照（仅生克结算段）。有它时前端不再重复贴段末那张。 */
   charts?: V2StepChartPoint[]
@@ -561,82 +443,8 @@ export interface V2Step {
   result: string
 }
 
-export interface V2DayunStep {
-  /** 来源阶段（013 FR-024）——阶段 2 为 `"dayun"`，阶段 3 为 `"liunian"`。 */
-  source?: 'dayun' | 'liunian'
-  ganzhi: string
-  /** 阶段 3 才有：该年流年干支。 */
-  liunian?: string | null
-  start_year: number | null
-  start_age_xu: number | null
-  level: string
-  ge_ju: V2GeJu
-  yong_shen: V2YongShen
-  /** 该步的**关系裁定**——已把本步干支并入判定（FR-042 的大运维度）。 */
-  relations: { established: V2Relation[]; rejected: V2Relation[] }
-  transition: '成格' | '破格' | null
-  deltas: StepTrace[]
-  scores_after: Record<string, number>
-  /** 该步的调候量化（013 T035；FR-021b）——按该步同口径重判。 */
-  tiaohou?: V2Tiaohou | null
-  /** 该步的格局层次（013 T035；FR-021b）——按该步同口径重判。 */
-  layers?: V2Layers | null
-  /** 该阶段的判定依据段（data-model §1）——逐段可读，供页面「依据可追溯」用。 */
-  steps?: V2Step[]
-}
-
-/** 成对呈现的一侧：值 + 来源阶段（013 FR-016c / FR-024）。 */
-export interface V2PairSide {
-  value: unknown
-  source: 'dayun' | 'liunian'
-}
-
-/** 「加入流年」页的**同名判断成对**条目（013 FR-016c / SC-009）。
- *
- *  `changed` 只提示两侧取值不同，**不是吉凶结论**（FR-016a）。 */
-export interface V2Pair {
-  key: string
-  label: string
-  dayun: V2PairSide
-  liunian: V2PairSide
-  changed: boolean
-}
-
-/** `POST /api/charts/suiyun` 与 `GET /api/records/{id}/suiyun` 的响应
- *  （013 T034；contracts/suiyun-v2.md §2）。**按需实时算、不落库**（FR-026）。 */
-export interface SuiyunResponse {
-  engine: 'wangdu-v2'
-  contract_version: number
-  /** 2 = 只加了大运；3 = 另加流年（`liunian`/`pairs` 非空）。 */
-  stage: 2 | 3
-  input_scope?: 'four_pillars' | 'three_pillars'
-  /** 该盘在岁运阶段的降级说明（FR-025）；无降级时为空数组。 */
-  degradations: string[]
-  dayun: V2DayunStep
-  liunian: V2DayunStep | null
-  pairs: V2Pair[] | null
-}
-
-/** 012 期 v2 结论（engine === 'wangdu-v2'）。 */
-export interface WangduV2 {
-  engine: 'wangdu-v2'
-  contract_version: 2
-  /** **换字后**的日干——日干参与天干五合且化成功时已改宗（甲→戊），否则即原字。 */
-  day_master: string
-  /** 原局的日干字；未换字时与 `day_master` 相同。 */
-  day_master_original?: string
-  day_master_wuxing: string
-  input_scope: 'four_pillars' | 'three_pillars'
-  degradations: string[]
-  relations: { established: V2Relation[]; rejected: V2Relation[] }
-  degrees: Record<string, V2Degrees>
-  level: string
-  ge_ju: V2GeJu
-  yong_shen: V2YongShen
-  layers?: V2Layers
-  steps: V2Step[]
-  dayun: V2DayunStep[]
-}
+/** 012 期 v2 结论（engine === 'wangdu-v2'）——与 `WanDu` 同形，保留旧名供守卫函数使用。 */
+export type WangduV2 = WanDu
 
 export function isWangduV2(s: unknown): s is WangduV2 {
   return !!s && typeof s === 'object' && (s as { engine?: string }).engine === 'wangdu-v2'

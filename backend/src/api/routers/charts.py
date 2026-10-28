@@ -3,8 +3,7 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response
 
-from api.schemas import (BirthInput, Dayun2Request, LiuShiLevel, LiuShiRequest,
-                         SuiyunRequest)
+from api.schemas import BirthInput, Dayun2Request, LiuShiLevel, LiuShiRequest
 from services import chart_service, share_service
 from services.bazi import liushi
 
@@ -46,28 +45,12 @@ def chart_image(payload: BirthInput):
     headers = {"X-Privacy-Notice": "image-contains-personal-info"} if payload.name else {}
     return Response(content=png, media_type="image/png", headers=headers)
 
-@router.post("/suiyun")
-def suiyun(payload: SuiyunRequest):
-    """**岁运推导**（013 期 T034；FR-021a）——阶段 2（加入大运）或阶段 3（加入流年）。
-
-    **按需实时计算、不落库**（FR-026）：不写记录，也不读记录里的岁运结论。
-    「加入流年」时另返回 `pairs`——两阶段的同名判断**成对**列出，**引擎不合成吉凶**
-    （FR-016a/016c），判断由使用者做。
-    """
-    try:
-        return chart_service.suiyun_conclusion(payload, payload.dayun_ganzhi,
-                                               payload.liunian_year)
-    except ValueError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
-
-
-
 @router.post("/dayun2")
 def dayun2(payload: Dayun2Request):
     """**大运引擎2**（014 期 T024）——按教师八步流程（R30 起含天干五合）独立算出的另一套大运旺度。
 
-    与 `/suiyun` **并存**、**互不影响**：现引擎的数一字不改（FR-005），本端点给的是
-    第二套（`engine: "dayun-engine2"`）。**按需实时计算、不落库**（FR-008）。
+    这是当前**唯一**的大运旺度计算（`engine: "dayun-engine2"`）。
+    **按需实时计算、不落库**（FR-008）。
 
     `dayun_ganzhi` 可选——不给则返回该盘全部大运步；给了则只算那一步。
     """

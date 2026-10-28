@@ -188,7 +188,7 @@ def test_stale_engine_version_triggers_recompute(client, login_user, db_session=
         stored["_engine_version"] = "stale0000000"
         # 把结果也**改坏**——只改版本号的话「不重算」也能过，测试就成了空的。
         # 换掉段序（模拟旧口径：五合曾排第 2 段），重算后应恢复当前段序。
-        stored["xi_yong"]["strength"]["steps"] = [
+        stored["wan_du"]["steps"] = [
             {"key": "relations", "title": "第 1 段 · 关系判定", "rule": "x", "traces": [],
              "result": ""},
             {"key": "stem_he", "title": "第 2 段 · 天干五合", "rule": "x", "traces": [],
@@ -201,7 +201,7 @@ def test_stale_engine_version_triggers_recompute(client, login_user, db_session=
         gen.close()
 
     detail = client.get(f"/api/records/{rid}", headers=headers).json()
-    steps = detail["chart_result"]["xi_yong"]["strength"]["steps"]
+    steps = detail["chart_result"]["wan_du"]["steps"]
     keys = [s["key"] for s in steps]
     assert len(keys) >= 8, f"应已重算（旧的那份只有 2 段）：{keys}"
     assert keys[:6] == ["relations", "effects", "month_coef", "tonggen", "static",
@@ -244,4 +244,4 @@ def test_legacy_record_without_input_is_served_as_is(client, login_user):
         gen.close()
 
     detail = client.get(f"/api/records/{rid}", headers=headers).json()
-    assert detail["chart_result"]["xi_yong"]["strength"]["steps"], "仍能正常返回"
+    assert detail["chart_result"]["wan_du"]["steps"], "仍能正常返回"

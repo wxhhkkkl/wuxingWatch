@@ -114,64 +114,15 @@ def compute(payload) -> tuple[dict, datetime | None]:
     result["timezone"] = payload.timezone
     return result, solar_birth
 
-def suiyun_conclusion(payload, dayun_ganzhi: str, liunian_year: int | None = None) -> dict:
-    """岁运推导（013 期 T034/T035/T036；FR-016 / FR-021a / FR-026）。
-
-    **按需实时计算**——先按常规排盘拿到四柱与该盘的大运步，再调 v2 入口出
-    **阶段 2**（给 `dayun_ganzhi`）或**阶段 3**（另给 `liunian_year`）的结论，并把
-    两阶段的同名判断**成对**列出（`pairs`）。**不写任何记录**（FR-026）。
-
-    从**已保存记录**进入时同样走本函数——即「由该记录的输入信息当场**重推**大运与流年」
-    （FR-021a），不读记录里可能存过的岁运结论。
-    """
-    from services.bazi.v2 import dayun as _dayun, xiyong_analysis_v2
-    from services.bazi.constants import liunian_ganzhi
-
-    result, _ = compute(payload)
-    pillars = result.get("pillars") or {}
-    if not pillars or not pillars.get("day"):
-        raise ValueError("该盘无可用的四柱，无法进行岁运推导")
-    steps = (result.get("da_yun") or {}).get("steps") or []
-    legal = {s.get("ganzhi") for s in steps if s.get("ganzhi")}
-    if dayun_ganzhi not in legal:
-        raise ValueError("所选大运 %r 不在该盘的大运步内（合法步：%s）"
-                         % (dayun_ganzhi, "、".join(sorted(legal)) or "无"))
-
-    dm = pillars["day"]["gan"]
-    ln = liunian_ganzhi(liunian_year) if liunian_year else None
-    # `with_suiyun_columns=True`：两页的命盘（顶部卡与逐段快照）要把大运/流年画在
-    # 四柱左边（013 补遗）——只走本端点，入库的 `strength.dayun[]` 不传（见 `analyze_step`）。
-    stage2 = _dayun.analyze_step(pillars, dayun_ganzhi, with_suiyun_columns=True)
-    out = {
-        "engine": "wangdu-v2",
-        "contract_version": 2,
-        "stage": 3 if ln else 2,
-        "dayun": stage2,
-    }
-    if ln:
-        stage3 = _dayun.analyze_step(pillars, dayun_ganzhi, liunian_ganzhi=ln,
-                                     with_suiyun_columns=True)
-        out["liunian"] = stage3
-        out["pairs"] = _dayun.build_pairs(stage2, stage3)
-    else:
-        out["liunian"] = None
-        out["pairs"] = None
-    # 原局侧的门控/降级说明也带出来（如「该年流年被大运挡住」，FR-019）
-    base = xiyong_analysis_v2(dm, pillars, dayun_ganzhi=dayun_ganzhi,
-                              liunian_ganzhi=ln)
-    out["degradations"] = list(base.get("degradations") or [])
-    return out
-
-
 def dayun2_conclusion(payload, dayun_ganzhi: str | None = None) -> dict:
     """**大运引擎2**（014 期 T022；FR-001 / FR-008）。
 
     按教师八步流程（R30 起含天干五合）独立算出某一步（或全部大运步）的三层数（五行合计 / 日主那一组 /
     实例明细）与逐步依据。**按需实时计算、不落库**——不写记录，也不读记录里存过的
-    旺度结论（与 `suiyun_conclusion` 同旨）。
+    旺度结论。
 
-    **不触碰现引擎**：`compute()` 只用来拿四柱与该盘的大运步（那是本引擎的**输入**），
-    第 2–7 步全部走 `services.bazi.v2.dayun2`，不读 `strength.dayun[]` 里的任何数。
+    `compute()` 只用来拿四柱与该盘的大运步（那是本引擎的**输入**）；第 2–7 步全部走
+    `services.bazi.v2.dayun2`。
     """
     from services.bazi.v2 import dayun2 as _d2
 

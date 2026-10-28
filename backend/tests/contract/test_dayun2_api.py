@@ -92,10 +92,3 @@ def test_result_is_not_persisted(client):
     assert n_after == n_before
 
 
-def test_suiyun_endpoint_is_unaffected(client):
-    """FR-005：既有 `/suiyun` 的响应不因本期改动而变（同盘同参两次结果一致）。"""
-    gz = _legal_dayun(client)
-    a = client.post("/api/charts/suiyun", json={**BIRTH, "dayun_ganzhi": gz}).json()
-    b = client.post("/api/charts/suiyun", json={**BIRTH, "dayun_ganzhi": gz}).json()
-    assert a == b
-    assert a["engine"] == "wangdu-v2"
