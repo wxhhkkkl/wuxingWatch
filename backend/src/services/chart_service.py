@@ -155,3 +155,41 @@ def dayun2_conclusion(payload, dayun_ganzhi: str | None = None) -> dict:
         "dayun_steps": [_d2.analyze_step(pillars, gz, dayun_meta=meta_of.get(gz))
                         for gz in chosen],
     }
+
+
+def geju_conclusion(payload, dayun_ganzhi: str | None = None) -> dict:
+    """**子平格局喜忌**（015 期）——按需实时计算、不落库。
+
+    旺度只提供身强弱；取格/成破/喜忌走 `services.bazi.ziping`。`compute()` 只用来
+    拿四柱与原局旺度（这是本引擎的输入）。
+    """
+    from services.bazi.ziping import (judge_dayun, judge_yuanju,
+                                      rules_version)
+
+    result, _ = compute(payload)
+    pillars = result.get("pillars") or {}
+    if not pillars or not pillars.get("day"):
+        raise ValueError("该盘无可用的四柱，无法进行格局判定")
+    wan_du = result.get("wan_du")
+    yuanju = judge_yuanju(pillars, wan_du)
+
+    steps = (result.get("da_yun") or {}).get("steps") or []
+    legal = [s for s in steps if s.get("ganzhi")]
+    if dayun_ganzhi and dayun_ganzhi not in {s.get("ganzhi") for s in legal}:
+        raise ValueError("所选大运 %r 不在该盘的大运步内（合法步：%s）"
+                         % (dayun_ganzhi,
+                            "、".join(sorted({s["ganzhi"] for s in legal})) or "无"))
+    dayun_steps = judge_dayun(yuanju, pillars, wan_du, legal, dayun_ganzhi)
+
+    open_issues = list(yuanju.get("open_issues") or [])
+    for d in dayun_steps:
+        open_issues.extend(d.get("open_issues") or [])
+    return {
+        "engine": "ziping-geju",
+        "rules_version": rules_version(),
+        "input_scope": yuanju.get("input_scope", "four_pillars"),
+        "degradations": list(yuanju.get("degradations") or []),
+        "yuanju": yuanju,
+        "dayun_steps": dayun_steps,
+        "open_issues": open_issues,
+    }

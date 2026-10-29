@@ -1,0 +1,8065 @@
+{
+ "meta": {
+  "source": "相也《格局真诠》（2018）",
+  "auto_extracted": true,
+  "note": "auto-extracted by regex from PDF text; book_ge is the nearest explicit name, 待人工核对；只对 book_ge 明确的例子做格名断言。"
+ },
+ "cases": [
+  {
+   "id": "zhengguan-peiyin-1",
+   "source": {
+    "chapter": "第一章",
+    "section": "第二节",
+    "page": "书 p.11 / PDF p.19"
+   },
+   "pillars": {
+    "year": "己卯",
+    "month": "辛未",
+    "day": "壬寅",
+    "time": "辛亥"
+   },
+   "book_ge": "正官配印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "书中正官配印格例：壬生未月，己官透，辛印双透，亥卯未伤官局，配印伏伤。"
+  },
+  {
+   "id": "sample-no-explicit-ge-1",
+   "source": {
+    "chapter": "第一章",
+    "section": "第一节",
+    "page": "书 p.3 / PDF p.11"
+   },
+   "pillars": {
+    "year": "甲子",
+    "month": "丙寅",
+    "day": "戊午",
+    "time": "辛酉"
+   },
+   "book_ge": null,
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "非书例，仅用于验证 runner 不虚构一致/不一致。"
+  },
+  {
+   "id": "sample-no-explicit-ge-2",
+   "source": {
+    "chapter": "第一章",
+    "section": "第一节",
+    "page": "书 p.3 / PDF p.11"
+   },
+   "pillars": {
+    "year": "癸亥",
+    "month": "乙卯",
+    "day": "乙未",
+    "time": "壬午"
+   },
+   "book_ge": null,
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "非书例，仅用于验证 runner 不虚构一致/不一致。"
+  },
+  {
+   "id": "auto-001",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.11"
+   },
+   "pillars": {
+    "year": "癸酉",
+    "month": "庚申",
+    "day": "丙子",
+    "time": "丙申"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 18 chars; 待人工核对"
+  },
+  {
+   "id": "auto-002",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.12"
+   },
+   "pillars": {
+    "year": "辛未",
+    "month": "辛卯",
+    "day": "庚戌",
+    "time": "壬午"
+   },
+   "book_ge": "官喜财生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 17 chars; 待人工核对"
+  },
+  {
+   "id": "auto-003",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.12"
+   },
+   "pillars": {
+    "year": "戊申",
+    "month": "辛酉",
+    "day": "癸丑",
+    "time": "丁巳"
+   },
+   "book_ge": "印赖官生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 28 chars; 待人工核对"
+  },
+  {
+   "id": "auto-004",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.13"
+   },
+   "pillars": {
+    "year": "丁丑",
+    "month": "辛亥",
+    "day": "癸酉",
+    "time": "壬戌"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 10 chars; 待人工核对"
+  },
+  {
+   "id": "auto-005",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.16"
+   },
+   "pillars": {
+    "year": "甲寅",
+    "month": "癸酉",
+    "day": "甲辰",
+    "time": "乙亥"
+   },
+   "book_ge": "官喜财印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 69 chars; 待人工核对"
+  },
+  {
+   "id": "auto-006",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.16"
+   },
+   "pillars": {
+    "year": "癸未",
+    "month": "乙卯",
+    "day": "丙戌",
+    "time": "戊子"
+   },
+   "book_ge": "印赖官生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 79 chars; 待人工核对"
+  },
+  {
+   "id": "auto-007",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.20"
+   },
+   "pillars": {
+    "year": "己卯",
+    "month": "辛未",
+    "day": "壬寅",
+    "time": "辛亥"
+   },
+   "book_ge": "正官配印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 76 chars; 待人工核对"
+  },
+  {
+   "id": "auto-008",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.20"
+   },
+   "pillars": {
+    "year": "丁丑",
+    "month": "壬寅",
+    "day": "己巳",
+    "time": "丙寅"
+   },
+   "book_ge": "正官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 7 chars; 待人工核对"
+  },
+  {
+   "id": "auto-009",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.21"
+   },
+   "pillars": {
+    "year": "壬申",
+    "month": "戊申",
+    "day": "乙未",
+    "time": "庚辰"
+   },
+   "book_ge": "正官配印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 99 chars; 待人工核对"
+  },
+  {
+   "id": "auto-010",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.22"
+   },
+   "pillars": {
+    "year": "庚寅",
+    "month": "乙酉",
+    "day": "甲子",
+    "time": "戊辰"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 31 chars; 待人工核对"
+  },
+  {
+   "id": "auto-011",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.22"
+   },
+   "pillars": {
+    "year": "庚戌",
+    "month": "乙酉",
+    "day": "甲寅",
+    "time": "庚午"
+   },
+   "book_ge": "正官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 24 chars; 待人工核对"
+  },
+  {
+   "id": "auto-012",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.24"
+   },
+   "pillars": {
+    "year": "戊午",
+    "month": "甲子",
+    "day": "丁酉",
+    "time": "壬寅"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 65 chars; 待人工核对"
+  },
+  {
+   "id": "auto-013",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.24"
+   },
+   "pillars": {
+    "year": "丙子",
+    "month": "丁酉",
+    "day": "甲申",
+    "time": "丙寅"
+   },
+   "book_ge": "正官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 62 chars; 待人工核对"
+  },
+  {
+   "id": "auto-014",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.25"
+   },
+   "pillars": {
+    "year": "乙巳",
+    "month": "甲申",
+    "day": "乙亥",
+    "time": "庚辰"
+   },
+   "book_ge": "正官配印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 117 chars; 待人工核对"
+  },
+  {
+   "id": "auto-015",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.26"
+   },
+   "pillars": {
+    "year": "甲辰",
+    "month": "丙寅",
+    "day": "己酉",
+    "time": "丙寅"
+   },
+   "book_ge": "正官配印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 168 chars; 待人工核对"
+  },
+  {
+   "id": "auto-016",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.26"
+   },
+   "pillars": {
+    "year": "辛丑",
+    "month": "乙未",
+    "day": "戊午",
+    "time": "丙辰"
+   },
+   "book_ge": "正官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 19 chars; 待人工核对"
+  },
+  {
+   "id": "auto-017",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.27"
+   },
+   "pillars": {
+    "year": "甲申",
+    "month": "壬申",
+    "day": "乙巳",
+    "time": "戊寅"
+   },
+   "book_ge": "正官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 15 chars; 待人工核对"
+  },
+  {
+   "id": "auto-018",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.28"
+   },
+   "pillars": {
+    "year": "壬戌",
+    "month": "丁未",
+    "day": "戊申",
+    "time": "乙卯"
+   },
+   "book_ge": "禄劫格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 9 chars; 待人工核对"
+  },
+  {
+   "id": "auto-019",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.29"
+   },
+   "pillars": {
+    "year": "乙卯",
+    "month": "丙戌",
+    "day": "癸酉",
+    "time": "丙辰"
+   },
+   "book_ge": "正官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 74 chars; 待人工核对"
+  },
+  {
+   "id": "auto-020",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.34"
+   },
+   "pillars": {
+    "year": "戊申",
+    "month": "丁巳",
+    "day": "癸酉",
+    "time": "甲寅"
+   },
+   "book_ge": "正官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 43 chars; 待人工核对"
+  },
+  {
+   "id": "auto-021",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.38"
+   },
+   "pillars": {
+    "year": "乙卯",
+    "month": "丁亥",
+    "day": "丁未",
+    "time": "庚戌"
+   },
+   "book_ge": "正官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 74 chars; 待人工核对"
+  },
+  {
+   "id": "auto-022",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.39"
+   },
+   "pillars": {
+    "year": "壬申",
+    "month": "丁未",
+    "day": "丁未",
+    "time": "己酉"
+   },
+   "book_ge": "官喜财生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 150 chars; 待人工核对"
+  },
+  {
+   "id": "auto-023",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.41"
+   },
+   "pillars": {
+    "year": "庚辰",
+    "month": "戊子",
+    "day": "丙子",
+    "time": "庚寅"
+   },
+   "book_ge": "印赖官生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 71 chars; 待人工核对"
+  },
+  {
+   "id": "auto-024",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.43"
+   },
+   "pillars": {
+    "year": "甲午",
+    "month": "辛未",
+    "day": "甲戌",
+    "time": "丙寅"
+   },
+   "book_ge": "正官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 71 chars; 待人工核对"
+  },
+  {
+   "id": "auto-025",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.43"
+   },
+   "pillars": {
+    "year": "癸亥",
+    "month": "己未",
+    "day": "壬寅",
+    "time": "乙巳"
+   },
+   "book_ge": "正官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 51 chars; 待人工核对"
+  },
+  {
+   "id": "auto-026",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.44"
+   },
+   "pillars": {
+    "year": "壬寅",
+    "month": "丙午",
+    "day": "辛卯",
+    "time": "壬辰"
+   },
+   "book_ge": "正官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 47 chars; 待人工核对"
+  },
+  {
+   "id": "auto-027",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.44"
+   },
+   "pillars": {
+    "year": "丙寅",
+    "month": "癸巳",
+    "day": "辛酉",
+    "time": "癸巳"
+   },
+   "book_ge": "弃官就食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 88 chars; 待人工核对"
+  },
+  {
+   "id": "auto-028",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.45"
+   },
+   "pillars": {
+    "year": "甲午",
+    "month": "甲戌",
+    "day": "癸亥",
+    "time": "辛酉"
+   },
+   "book_ge": "弃官就食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 87 chars; 待人工核对"
+  },
+  {
+   "id": "auto-029",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.46"
+   },
+   "pillars": {
+    "year": "壬辰",
+    "month": "戊申",
+    "day": "乙未",
+    "time": "丁亥"
+   },
+   "book_ge": "印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 53 chars; 待人工核对"
+  },
+  {
+   "id": "auto-030",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.47"
+   },
+   "pillars": {
+    "year": "壬申",
+    "month": "丙午",
+    "day": "辛亥",
+    "time": "己丑"
+   },
+   "book_ge": "弃官就食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 146 chars; 待人工核对"
+  },
+  {
+   "id": "auto-031",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.48"
+   },
+   "pillars": {
+    "year": "庚申",
+    "month": "庚辰",
+    "day": "戊辰",
+    "time": "戊午"
+   },
+   "book_ge": "正官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 577 chars; 待人工核对"
+  },
+  {
+   "id": "auto-032",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.50"
+   },
+   "pillars": {
+    "year": "戊申",
+    "month": "己未",
+    "day": "壬子",
+    "time": "辛亥"
+   },
+   "book_ge": "正官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 9 chars; 待人工核对"
+  },
+  {
+   "id": "auto-033",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.51"
+   },
+   "pillars": {
+    "year": "丁亥",
+    "month": "壬子",
+    "day": "丁未",
+    "time": "癸卯"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 9 chars; 待人工核对"
+  },
+  {
+   "id": "auto-034",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.52"
+   },
+   "pillars": {
+    "year": "辛丑",
+    "month": "丙申",
+    "day": "甲戌",
+    "time": "己巳"
+   },
+   "book_ge": "正官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 15 chars; 待人工核对"
+  },
+  {
+   "id": "auto-035",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.52"
+   },
+   "pillars": {
+    "year": "庚申",
+    "month": "甲申",
+    "day": "甲子",
+    "time": "乙亥"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 18 chars; 待人工核对"
+  },
+  {
+   "id": "auto-036",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.54"
+   },
+   "pillars": {
+    "year": "癸酉",
+    "month": "丁巳",
+    "day": "丙午",
+    "time": "壬辰"
+   },
+   "book_ge": "以劫合煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 44 chars; 待人工核对"
+  },
+  {
+   "id": "auto-037",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.54"
+   },
+   "pillars": {
+    "year": "壬辰",
+    "month": "丙午",
+    "day": "丙辰",
+    "time": "癸巳"
+   },
+   "book_ge": "阳刃用官（煞）格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 111 chars; 待人工核对"
+  },
+  {
+   "id": "auto-038",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.54"
+   },
+   "pillars": {
+    "year": "甲午",
+    "month": "己巳",
+    "day": "辛酉",
+    "time": "甲午"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 9 chars; 待人工核对"
+  },
+  {
+   "id": "auto-039",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.54"
+   },
+   "pillars": {
+    "year": "癸丑",
+    "month": "乙卯",
+    "day": "丙午",
+    "time": "壬辰"
+   },
+   "book_ge": "印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 115 chars; 待人工核对"
+  },
+  {
+   "id": "auto-040",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.55"
+   },
+   "pillars": {
+    "year": "癸巳",
+    "month": "乙卯",
+    "day": "丙寅",
+    "time": "壬辰"
+   },
+   "book_ge": "正官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 60 chars; 待人工核对"
+  },
+  {
+   "id": "auto-041",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.62"
+   },
+   "pillars": {
+    "year": "癸酉",
+    "month": "辛酉",
+    "day": "乙巳",
+    "time": "丁亥"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 27 chars; 待人工核对"
+  },
+  {
+   "id": "auto-042",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.64"
+   },
+   "pillars": {
+    "year": "丙寅",
+    "month": "戊戌",
+    "day": "壬戌",
+    "time": "辛丑"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 4 chars; 待人工核对"
+  },
+  {
+   "id": "auto-043",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.65"
+   },
+   "pillars": {
+    "year": "乙酉",
+    "month": "甲申",
+    "day": "甲戌",
+    "time": "甲戌"
+   },
+   "book_ge": "弃命从煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 81 chars; 待人工核对"
+  },
+  {
+   "id": "auto-044",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.66"
+   },
+   "pillars": {
+    "year": "丁酉",
+    "month": "戊申",
+    "day": "甲戌",
+    "time": "甲戌"
+   },
+   "book_ge": "印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 85 chars; 待人工核对"
+  },
+  {
+   "id": "auto-045",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.67"
+   },
+   "pillars": {
+    "year": "己卯",
+    "month": "丁丑",
+    "day": "甲寅",
+    "time": "壬申"
+   },
+   "book_ge": "煞印相生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 126 chars; 待人工核对"
+  },
+  {
+   "id": "auto-046",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.68"
+   },
+   "pillars": {
+    "year": "壬辰",
+    "month": "庚戌",
+    "day": "甲申",
+    "time": "甲戌"
+   },
+   "book_ge": "煞印相生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 100 chars; 待人工核对"
+  },
+  {
+   "id": "auto-047",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.69"
+   },
+   "pillars": {
+    "year": "壬辰",
+    "month": "庚戌",
+    "day": "甲辰",
+    "time": "甲戌"
+   },
+   "book_ge": "煞印相生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 139 chars; 待人工核对"
+  },
+  {
+   "id": "auto-048",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.70"
+   },
+   "pillars": {
+    "year": "庚子",
+    "month": "庚辰",
+    "day": "甲午",
+    "time": "己巳"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 78 chars; 待人工核对"
+  },
+  {
+   "id": "auto-049",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.71"
+   },
+   "pillars": {
+    "year": "乙丑",
+    "month": "甲申",
+    "day": "甲辰",
+    "time": "己巳"
+   },
+   "book_ge": "印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 28 chars; 待人工核对"
+  },
+  {
+   "id": "auto-050",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.72"
+   },
+   "pillars": {
+    "year": "癸酉",
+    "month": "丁巳",
+    "day": "甲子",
+    "time": "戊辰"
+   },
+   "book_ge": "伤官生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 68 chars; 待人工核对"
+  },
+  {
+   "id": "auto-051",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.76"
+   },
+   "pillars": {
+    "year": "乙亥",
+    "month": "乙酉",
+    "day": "乙卯",
+    "time": "丁丑"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 72 chars; 待人工核对"
+  },
+  {
+   "id": "auto-052",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.79"
+   },
+   "pillars": {
+    "year": "己酉",
+    "month": "丙子",
+    "day": "丙辰",
+    "time": "己亥"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 112 chars; 待人工核对"
+  },
+  {
+   "id": "auto-053",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.81"
+   },
+   "pillars": {
+    "year": "丁巳",
+    "month": "己酉",
+    "day": "丙辰",
+    "time": "壬辰"
+   },
+   "book_ge": "煞邀食制格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 79 chars; 待人工核对"
+  },
+  {
+   "id": "auto-054",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.82"
+   },
+   "pillars": {
+    "year": "壬午",
+    "month": "癸卯",
+    "day": "己巳",
+    "time": "辛未"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 68 chars; 待人工核对"
+  },
+  {
+   "id": "auto-055",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.84"
+   },
+   "pillars": {
+    "year": "癸巳",
+    "month": "甲子",
+    "day": "丁酉",
+    "time": "甲辰"
+   },
+   "book_ge": "印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 86 chars; 待人工核对"
+  },
+  {
+   "id": "auto-056",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.86"
+   },
+   "pillars": {
+    "year": "己未",
+    "month": "癸酉",
+    "day": "丁巳",
+    "time": "丁未"
+   },
+   "book_ge": "煞邀食制格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 58 chars; 待人工核对"
+  },
+  {
+   "id": "auto-057",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.87"
+   },
+   "pillars": {
+    "year": "己丑",
+    "month": "癸酉",
+    "day": "丁卯",
+    "time": "辛丑"
+   },
+   "book_ge": "食神制煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 16 chars; 待人工核对"
+  },
+  {
+   "id": "auto-058",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.90"
+   },
+   "pillars": {
+    "year": "戊辰",
+    "month": "甲寅",
+    "day": "戊寅",
+    "time": "戊午"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 12 chars; 待人工核对"
+  },
+  {
+   "id": "auto-059",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.95"
+   },
+   "pillars": {
+    "year": "丁未",
+    "month": "壬子",
+    "day": "丙辰",
+    "time": "庚寅"
+   },
+   "book_ge": "印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 83 chars; 待人工核对"
+  },
+  {
+   "id": "auto-060",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.95"
+   },
+   "pillars": {
+    "year": "乙未",
+    "month": "庚辰",
+    "day": "甲戌",
+    "time": "庚午"
+   },
+   "book_ge": "以劫合煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 67 chars; 待人工核对"
+  },
+  {
+   "id": "auto-061",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.97"
+   },
+   "pillars": {
+    "year": "戊戌",
+    "month": "甲子",
+    "day": "丁未",
+    "time": "庚戌"
+   },
+   "book_ge": "煞邀食制格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 91 chars; 待人工核对"
+  },
+  {
+   "id": "auto-062",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.98"
+   },
+   "pillars": {
+    "year": "甲申",
+    "month": "乙亥",
+    "day": "丙戌",
+    "time": "庚寅"
+   },
+   "book_ge": "煞印相生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 56 chars; 待人工核对"
+  },
+  {
+   "id": "auto-063",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.100"
+   },
+   "pillars": {
+    "year": "戊午",
+    "month": "乙丑",
+    "day": "壬申",
+    "time": "乙巳"
+   },
+   "book_ge": "伤官驾煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 76 chars; 待人工核对"
+  },
+  {
+   "id": "auto-064",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.101"
+   },
+   "pillars": {
+    "year": "甲戌",
+    "month": "丁卯",
+    "day": "丁卯",
+    "time": "癸卯"
+   },
+   "book_ge": "印绶化煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 52 chars; 待人工核对"
+  },
+  {
+   "id": "auto-065",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.101"
+   },
+   "pillars": {
+    "year": "癸卯",
+    "month": "乙卯",
+    "day": "丁卯",
+    "time": "戊申"
+   },
+   "book_ge": "财滋弱煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 21 chars; 待人工核对"
+  },
+  {
+   "id": "auto-066",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.102"
+   },
+   "pillars": {
+    "year": "丙戌",
+    "month": "丁酉",
+    "day": "庚寅",
+    "time": "甲申"
+   },
+   "book_ge": "阳刃用官（煞）格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 69 chars; 待人工核对"
+  },
+  {
+   "id": "auto-067",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.102"
+   },
+   "pillars": {
+    "year": "壬寅",
+    "month": "庚戌",
+    "day": "戊申",
+    "time": "辛酉"
+   },
+   "book_ge": "财滋弱煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 127 chars; 待人工核对"
+  },
+  {
+   "id": "auto-068",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.103"
+   },
+   "pillars": {
+    "year": "戊戌",
+    "month": "己未",
+    "day": "辛卯",
+    "time": "辛卯"
+   },
+   "book_ge": "印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 44 chars; 待人工核对"
+  },
+  {
+   "id": "auto-069",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.105"
+   },
+   "pillars": {
+    "year": "癸卯",
+    "month": "丁巳",
+    "day": "庚寅",
+    "time": "庚辰"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 21 chars; 待人工核对"
+  },
+  {
+   "id": "auto-070",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.105"
+   },
+   "pillars": {
+    "year": "丙子",
+    "month": "甲午",
+    "day": "辛亥",
+    "time": "辛卯"
+   },
+   "book_ge": "正官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 30 chars; 待人工核对"
+  },
+  {
+   "id": "auto-071",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.116"
+   },
+   "pillars": {
+    "year": "壬申",
+    "month": "壬子",
+    "day": "戊午",
+    "time": "乙卯"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 72 chars; 待人工核对"
+  },
+  {
+   "id": "auto-072",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.116"
+   },
+   "pillars": {
+    "year": "乙未",
+    "month": "甲申",
+    "day": "丙申",
+    "time": "庚寅"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 12 chars; 待人工核对"
+  },
+  {
+   "id": "auto-073",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.117"
+   },
+   "pillars": {
+    "year": "乙未",
+    "month": "己卯",
+    "day": "庚寅",
+    "time": "辛巳"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 45 chars; 待人工核对"
+  },
+  {
+   "id": "auto-074",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.117"
+   },
+   "pillars": {
+    "year": "戊辰",
+    "month": "丙辰",
+    "day": "甲寅",
+    "time": "甲子"
+   },
+   "book_ge": "印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 102 chars; 待人工核对"
+  },
+  {
+   "id": "auto-075",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.118"
+   },
+   "pillars": {
+    "year": "癸卯",
+    "month": "甲寅",
+    "day": "庚辰",
+    "time": "丁丑"
+   },
+   "book_ge": "财星配印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 53 chars; 待人工核对"
+  },
+  {
+   "id": "auto-076",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.118"
+   },
+   "pillars": {
+    "year": "癸卯",
+    "month": "庚申",
+    "day": "丙午",
+    "time": "癸巳"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 14 chars; 待人工核对"
+  },
+  {
+   "id": "auto-077",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.120"
+   },
+   "pillars": {
+    "year": "丙寅",
+    "month": "癸巳",
+    "day": "癸未",
+    "time": "壬戌"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 19 chars; 待人工核对"
+  },
+  {
+   "id": "auto-078",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.122"
+   },
+   "pillars": {
+    "year": "壬辰",
+    "month": "丙午",
+    "day": "癸巳",
+    "time": "甲寅"
+   },
+   "book_ge": "去煞存财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 104 chars; 待人工核对"
+  },
+  {
+   "id": "auto-079",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.123"
+   },
+   "pillars": {
+    "year": "癸酉",
+    "month": "丁巳",
+    "day": "壬午",
+    "time": "丁未"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 89 chars; 待人工核对"
+  },
+  {
+   "id": "auto-080",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.124"
+   },
+   "pillars": {
+    "year": "乙酉",
+    "month": "甲申",
+    "day": "丙辰",
+    "time": "辛卯"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 50 chars; 待人工核对"
+  },
+  {
+   "id": "auto-081",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.125"
+   },
+   "pillars": {
+    "year": "戊戌",
+    "month": "壬戌",
+    "day": "乙亥",
+    "time": "己卯"
+   },
+   "book_ge": "印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 87 chars; 待人工核对"
+  },
+  {
+   "id": "auto-082",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.126"
+   },
+   "pillars": {
+    "year": "戊寅",
+    "month": "辛酉",
+    "day": "丁巳",
+    "time": "丁未"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 81 chars; 待人工核对"
+  },
+  {
+   "id": "auto-083",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.126"
+   },
+   "pillars": {
+    "year": "癸巳",
+    "month": "壬戌",
+    "day": "乙巳",
+    "time": "戊寅"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 87 chars; 待人工核对"
+  },
+  {
+   "id": "auto-084",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.127"
+   },
+   "pillars": {
+    "year": "戊寅",
+    "month": "庚申",
+    "day": "丙寅",
+    "time": "庚寅"
+   },
+   "book_ge": "食神生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 56 chars; 待人工核对"
+  },
+  {
+   "id": "auto-085",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.127"
+   },
+   "pillars": {
+    "year": "辛亥",
+    "month": "辛卯",
+    "day": "庚子",
+    "time": "庚辰"
+   },
+   "book_ge": "印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 50 chars; 待人工核对"
+  },
+  {
+   "id": "auto-086",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.130"
+   },
+   "pillars": {
+    "year": "壬寅",
+    "month": "壬寅",
+    "day": "庚辰",
+    "time": "辛巳"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 8 chars; 待人工核对"
+  },
+  {
+   "id": "auto-087",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.131"
+   },
+   "pillars": {
+    "year": "甲子",
+    "month": "辛未",
+    "day": "辛酉",
+    "time": "壬辰"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 52 chars; 待人工核对"
+  },
+  {
+   "id": "auto-088",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.132"
+   },
+   "pillars": {
+    "year": "庚戌",
+    "month": "戊子",
+    "day": "戊子",
+    "time": "丙辰"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 41 chars; 待人工核对"
+  },
+  {
+   "id": "auto-089",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.133"
+   },
+   "pillars": {
+    "year": "乙未",
+    "month": "丙戌",
+    "day": "壬戌",
+    "time": "辛亥"
+   },
+   "book_ge": "财喜食生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 91 chars; 待人工核对"
+  },
+  {
+   "id": "auto-090",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.136"
+   },
+   "pillars": {
+    "year": "己丑",
+    "month": "癸酉",
+    "day": "丙辰",
+    "time": "甲午"
+   },
+   "book_ge": "财喜食生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 92 chars; 待人工核对"
+  },
+  {
+   "id": "auto-091",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.139"
+   },
+   "pillars": {
+    "year": "丁丑",
+    "month": "戊申",
+    "day": "丙午",
+    "time": "己丑"
+   },
+   "book_ge": "财喜食生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 18 chars; 待人工核对"
+  },
+  {
+   "id": "auto-092",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.139"
+   },
+   "pillars": {
+    "year": "甲午",
+    "month": "癸酉",
+    "day": "丙戌",
+    "time": "甲午"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 180 chars; 待人工核对"
+  },
+  {
+   "id": "auto-093",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.140"
+   },
+   "pillars": {
+    "year": "辛卯",
+    "month": "庚寅",
+    "day": "辛丑",
+    "time": "丁酉"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 44 chars; 待人工核对"
+  },
+  {
+   "id": "auto-094",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.141"
+   },
+   "pillars": {
+    "year": "丁未",
+    "month": "辛亥",
+    "day": "庚辰",
+    "time": "乙酉"
+   },
+   "book_ge": "食神格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 40 chars; 待人工核对"
+  },
+  {
+   "id": "auto-095",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.141"
+   },
+   "pillars": {
+    "year": "辛酉",
+    "month": "庚寅",
+    "day": "辛酉",
+    "time": "丁酉"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 49 chars; 待人工核对"
+  },
+  {
+   "id": "auto-096",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.142"
+   },
+   "pillars": {
+    "year": "辛巳",
+    "month": "辛卯",
+    "day": "辛丑",
+    "time": "辛卯"
+   },
+   "book_ge": "印赖官生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 219 chars; 待人工核对"
+  },
+  {
+   "id": "auto-097",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.143"
+   },
+   "pillars": {
+    "year": "丙子",
+    "month": "辛卯",
+    "day": "辛亥",
+    "time": "戊戌"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 42 chars; 待人工核对"
+  },
+  {
+   "id": "auto-098",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.143"
+   },
+   "pillars": {
+    "year": "庚寅",
+    "month": "乙酉",
+    "day": "丙子",
+    "time": "甲午"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 59 chars; 待人工核对"
+  },
+  {
+   "id": "auto-099",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.152"
+   },
+   "pillars": {
+    "year": "己巳",
+    "month": "癸酉",
+    "day": "丙寅",
+    "time": "庚寅"
+   },
+   "book_ge": "伤官生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 47 chars; 待人工核对"
+  },
+  {
+   "id": "auto-100",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.152"
+   },
+   "pillars": {
+    "year": "庚寅",
+    "month": "乙酉",
+    "day": "丙子",
+    "time": "癸巳"
+   },
+   "book_ge": "印赖官生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 103 chars; 待人工核对"
+  },
+  {
+   "id": "auto-101",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.153"
+   },
+   "pillars": {
+    "year": "己酉",
+    "month": "壬申",
+    "day": "丁卯",
+    "time": "丁未"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 50 chars; 待人工核对"
+  },
+  {
+   "id": "auto-102",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.155"
+   },
+   "pillars": {
+    "year": "己卯",
+    "month": "癸酉",
+    "day": "丙辰",
+    "time": "戊戌"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 85 chars; 待人工核对"
+  },
+  {
+   "id": "auto-103",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.157"
+   },
+   "pillars": {
+    "year": "乙酉",
+    "month": "庚辰",
+    "day": "甲午",
+    "time": "戊辰"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 16 chars; 待人工核对"
+  },
+  {
+   "id": "auto-104",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.158"
+   },
+   "pillars": {
+    "year": "庚辰",
+    "month": "戊子",
+    "day": "戊寅",
+    "time": "甲寅"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 7 chars; 待人工核对"
+  },
+  {
+   "id": "auto-105",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.158"
+   },
+   "pillars": {
+    "year": "丙辰",
+    "month": "癸巳",
+    "day": "壬戌",
+    "time": "壬寅"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 49 chars; 待人工核对"
+  },
+  {
+   "id": "auto-106",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.159"
+   },
+   "pillars": {
+    "year": "丁酉",
+    "month": "壬寅",
+    "day": "辛丑",
+    "time": "癸巳"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 114 chars; 待人工核对"
+  },
+  {
+   "id": "auto-107",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.159"
+   },
+   "pillars": {
+    "year": "壬辰",
+    "month": "己酉",
+    "day": "丙寅",
+    "time": "己丑"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 63 chars; 待人工核对"
+  },
+  {
+   "id": "auto-108",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.160"
+   },
+   "pillars": {
+    "year": "癸未",
+    "month": "辛酉",
+    "day": "丙辰",
+    "time": "壬辰"
+   },
+   "book_ge": "印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 52 chars; 待人工核对"
+  },
+  {
+   "id": "auto-109",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.160"
+   },
+   "pillars": {
+    "year": "癸巳",
+    "month": "庚申",
+    "day": "丁丑",
+    "time": "庚子"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 137 chars; 待人工核对"
+  },
+  {
+   "id": "auto-110",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.160"
+   },
+   "pillars": {
+    "year": "壬寅",
+    "month": "壬寅",
+    "day": "辛巳",
+    "time": "丁酉"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 7 chars; 待人工核对"
+  },
+  {
+   "id": "auto-111",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.167"
+   },
+   "pillars": {
+    "year": "庚申",
+    "month": "丁亥",
+    "day": "乙巳",
+    "time": "辛巳"
+   },
+   "book_ge": "印赖官生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 11 chars; 待人工核对"
+  },
+  {
+   "id": "auto-112",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.168"
+   },
+   "pillars": {
+    "year": "庚申",
+    "month": "戊寅",
+    "day": "丁未",
+    "time": "庚子"
+   },
+   "book_ge": "印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 144 chars; 待人工核对"
+  },
+  {
+   "id": "auto-113",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.170"
+   },
+   "pillars": {
+    "year": "丙寅",
+    "month": "戊戌",
+    "day": "辛酉",
+    "time": "戊子"
+   },
+   "book_ge": "印赖官生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 239 chars; 待人工核对"
+  },
+  {
+   "id": "auto-114",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.171"
+   },
+   "pillars": {
+    "year": "丙戌",
+    "month": "戊戌",
+    "day": "辛未",
+    "time": "壬辰"
+   },
+   "book_ge": "印赖官生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 29 chars; 待人工核对"
+  },
+  {
+   "id": "auto-115",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.172"
+   },
+   "pillars": {
+    "year": "乙亥",
+    "month": "己卯",
+    "day": "丁酉",
+    "time": "壬寅"
+   },
+   "book_ge": "印赖官生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 25 chars; 待人工核对"
+  },
+  {
+   "id": "auto-116",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.172"
+   },
+   "pillars": {
+    "year": "丁酉",
+    "month": "辛亥",
+    "day": "甲戌",
+    "time": "丙寅"
+   },
+   "book_ge": "印赖官生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 80 chars; 待人工核对"
+  },
+  {
+   "id": "auto-117",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.174"
+   },
+   "pillars": {
+    "year": "辛亥",
+    "month": "庚寅",
+    "day": "丙子",
+    "time": "丁酉"
+   },
+   "book_ge": "印赖官生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 388 chars; 待人工核对"
+  },
+  {
+   "id": "auto-118",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.174"
+   },
+   "pillars": {
+    "year": "庚子",
+    "month": "戊寅",
+    "day": "丙申",
+    "time": "辛卯"
+   },
+   "book_ge": "印赖官生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 75 chars; 待人工核对"
+  },
+  {
+   "id": "auto-119",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.175"
+   },
+   "pillars": {
+    "year": "辛亥",
+    "month": "庚子",
+    "day": "甲辰",
+    "time": "乙亥"
+   },
+   "book_ge": "印赖官生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 65 chars; 待人工核对"
+  },
+  {
+   "id": "auto-120",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.175"
+   },
+   "pillars": {
+    "year": "乙未",
+    "month": "己卯",
+    "day": "丁卯",
+    "time": "甲辰"
+   },
+   "book_ge": "印绶喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 38 chars; 待人工核对"
+  },
+  {
+   "id": "auto-121",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.176"
+   },
+   "pillars": {
+    "year": "癸卯",
+    "month": "甲子",
+    "day": "乙未",
+    "time": "丁亥"
+   },
+   "book_ge": "印绶喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 65 chars; 待人工核对"
+  },
+  {
+   "id": "auto-122",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.177"
+   },
+   "pillars": {
+    "year": "庚戌",
+    "month": "甲申",
+    "day": "壬午",
+    "time": "己酉"
+   },
+   "book_ge": "印赖官生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 71 chars; 待人工核对"
+  },
+  {
+   "id": "auto-123",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.182"
+   },
+   "pillars": {
+    "year": "己巳",
+    "month": "癸酉",
+    "day": "癸未",
+    "time": "庚申"
+   },
+   "book_ge": "印绶化煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 2 chars; 待人工核对"
+  },
+  {
+   "id": "auto-124",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.182"
+   },
+   "pillars": {
+    "year": "壬寅",
+    "month": "戊申",
+    "day": "壬辰",
+    "time": "壬寅"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 171 chars; 待人工核对"
+  },
+  {
+   "id": "auto-125",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.183"
+   },
+   "pillars": {
+    "year": "壬申",
+    "month": "壬寅",
+    "day": "丙子",
+    "time": "乙未"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 63 chars; 待人工核对"
+  },
+  {
+   "id": "auto-126",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.184"
+   },
+   "pillars": {
+    "year": "癸卯",
+    "month": "乙卯",
+    "day": "丁未",
+    "time": "甲辰"
+   },
+   "book_ge": "印绶化煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 121 chars; 待人工核对"
+  },
+  {
+   "id": "auto-127",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.186"
+   },
+   "pillars": {
+    "year": "乙亥",
+    "month": "丁亥",
+    "day": "乙丑",
+    "time": "丙戌"
+   },
+   "book_ge": "印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 7 chars; 待人工核对"
+  },
+  {
+   "id": "auto-128",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.186"
+   },
+   "pillars": {
+    "year": "庚戌",
+    "month": "戊子",
+    "day": "甲戌",
+    "time": "乙亥"
+   },
+   "book_ge": "印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 7 chars; 待人工核对"
+  },
+  {
+   "id": "auto-129",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.187"
+   },
+   "pillars": {
+    "year": "甲申",
+    "month": "丁卯",
+    "day": "丙子",
+    "time": "己丑"
+   },
+   "book_ge": "印赖官生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 27 chars; 待人工核对"
+  },
+  {
+   "id": "auto-130",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.187"
+   },
+   "pillars": {
+    "year": "壬子",
+    "month": "癸卯",
+    "day": "丙子",
+    "time": "己亥"
+   },
+   "book_ge": "印绶化煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 45 chars; 待人工核对"
+  },
+  {
+   "id": "auto-131",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.190"
+   },
+   "pillars": {
+    "year": "戊戌",
+    "month": "乙卯",
+    "day": "丙午",
+    "time": "己亥"
+   },
+   "book_ge": "印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 2 chars; 待人工核对"
+  },
+  {
+   "id": "auto-132",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.190"
+   },
+   "pillars": {
+    "year": "壬寅",
+    "month": "壬子",
+    "day": "甲午",
+    "time": "丙寅"
+   },
+   "book_ge": "印绶喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 90 chars; 待人工核对"
+  },
+  {
+   "id": "auto-133",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.191"
+   },
+   "pillars": {
+    "year": "乙亥",
+    "month": "庚辰",
+    "day": "辛未",
+    "time": "壬辰"
+   },
+   "book_ge": "印绶喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 135 chars; 待人工核对"
+  },
+  {
+   "id": "auto-134",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.192"
+   },
+   "pillars": {
+    "year": "癸亥",
+    "month": "甲子",
+    "day": "乙丑",
+    "time": "丁亥"
+   },
+   "book_ge": "印绶喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 77 chars; 待人工核对"
+  },
+  {
+   "id": "auto-135",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.192"
+   },
+   "pillars": {
+    "year": "辛巳",
+    "month": "癸巳",
+    "day": "戊辰",
+    "time": "辛酉"
+   },
+   "book_ge": "印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 83 chars; 待人工核对"
+  },
+  {
+   "id": "auto-136",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.193"
+   },
+   "pillars": {
+    "year": "庚申",
+    "month": "庚辰",
+    "day": "庚子",
+    "time": "壬午"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 262 chars; 待人工核对"
+  },
+  {
+   "id": "auto-137",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.194"
+   },
+   "pillars": {
+    "year": "己丑",
+    "month": "丁卯",
+    "day": "丙午",
+    "time": "戊戌"
+   },
+   "book_ge": "印绶喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 109 chars; 待人工核对"
+  },
+  {
+   "id": "auto-138",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.195"
+   },
+   "pillars": {
+    "year": "壬辰",
+    "month": "壬子",
+    "day": "甲午",
+    "time": "丙寅"
+   },
+   "book_ge": "印绶喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 60 chars; 待人工核对"
+  },
+  {
+   "id": "auto-139",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.196"
+   },
+   "pillars": {
+    "year": "甲辰",
+    "month": "癸酉",
+    "day": "壬申",
+    "time": "乙巳"
+   },
+   "book_ge": "印绶化煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 80 chars; 待人工核对"
+  },
+  {
+   "id": "auto-140",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.197"
+   },
+   "pillars": {
+    "year": "乙巳",
+    "month": "丁亥",
+    "day": "甲寅",
+    "time": "丁卯"
+   },
+   "book_ge": "印绶喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 118 chars; 待人工核对"
+  },
+  {
+   "id": "auto-141",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.198"
+   },
+   "pillars": {
+    "year": "己未",
+    "month": "庚午",
+    "day": "己丑",
+    "time": "辛未"
+   },
+   "book_ge": "印绶喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 116 chars; 待人工核对"
+  },
+  {
+   "id": "auto-142",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.199"
+   },
+   "pillars": {
+    "year": "甲申",
+    "month": "庚午",
+    "day": "戊戌",
+    "time": "丙辰"
+   },
+   "book_ge": "印绶喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 55 chars; 待人工核对"
+  },
+  {
+   "id": "auto-143",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.200"
+   },
+   "pillars": {
+    "year": "丁未",
+    "month": "壬寅",
+    "day": "丁丑",
+    "time": "甲寅"
+   },
+   "book_ge": "印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 185 chars; 待人工核对"
+  },
+  {
+   "id": "auto-144",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.200"
+   },
+   "pillars": {
+    "year": "丁未",
+    "month": "壬寅",
+    "day": "丁酉",
+    "time": "甲辰"
+   },
+   "book_ge": "印绶喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 161 chars; 待人工核对"
+  },
+  {
+   "id": "auto-145",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.201"
+   },
+   "pillars": {
+    "year": "戊戌",
+    "month": "甲寅",
+    "day": "丁卯",
+    "time": "癸卯"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 148 chars; 待人工核对"
+  },
+  {
+   "id": "auto-146",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.204"
+   },
+   "pillars": {
+    "year": "辛酉",
+    "month": "丙申",
+    "day": "壬申",
+    "time": "辛亥"
+   },
+   "book_ge": "弃印就财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 120 chars; 待人工核对"
+  },
+  {
+   "id": "auto-147",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.205"
+   },
+   "pillars": {
+    "year": "己亥",
+    "month": "乙亥",
+    "day": "乙丑",
+    "time": "丁亥"
+   },
+   "book_ge": "弃印就财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 68 chars; 待人工核对"
+  },
+  {
+   "id": "auto-148",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.205"
+   },
+   "pillars": {
+    "year": "壬子",
+    "month": "壬子",
+    "day": "乙丑",
+    "time": "丁亥"
+   },
+   "book_ge": "弃印就财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 60 chars; 待人工核对"
+  },
+  {
+   "id": "auto-149",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.206"
+   },
+   "pillars": {
+    "year": "甲戌",
+    "month": "甲戌",
+    "day": "辛亥",
+    "time": "壬辰"
+   },
+   "book_ge": "伤官生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 76 chars; 待人工核对"
+  },
+  {
+   "id": "auto-150",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.206"
+   },
+   "pillars": {
+    "year": "戊辰",
+    "month": "甲子",
+    "day": "甲戌",
+    "time": "甲子"
+   },
+   "book_ge": "弃印就财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 78 chars; 待人工核对"
+  },
+  {
+   "id": "auto-151",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.208"
+   },
+   "pillars": {
+    "year": "辛酉",
+    "month": "辛卯",
+    "day": "丁巳",
+    "time": "己酉"
+   },
+   "book_ge": "弃印就财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 79 chars; 待人工核对"
+  },
+  {
+   "id": "auto-152",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.209"
+   },
+   "pillars": {
+    "year": "乙巳",
+    "month": "戊子",
+    "day": "甲辰",
+    "time": "己巳"
+   },
+   "book_ge": "弃印就财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 105 chars; 待人工核对"
+  },
+  {
+   "id": "auto-153",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.209"
+   },
+   "pillars": {
+    "year": "乙卯",
+    "month": "戊子",
+    "day": "甲寅",
+    "time": "戊辰"
+   },
+   "book_ge": "弃印就财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 193 chars; 待人工核对"
+  },
+  {
+   "id": "auto-154",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.210"
+   },
+   "pillars": {
+    "year": "丙午",
+    "month": "庚寅",
+    "day": "丙午",
+    "time": "癸巳"
+   },
+   "book_ge": "印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 56 chars; 待人工核对"
+  },
+  {
+   "id": "auto-155",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.210"
+   },
+   "pillars": {
+    "year": "丁亥",
+    "month": "辛亥",
+    "day": "乙亥",
+    "time": "丁亥"
+   },
+   "book_ge": "印绶喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 64 chars; 待人工核对"
+  },
+  {
+   "id": "auto-156",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.211"
+   },
+   "pillars": {
+    "year": "庚寅",
+    "month": "乙酉",
+    "day": "癸亥",
+    "time": "丙辰"
+   },
+   "book_ge": "弃印就财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 55 chars; 待人工核对"
+  },
+  {
+   "id": "auto-157",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.211"
+   },
+   "pillars": {
+    "year": "己未",
+    "month": "甲戌",
+    "day": "辛未",
+    "time": "癸巳"
+   },
+   "book_ge": "印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 10 chars; 待人工核对"
+  },
+  {
+   "id": "auto-158",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.212"
+   },
+   "pillars": {
+    "year": "庚申",
+    "month": "戊寅",
+    "day": "丙申",
+    "time": "乙未"
+   },
+   "book_ge": "印绶喜比格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 113 chars; 待人工核对"
+  },
+  {
+   "id": "auto-159",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.214"
+   },
+   "pillars": {
+    "year": "壬子",
+    "month": "辛亥",
+    "day": "甲寅",
+    "time": "甲子"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 295 chars; 待人工核对"
+  },
+  {
+   "id": "auto-160",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.214"
+   },
+   "pillars": {
+    "year": "壬子",
+    "month": "辛亥",
+    "day": "乙亥",
+    "time": "丙子"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 52 chars; 待人工核对"
+  },
+  {
+   "id": "auto-161",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.215"
+   },
+   "pillars": {
+    "year": "己巳",
+    "month": "己巳",
+    "day": "己巳",
+    "time": "戊辰"
+   },
+   "book_ge": "伤官生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 223 chars; 待人工核对"
+  },
+  {
+   "id": "auto-162",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.215"
+   },
+   "pillars": {
+    "year": "戊戌",
+    "month": "戊午",
+    "day": "戊午",
+    "time": "戊午"
+   },
+   "book_ge": "印绶喜比格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 74 chars; 待人工核对"
+  },
+  {
+   "id": "auto-163",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.216"
+   },
+   "pillars": {
+    "year": "戊午",
+    "month": "戊午",
+    "day": "戊午",
+    "time": "戊午"
+   },
+   "book_ge": "印绶喜比格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 117 chars; 待人工核对"
+  },
+  {
+   "id": "auto-164",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.220"
+   },
+   "pillars": {
+    "year": "庚辰",
+    "month": "丙戌",
+    "day": "戊子",
+    "time": "壬戌"
+   },
+   "book_ge": "弃印就财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 364 chars; 待人工核对"
+  },
+  {
+   "id": "auto-165",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.220"
+   },
+   "pillars": {
+    "year": "戊子",
+    "month": "甲寅",
+    "day": "丙寅",
+    "time": "庚寅"
+   },
+   "book_ge": "弃印就财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 56 chars; 待人工核对"
+  },
+  {
+   "id": "auto-166",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.221"
+   },
+   "pillars": {
+    "year": "己未",
+    "month": "己巳",
+    "day": "戊午",
+    "time": "乙卯"
+   },
+   "book_ge": "印绶喜比格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 85 chars; 待人工核对"
+  },
+  {
+   "id": "auto-167",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.230"
+   },
+   "pillars": {
+    "year": "丁未",
+    "month": "癸卯",
+    "day": "癸亥",
+    "time": "癸丑"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 138 chars; 待人工核对"
+  },
+  {
+   "id": "auto-168",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.230"
+   },
+   "pillars": {
+    "year": "己未",
+    "month": "壬申",
+    "day": "戊子",
+    "time": "庚申"
+   },
+   "book_ge": "食神生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 149 chars; 待人工核对"
+  },
+  {
+   "id": "auto-169",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.231"
+   },
+   "pillars": {
+    "year": "丁亥",
+    "month": "癸卯",
+    "day": "癸卯",
+    "time": "甲寅"
+   },
+   "book_ge": "伤官生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 82 chars; 待人工核对"
+  },
+  {
+   "id": "auto-170",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.232"
+   },
+   "pillars": {
+    "year": "甲子",
+    "month": "丁卯",
+    "day": "壬子",
+    "time": "壬子"
+   },
+   "book_ge": "食神生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 168 chars; 待人工核对"
+  },
+  {
+   "id": "auto-171",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.233"
+   },
+   "pillars": {
+    "year": "己未",
+    "month": "己巳",
+    "day": "甲寅",
+    "time": "丙寅"
+   },
+   "book_ge": "食神生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 24 chars; 待人工核对"
+  },
+  {
+   "id": "auto-172",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.234"
+   },
+   "pillars": {
+    "year": "戊子",
+    "month": "丙辰",
+    "day": "丙午",
+    "time": "庚寅"
+   },
+   "book_ge": "食神生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 80 chars; 待人工核对"
+  },
+  {
+   "id": "auto-173",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.235"
+   },
+   "pillars": {
+    "year": "辛亥",
+    "month": "戊戌",
+    "day": "丙戌",
+    "time": "辛卯"
+   },
+   "book_ge": "食神生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 63 chars; 待人工核对"
+  },
+  {
+   "id": "auto-174",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.236"
+   },
+   "pillars": {
+    "year": "癸卯",
+    "month": "癸亥",
+    "day": "辛酉",
+    "time": "癸巳"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 73 chars; 待人工核对"
+  },
+  {
+   "id": "auto-175",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.239"
+   },
+   "pillars": {
+    "year": "戊戌",
+    "month": "壬戌",
+    "day": "丙子",
+    "time": "戊戌"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 61 chars; 待人工核对"
+  },
+  {
+   "id": "auto-176",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.241"
+   },
+   "pillars": {
+    "year": "癸酉",
+    "month": "辛酉",
+    "day": "己卯",
+    "time": "乙亥"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 15 chars; 待人工核对"
+  },
+  {
+   "id": "auto-177",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.241"
+   },
+   "pillars": {
+    "year": "丁亥",
+    "month": "壬子",
+    "day": "辛巳",
+    "time": "丁酉"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 12 chars; 待人工核对"
+  },
+  {
+   "id": "auto-178",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.242"
+   },
+   "pillars": {
+    "year": "丙午",
+    "month": "癸巳",
+    "day": "甲子",
+    "time": "丙寅"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 87 chars; 待人工核对"
+  },
+  {
+   "id": "auto-179",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.243"
+   },
+   "pillars": {
+    "year": "壬午",
+    "month": "癸丑",
+    "day": "庚寅",
+    "time": "丙戌"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 62 chars; 待人工核对"
+  },
+  {
+   "id": "auto-180",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.243"
+   },
+   "pillars": {
+    "year": "丙辰",
+    "month": "壬辰",
+    "day": "庚辰",
+    "time": "壬午"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 75 chars; 待人工核对"
+  },
+  {
+   "id": "auto-181",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.244"
+   },
+   "pillars": {
+    "year": "甲申",
+    "month": "丙寅",
+    "day": "乙卯",
+    "time": "辛巳"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 60 chars; 待人工核对"
+  },
+  {
+   "id": "auto-182",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.253"
+   },
+   "pillars": {
+    "year": "癸酉",
+    "month": "乙卯",
+    "day": "癸酉",
+    "time": "庚申"
+   },
+   "book_ge": "弃食就印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 44 chars; 待人工核对"
+  },
+  {
+   "id": "auto-183",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.253"
+   },
+   "pillars": {
+    "year": "癸酉",
+    "month": "乙卯",
+    "day": "癸丑",
+    "time": "庚申"
+   },
+   "book_ge": "印绶喜比格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 77 chars; 待人工核对"
+  },
+  {
+   "id": "auto-184",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.257"
+   },
+   "pillars": {
+    "year": "辛卯",
+    "month": "辛卯",
+    "day": "癸酉",
+    "time": "己未"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 54 chars; 待人工核对"
+  },
+  {
+   "id": "auto-185",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.257"
+   },
+   "pillars": {
+    "year": "庚申",
+    "month": "壬午",
+    "day": "乙亥",
+    "time": "丁丑"
+   },
+   "book_ge": "食神格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 66 chars; 待人工核对"
+  },
+  {
+   "id": "auto-186",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.258"
+   },
+   "pillars": {
+    "year": "戊午",
+    "month": "癸亥",
+    "day": "辛酉",
+    "time": "庚寅"
+   },
+   "book_ge": "食神格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 61 chars; 待人工核对"
+  },
+  {
+   "id": "auto-187",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.259"
+   },
+   "pillars": {
+    "year": "庚子",
+    "month": "戊子",
+    "day": "辛巳",
+    "time": "乙未"
+   },
+   "book_ge": "弃食就印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 90 chars; 待人工核对"
+  },
+  {
+   "id": "auto-188",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.267"
+   },
+   "pillars": {
+    "year": "壬申",
+    "month": "丙午",
+    "day": "甲午",
+    "time": "壬申"
+   },
+   "book_ge": "伤官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 181 chars; 待人工核对"
+  },
+  {
+   "id": "auto-189",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.269"
+   },
+   "pillars": {
+    "year": "丁酉",
+    "month": "己酉",
+    "day": "戊子",
+    "time": "壬子"
+   },
+   "book_ge": "伤官生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 82 chars; 待人工核对"
+  },
+  {
+   "id": "auto-190",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.270"
+   },
+   "pillars": {
+    "year": "壬戌",
+    "month": "己酉",
+    "day": "戊午",
+    "time": "丁巳"
+   },
+   "book_ge": "伤官配印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 626 chars; 待人工核对"
+  },
+  {
+   "id": "auto-191",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.271"
+   },
+   "pillars": {
+    "year": "癸未",
+    "month": "辛酉",
+    "day": "戊寅",
+    "time": "戊午"
+   },
+   "book_ge": "伤官生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 43 chars; 待人工核对"
+  },
+  {
+   "id": "auto-192",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.272"
+   },
+   "pillars": {
+    "year": "己丑",
+    "month": "戊辰",
+    "day": "丙寅",
+    "time": "丁酉"
+   },
+   "book_ge": "伤官配印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 269 chars; 待人工核对"
+  },
+  {
+   "id": "auto-193",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.274"
+   },
+   "pillars": {
+    "year": "丁未",
+    "month": "丁未",
+    "day": "甲申",
+    "time": "甲子"
+   },
+   "book_ge": "伤官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 202 chars; 待人工核对"
+  },
+  {
+   "id": "auto-194",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.275"
+   },
+   "pillars": {
+    "year": "丙午",
+    "month": "丁酉",
+    "day": "戊子",
+    "time": "乙卯"
+   },
+   "book_ge": "伤官配印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 129 chars; 待人工核对"
+  },
+  {
+   "id": "auto-195",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.278"
+   },
+   "pillars": {
+    "year": "壬午",
+    "month": "丙午",
+    "day": "甲午",
+    "time": "庚午"
+   },
+   "book_ge": "伤官配印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 170 chars; 待人工核对"
+  },
+  {
+   "id": "auto-196",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.280"
+   },
+   "pillars": {
+    "year": "庚午",
+    "month": "壬午",
+    "day": "甲戌",
+    "time": "丙寅"
+   },
+   "book_ge": "伤官配印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 146 chars; 待人工核对"
+  },
+  {
+   "id": "auto-197",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.283"
+   },
+   "pillars": {
+    "year": "壬午",
+    "month": "己酉",
+    "day": "戊午",
+    "time": "庚申"
+   },
+   "book_ge": "伤官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 7 chars; 待人工核对"
+  },
+  {
+   "id": "auto-198",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.283"
+   },
+   "pillars": {
+    "year": "壬戌",
+    "month": "己酉",
+    "day": "戊戌",
+    "time": "乙卯"
+   },
+   "book_ge": "伤官生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 11 chars; 待人工核对"
+  },
+  {
+   "id": "auto-199",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.284"
+   },
+   "pillars": {
+    "year": "庚午",
+    "month": "己卯",
+    "day": "壬申",
+    "time": "己酉"
+   },
+   "book_ge": "伤官生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 38 chars; 待人工核对"
+  },
+  {
+   "id": "auto-200",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.285"
+   },
+   "pillars": {
+    "year": "甲子",
+    "month": "乙亥",
+    "day": "辛未",
+    "time": "戊子"
+   },
+   "book_ge": "伤官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 9 chars; 待人工核对"
+  },
+  {
+   "id": "auto-201",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.285"
+   },
+   "pillars": {
+    "year": "己卯",
+    "month": "丁丑",
+    "day": "丙寅",
+    "time": "庚寅"
+   },
+   "book_ge": "伤官生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 26 chars; 待人工核对"
+  },
+  {
+   "id": "auto-202",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.286"
+   },
+   "pillars": {
+    "year": "壬子",
+    "month": "壬子",
+    "day": "辛卯",
+    "time": "辛卯"
+   },
+   "book_ge": "伤官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 74 chars; 待人工核对"
+  },
+  {
+   "id": "auto-203",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.287"
+   },
+   "pillars": {
+    "year": "戊辰",
+    "month": "戊午",
+    "day": "甲申",
+    "time": "戊辰"
+   },
+   "book_ge": "伤官生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 95 chars; 待人工核对"
+  },
+  {
+   "id": "auto-204",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.289"
+   },
+   "pillars": {
+    "year": "己酉",
+    "month": "己巳",
+    "day": "甲申",
+    "time": "丁卯"
+   },
+   "book_ge": "伤官生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 61 chars; 待人工核对"
+  },
+  {
+   "id": "auto-205",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.290"
+   },
+   "pillars": {
+    "year": "乙卯",
+    "month": "戊子",
+    "day": "庚寅",
+    "time": "丁丑"
+   },
+   "book_ge": "伤官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 18 chars; 待人工核对"
+  },
+  {
+   "id": "auto-206",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.294"
+   },
+   "pillars": {
+    "year": "癸巳",
+    "month": "癸亥",
+    "day": "辛亥",
+    "time": "癸巳"
+   },
+   "book_ge": "伤官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 55 chars; 待人工核对"
+  },
+  {
+   "id": "auto-207",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.295"
+   },
+   "pillars": {
+    "year": "戊寅",
+    "month": "戊午",
+    "day": "甲寅",
+    "time": "庚午"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 86 chars; 待人工核对"
+  },
+  {
+   "id": "auto-208",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.295"
+   },
+   "pillars": {
+    "year": "甲寅",
+    "month": "己巳",
+    "day": "乙酉",
+    "time": "丁丑"
+   },
+   "book_ge": "伤官驾煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 77 chars; 待人工核对"
+  },
+  {
+   "id": "auto-209",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.298"
+   },
+   "pillars": {
+    "year": "乙丑",
+    "month": "辛巳",
+    "day": "乙丑",
+    "time": "甲申"
+   },
+   "book_ge": "伤官驾煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 85 chars; 待人工核对"
+  },
+  {
+   "id": "auto-210",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.300"
+   },
+   "pillars": {
+    "year": "乙卯",
+    "month": "辛巳",
+    "day": "乙酉",
+    "time": "丙戌"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 48 chars; 待人工核对"
+  },
+  {
+   "id": "auto-211",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.310"
+   },
+   "pillars": {
+    "year": "戊申",
+    "month": "甲子",
+    "day": "庚午",
+    "time": "丁丑"
+   },
+   "book_ge": "伤官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 4 chars; 待人工核对"
+  },
+  {
+   "id": "auto-212",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.313"
+   },
+   "pillars": {
+    "year": "丙申",
+    "month": "己亥",
+    "day": "辛未",
+    "time": "己亥"
+   },
+   "book_ge": "伤官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 4 chars; 待人工核对"
+  },
+  {
+   "id": "auto-213",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.314"
+   },
+   "pillars": {
+    "year": "庚戌",
+    "month": "乙酉",
+    "day": "戊辰",
+    "time": "丙辰"
+   },
+   "book_ge": "正官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 79 chars; 待人工核对"
+  },
+  {
+   "id": "auto-214",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.322"
+   },
+   "pillars": {
+    "year": "癸酉",
+    "month": "己未",
+    "day": "丙午",
+    "time": "癸巳"
+   },
+   "book_ge": "伤官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 18 chars; 待人工核对"
+  },
+  {
+   "id": "auto-215",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.323"
+   },
+   "pillars": {
+    "year": "丁丑",
+    "month": "庚戌",
+    "day": "乙巳",
+    "time": "壬午"
+   },
+   "book_ge": "伤官弃官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 75 chars; 待人工核对"
+  },
+  {
+   "id": "auto-216",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.323"
+   },
+   "pillars": {
+    "year": "癸酉",
+    "month": "癸亥",
+    "day": "庚申",
+    "time": "丁亥"
+   },
+   "book_ge": "伤官弃官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 159 chars; 待人工核对"
+  },
+  {
+   "id": "auto-217",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.324"
+   },
+   "pillars": {
+    "year": "乙酉",
+    "month": "己丑",
+    "day": "庚子",
+    "time": "壬午"
+   },
+   "book_ge": "印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 13 chars; 待人工核对"
+  },
+  {
+   "id": "auto-218",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.325"
+   },
+   "pillars": {
+    "year": "丁未",
+    "month": "乙巳",
+    "day": "甲午",
+    "time": "丁卯"
+   },
+   "book_ge": "伤官喜比格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 92 chars; 待人工核对"
+  },
+  {
+   "id": "auto-219",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.325"
+   },
+   "pillars": {
+    "year": "甲午",
+    "month": "甲戌",
+    "day": "丁酉",
+    "time": "癸卯"
+   },
+   "book_ge": "伤官配印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 83 chars; 待人工核对"
+  },
+  {
+   "id": "auto-220",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.326"
+   },
+   "pillars": {
+    "year": "辛丑",
+    "month": "辛丑",
+    "day": "戊辰",
+    "time": "辛酉"
+   },
+   "book_ge": "伤官喜比格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 67 chars; 待人工核对"
+  },
+  {
+   "id": "auto-221",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.327"
+   },
+   "pillars": {
+    "year": "戊戌",
+    "month": "辛酉",
+    "day": "戊戌",
+    "time": "辛酉"
+   },
+   "book_ge": "伤官喜比格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 79 chars; 待人工核对"
+  },
+  {
+   "id": "auto-222",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.328"
+   },
+   "pillars": {
+    "year": "甲子",
+    "month": "丁卯",
+    "day": "癸卯",
+    "time": "戊午"
+   },
+   "book_ge": "正官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 128 chars; 待人工核对"
+  },
+  {
+   "id": "auto-223",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.329"
+   },
+   "pillars": {
+    "year": "戊戌",
+    "month": "辛酉",
+    "day": "戊申",
+    "time": "辛酉"
+   },
+   "book_ge": "伤官喜比格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 32 chars; 待人工核对"
+  },
+  {
+   "id": "auto-224",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.330"
+   },
+   "pillars": {
+    "year": "癸卯",
+    "month": "乙卯",
+    "day": "壬子",
+    "time": "癸卯"
+   },
+   "book_ge": "食神格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 41 chars; 待人工核对"
+  },
+  {
+   "id": "auto-225",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.331"
+   },
+   "pillars": {
+    "year": "癸酉",
+    "month": "乙丑",
+    "day": "庚寅",
+    "time": "丙子"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 30 chars; 待人工核对"
+  },
+  {
+   "id": "auto-226",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.332"
+   },
+   "pillars": {
+    "year": "壬申",
+    "month": "丙午",
+    "day": "甲寅",
+    "time": "丁卯"
+   },
+   "book_ge": "伤官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 4 chars; 待人工核对"
+  },
+  {
+   "id": "auto-227",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.341"
+   },
+   "pillars": {
+    "year": "己酉",
+    "month": "丙子",
+    "day": "壬寅",
+    "time": "丙午"
+   },
+   "book_ge": "阳刃格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 7 chars; 待人工核对"
+  },
+  {
+   "id": "auto-228",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.341"
+   },
+   "pillars": {
+    "year": "辛酉",
+    "month": "甲午",
+    "day": "丙申",
+    "time": "壬辰"
+   },
+   "book_ge": "阳刃格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 7 chars; 待人工核对"
+  },
+  {
+   "id": "auto-229",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.341"
+   },
+   "pillars": {
+    "year": "己亥",
+    "month": "癸酉",
+    "day": "庚午",
+    "time": "戊寅"
+   },
+   "book_ge": "阳刃格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 19 chars; 待人工核对"
+  },
+  {
+   "id": "auto-230",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.341"
+   },
+   "pillars": {
+    "year": "癸丑",
+    "month": "甲子",
+    "day": "壬午",
+    "time": "甲辰"
+   },
+   "book_ge": "阳刃格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 96 chars; 待人工核对"
+  },
+  {
+   "id": "auto-231",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.343"
+   },
+   "pillars": {
+    "year": "丙午",
+    "month": "庚子",
+    "day": "壬午",
+    "time": "庚子"
+   },
+   "book_ge": "阳刃格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 85 chars; 待人工核对"
+  },
+  {
+   "id": "auto-232",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.343"
+   },
+   "pillars": {
+    "year": "壬辰",
+    "month": "壬子",
+    "day": "壬辰",
+    "time": "乙巳"
+   },
+   "book_ge": "阳刃用官（煞）格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 55 chars; 待人工核对"
+  },
+  {
+   "id": "auto-233",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.345"
+   },
+   "pillars": {
+    "year": "己丑",
+    "month": "癸酉",
+    "day": "庚午",
+    "time": "丁亥"
+   },
+   "book_ge": "正官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 63 chars; 待人工核对"
+  },
+  {
+   "id": "auto-234",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.346"
+   },
+   "pillars": {
+    "year": "丙戌",
+    "month": "丁酉",
+    "day": "庚申",
+    "time": "壬午"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 74 chars; 待人工核对"
+  },
+  {
+   "id": "auto-235",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.346"
+   },
+   "pillars": {
+    "year": "乙酉",
+    "month": "乙酉",
+    "day": "庚申",
+    "time": "丁亥"
+   },
+   "book_ge": "阳刃用官（煞）格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 85 chars; 待人工核对"
+  },
+  {
+   "id": "auto-236",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.349"
+   },
+   "pillars": {
+    "year": "丙午",
+    "month": "庚子",
+    "day": "壬午",
+    "time": "丙午"
+   },
+   "book_ge": "阳刃用官（煞）格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 609 chars; 待人工核对"
+  },
+  {
+   "id": "auto-237",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.350"
+   },
+   "pillars": {
+    "year": "丙申",
+    "month": "辛卯",
+    "day": "甲戌",
+    "time": "丁卯"
+   },
+   "book_ge": "阳刃用官（煞）格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 18 chars; 待人工核对"
+  },
+  {
+   "id": "auto-238",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.351"
+   },
+   "pillars": {
+    "year": "乙亥",
+    "month": "壬午",
+    "day": "丙午",
+    "time": "庚寅"
+   },
+   "book_ge": "阳刃用官（煞）格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 81 chars; 待人工核对"
+  },
+  {
+   "id": "auto-239",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.352"
+   },
+   "pillars": {
+    "year": "丁卯",
+    "month": "丙午",
+    "day": "丙子",
+    "time": "壬辰"
+   },
+   "book_ge": "阳刃用官（煞）格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 93 chars; 待人工核对"
+  },
+  {
+   "id": "auto-240",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.352"
+   },
+   "pillars": {
+    "year": "庚子",
+    "month": "壬午",
+    "day": "丙寅",
+    "time": "丙申"
+   },
+   "book_ge": "阳刃格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 4 chars; 待人工核对"
+  },
+  {
+   "id": "auto-241",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.353"
+   },
+   "pillars": {
+    "year": "戊午",
+    "month": "戊午",
+    "day": "戊午",
+    "time": "甲寅"
+   },
+   "book_ge": "阳刃用官（煞）格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 11 chars; 待人工核对"
+  },
+  {
+   "id": "auto-242",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.354"
+   },
+   "pillars": {
+    "year": "丙申",
+    "month": "甲午",
+    "day": "戊寅",
+    "time": "丁巳"
+   },
+   "book_ge": "阳刃格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 110 chars; 待人工核对"
+  },
+  {
+   "id": "auto-243",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.355"
+   },
+   "pillars": {
+    "year": "辛未",
+    "month": "甲午",
+    "day": "戊寅",
+    "time": "己未"
+   },
+   "book_ge": "阳刃格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 76 chars; 待人工核对"
+  },
+  {
+   "id": "auto-244",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.357"
+   },
+   "pillars": {
+    "year": "甲申",
+    "month": "丙子",
+    "day": "壬寅",
+    "time": "辛亥"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 71 chars; 待人工核对"
+  },
+  {
+   "id": "auto-245",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.357"
+   },
+   "pillars": {
+    "year": "丙寅",
+    "month": "庚子",
+    "day": "壬辰",
+    "time": "壬寅"
+   },
+   "book_ge": "阳刃格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 4 chars; 待人工核对"
+  },
+  {
+   "id": "auto-246",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.358"
+   },
+   "pillars": {
+    "year": "丁卯",
+    "month": "壬子",
+    "day": "壬申",
+    "time": "甲辰"
+   },
+   "book_ge": "阳刃格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 80 chars; 待人工核对"
+  },
+  {
+   "id": "auto-247",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.358"
+   },
+   "pillars": {
+    "year": "戊寅",
+    "month": "乙卯",
+    "day": "甲寅",
+    "time": "丁卯"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 120 chars; 待人工核对"
+  },
+  {
+   "id": "auto-248",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.359"
+   },
+   "pillars": {
+    "year": "戊寅",
+    "month": "乙卯",
+    "day": "甲午",
+    "time": "甲戌"
+   },
+   "book_ge": "阳刃格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 90 chars; 待人工核对"
+  },
+  {
+   "id": "auto-249",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.360"
+   },
+   "pillars": {
+    "year": "己卯",
+    "month": "丁卯",
+    "day": "甲寅",
+    "time": "丙寅"
+   },
+   "book_ge": "阳刃格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 2 chars; 待人工核对"
+  },
+  {
+   "id": "auto-250",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.360"
+   },
+   "pillars": {
+    "year": "丁未",
+    "month": "壬子",
+    "day": "壬寅",
+    "time": "壬寅"
+   },
+   "book_ge": "阳刃格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 53 chars; 待人工核对"
+  },
+  {
+   "id": "auto-251",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.362"
+   },
+   "pillars": {
+    "year": "壬申",
+    "month": "辛亥",
+    "day": "壬午",
+    "time": "丙午"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 23 chars; 待人工核对"
+  },
+  {
+   "id": "auto-252",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.362"
+   },
+   "pillars": {
+    "year": "丙寅",
+    "month": "甲午",
+    "day": "丁酉",
+    "time": "乙巳"
+   },
+   "book_ge": "食神生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 29 chars; 待人工核对"
+  },
+  {
+   "id": "auto-253",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.370"
+   },
+   "pillars": {
+    "year": "庚戌",
+    "month": "戊子",
+    "day": "癸酉",
+    "time": "癸亥"
+   },
+   "book_ge": "正官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 20 chars; 待人工核对"
+  },
+  {
+   "id": "auto-254",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.370"
+   },
+   "pillars": {
+    "year": "乙巳",
+    "month": "丙戌",
+    "day": "戊申",
+    "time": "丁巳"
+   },
+   "book_ge": "禄劫格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 27 chars; 待人工核对"
+  },
+  {
+   "id": "auto-255",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.370"
+   },
+   "pillars": {
+    "year": "庚申",
+    "month": "己卯",
+    "day": "乙巳",
+    "time": "癸未"
+   },
+   "book_ge": "正官配印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 46 chars; 待人工核对"
+  },
+  {
+   "id": "auto-256",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.372"
+   },
+   "pillars": {
+    "year": "丙戌",
+    "month": "丁酉",
+    "day": "辛酉",
+    "time": "乙未"
+   },
+   "book_ge": "官喜财生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 87 chars; 待人工核对"
+  },
+  {
+   "id": "auto-257",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.372"
+   },
+   "pillars": {
+    "year": "甲寅",
+    "month": "庚午",
+    "day": "丙寅",
+    "time": "癸巳"
+   },
+   "book_ge": "阳刃用官（煞）格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 78 chars; 待人工核对"
+  },
+  {
+   "id": "auto-258",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.373"
+   },
+   "pillars": {
+    "year": "庚午",
+    "month": "戊子",
+    "day": "癸卯",
+    "time": "丁巳"
+   },
+   "book_ge": "禄劫格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 7 chars; 待人工核对"
+  },
+  {
+   "id": "auto-259",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.374"
+   },
+   "pillars": {
+    "year": "丁丑",
+    "month": "癸卯",
+    "day": "乙巳",
+    "time": "丙子"
+   },
+   "book_ge": "禄劫格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 77 chars; 待人工核对"
+  },
+  {
+   "id": "auto-260",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.376"
+   },
+   "pillars": {
+    "year": "壬辰",
+    "month": "丁未",
+    "day": "丁未",
+    "time": "戊申"
+   },
+   "book_ge": "禄劫用官（煞）格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 149 chars; 待人工核对"
+  },
+  {
+   "id": "auto-261",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.377"
+   },
+   "pillars": {
+    "year": "壬子",
+    "month": "丁未",
+    "day": "丁巳",
+    "time": "戊申"
+   },
+   "book_ge": "伤官生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 90 chars; 待人工核对"
+  },
+  {
+   "id": "auto-262",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.377"
+   },
+   "pillars": {
+    "year": "壬申",
+    "month": "丁未",
+    "day": "丁亥",
+    "time": "甲辰"
+   },
+   "book_ge": "禄劫用官（煞）格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 17 chars; 待人工核对"
+  },
+  {
+   "id": "auto-263",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.378"
+   },
+   "pillars": {
+    "year": "己酉",
+    "month": "乙亥",
+    "day": "壬戌",
+    "time": "庚子"
+   },
+   "book_ge": "禄劫用官（煞）格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 240 chars; 待人工核对"
+  },
+  {
+   "id": "auto-264",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.380"
+   },
+   "pillars": {
+    "year": "丁巳",
+    "month": "壬子",
+    "day": "癸卯",
+    "time": "己未"
+   },
+   "book_ge": "禄劫用官（煞）格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 6 chars; 待人工核对"
+  },
+  {
+   "id": "auto-265",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.380"
+   },
+   "pillars": {
+    "year": "乙酉",
+    "month": "庚辰",
+    "day": "甲寅",
+    "time": "己巳"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 72 chars; 待人工核对"
+  },
+  {
+   "id": "auto-266",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.381"
+   },
+   "pillars": {
+    "year": "戊辰",
+    "month": "癸亥",
+    "day": "壬午",
+    "time": "丙午"
+   },
+   "book_ge": "禄劫用官（煞）格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 2 chars; 待人工核对"
+  },
+  {
+   "id": "auto-267",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.382"
+   },
+   "pillars": {
+    "year": "辛卯",
+    "month": "庚寅",
+    "day": "甲子",
+    "time": "甲戌"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 53 chars; 待人工核对"
+  },
+  {
+   "id": "auto-268",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.383"
+   },
+   "pillars": {
+    "year": "戊戌",
+    "month": "甲寅",
+    "day": "甲申",
+    "time": "庚申"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 18 chars; 待人工核对"
+  },
+  {
+   "id": "auto-269",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.383"
+   },
+   "pillars": {
+    "year": "戊戌",
+    "month": "乙卯",
+    "day": "甲申",
+    "time": "庚申"
+   },
+   "book_ge": "阳刃格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 28 chars; 待人工核对"
+  },
+  {
+   "id": "auto-270",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.384"
+   },
+   "pillars": {
+    "year": "甲子",
+    "month": "丙子",
+    "day": "癸丑",
+    "time": "壬子"
+   },
+   "book_ge": "专旺格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 73 chars; 待人工核对"
+  },
+  {
+   "id": "auto-271",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.384"
+   },
+   "pillars": {
+    "year": "壬寅",
+    "month": "辛亥",
+    "day": "壬寅",
+    "time": "辛亥"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 75 chars; 待人工核对"
+  },
+  {
+   "id": "auto-272",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.385"
+   },
+   "pillars": {
+    "year": "丙午",
+    "month": "庚子",
+    "day": "癸亥",
+    "time": "甲寅"
+   },
+   "book_ge": "伤官生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 191 chars; 待人工核对"
+  },
+  {
+   "id": "auto-273",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.386"
+   },
+   "pillars": {
+    "year": "己未",
+    "month": "己巳",
+    "day": "丁未",
+    "time": "辛丑"
+   },
+   "book_ge": "禄劫格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 9 chars; 待人工核对"
+  },
+  {
+   "id": "auto-274",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.387"
+   },
+   "pillars": {
+    "year": "庚子",
+    "month": "甲申",
+    "day": "庚子",
+    "time": "甲申"
+   },
+   "book_ge": "禄劫格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 7 chars; 待人工核对"
+  },
+  {
+   "id": "auto-275",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.387"
+   },
+   "pillars": {
+    "year": "戊寅",
+    "month": "甲寅",
+    "day": "甲戌",
+    "time": "甲子"
+   },
+   "book_ge": "专旺格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 24 chars; 待人工核对"
+  },
+  {
+   "id": "auto-276",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.387"
+   },
+   "pillars": {
+    "year": "戊辰",
+    "month": "甲寅",
+    "day": "甲寅",
+    "time": "甲戌"
+   },
+   "book_ge": "禄劫格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 59 chars; 待人工核对"
+  },
+  {
+   "id": "auto-277",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.388"
+   },
+   "pillars": {
+    "year": "壬戌",
+    "month": "癸丑",
+    "day": "戊午",
+    "time": "丁巳"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 192 chars; 待人工核对"
+  },
+  {
+   "id": "auto-278",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.388"
+   },
+   "pillars": {
+    "year": "庚寅",
+    "month": "戊寅",
+    "day": "甲子",
+    "time": "丙寅"
+   },
+   "book_ge": "禄劫格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 24 chars; 待人工核对"
+  },
+  {
+   "id": "auto-279",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.388"
+   },
+   "pillars": {
+    "year": "庚戌",
+    "month": "戊寅",
+    "day": "甲寅",
+    "time": "甲戌"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 25 chars; 待人工核对"
+  },
+  {
+   "id": "auto-280",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.391"
+   },
+   "pillars": {
+    "year": "庚子",
+    "month": "乙酉",
+    "day": "辛亥",
+    "time": "壬辰"
+   },
+   "book_ge": "伤官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 113 chars; 待人工核对"
+  },
+  {
+   "id": "auto-281",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.393"
+   },
+   "pillars": {
+    "year": "甲寅",
+    "month": "丙寅",
+    "day": "乙巳",
+    "time": "丙子"
+   },
+   "book_ge": "禄劫喜食（伤）格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 242 chars; 待人工核对"
+  },
+  {
+   "id": "auto-282",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.393"
+   },
+   "pillars": {
+    "year": "戊午",
+    "month": "乙卯",
+    "day": "乙未",
+    "time": "戊寅"
+   },
+   "book_ge": "禄劫喜食（伤）格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 35 chars; 待人工核对"
+  },
+  {
+   "id": "auto-283",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.394"
+   },
+   "pillars": {
+    "year": "甲戌",
+    "month": "丙子",
+    "day": "癸卯",
+    "time": "壬戌"
+   },
+   "book_ge": "伤官生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 159 chars; 待人工核对"
+  },
+  {
+   "id": "auto-284",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.395"
+   },
+   "pillars": {
+    "year": "壬寅",
+    "month": "辛亥",
+    "day": "壬戌",
+    "time": "辛亥"
+   },
+   "book_ge": "伤官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 67 chars; 待人工核对"
+  },
+  {
+   "id": "auto-285",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.396"
+   },
+   "pillars": {
+    "year": "辛亥",
+    "month": "庚寅",
+    "day": "甲申",
+    "time": "丙寅"
+   },
+   "book_ge": "禄劫格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 11 chars; 待人工核对"
+  },
+  {
+   "id": "auto-286",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.397"
+   },
+   "pillars": {
+    "year": "壬寅",
+    "month": "丁未",
+    "day": "丙申",
+    "time": "壬辰"
+   },
+   "book_ge": "禄劫格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 212 chars; 待人工核对"
+  },
+  {
+   "id": "auto-287",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.403"
+   },
+   "pillars": {
+    "year": "壬寅",
+    "month": "癸卯",
+    "day": "甲子",
+    "time": "戊辰"
+   },
+   "book_ge": "曲直仁寿格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 258 chars; 待人工核对"
+  },
+  {
+   "id": "auto-288",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.403"
+   },
+   "pillars": {
+    "year": "壬寅",
+    "month": "癸卯",
+    "day": "甲辰",
+    "time": "甲子"
+   },
+   "book_ge": "曲直仁寿格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 74 chars; 待人工核对"
+  },
+  {
+   "id": "auto-289",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.403"
+   },
+   "pillars": {
+    "year": "癸亥",
+    "month": "乙卯",
+    "day": "乙卯",
+    "time": "癸未"
+   },
+   "book_ge": "曲直仁寿格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 47 chars; 待人工核对"
+  },
+  {
+   "id": "auto-290",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.404"
+   },
+   "pillars": {
+    "year": "癸卯",
+    "month": "乙卯",
+    "day": "乙亥",
+    "time": "辛巳"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 50 chars; 待人工核对"
+  },
+  {
+   "id": "auto-291",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.405"
+   },
+   "pillars": {
+    "year": "乙丑",
+    "month": "己卯",
+    "day": "乙亥",
+    "time": "癸未"
+   },
+   "book_ge": "禄劫格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 129 chars; 待人工核对"
+  },
+  {
+   "id": "auto-292",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.407"
+   },
+   "pillars": {
+    "year": "癸未",
+    "month": "甲寅",
+    "day": "乙亥",
+    "time": "己卯"
+   },
+   "book_ge": "曲直仁寿格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 119 chars; 待人工核对"
+  },
+  {
+   "id": "auto-293",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.409"
+   },
+   "pillars": {
+    "year": "癸亥",
+    "month": "甲寅",
+    "day": "甲辰",
+    "time": "壬申"
+   },
+   "book_ge": "曲直仁寿格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 135 chars; 待人工核对"
+  },
+  {
+   "id": "auto-294",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.412"
+   },
+   "pillars": {
+    "year": "乙丑",
+    "month": "己卯",
+    "day": "乙亥",
+    "time": "壬午"
+   },
+   "book_ge": "曲直仁寿格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 188 chars; 待人工核对"
+  },
+  {
+   "id": "auto-295",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.413"
+   },
+   "pillars": {
+    "year": "丁巳",
+    "month": "丙午",
+    "day": "丙寅",
+    "time": "乙未"
+   },
+   "book_ge": "炎上格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 51 chars; 待人工核对"
+  },
+  {
+   "id": "auto-296",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.413"
+   },
+   "pillars": {
+    "year": "丙戌",
+    "month": "甲午",
+    "day": "丁卯",
+    "time": "壬寅"
+   },
+   "book_ge": "炎上格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 59 chars; 待人工核对"
+  },
+  {
+   "id": "auto-297",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.415"
+   },
+   "pillars": {
+    "year": "丁巳",
+    "month": "丙午",
+    "day": "丙午",
+    "time": "戊戌"
+   },
+   "book_ge": "专旺格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 260 chars; 待人工核对"
+  },
+  {
+   "id": "auto-298",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.417"
+   },
+   "pillars": {
+    "year": "戊申",
+    "month": "辛酉",
+    "day": "庚戌",
+    "time": "乙酉"
+   },
+   "book_ge": "乙庚化金格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 77 chars; 待人工核对"
+  },
+  {
+   "id": "auto-299",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.418"
+   },
+   "pillars": {
+    "year": "庚申",
+    "month": "乙酉",
+    "day": "庚戌",
+    "time": "庚辰"
+   },
+   "book_ge": "阳刃用官（煞）格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 263 chars; 待人工核对"
+  },
+  {
+   "id": "auto-300",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.418"
+   },
+   "pillars": {
+    "year": "辛巳",
+    "month": "辛丑",
+    "day": "庚申",
+    "time": "辛巳"
+   },
+   "book_ge": "从革格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 147 chars; 待人工核对"
+  },
+  {
+   "id": "auto-301",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.420"
+   },
+   "pillars": {
+    "year": "丁丑",
+    "month": "己酉",
+    "day": "辛丑",
+    "time": "丁酉"
+   },
+   "book_ge": "煞印相生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 85 chars; 待人工核对"
+  },
+  {
+   "id": "auto-302",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.421"
+   },
+   "pillars": {
+    "year": "丁酉",
+    "month": "己酉",
+    "day": "辛酉",
+    "time": "丙申"
+   },
+   "book_ge": "印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 61 chars; 待人工核对"
+  },
+  {
+   "id": "auto-303",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.423"
+   },
+   "pillars": {
+    "year": "丁巳",
+    "month": "戊申",
+    "day": "辛酉",
+    "time": "己丑"
+   },
+   "book_ge": "从革格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 46 chars; 待人工核对"
+  },
+  {
+   "id": "auto-304",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.423"
+   },
+   "pillars": {
+    "year": "乙巳",
+    "month": "乙酉",
+    "day": "辛巳",
+    "time": "丁酉"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 116 chars; 待人工核对"
+  },
+  {
+   "id": "auto-305",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.425"
+   },
+   "pillars": {
+    "year": "壬申",
+    "month": "壬子",
+    "day": "壬辰",
+    "time": "庚子"
+   },
+   "book_ge": "润下格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 63 chars; 待人工核对"
+  },
+  {
+   "id": "auto-306",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.425"
+   },
+   "pillars": {
+    "year": "辛亥",
+    "month": "庚子",
+    "day": "癸丑",
+    "time": "癸丑"
+   },
+   "book_ge": "润下格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 60 chars; 待人工核对"
+  },
+  {
+   "id": "auto-307",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.427"
+   },
+   "pillars": {
+    "year": "丙申",
+    "month": "庚子",
+    "day": "壬子",
+    "time": "庚子"
+   },
+   "book_ge": "润下格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 681 chars; 待人工核对"
+  },
+  {
+   "id": "auto-308",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.427"
+   },
+   "pillars": {
+    "year": "辛亥",
+    "month": "壬辰",
+    "day": "壬申",
+    "time": "辛亥"
+   },
+   "book_ge": "润下格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 355 chars; 待人工核对"
+  },
+  {
+   "id": "auto-309",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.427"
+   },
+   "pillars": {
+    "year": "丁亥",
+    "month": "癸丑",
+    "day": "壬子",
+    "time": "癸卯"
+   },
+   "book_ge": "润下格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 79 chars; 待人工核对"
+  },
+  {
+   "id": "auto-310",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.428"
+   },
+   "pillars": {
+    "year": "壬辰",
+    "month": "壬子",
+    "day": "壬寅",
+    "time": "乙巳"
+   },
+   "book_ge": "润下格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 46 chars; 待人工核对"
+  },
+  {
+   "id": "auto-311",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.429"
+   },
+   "pillars": {
+    "year": "癸亥",
+    "month": "癸亥",
+    "day": "壬子",
+    "time": "庚子"
+   },
+   "book_ge": "阳刃格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 318 chars; 待人工核对"
+  },
+  {
+   "id": "auto-312",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.429"
+   },
+   "pillars": {
+    "year": "辛丑",
+    "month": "庚子",
+    "day": "壬申",
+    "time": "辛亥"
+   },
+   "book_ge": "阳刃格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 44 chars; 待人工核对"
+  },
+  {
+   "id": "auto-313",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.430"
+   },
+   "pillars": {
+    "year": "壬子",
+    "month": "癸亥",
+    "day": "壬子",
+    "time": "辛亥"
+   },
+   "book_ge": "稼穑格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 335 chars; 待人工核对"
+  },
+  {
+   "id": "auto-314",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.431"
+   },
+   "pillars": {
+    "year": "戊戌",
+    "month": "己未",
+    "day": "戊辰",
+    "time": "癸丑"
+   },
+   "book_ge": "稼穑格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 202 chars; 待人工核对"
+  },
+  {
+   "id": "auto-315",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.432"
+   },
+   "pillars": {
+    "year": "壬午",
+    "month": "癸丑",
+    "day": "己丑",
+    "time": "戊辰"
+   },
+   "book_ge": "稼穑格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 204 chars; 待人工核对"
+  },
+  {
+   "id": "auto-316",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.433"
+   },
+   "pillars": {
+    "year": "戊辰",
+    "month": "己未",
+    "day": "己未",
+    "time": "辛未"
+   },
+   "book_ge": "稼穑格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 182 chars; 待人工核对"
+  },
+  {
+   "id": "auto-317",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.433"
+   },
+   "pillars": {
+    "year": "辛丑",
+    "month": "辛丑",
+    "day": "戊戌",
+    "time": "癸丑"
+   },
+   "book_ge": "伤官生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 155 chars; 待人工核对"
+  },
+  {
+   "id": "auto-318",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.433"
+   },
+   "pillars": {
+    "year": "己巳",
+    "month": "戊辰",
+    "day": "戊辰",
+    "time": "丙辰"
+   },
+   "book_ge": "稼穑格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 37 chars; 待人工核对"
+  },
+  {
+   "id": "auto-319",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.434"
+   },
+   "pillars": {
+    "year": "戊戌",
+    "month": "己未",
+    "day": "戊戌",
+    "time": "丙辰"
+   },
+   "book_ge": "稼穑格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 20 chars; 待人工核对"
+  },
+  {
+   "id": "auto-320",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.434"
+   },
+   "pillars": {
+    "year": "癸未",
+    "month": "己未",
+    "day": "戊戌",
+    "time": "丁巳"
+   },
+   "book_ge": "稼穑格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 104 chars; 待人工核对"
+  },
+  {
+   "id": "auto-321",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.435"
+   },
+   "pillars": {
+    "year": "丁未",
+    "month": "丁未",
+    "day": "己丑",
+    "time": "甲戌"
+   },
+   "book_ge": "稼穑格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 23 chars; 待人工核对"
+  },
+  {
+   "id": "auto-322",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.435"
+   },
+   "pillars": {
+    "year": "丙辰",
+    "month": "戊戌",
+    "day": "戊戌",
+    "time": "癸丑"
+   },
+   "book_ge": "稼穑格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 79 chars; 待人工核对"
+  },
+  {
+   "id": "auto-323",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.436"
+   },
+   "pillars": {
+    "year": "己未",
+    "month": "辛未",
+    "day": "己丑",
+    "time": "戊辰"
+   },
+   "book_ge": "稼穑格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 69 chars; 待人工核对"
+  },
+  {
+   "id": "auto-324",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.436"
+   },
+   "pillars": {
+    "year": "庚戌",
+    "month": "庚辰",
+    "day": "己未",
+    "time": "乙丑"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 39 chars; 待人工核对"
+  },
+  {
+   "id": "auto-325",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.441"
+   },
+   "pillars": {
+    "year": "己卯",
+    "month": "甲戌",
+    "day": "甲子",
+    "time": "己巳"
+   },
+   "book_ge": "化气格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 711 chars; 待人工核对"
+  },
+  {
+   "id": "auto-326",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.441"
+   },
+   "pillars": {
+    "year": "甲子",
+    "month": "丙子",
+    "day": "甲申",
+    "time": "己巳"
+   },
+   "book_ge": "化气格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 561 chars; 待人工核对"
+  },
+  {
+   "id": "auto-327",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.441"
+   },
+   "pillars": {
+    "year": "甲寅",
+    "month": "辛未",
+    "day": "癸亥",
+    "time": "戊午"
+   },
+   "book_ge": "化气格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 373 chars; 待人工核对"
+  },
+  {
+   "id": "auto-328",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.441"
+   },
+   "pillars": {
+    "year": "甲辰",
+    "month": "丁卯",
+    "day": "壬辰",
+    "time": "辛亥"
+   },
+   "book_ge": "化气格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 161 chars; 待人工核对"
+  },
+  {
+   "id": "auto-329",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.447"
+   },
+   "pillars": {
+    "year": "庚戌",
+    "month": "戊子",
+    "day": "辛未",
+    "time": "丙申"
+   },
+   "book_ge": "化气格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 49 chars; 待人工核对"
+  },
+  {
+   "id": "auto-330",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.447"
+   },
+   "pillars": {
+    "year": "壬辰",
+    "month": "丁未",
+    "day": "甲子",
+    "time": "己巳"
+   },
+   "book_ge": "甲己化土格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 2 chars; 待人工核对"
+  },
+  {
+   "id": "auto-331",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.449"
+   },
+   "pillars": {
+    "year": "甲寅",
+    "month": "丁丑",
+    "day": "甲戌",
+    "time": "己巳"
+   },
+   "book_ge": "化气格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 356 chars; 待人工核对"
+  },
+  {
+   "id": "auto-332",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.452"
+   },
+   "pillars": {
+    "year": "戊辰",
+    "month": "壬戌",
+    "day": "甲辰",
+    "time": "己巳"
+   },
+   "book_ge": "甲己化土格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 101 chars; 待人工核对"
+  },
+  {
+   "id": "auto-333",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.452"
+   },
+   "pillars": {
+    "year": "甲寅",
+    "month": "戊辰",
+    "day": "己未",
+    "time": "甲戌"
+   },
+   "book_ge": "甲己化土格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 56 chars; 待人工核对"
+  },
+  {
+   "id": "auto-334",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.453"
+   },
+   "pillars": {
+    "year": "己丑",
+    "month": "甲戌",
+    "day": "甲子",
+    "time": "己巳"
+   },
+   "book_ge": "甲己化土格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 130 chars; 待人工核对"
+  },
+  {
+   "id": "auto-335",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.454"
+   },
+   "pillars": {
+    "year": "乙丑",
+    "month": "丙戌",
+    "day": "甲午",
+    "time": "己巳"
+   },
+   "book_ge": "伤官生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 73 chars; 待人工核对"
+  },
+  {
+   "id": "auto-336",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.456"
+   },
+   "pillars": {
+    "year": "己巳",
+    "month": "壬申",
+    "day": "己酉",
+    "time": "甲戌"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 180 chars; 待人工核对"
+  },
+  {
+   "id": "auto-337",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.457"
+   },
+   "pillars": {
+    "year": "丙申",
+    "month": "戊戌",
+    "day": "甲戌",
+    "time": "己巳"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 78 chars; 待人工核对"
+  },
+  {
+   "id": "auto-338",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.458"
+   },
+   "pillars": {
+    "year": "壬辰",
+    "month": "癸丑",
+    "day": "甲辰",
+    "time": "己巳"
+   },
+   "book_ge": "弃印就财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 107 chars; 待人工核对"
+  },
+  {
+   "id": "auto-339",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.460"
+   },
+   "pillars": {
+    "year": "丙戌",
+    "month": "甲午",
+    "day": "己未",
+    "time": "己巳"
+   },
+   "book_ge": "稼穑格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 77 chars; 待人工核对"
+  },
+  {
+   "id": "auto-340",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.462"
+   },
+   "pillars": {
+    "year": "丁巳",
+    "month": "癸丑",
+    "day": "乙酉",
+    "time": "庚辰"
+   },
+   "book_ge": "弃命从煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 132 chars; 待人工核对"
+  },
+  {
+   "id": "auto-341",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.462"
+   },
+   "pillars": {
+    "year": "己卯",
+    "month": "甲戌",
+    "day": "乙丑",
+    "time": "庚辰"
+   },
+   "book_ge": "印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 121 chars; 待人工核对"
+  },
+  {
+   "id": "auto-342",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.468"
+   },
+   "pillars": {
+    "year": "庚戌",
+    "month": "丙戌",
+    "day": "乙酉",
+    "time": "庚辰"
+   },
+   "book_ge": "乙庚化金格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 107 chars; 待人工核对"
+  },
+  {
+   "id": "auto-343",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.470"
+   },
+   "pillars": {
+    "year": "癸巳",
+    "month": "庚申",
+    "day": "乙巳",
+    "time": "庚辰"
+   },
+   "book_ge": "乙庚化金格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 18 chars; 待人工核对"
+  },
+  {
+   "id": "auto-344",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.471"
+   },
+   "pillars": {
+    "year": "辛亥",
+    "month": "辛丑",
+    "day": "丙子",
+    "time": "己亥"
+   },
+   "book_ge": "伤官生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 21 chars; 待人工核对"
+  },
+  {
+   "id": "auto-345",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.471"
+   },
+   "pillars": {
+    "year": "壬辰",
+    "month": "辛亥",
+    "day": "辛亥",
+    "time": "丙申"
+   },
+   "book_ge": "伤官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 101 chars; 待人工核对"
+  },
+  {
+   "id": "auto-346",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.473"
+   },
+   "pillars": {
+    "year": "癸丑",
+    "month": "丙辰",
+    "day": "辛亥",
+    "time": "戊子"
+   },
+   "book_ge": "丙辛化水格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 111 chars; 待人工核对"
+  },
+  {
+   "id": "auto-347",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.475"
+   },
+   "pillars": {
+    "year": "甲戌",
+    "month": "丁卯",
+    "day": "壬寅",
+    "time": "甲辰"
+   },
+   "book_ge": "丁壬化木格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 40 chars; 待人工核对"
+  },
+  {
+   "id": "auto-348",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.475"
+   },
+   "pillars": {
+    "year": "己未",
+    "month": "丙寅",
+    "day": "丁巳",
+    "time": "壬寅"
+   },
+   "book_ge": "丁壬化木格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 19 chars; 待人工核对"
+  },
+  {
+   "id": "auto-349",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.476"
+   },
+   "pillars": {
+    "year": "甲子",
+    "month": "丁卯",
+    "day": "壬申",
+    "time": "乙巳"
+   },
+   "book_ge": "丁壬化木格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 6 chars; 待人工核对"
+  },
+  {
+   "id": "auto-350",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.476"
+   },
+   "pillars": {
+    "year": "己卯",
+    "month": "丁卯",
+    "day": "壬午",
+    "time": "甲辰"
+   },
+   "book_ge": "正官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 175 chars; 待人工核对"
+  },
+  {
+   "id": "auto-351",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.476"
+   },
+   "pillars": {
+    "year": "己卯",
+    "month": "丁卯",
+    "day": "壬午",
+    "time": "癸卯"
+   },
+   "book_ge": "丁壬化木格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 162 chars; 待人工核对"
+  },
+  {
+   "id": "auto-352",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.477"
+   },
+   "pillars": {
+    "year": "癸卯",
+    "month": "甲寅",
+    "day": "丁卯",
+    "time": "壬寅"
+   },
+   "book_ge": "印绶喜比格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 115 chars; 待人工核对"
+  },
+  {
+   "id": "auto-353",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.477"
+   },
+   "pillars": {
+    "year": "丙午",
+    "month": "庚寅",
+    "day": "丁丑",
+    "time": "壬寅"
+   },
+   "book_ge": "食神制煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 441 chars; 待人工核对"
+  },
+  {
+   "id": "auto-354",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.479"
+   },
+   "pillars": {
+    "year": "甲申",
+    "month": "丁卯",
+    "day": "丁巳",
+    "time": "壬寅"
+   },
+   "book_ge": "丁壬化木格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 77 chars; 待人工核对"
+  },
+  {
+   "id": "auto-355",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.480"
+   },
+   "pillars": {
+    "year": "戊寅",
+    "month": "乙卯",
+    "day": "丁未",
+    "time": "壬寅"
+   },
+   "book_ge": "丁壬化木格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 127 chars; 待人工核对"
+  },
+  {
+   "id": "auto-356",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.481"
+   },
+   "pillars": {
+    "year": "癸巳",
+    "month": "丁巳",
+    "day": "癸酉",
+    "time": "戊午"
+   },
+   "book_ge": "戊癸化火格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 7 chars; 待人工核对"
+  },
+  {
+   "id": "auto-357",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.481"
+   },
+   "pillars": {
+    "year": "辛亥",
+    "month": "癸巳",
+    "day": "戊午",
+    "time": "丙辰"
+   },
+   "book_ge": "煞印相生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 177 chars; 待人工核对"
+  },
+  {
+   "id": "auto-358",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.482"
+   },
+   "pillars": {
+    "year": "丙戌",
+    "month": "癸巳",
+    "day": "戊午",
+    "time": "丁巳"
+   },
+   "book_ge": "戊癸化火格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 44 chars; 待人工核对"
+  },
+  {
+   "id": "auto-359",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.482"
+   },
+   "pillars": {
+    "year": "丙戌",
+    "month": "戊戌",
+    "day": "癸巳",
+    "time": "壬戌"
+   },
+   "book_ge": "戊癸化火格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 249 chars; 待人工核对"
+  },
+  {
+   "id": "auto-360",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.483"
+   },
+   "pillars": {
+    "year": "丁未",
+    "month": "癸卯",
+    "day": "戊戌",
+    "time": "丁巳"
+   },
+   "book_ge": "正官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 114 chars; 待人工核对"
+  },
+  {
+   "id": "auto-361",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.484"
+   },
+   "pillars": {
+    "year": "戊戌",
+    "month": "乙卯",
+    "day": "癸巳",
+    "time": "戊午"
+   },
+   "book_ge": "伤官格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 15 chars; 待人工核对"
+  },
+  {
+   "id": "auto-362",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.489"
+   },
+   "pillars": {
+    "year": "戊戌",
+    "month": "辛酉",
+    "day": "乙酉",
+    "time": "乙酉"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 25 chars; 待人工核对"
+  },
+  {
+   "id": "auto-363",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.489"
+   },
+   "pillars": {
+    "year": "辛巳",
+    "month": "辛丑",
+    "day": "乙酉",
+    "time": "乙酉"
+   },
+   "book_ge": "弃命从煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 46 chars; 待人工核对"
+  },
+  {
+   "id": "auto-364",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.489"
+   },
+   "pillars": {
+    "year": "丙戌",
+    "month": "壬辰",
+    "day": "癸巳",
+    "time": "甲寅"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 463 chars; 待人工核对"
+  },
+  {
+   "id": "auto-365",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.489"
+   },
+   "pillars": {
+    "year": "己巳",
+    "month": "癸酉",
+    "day": "乙丑",
+    "time": "甲申"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 215 chars; 待人工核对"
+  },
+  {
+   "id": "auto-366",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.489"
+   },
+   "pillars": {
+    "year": "癸酉",
+    "month": "庚申",
+    "day": "丙子",
+    "time": "丙酉"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 82 chars; 待人工核对"
+  },
+  {
+   "id": "auto-367",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.491"
+   },
+   "pillars": {
+    "year": "癸酉",
+    "month": "辛酉",
+    "day": "乙丑",
+    "time": "辛巳"
+   },
+   "book_ge": "弃命从煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 157 chars; 待人工核对"
+  },
+  {
+   "id": "auto-368",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.493"
+   },
+   "pillars": {
+    "year": "癸酉",
+    "month": "乙丑",
+    "day": "丙申",
+    "time": "丙申"
+   },
+   "book_ge": "煞印相生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 321 chars; 待人工核对"
+  },
+  {
+   "id": "auto-369",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.493"
+   },
+   "pillars": {
+    "year": "辛卯",
+    "month": "庚寅",
+    "day": "庚午",
+    "time": "己卯"
+   },
+   "book_ge": "煞印相生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 180 chars; 待人工核对"
+  },
+  {
+   "id": "auto-370",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.494"
+   },
+   "pillars": {
+    "year": "甲申",
+    "month": "丙寅",
+    "day": "庚子",
+    "time": "丙戌"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 87 chars; 待人工核对"
+  },
+  {
+   "id": "auto-371",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.497"
+   },
+   "pillars": {
+    "year": "甲申",
+    "month": "丁卯",
+    "day": "辛酉",
+    "time": "庚寅"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 119 chars; 待人工核对"
+  },
+  {
+   "id": "auto-372",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.498"
+   },
+   "pillars": {
+    "year": "乙酉",
+    "month": "乙酉",
+    "day": "乙酉",
+    "time": "甲申"
+   },
+   "book_ge": "弃命从煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 123 chars; 待人工核对"
+  },
+  {
+   "id": "auto-373",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.501"
+   },
+   "pillars": {
+    "year": "辛酉",
+    "month": "庚子",
+    "day": "戊子",
+    "time": "癸亥"
+   },
+   "book_ge": "弃命从财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 56 chars; 待人工核对"
+  },
+  {
+   "id": "auto-374",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.501"
+   },
+   "pillars": {
+    "year": "庚戌",
+    "month": "乙酉",
+    "day": "丙申",
+    "time": "己丑"
+   },
+   "book_ge": "弃命从财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 78 chars; 待人工核对"
+  },
+  {
+   "id": "auto-375",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.502"
+   },
+   "pillars": {
+    "year": "戊申",
+    "month": "辛酉",
+    "day": "丁巳",
+    "time": "辛丑"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 474 chars; 待人工核对"
+  },
+  {
+   "id": "auto-376",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.502"
+   },
+   "pillars": {
+    "year": "戊戌",
+    "month": "丙辰",
+    "day": "乙未",
+    "time": "丙戌"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 365 chars; 待人工核对"
+  },
+  {
+   "id": "auto-377",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.502"
+   },
+   "pillars": {
+    "year": "壬寅",
+    "month": "壬寅",
+    "day": "庚寅",
+    "time": "戊寅"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 174 chars; 待人工核对"
+  },
+  {
+   "id": "auto-378",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.502"
+   },
+   "pillars": {
+    "year": "丙寅",
+    "month": "庚寅",
+    "day": "壬午",
+    "time": "乙巳"
+   },
+   "book_ge": "财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 34 chars; 待人工核对"
+  },
+  {
+   "id": "auto-379",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.504"
+   },
+   "pillars": {
+    "year": "乙亥",
+    "month": "己卯",
+    "day": "辛亥",
+    "time": "壬辰"
+   },
+   "book_ge": "伤官生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 200 chars; 待人工核对"
+  },
+  {
+   "id": "auto-380",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.511"
+   },
+   "pillars": {
+    "year": "壬子",
+    "month": "壬子",
+    "day": "壬子",
+    "time": "壬寅"
+   },
+   "book_ge": "合禄格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 56 chars; 待人工核对"
+  },
+  {
+   "id": "auto-381",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.511"
+   },
+   "pillars": {
+    "year": "丙午",
+    "month": "甲午",
+    "day": "丙午",
+    "time": "甲午"
+   },
+   "book_ge": "炎上格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 156 chars; 待人工核对"
+  },
+  {
+   "id": "auto-382",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.514"
+   },
+   "pillars": {
+    "year": "丁丑",
+    "month": "辛亥",
+    "day": "癸亥",
+    "time": "癸亥"
+   },
+   "book_ge": "飞天禄马格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 59 chars; 待人工核对"
+  },
+  {
+   "id": "auto-383",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.514"
+   },
+   "pillars": {
+    "year": "己巳",
+    "month": "庚午",
+    "day": "丙午",
+    "time": "甲午"
+   },
+   "book_ge": "飞天禄马格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 46 chars; 待人工核对"
+  },
+  {
+   "id": "auto-384",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.520"
+   },
+   "pillars": {
+    "year": "戊辰",
+    "month": "辛酉",
+    "day": "辛丑",
+    "time": "戊子"
+   },
+   "book_ge": "六阴朝阳格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 26 chars; 待人工核对"
+  },
+  {
+   "id": "auto-385",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.521"
+   },
+   "pillars": {
+    "year": "癸丑",
+    "month": "庚申",
+    "day": "辛亥",
+    "time": "戊子"
+   },
+   "book_ge": "六阴朝阳格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 91 chars; 待人工核对"
+  },
+  {
+   "id": "auto-386",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.521"
+   },
+   "pillars": {
+    "year": "丁酉",
+    "month": "戊申",
+    "day": "辛酉",
+    "time": "戊子"
+   },
+   "book_ge": "六阴朝阳格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 12 chars; 待人工核对"
+  },
+  {
+   "id": "auto-387",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.522"
+   },
+   "pillars": {
+    "year": "戊辰",
+    "month": "辛酉",
+    "day": "辛酉",
+    "time": "戊子"
+   },
+   "book_ge": "六阴朝阳格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 54 chars; 待人工核对"
+  },
+  {
+   "id": "auto-388",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.523"
+   },
+   "pillars": {
+    "year": "己未",
+    "month": "辛未",
+    "day": "辛未",
+    "time": "戊子"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 50 chars; 待人工核对"
+  },
+  {
+   "id": "auto-389",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.523"
+   },
+   "pillars": {
+    "year": "甲寅",
+    "month": "甲戌",
+    "day": "辛卯",
+    "time": "戊子"
+   },
+   "book_ge": "印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 23 chars; 待人工核对"
+  },
+  {
+   "id": "auto-390",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.523"
+   },
+   "pillars": {
+    "year": "戊辰",
+    "month": "庚申",
+    "day": "辛卯",
+    "time": "戊子"
+   },
+   "book_ge": "六阴朝阳格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 108 chars; 待人工核对"
+  },
+  {
+   "id": "auto-391",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.524"
+   },
+   "pillars": {
+    "year": "辛酉",
+    "month": "壬辰",
+    "day": "辛亥",
+    "time": "戊子"
+   },
+   "book_ge": "六阴朝阳格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 120 chars; 待人工核对"
+  },
+  {
+   "id": "auto-392",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.525"
+   },
+   "pillars": {
+    "year": "戊子",
+    "month": "辛酉",
+    "day": "辛酉",
+    "time": "戊子"
+   },
+   "book_ge": "煞印相生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 608 chars; 待人工核对"
+  },
+  {
+   "id": "auto-393",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.525"
+   },
+   "pillars": {
+    "year": "丁酉",
+    "month": "己酉",
+    "day": "辛亥",
+    "time": "戊子"
+   },
+   "book_ge": "煞印相生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 85 chars; 待人工核对"
+  },
+  {
+   "id": "auto-394",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.526"
+   },
+   "pillars": {
+    "year": "壬子",
+    "month": "甲辰",
+    "day": "辛未",
+    "time": "戊子"
+   },
+   "book_ge": "六阴朝阳格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 11 chars; 待人工核对"
+  },
+  {
+   "id": "auto-395",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.526"
+   },
+   "pillars": {
+    "year": "甲辰",
+    "month": "丙寅",
+    "day": "辛丑",
+    "time": "戊子"
+   },
+   "book_ge": "六阴朝阳格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 38 chars; 待人工核对"
+  },
+  {
+   "id": "auto-396",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.526"
+   },
+   "pillars": {
+    "year": "丙午",
+    "month": "甲午",
+    "day": "辛丑",
+    "time": "戊子"
+   },
+   "book_ge": "六阴朝阳格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 27 chars; 待人工核对"
+  },
+  {
+   "id": "auto-397",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.528"
+   },
+   "pillars": {
+    "year": "己未",
+    "month": "戊辰",
+    "day": "戊辰",
+    "time": "庚申"
+   },
+   "book_ge": "禄劫喜食（伤）格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 185 chars; 待人工核对"
+  },
+  {
+   "id": "auto-398",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.529"
+   },
+   "pillars": {
+    "year": "己酉",
+    "month": "癸未",
+    "day": "癸未",
+    "time": "庚申"
+   },
+   "book_ge": "合禄格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 20 chars; 待人工核对"
+  },
+  {
+   "id": "auto-399",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.529"
+   },
+   "pillars": {
+    "year": "丙子",
+    "month": "己亥",
+    "day": "戊辰",
+    "time": "庚申"
+   },
+   "book_ge": "合禄格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 99 chars; 待人工核对"
+  },
+  {
+   "id": "auto-400",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.530"
+   },
+   "pillars": {
+    "year": "戊戌",
+    "month": "庚申",
+    "day": "戊戌",
+    "time": "庚申"
+   },
+   "book_ge": "伤官配印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 71 chars; 待人工核对"
+  },
+  {
+   "id": "auto-401",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.535"
+   },
+   "pillars": {
+    "year": "癸巳",
+    "month": "庚申",
+    "day": "庚子",
+    "time": "庚辰"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 19 chars; 待人工核对"
+  },
+  {
+   "id": "auto-402",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.535"
+   },
+   "pillars": {
+    "year": "庚子",
+    "month": "庚辰",
+    "day": "庚申",
+    "time": "庚辰"
+   },
+   "book_ge": "井栏叉格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 275 chars; 待人工核对"
+  },
+  {
+   "id": "auto-403",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.535"
+   },
+   "pillars": {
+    "year": "庚子",
+    "month": "庚辰",
+    "day": "庚申",
+    "time": "丁丑"
+   },
+   "book_ge": "井栏叉格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 46 chars; 待人工核对"
+  },
+  {
+   "id": "auto-404",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.535"
+   },
+   "pillars": {
+    "year": "庚申",
+    "month": "戊子",
+    "day": "庚辰",
+    "time": "丙戌"
+   },
+   "book_ge": "井栏叉格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 25 chars; 待人工核对"
+  },
+  {
+   "id": "auto-405",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.536"
+   },
+   "pillars": {
+    "year": "辛酉",
+    "month": "壬辰",
+    "day": "庚子",
+    "time": "甲申"
+   },
+   "book_ge": "食神生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 85 chars; 待人工核对"
+  },
+  {
+   "id": "auto-406",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.537"
+   },
+   "pillars": {
+    "year": "癸卯",
+    "month": "庚申",
+    "day": "庚子",
+    "time": "庚辰"
+   },
+   "book_ge": "井栏叉格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 63 chars; 待人工核对"
+  },
+  {
+   "id": "auto-407",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.538"
+   },
+   "pillars": {
+    "year": "癸酉",
+    "month": "甲子",
+    "day": "庚辰",
+    "time": "甲申"
+   },
+   "book_ge": "飞天禄马格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 122 chars; 待人工核对"
+  },
+  {
+   "id": "auto-408",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.538"
+   },
+   "pillars": {
+    "year": "戊寅",
+    "month": "甲子",
+    "day": "庚申",
+    "time": "庚辰"
+   },
+   "book_ge": "伤官生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 85 chars; 待人工核对"
+  },
+  {
+   "id": "auto-409",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.540"
+   },
+   "pillars": {
+    "year": "丁未",
+    "month": "癸卯",
+    "day": "癸卯",
+    "time": "甲寅"
+   },
+   "book_ge": "刑合格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 26 chars; 待人工核对"
+  },
+  {
+   "id": "auto-410",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.540"
+   },
+   "pillars": {
+    "year": "乙未",
+    "month": "癸未",
+    "day": "癸亥",
+    "time": "甲寅"
+   },
+   "book_ge": "刑合格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 58 chars; 待人工核对"
+  },
+  {
+   "id": "auto-411",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.540"
+   },
+   "pillars": {
+    "year": "癸酉",
+    "month": "辛酉",
+    "day": "癸卯",
+    "time": "甲寅"
+   },
+   "book_ge": "刑合格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 39 chars; 待人工核对"
+  },
+  {
+   "id": "auto-412",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.541"
+   },
+   "pillars": {
+    "year": "甲戌",
+    "month": "甲戌",
+    "day": "癸酉",
+    "time": "甲寅"
+   },
+   "book_ge": "刑合格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 35 chars; 待人工核对"
+  },
+  {
+   "id": "auto-413",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.541"
+   },
+   "pillars": {
+    "year": "庚午",
+    "month": "甲申",
+    "day": "癸卯",
+    "time": "甲寅"
+   },
+   "book_ge": "刑合格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 63 chars; 待人工核对"
+  },
+  {
+   "id": "auto-414",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.541"
+   },
+   "pillars": {
+    "year": "癸亥",
+    "month": "甲寅",
+    "day": "癸亥",
+    "time": "甲寅"
+   },
+   "book_ge": "刑合格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 44 chars; 待人工核对"
+  },
+  {
+   "id": "auto-415",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.541"
+   },
+   "pillars": {
+    "year": "己卯",
+    "month": "乙亥",
+    "day": "癸未",
+    "time": "甲寅"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 16 chars; 待人工核对"
+  },
+  {
+   "id": "auto-416",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.542"
+   },
+   "pillars": {
+    "year": "癸酉",
+    "month": "甲子",
+    "day": "癸卯",
+    "time": "甲寅"
+   },
+   "book_ge": "刑合格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 91 chars; 待人工核对"
+  },
+  {
+   "id": "auto-417",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.545"
+   },
+   "pillars": {
+    "year": "辛丑",
+    "month": "辛丑",
+    "day": "辛丑",
+    "time": "庚寅"
+   },
+   "book_ge": "合禄格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 57 chars; 待人工核对"
+  },
+  {
+   "id": "auto-418",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.545"
+   },
+   "pillars": {
+    "year": "辛丑",
+    "month": "辛丑",
+    "day": "癸酉",
+    "time": "癸丑"
+   },
+   "book_ge": "印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 194 chars; 待人工核对"
+  },
+  {
+   "id": "auto-419",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.545"
+   },
+   "pillars": {
+    "year": "辛卯",
+    "month": "辛丑",
+    "day": "癸丑",
+    "time": "癸丑"
+   },
+   "book_ge": "七煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 117 chars; 待人工核对"
+  },
+  {
+   "id": "auto-420",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.546"
+   },
+   "pillars": {
+    "year": "甲申",
+    "month": "戊辰",
+    "day": "辛丑",
+    "time": "己丑"
+   },
+   "book_ge": "印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 94 chars; 待人工核对"
+  },
+  {
+   "id": "auto-421",
+   "source": {
+    "chapter": "",
+    "section": "",
+    "page": "PDF p.549"
+   },
+   "pillars": {
+    "year": "壬寅",
+    "month": "壬寅",
+    "day": "壬寅",
+    "time": "壬寅"
+   },
+   "book_ge": "食神生财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "auto-extracted; nearest explicit ge name within 72 chars; 待人工核对"
+  }
+ ]
+}

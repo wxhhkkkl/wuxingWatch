@@ -1,0 +1,1966 @@
+{
+ "meta": {
+  "source": "相也《格局真诠》（2018）",
+  "gold_candidates": true,
+  "note": "section-derived 100 例（内 60 + 外 40）＋ 3 例人工样本；book_ge 取所在小格章节名，待人工核对。"
+ },
+ "cases": [
+  {
+   "id": "gold-001",
+   "source": {
+    "chapter": "",
+    "section": "正官配印格",
+    "page": "PDF p.20"
+   },
+   "pillars": {
+    "year": "己卯",
+    "month": "辛未",
+    "day": "壬寅",
+    "time": "辛亥"
+   },
+   "book_ge": "正官配印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=正官配印格"
+  },
+  {
+   "id": "gold-002",
+   "source": {
+    "chapter": "",
+    "section": "正官配印格",
+    "page": "PDF p.20"
+   },
+   "pillars": {
+    "year": "丁丑",
+    "month": "壬寅",
+    "day": "己巳",
+    "time": "丙寅"
+   },
+   "book_ge": "正官配印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=正官配印格"
+  },
+  {
+   "id": "gold-003",
+   "source": {
+    "chapter": "",
+    "section": "正官配印格",
+    "page": "PDF p.21"
+   },
+   "pillars": {
+    "year": "壬申",
+    "month": "戊申",
+    "day": "乙未",
+    "time": "庚辰"
+   },
+   "book_ge": "正官配印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=正官配印格"
+  },
+  {
+   "id": "gold-004",
+   "source": {
+    "chapter": "",
+    "section": "正官配印格",
+    "page": "PDF p.22"
+   },
+   "pillars": {
+    "year": "庚寅",
+    "month": "乙酉",
+    "day": "甲子",
+    "time": "戊辰"
+   },
+   "book_ge": "正官配印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=正官配印格"
+  },
+  {
+   "id": "gold-005",
+   "source": {
+    "chapter": "",
+    "section": "正官配印格",
+    "page": "PDF p.22"
+   },
+   "pillars": {
+    "year": "庚戌",
+    "month": "乙酉",
+    "day": "甲寅",
+    "time": "庚午"
+   },
+   "book_ge": "正官配印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=正官配印格"
+  },
+  {
+   "id": "gold-006",
+   "source": {
+    "chapter": "",
+    "section": "正官配印格",
+    "page": "PDF p.24"
+   },
+   "pillars": {
+    "year": "戊午",
+    "month": "甲子",
+    "day": "丁酉",
+    "time": "壬寅"
+   },
+   "book_ge": "正官配印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=正官配印格"
+  },
+  {
+   "id": "gold-007",
+   "source": {
+    "chapter": "",
+    "section": "正官配印格",
+    "page": "PDF p.24"
+   },
+   "pillars": {
+    "year": "丙子",
+    "month": "丁酉",
+    "day": "甲申",
+    "time": "丙寅"
+   },
+   "book_ge": "正官配印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=正官配印格"
+  },
+  {
+   "id": "gold-008",
+   "source": {
+    "chapter": "",
+    "section": "正官配印格",
+    "page": "PDF p.25"
+   },
+   "pillars": {
+    "year": "乙巳",
+    "month": "甲申",
+    "day": "乙亥",
+    "time": "庚辰"
+   },
+   "book_ge": "正官配印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=正官配印格"
+  },
+  {
+   "id": "gold-009",
+   "source": {
+    "chapter": "",
+    "section": "正官配印格",
+    "page": "PDF p.26"
+   },
+   "pillars": {
+    "year": "甲辰",
+    "month": "丙寅",
+    "day": "己酉",
+    "time": "丙寅"
+   },
+   "book_ge": "正官配印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=正官配印格"
+  },
+  {
+   "id": "gold-010",
+   "source": {
+    "chapter": "",
+    "section": "正官配印格",
+    "page": "PDF p.26"
+   },
+   "pillars": {
+    "year": "辛丑",
+    "month": "乙未",
+    "day": "戊午",
+    "time": "丙辰"
+   },
+   "book_ge": "正官配印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=正官配印格"
+  },
+  {
+   "id": "gold-011",
+   "source": {
+    "chapter": "",
+    "section": "官喜财印格",
+    "page": "PDF p.27"
+   },
+   "pillars": {
+    "year": "甲申",
+    "month": "壬申",
+    "day": "乙巳",
+    "time": "戊寅"
+   },
+   "book_ge": "官喜财印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=官喜财印格"
+  },
+  {
+   "id": "gold-012",
+   "source": {
+    "chapter": "",
+    "section": "官喜财印格",
+    "page": "PDF p.28"
+   },
+   "pillars": {
+    "year": "壬戌",
+    "month": "丁未",
+    "day": "戊申",
+    "time": "乙卯"
+   },
+   "book_ge": "官喜财印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=官喜财印格"
+  },
+  {
+   "id": "gold-013",
+   "source": {
+    "chapter": "",
+    "section": "官喜财印格",
+    "page": "PDF p.29"
+   },
+   "pillars": {
+    "year": "乙卯",
+    "month": "丙戌",
+    "day": "癸酉",
+    "time": "丙辰"
+   },
+   "book_ge": "官喜财印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=官喜财印格"
+  },
+  {
+   "id": "gold-014",
+   "source": {
+    "chapter": "",
+    "section": "官喜财印格",
+    "page": "PDF p.32"
+   },
+   "pillars": {
+    "year": "乙丑",
+    "month": "丁亥",
+    "day": "丁酉",
+    "time": "壬寅"
+   },
+   "book_ge": "官喜财印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=官喜财印格"
+  },
+  {
+   "id": "gold-015",
+   "source": {
+    "chapter": "",
+    "section": "官喜财印格",
+    "page": "PDF p.34"
+   },
+   "pillars": {
+    "year": "戊申",
+    "month": "丁巳",
+    "day": "癸酉",
+    "time": "甲寅"
+   },
+   "book_ge": "官喜财印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=官喜财印格"
+  },
+  {
+   "id": "gold-016",
+   "source": {
+    "chapter": "",
+    "section": "官喜财生格",
+    "page": "PDF p.38"
+   },
+   "pillars": {
+    "year": "乙卯",
+    "month": "丁亥",
+    "day": "丁未",
+    "time": "庚戌"
+   },
+   "book_ge": "官喜财生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=官喜财生格"
+  },
+  {
+   "id": "gold-017",
+   "source": {
+    "chapter": "",
+    "section": "官喜财生格",
+    "page": "PDF p.39"
+   },
+   "pillars": {
+    "year": "壬申",
+    "month": "丁未",
+    "day": "丁未",
+    "time": "己酉"
+   },
+   "book_ge": "官喜财生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=官喜财生格"
+  },
+  {
+   "id": "gold-018",
+   "source": {
+    "chapter": "",
+    "section": "官喜财生格",
+    "page": "PDF p.41"
+   },
+   "pillars": {
+    "year": "庚辰",
+    "month": "戊子",
+    "day": "丙子",
+    "time": "庚寅"
+   },
+   "book_ge": "官喜财生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=官喜财生格"
+  },
+  {
+   "id": "gold-019",
+   "source": {
+    "chapter": "",
+    "section": "弃官就食格",
+    "page": "PDF p.43"
+   },
+   "pillars": {
+    "year": "甲午",
+    "month": "辛未",
+    "day": "甲戌",
+    "time": "丙寅"
+   },
+   "book_ge": "弃官就食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=弃官就食格"
+  },
+  {
+   "id": "gold-020",
+   "source": {
+    "chapter": "",
+    "section": "弃官就食格",
+    "page": "PDF p.43"
+   },
+   "pillars": {
+    "year": "癸亥",
+    "month": "己未",
+    "day": "壬寅",
+    "time": "乙巳"
+   },
+   "book_ge": "弃官就食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=弃官就食格"
+  },
+  {
+   "id": "gold-021",
+   "source": {
+    "chapter": "",
+    "section": "弃官就食格",
+    "page": "PDF p.44"
+   },
+   "pillars": {
+    "year": "壬寅",
+    "month": "丙午",
+    "day": "辛卯",
+    "time": "壬辰"
+   },
+   "book_ge": "弃官就食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=弃官就食格"
+  },
+  {
+   "id": "gold-022",
+   "source": {
+    "chapter": "",
+    "section": "弃官就食格",
+    "page": "PDF p.44"
+   },
+   "pillars": {
+    "year": "丙寅",
+    "month": "癸巳",
+    "day": "辛酉",
+    "time": "癸巳"
+   },
+   "book_ge": "弃官就食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=弃官就食格"
+  },
+  {
+   "id": "gold-023",
+   "source": {
+    "chapter": "",
+    "section": "弃官就食格",
+    "page": "PDF p.45"
+   },
+   "pillars": {
+    "year": "甲午",
+    "month": "甲戌",
+    "day": "癸亥",
+    "time": "辛酉"
+   },
+   "book_ge": "弃官就食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=弃官就食格"
+  },
+  {
+   "id": "gold-024",
+   "source": {
+    "chapter": "",
+    "section": "弃官就食格",
+    "page": "PDF p.46"
+   },
+   "pillars": {
+    "year": "壬辰",
+    "month": "戊申",
+    "day": "乙未",
+    "time": "丁亥"
+   },
+   "book_ge": "弃官就食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=弃官就食格"
+  },
+  {
+   "id": "gold-025",
+   "source": {
+    "chapter": "",
+    "section": "弃官就食格",
+    "page": "PDF p.47"
+   },
+   "pillars": {
+    "year": "壬申",
+    "month": "丙午",
+    "day": "辛亥",
+    "time": "己丑"
+   },
+   "book_ge": "弃官就食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=弃官就食格"
+  },
+  {
+   "id": "gold-026",
+   "source": {
+    "chapter": "",
+    "section": "弃官就食格",
+    "page": "PDF p.48"
+   },
+   "pillars": {
+    "year": "庚申",
+    "month": "庚辰",
+    "day": "戊辰",
+    "time": "戊午"
+   },
+   "book_ge": "弃官就食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=弃官就食格"
+  },
+  {
+   "id": "gold-027",
+   "source": {
+    "chapter": "",
+    "section": "弃官就食格",
+    "page": "PDF p.50"
+   },
+   "pillars": {
+    "year": "戊申",
+    "month": "己未",
+    "day": "壬子",
+    "time": "辛亥"
+   },
+   "book_ge": "弃官就食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=弃官就食格"
+  },
+  {
+   "id": "gold-028",
+   "source": {
+    "chapter": "",
+    "section": "弃官就食格",
+    "page": "PDF p.51"
+   },
+   "pillars": {
+    "year": "丁亥",
+    "month": "壬子",
+    "day": "丁未",
+    "time": "癸卯"
+   },
+   "book_ge": "弃官就食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=弃官就食格"
+  },
+  {
+   "id": "gold-029",
+   "source": {
+    "chapter": "",
+    "section": "弃官就食格",
+    "page": "PDF p.52"
+   },
+   "pillars": {
+    "year": "辛丑",
+    "month": "丙申",
+    "day": "甲戌",
+    "time": "己巳"
+   },
+   "book_ge": "弃官就食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=弃官就食格"
+  },
+  {
+   "id": "gold-030",
+   "source": {
+    "chapter": "",
+    "section": "弃官就食格",
+    "page": "PDF p.52"
+   },
+   "pillars": {
+    "year": "庚申",
+    "month": "甲申",
+    "day": "甲子",
+    "time": "乙亥"
+   },
+   "book_ge": "弃官就食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=弃官就食格"
+  },
+  {
+   "id": "gold-031",
+   "source": {
+    "chapter": "",
+    "section": "弃官就食格",
+    "page": "PDF p.54"
+   },
+   "pillars": {
+    "year": "癸酉",
+    "month": "丁巳",
+    "day": "丙午",
+    "time": "壬辰"
+   },
+   "book_ge": "弃官就食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=弃官就食格"
+  },
+  {
+   "id": "gold-032",
+   "source": {
+    "chapter": "",
+    "section": "弃官就食格",
+    "page": "PDF p.54"
+   },
+   "pillars": {
+    "year": "壬辰",
+    "month": "丙午",
+    "day": "丙辰",
+    "time": "癸巳"
+   },
+   "book_ge": "弃官就食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=弃官就食格"
+  },
+  {
+   "id": "gold-033",
+   "source": {
+    "chapter": "",
+    "section": "弃官就食格",
+    "page": "PDF p.54"
+   },
+   "pillars": {
+    "year": "甲午",
+    "month": "己巳",
+    "day": "辛酉",
+    "time": "甲午"
+   },
+   "book_ge": "弃官就食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=弃官就食格"
+  },
+  {
+   "id": "gold-034",
+   "source": {
+    "chapter": "",
+    "section": "弃官就食格",
+    "page": "PDF p.54"
+   },
+   "pillars": {
+    "year": "癸丑",
+    "month": "乙卯",
+    "day": "丙午",
+    "time": "壬辰"
+   },
+   "book_ge": "弃官就食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=弃官就食格"
+  },
+  {
+   "id": "gold-035",
+   "source": {
+    "chapter": "",
+    "section": "弃官就食格",
+    "page": "PDF p.55"
+   },
+   "pillars": {
+    "year": "癸巳",
+    "month": "乙卯",
+    "day": "丙寅",
+    "time": "壬辰"
+   },
+   "book_ge": "弃官就食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=弃官就食格"
+  },
+  {
+   "id": "gold-036",
+   "source": {
+    "chapter": "",
+    "section": "弃官就食格",
+    "page": "PDF p.62"
+   },
+   "pillars": {
+    "year": "癸酉",
+    "month": "辛酉",
+    "day": "乙巳",
+    "time": "丁亥"
+   },
+   "book_ge": "弃官就食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=弃官就食格"
+  },
+  {
+   "id": "gold-037",
+   "source": {
+    "chapter": "",
+    "section": "煞印相生格",
+    "page": "PDF p.64"
+   },
+   "pillars": {
+    "year": "丙寅",
+    "month": "戊戌",
+    "day": "壬戌",
+    "time": "辛丑"
+   },
+   "book_ge": "煞印相生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=煞印相生格"
+  },
+  {
+   "id": "gold-038",
+   "source": {
+    "chapter": "",
+    "section": "煞印相生格",
+    "page": "PDF p.64"
+   },
+   "pillars": {
+    "year": "乙丑",
+    "month": "甲申",
+    "day": "甲辰",
+    "time": "己巳"
+   },
+   "book_ge": "煞印相生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=煞印相生格"
+  },
+  {
+   "id": "gold-039",
+   "source": {
+    "chapter": "",
+    "section": "煞印相生格",
+    "page": "PDF p.65"
+   },
+   "pillars": {
+    "year": "乙酉",
+    "month": "甲申",
+    "day": "甲戌",
+    "time": "甲戌"
+   },
+   "book_ge": "煞印相生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=煞印相生格"
+  },
+  {
+   "id": "gold-040",
+   "source": {
+    "chapter": "",
+    "section": "煞印相生格",
+    "page": "PDF p.66"
+   },
+   "pillars": {
+    "year": "丁酉",
+    "month": "戊申",
+    "day": "甲戌",
+    "time": "甲戌"
+   },
+   "book_ge": "煞印相生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=煞印相生格"
+  },
+  {
+   "id": "gold-041",
+   "source": {
+    "chapter": "",
+    "section": "煞印相生格",
+    "page": "PDF p.67"
+   },
+   "pillars": {
+    "year": "己卯",
+    "month": "丁丑",
+    "day": "甲寅",
+    "time": "壬申"
+   },
+   "book_ge": "煞印相生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=煞印相生格"
+  },
+  {
+   "id": "gold-042",
+   "source": {
+    "chapter": "",
+    "section": "煞印相生格",
+    "page": "PDF p.68"
+   },
+   "pillars": {
+    "year": "壬辰",
+    "month": "庚戌",
+    "day": "甲申",
+    "time": "甲戌"
+   },
+   "book_ge": "煞印相生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=煞印相生格"
+  },
+  {
+   "id": "gold-043",
+   "source": {
+    "chapter": "",
+    "section": "煞印相生格",
+    "page": "PDF p.69"
+   },
+   "pillars": {
+    "year": "壬辰",
+    "month": "庚戌",
+    "day": "甲辰",
+    "time": "甲戌"
+   },
+   "book_ge": "煞印相生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=煞印相生格"
+  },
+  {
+   "id": "gold-044",
+   "source": {
+    "chapter": "",
+    "section": "煞印相生格",
+    "page": "PDF p.70"
+   },
+   "pillars": {
+    "year": "庚子",
+    "month": "庚辰",
+    "day": "甲午",
+    "time": "己巳"
+   },
+   "book_ge": "煞印相生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=煞印相生格"
+  },
+  {
+   "id": "gold-045",
+   "source": {
+    "chapter": "",
+    "section": "煞印相生格",
+    "page": "PDF p.71"
+   },
+   "pillars": {
+    "year": "甲午",
+    "month": "壬申",
+    "day": "甲申",
+    "time": "乙丑"
+   },
+   "book_ge": "煞印相生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=煞印相生格"
+  },
+  {
+   "id": "gold-046",
+   "source": {
+    "chapter": "",
+    "section": "煞印相生格",
+    "page": "PDF p.72"
+   },
+   "pillars": {
+    "year": "癸酉",
+    "month": "丁巳",
+    "day": "甲子",
+    "time": "戊辰"
+   },
+   "book_ge": "煞印相生格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=煞印相生格"
+  },
+  {
+   "id": "gold-047",
+   "source": {
+    "chapter": "",
+    "section": "煞邀食制格",
+    "page": "PDF p.76"
+   },
+   "pillars": {
+    "year": "乙亥",
+    "month": "乙酉",
+    "day": "乙卯",
+    "time": "丁丑"
+   },
+   "book_ge": "煞邀食制格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=煞邀食制格"
+  },
+  {
+   "id": "gold-048",
+   "source": {
+    "chapter": "",
+    "section": "煞邀食制格",
+    "page": "PDF p.79"
+   },
+   "pillars": {
+    "year": "己酉",
+    "month": "丙子",
+    "day": "丙辰",
+    "time": "己亥"
+   },
+   "book_ge": "煞邀食制格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=煞邀食制格"
+  },
+  {
+   "id": "gold-049",
+   "source": {
+    "chapter": "",
+    "section": "煞邀食制格",
+    "page": "PDF p.79"
+   },
+   "pillars": {
+    "year": "丙戌",
+    "month": "壬辰",
+    "day": "丙申",
+    "time": "丙申"
+   },
+   "book_ge": "煞邀食制格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=煞邀食制格"
+  },
+  {
+   "id": "gold-050",
+   "source": {
+    "chapter": "",
+    "section": "煞邀食制格",
+    "page": "PDF p.81"
+   },
+   "pillars": {
+    "year": "丁巳",
+    "month": "己酉",
+    "day": "丙辰",
+    "time": "壬辰"
+   },
+   "book_ge": "煞邀食制格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=煞邀食制格"
+  },
+  {
+   "id": "gold-051",
+   "source": {
+    "chapter": "",
+    "section": "煞邀食制格",
+    "page": "PDF p.81"
+   },
+   "pillars": {
+    "year": "壬辰",
+    "month": "甲辰",
+    "day": "丙戌",
+    "time": "戊戌"
+   },
+   "book_ge": "煞邀食制格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=煞邀食制格"
+  },
+  {
+   "id": "gold-052",
+   "source": {
+    "chapter": "",
+    "section": "煞邀食制格",
+    "page": "PDF p.82"
+   },
+   "pillars": {
+    "year": "壬午",
+    "month": "癸卯",
+    "day": "己巳",
+    "time": "辛未"
+   },
+   "book_ge": "煞邀食制格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=煞邀食制格"
+  },
+  {
+   "id": "gold-053",
+   "source": {
+    "chapter": "",
+    "section": "煞邀食制格",
+    "page": "PDF p.84"
+   },
+   "pillars": {
+    "year": "癸巳",
+    "month": "甲子",
+    "day": "丁酉",
+    "time": "甲辰"
+   },
+   "book_ge": "煞邀食制格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=煞邀食制格"
+  },
+  {
+   "id": "gold-054",
+   "source": {
+    "chapter": "",
+    "section": "煞邀食制格",
+    "page": "PDF p.86"
+   },
+   "pillars": {
+    "year": "己未",
+    "month": "癸酉",
+    "day": "丁巳",
+    "time": "丁未"
+   },
+   "book_ge": "煞邀食制格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=煞邀食制格"
+  },
+  {
+   "id": "gold-055",
+   "source": {
+    "chapter": "",
+    "section": "煞邀食制格",
+    "page": "PDF p.87"
+   },
+   "pillars": {
+    "year": "己丑",
+    "month": "癸酉",
+    "day": "丁卯",
+    "time": "辛丑"
+   },
+   "book_ge": "煞邀食制格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=煞邀食制格"
+  },
+  {
+   "id": "gold-056",
+   "source": {
+    "chapter": "",
+    "section": "以劫合煞格",
+    "page": "PDF p.90"
+   },
+   "pillars": {
+    "year": "戊辰",
+    "month": "甲寅",
+    "day": "戊寅",
+    "time": "戊午"
+   },
+   "book_ge": "以劫合煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=以劫合煞格"
+  },
+  {
+   "id": "gold-057",
+   "source": {
+    "chapter": "",
+    "section": "以劫合煞格",
+    "page": "PDF p.95"
+   },
+   "pillars": {
+    "year": "丁未",
+    "month": "壬子",
+    "day": "丙辰",
+    "time": "庚寅"
+   },
+   "book_ge": "以劫合煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=以劫合煞格"
+  },
+  {
+   "id": "gold-058",
+   "source": {
+    "chapter": "",
+    "section": "以劫合煞格",
+    "page": "PDF p.95"
+   },
+   "pillars": {
+    "year": "乙未",
+    "month": "庚辰",
+    "day": "甲戌",
+    "time": "庚午"
+   },
+   "book_ge": "以劫合煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=以劫合煞格"
+  },
+  {
+   "id": "gold-059",
+   "source": {
+    "chapter": "",
+    "section": "财滋弱煞格",
+    "page": "PDF p.97"
+   },
+   "pillars": {
+    "year": "戊戌",
+    "month": "甲子",
+    "day": "丁未",
+    "time": "庚戌"
+   },
+   "book_ge": "财滋弱煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=财滋弱煞格"
+  },
+  {
+   "id": "gold-060",
+   "source": {
+    "chapter": "",
+    "section": "财滋弱煞格",
+    "page": "PDF p.98"
+   },
+   "pillars": {
+    "year": "甲申",
+    "month": "乙亥",
+    "day": "丙戌",
+    "time": "庚寅"
+   },
+   "book_ge": "财滋弱煞格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=财滋弱煞格"
+  },
+  {
+   "id": "gold-061",
+   "source": {
+    "chapter": "",
+    "section": "阳刃喜食格",
+    "page": "PDF p.357"
+   },
+   "pillars": {
+    "year": "甲申",
+    "month": "丙子",
+    "day": "壬寅",
+    "time": "辛亥"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=阳刃喜食格"
+  },
+  {
+   "id": "gold-062",
+   "source": {
+    "chapter": "",
+    "section": "阳刃喜食格",
+    "page": "PDF p.357"
+   },
+   "pillars": {
+    "year": "丙寅",
+    "month": "庚子",
+    "day": "壬辰",
+    "time": "壬寅"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=阳刃喜食格"
+  },
+  {
+   "id": "gold-063",
+   "source": {
+    "chapter": "",
+    "section": "阳刃喜食格",
+    "page": "PDF p.358"
+   },
+   "pillars": {
+    "year": "丁卯",
+    "month": "壬子",
+    "day": "壬申",
+    "time": "甲辰"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=阳刃喜食格"
+  },
+  {
+   "id": "gold-064",
+   "source": {
+    "chapter": "",
+    "section": "阳刃喜食格",
+    "page": "PDF p.358"
+   },
+   "pillars": {
+    "year": "戊寅",
+    "month": "乙卯",
+    "day": "甲寅",
+    "time": "丁卯"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=阳刃喜食格"
+  },
+  {
+   "id": "gold-065",
+   "source": {
+    "chapter": "",
+    "section": "阳刃喜食格",
+    "page": "PDF p.359"
+   },
+   "pillars": {
+    "year": "戊寅",
+    "month": "乙卯",
+    "day": "甲午",
+    "time": "甲戌"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=阳刃喜食格"
+  },
+  {
+   "id": "gold-066",
+   "source": {
+    "chapter": "",
+    "section": "阳刃喜食格",
+    "page": "PDF p.360"
+   },
+   "pillars": {
+    "year": "己卯",
+    "month": "丁卯",
+    "day": "甲寅",
+    "time": "丙寅"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=阳刃喜食格"
+  },
+  {
+   "id": "gold-067",
+   "source": {
+    "chapter": "",
+    "section": "阳刃喜食格",
+    "page": "PDF p.360"
+   },
+   "pillars": {
+    "year": "丁未",
+    "month": "壬子",
+    "day": "壬寅",
+    "time": "壬寅"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=阳刃喜食格"
+  },
+  {
+   "id": "gold-068",
+   "source": {
+    "chapter": "",
+    "section": "阳刃喜食格",
+    "page": "PDF p.362"
+   },
+   "pillars": {
+    "year": "壬申",
+    "month": "辛亥",
+    "day": "壬午",
+    "time": "丙午"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=阳刃喜食格"
+  },
+  {
+   "id": "gold-069",
+   "source": {
+    "chapter": "",
+    "section": "阳刃喜食格",
+    "page": "PDF p.362"
+   },
+   "pillars": {
+    "year": "丙寅",
+    "month": "甲午",
+    "day": "丁酉",
+    "time": "乙巳"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=阳刃喜食格"
+  },
+  {
+   "id": "gold-070",
+   "source": {
+    "chapter": "",
+    "section": "阳刃喜食格",
+    "page": "PDF p.370"
+   },
+   "pillars": {
+    "year": "庚戌",
+    "month": "戊子",
+    "day": "癸酉",
+    "time": "癸亥"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=阳刃喜食格"
+  },
+  {
+   "id": "gold-071",
+   "source": {
+    "chapter": "",
+    "section": "阳刃喜食格",
+    "page": "PDF p.370"
+   },
+   "pillars": {
+    "year": "乙巳",
+    "month": "丙戌",
+    "day": "戊申",
+    "time": "丁巳"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=阳刃喜食格"
+  },
+  {
+   "id": "gold-072",
+   "source": {
+    "chapter": "",
+    "section": "阳刃喜食格",
+    "page": "PDF p.370"
+   },
+   "pillars": {
+    "year": "庚申",
+    "month": "己卯",
+    "day": "乙巳",
+    "time": "癸未"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=阳刃喜食格"
+  },
+  {
+   "id": "gold-073",
+   "source": {
+    "chapter": "",
+    "section": "阳刃喜食格",
+    "page": "PDF p.371"
+   },
+   "pillars": {
+    "year": "丁酉",
+    "month": "丙午",
+    "day": "丁巳",
+    "time": "壬寅"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=阳刃喜食格"
+  },
+  {
+   "id": "gold-074",
+   "source": {
+    "chapter": "",
+    "section": "阳刃喜食格",
+    "page": "PDF p.372"
+   },
+   "pillars": {
+    "year": "丙戌",
+    "month": "丁酉",
+    "day": "辛酉",
+    "time": "乙未"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=阳刃喜食格"
+  },
+  {
+   "id": "gold-075",
+   "source": {
+    "chapter": "",
+    "section": "阳刃喜食格",
+    "page": "PDF p.372"
+   },
+   "pillars": {
+    "year": "甲寅",
+    "month": "庚午",
+    "day": "丙寅",
+    "time": "癸巳"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=阳刃喜食格"
+  },
+  {
+   "id": "gold-076",
+   "source": {
+    "chapter": "",
+    "section": "阳刃喜食格",
+    "page": "PDF p.373"
+   },
+   "pillars": {
+    "year": "庚午",
+    "month": "戊子",
+    "day": "癸卯",
+    "time": "丁巳"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=阳刃喜食格"
+  },
+  {
+   "id": "gold-077",
+   "source": {
+    "chapter": "",
+    "section": "阳刃喜食格",
+    "page": "PDF p.374"
+   },
+   "pillars": {
+    "year": "丁丑",
+    "month": "癸卯",
+    "day": "乙巳",
+    "time": "丙子"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=阳刃喜食格"
+  },
+  {
+   "id": "gold-078",
+   "source": {
+    "chapter": "",
+    "section": "阳刃喜食格",
+    "page": "PDF p.376"
+   },
+   "pillars": {
+    "year": "壬辰",
+    "month": "丁未",
+    "day": "丁未",
+    "time": "戊申"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=阳刃喜食格"
+  },
+  {
+   "id": "gold-079",
+   "source": {
+    "chapter": "",
+    "section": "阳刃喜食格",
+    "page": "PDF p.377"
+   },
+   "pillars": {
+    "year": "壬子",
+    "month": "丁未",
+    "day": "丁巳",
+    "time": "戊申"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=阳刃喜食格"
+  },
+  {
+   "id": "gold-080",
+   "source": {
+    "chapter": "",
+    "section": "阳刃喜食格",
+    "page": "PDF p.377"
+   },
+   "pillars": {
+    "year": "壬申",
+    "month": "丁未",
+    "day": "丁亥",
+    "time": "甲辰"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=阳刃喜食格"
+  },
+  {
+   "id": "gold-081",
+   "source": {
+    "chapter": "",
+    "section": "阳刃喜食格",
+    "page": "PDF p.378"
+   },
+   "pillars": {
+    "year": "己酉",
+    "month": "乙亥",
+    "day": "壬戌",
+    "time": "庚子"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=阳刃喜食格"
+  },
+  {
+   "id": "gold-082",
+   "source": {
+    "chapter": "",
+    "section": "阳刃喜食格",
+    "page": "PDF p.380"
+   },
+   "pillars": {
+    "year": "丁巳",
+    "month": "壬子",
+    "day": "癸卯",
+    "time": "己未"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=阳刃喜食格"
+  },
+  {
+   "id": "gold-083",
+   "source": {
+    "chapter": "",
+    "section": "阳刃喜食格",
+    "page": "PDF p.380"
+   },
+   "pillars": {
+    "year": "乙酉",
+    "month": "庚辰",
+    "day": "甲寅",
+    "time": "己巳"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=阳刃喜食格"
+  },
+  {
+   "id": "gold-084",
+   "source": {
+    "chapter": "",
+    "section": "阳刃喜食格",
+    "page": "PDF p.381"
+   },
+   "pillars": {
+    "year": "戊辰",
+    "month": "癸亥",
+    "day": "壬午",
+    "time": "丙午"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=阳刃喜食格"
+  },
+  {
+   "id": "gold-085",
+   "source": {
+    "chapter": "",
+    "section": "阳刃喜食格",
+    "page": "PDF p.382"
+   },
+   "pillars": {
+    "year": "辛卯",
+    "month": "庚寅",
+    "day": "甲子",
+    "time": "甲戌"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=阳刃喜食格"
+  },
+  {
+   "id": "gold-086",
+   "source": {
+    "chapter": "",
+    "section": "阳刃喜食格",
+    "page": "PDF p.383"
+   },
+   "pillars": {
+    "year": "戊戌",
+    "month": "甲寅",
+    "day": "甲申",
+    "time": "庚申"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=阳刃喜食格"
+  },
+  {
+   "id": "gold-087",
+   "source": {
+    "chapter": "",
+    "section": "阳刃喜食格",
+    "page": "PDF p.383"
+   },
+   "pillars": {
+    "year": "戊戌",
+    "month": "乙卯",
+    "day": "甲申",
+    "time": "庚申"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=阳刃喜食格"
+  },
+  {
+   "id": "gold-088",
+   "source": {
+    "chapter": "",
+    "section": "禄劫用财格",
+    "page": "PDF p.384"
+   },
+   "pillars": {
+    "year": "甲子",
+    "month": "丙子",
+    "day": "癸丑",
+    "time": "壬子"
+   },
+   "book_ge": "禄劫用财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=禄劫用财格"
+  },
+  {
+   "id": "gold-089",
+   "source": {
+    "chapter": "",
+    "section": "禄劫用财格",
+    "page": "PDF p.384"
+   },
+   "pillars": {
+    "year": "壬寅",
+    "month": "辛亥",
+    "day": "壬寅",
+    "time": "辛亥"
+   },
+   "book_ge": "禄劫用财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=禄劫用财格"
+  },
+  {
+   "id": "gold-090",
+   "source": {
+    "chapter": "",
+    "section": "禄劫用财格",
+    "page": "PDF p.385"
+   },
+   "pillars": {
+    "year": "丙午",
+    "month": "庚子",
+    "day": "癸亥",
+    "time": "甲寅"
+   },
+   "book_ge": "禄劫用财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=禄劫用财格"
+  },
+  {
+   "id": "gold-091",
+   "source": {
+    "chapter": "",
+    "section": "禄劫用财格",
+    "page": "PDF p.386"
+   },
+   "pillars": {
+    "year": "己未",
+    "month": "己巳",
+    "day": "丁未",
+    "time": "辛丑"
+   },
+   "book_ge": "禄劫用财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=禄劫用财格"
+  },
+  {
+   "id": "gold-092",
+   "source": {
+    "chapter": "",
+    "section": "禄劫用财格",
+    "page": "PDF p.387"
+   },
+   "pillars": {
+    "year": "庚子",
+    "month": "甲申",
+    "day": "庚子",
+    "time": "甲申"
+   },
+   "book_ge": "禄劫用财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=禄劫用财格"
+  },
+  {
+   "id": "gold-093",
+   "source": {
+    "chapter": "",
+    "section": "禄劫用财格",
+    "page": "PDF p.387"
+   },
+   "pillars": {
+    "year": "戊寅",
+    "month": "甲寅",
+    "day": "甲戌",
+    "time": "甲子"
+   },
+   "book_ge": "禄劫用财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=禄劫用财格"
+  },
+  {
+   "id": "gold-094",
+   "source": {
+    "chapter": "",
+    "section": "禄劫用财格",
+    "page": "PDF p.387"
+   },
+   "pillars": {
+    "year": "戊辰",
+    "month": "甲寅",
+    "day": "甲寅",
+    "time": "甲戌"
+   },
+   "book_ge": "禄劫用财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=禄劫用财格"
+  },
+  {
+   "id": "gold-095",
+   "source": {
+    "chapter": "",
+    "section": "禄劫用财格",
+    "page": "PDF p.388"
+   },
+   "pillars": {
+    "year": "壬戌",
+    "month": "癸丑",
+    "day": "戊午",
+    "time": "丁巳"
+   },
+   "book_ge": "禄劫用财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=禄劫用财格"
+  },
+  {
+   "id": "gold-096",
+   "source": {
+    "chapter": "",
+    "section": "禄劫用财格",
+    "page": "PDF p.388"
+   },
+   "pillars": {
+    "year": "庚寅",
+    "month": "戊寅",
+    "day": "甲子",
+    "time": "丙寅"
+   },
+   "book_ge": "禄劫用财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=禄劫用财格"
+  },
+  {
+   "id": "gold-097",
+   "source": {
+    "chapter": "",
+    "section": "禄劫用财格",
+    "page": "PDF p.388"
+   },
+   "pillars": {
+    "year": "庚戌",
+    "month": "戊寅",
+    "day": "甲寅",
+    "time": "甲戌"
+   },
+   "book_ge": "禄劫用财格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=禄劫用财格"
+  },
+  {
+   "id": "gold-098",
+   "source": {
+    "chapter": "",
+    "section": "禄劫喜食（伤）格",
+    "page": "PDF p.390"
+   },
+   "pillars": {
+    "year": "癸卯",
+    "month": "庚申",
+    "day": "庚子",
+    "time": "庚辰"
+   },
+   "book_ge": "禄劫喜食（伤）格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=禄劫喜食（伤）格"
+  },
+  {
+   "id": "gold-099",
+   "source": {
+    "chapter": "",
+    "section": "禄劫喜食（伤）格",
+    "page": "PDF p.391"
+   },
+   "pillars": {
+    "year": "庚子",
+    "month": "乙酉",
+    "day": "辛亥",
+    "time": "壬辰"
+   },
+   "book_ge": "禄劫喜食（伤）格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=禄劫喜食（伤）格"
+  },
+  {
+   "id": "gold-100",
+   "source": {
+    "chapter": "",
+    "section": "禄劫喜食（伤）格",
+    "page": "PDF p.393"
+   },
+   "pillars": {
+    "year": "甲寅",
+    "month": "丙寅",
+    "day": "乙巳",
+    "time": "丙子"
+   },
+   "book_ge": "禄劫喜食（伤）格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "section-derived; 待人工核对；section=禄劫喜食（伤）格"
+  },
+  {
+   "id": "zhengguan-peiyin-1",
+   "source": {
+    "chapter": "第一章",
+    "section": "第二节",
+    "page": "书 p.11 / PDF p.19"
+   },
+   "pillars": {
+    "year": "己卯",
+    "month": "辛未",
+    "day": "壬寅",
+    "time": "辛亥"
+   },
+   "book_ge": "正官配印格",
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "书中正官配印格例：壬生未月，己官透，辛印双透，亥卯未伤官局，配印伏伤。"
+  },
+  {
+   "id": "sample-no-explicit-ge-1",
+   "source": {
+    "chapter": "第一章",
+    "section": "第一节",
+    "page": "书 p.3 / PDF p.11"
+   },
+   "pillars": {
+    "year": "甲子",
+    "month": "丙寅",
+    "day": "戊午",
+    "time": "辛酉"
+   },
+   "book_ge": null,
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "非书例，仅用于验证 runner 不虚构一致/不一致。"
+  },
+  {
+   "id": "sample-no-explicit-ge-2",
+   "source": {
+    "chapter": "第一章",
+    "section": "第一节",
+    "page": "书 p.3 / PDF p.11"
+   },
+   "pillars": {
+    "year": "癸亥",
+    "month": "乙卯",
+    "day": "乙未",
+    "time": "壬午"
+   },
+   "book_ge": null,
+   "book_cheng_po": null,
+   "book_xi_ji": null,
+   "book_gao_di": null,
+   "notes": "非书例，仅用于验证 runner 不虚构一致/不一致。"
+  }
+ ]
+}

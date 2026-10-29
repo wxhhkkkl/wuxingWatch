@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import type { ChartResult, Dayun2Step, LiuRiItem, LiuShiContext, LiuShiItem, LiuYueItem } from '../types'
+import type { ChartResult, Dayun2Step, GeJuResponse, LiuRiItem, LiuShiContext, LiuShiItem, LiuYueItem } from '../types'
 import { fetchDayun2, fetchLiuShi } from '../api/charts'
+import { fetchGeju, getRecordGeju } from '../api/geju'
 import { getRecordDayun2 } from '../api/records'
+import GeJuSummaryCard from './GeJuSummaryCard.vue'
+import { stepOf } from '../utils/geju'
 import { wxColor } from '../utils/wuxing'
 import {
   defaultDayunIndex,
@@ -177,6 +180,13 @@ const dayun2Rows = computed(() =>
   WUXING.map((wx) => ({ wx, value: dayun2Current.value?.elements[wx]?.dynamic ?? 0 })),
 )
 
+// ---- 格局喜忌（015）：原局 + 当前大运 ----
+const geju = ref<GeJuResponse | null>(null)
+const gejuError = ref('')
+const currentGeju = computed(() => geju.value?.yuanju ?? null)
+const currentDayunGeju = computed(() =>
+  stepOf(geju.value?.dayun_steps ?? [], currentDayunStep.value?.ganzhi))
+
 onMounted(async () => {
   if (!currentDayunStep.value) return
   try {
@@ -191,9 +201,23 @@ onMounted(async () => {
   }
 })
 
+onMounted(async () => {
+  try {
+    geju.value = props.recordId != null
+      ? await getRecordGeju(props.recordId)
+      : chartStore.inputs ? await fetchGeju({ ...chartStore.inputs }) : null
+  } catch (e) {
+    gejuError.value = (e as Error).message
+  }
+})
+
 /** 进详情页——从记录进入时带上 id，使详情页按记录的输入重推。 */
 function gotoDetail(path: string) {
   router.push(props.recordId != null ? { path, query: { record: String(props.recordId) } } : path)
+}
+
+function gejuTo(path: string): string {
+  return props.recordId != null ? `${path}?record=${props.recordId}` : path
 }
 
 function fmtDateTime(s: string): string {
@@ -353,6 +377,27 @@ function fmtDateTime(s: string): string {
       </template>
       <p v-else class="muted">{{ dayun2Error || '大运旺度暂无数据' }}</p>
     </section>
+
+    <!-- 格局喜忌（015）：原局 / 当前大运各一张摘要卡 -->
+    <GeJuSummaryCard
+      title="原局格局喜忌"
+      :ge="currentGeju?.main_ge ?? null"
+      :status="currentGeju?.status ?? 'undetermined'"
+      :strength="currentGeju?.shen_qiang_ruo ?? null"
+      :gao-di="currentGeju?.gao_di?.value ?? null"
+      :to="gejuTo('/geju')"
+      testid="geju-yuanju-card"
+    />
+    <GeJuSummaryCard
+      title="当前大运格局喜忌"
+      :ge="currentDayunGeju?.ge ?? null"
+      :status="currentGeju?.status ?? 'undetermined'"
+      :strength="currentDayunGeju?.shen_qiang_ruo ?? null"
+      :change="currentDayunGeju?.change ?? null"
+      :to="gejuTo('/geju-dayun')"
+      testid="geju-dayun-card"
+    />
+    <p v-if="gejuError" class="muted">格局喜忌：{{ gejuError }}</p>
 
     <!-- 人元司令与宫位 -->
     <section class="wx-card">

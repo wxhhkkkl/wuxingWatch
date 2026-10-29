@@ -39,6 +39,7 @@ def wan_du_analysis(pillars: dict, *, hour_known: bool = True) -> dict:
         "input_scope": r["input_scope"],
         "degradations": r["degradations"],
         "relations": r["relations"],
+        "month_effective_wx": r.get("month_effective_wx", ""),
         "degrees": r["degrees"],
         "static_scores": r["static_scores"],
         "final_scores": r["final_scores"],

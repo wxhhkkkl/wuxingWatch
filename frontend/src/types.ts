@@ -139,6 +139,7 @@ export interface WanDu {
   input_scope: 'four_pillars' | 'three_pillars'
   degradations: string[]
   relations: { established: V2Relation[]; rejected: V2Relation[] }
+  month_effective_wx?: string
   degrees: Record<string, V2Degrees>
   static_scores: Record<string, number>
   final_scores: Record<string, number>
@@ -497,4 +498,116 @@ export interface Dayun2Response {
   input_scope: 'four_pillars' | 'three_pillars'
   degradations: string[]
   dayun_steps: Dayun2Step[]
+}
+
+
+// ---------- 子平格局喜忌（015-ziping-geju-xiyong）----------
+
+export interface GeJuCitation {
+  chapter: string
+  section: string
+  condition_no: string | null
+  page: string
+}
+
+export interface GeJuRef {
+  id: string
+  name: string
+  aliases: string[]
+  category: 'inner' | 'outer'
+  big_ge: string
+  sub_ge: string | null
+}
+
+export interface GeJuConditionResult {
+  id: string
+  text: string
+  result: boolean
+  branch: string | null
+  citation: GeJuCitation
+  note: string
+}
+
+export interface GeJuOpenIssue {
+  id: string
+  location: GeJuCitation
+  kind: string
+  texts: { source: GeJuCitation; text: string }[]
+  status: string
+  resolution: string | null
+}
+
+export interface GeJuYongShen {
+  element: string
+  ten_god: string
+  book_term: string
+  role?: string
+  reason: string
+  citation: GeJuCitation
+}
+
+export interface GeJuDisease {
+  text: string
+  element: string
+  citation: GeJuCitation
+}
+
+export interface GeJuRemedy {
+  text: string
+  element: string
+  path: string
+  result: string
+  citation: GeJuCitation
+}
+
+export interface GeJuStrength {
+  value: 'strong' | 'weak' | 'unknown'
+  score: number
+  source: 'yuanju' | 'dayun' | 'unknown'
+}
+
+export interface GeJuJudgement {
+  engine: string
+  rules_version: string
+  input_scope: string
+  degradations: string[]
+  main_ge: GeJuRef | null
+  main_ge_basis: { text: string; citation: GeJuCitation } | null
+  concurrent_ge: GeJuRef[]
+  status: 'cheng' | 'po' | 'fu_cheng' | 'undetermined'
+  missing_conditions: string[]
+  shen_qiang_ruo: GeJuStrength
+  yong_shen: GeJuYongShen | null
+  xiang_shen: GeJuYongShen[]
+  xi_shen: GeJuYongShen[]
+  ji_shen: GeJuYongShen[]
+  disease: GeJuDisease[]
+  remedy: GeJuRemedy | null
+  gao_di: { value: string; reasons: string[]; citations: GeJuCitation[] }
+  conditions: GeJuConditionResult[]
+  citations: GeJuCitation[]
+  open_issues: GeJuOpenIssue[]
+}
+
+export interface GeJuDayunStep {
+  ganzhi: string
+  start_year: number | null
+  start_age_xu: number | null
+  shen_qiang_ruo: GeJuStrength
+  ge: GeJuRef | null
+  change: { type: string | null; reason: string; citation: GeJuCitation | null }
+  diff: { strength: string; xi_ji: string; cheng_po: string; ge: string }
+  yun_xi_ji: { xi: string[]; ji: string[]; citation: GeJuCitation | null }
+  conditions: GeJuConditionResult[]
+  open_issues: GeJuOpenIssue[]
+}
+
+export interface GeJuResponse {
+  engine: 'ziping-geju'
+  rules_version: string
+  input_scope: string
+  degradations: string[]
+  yuanju: GeJuJudgement
+  dayun_steps: GeJuDayunStep[]
+  open_issues: GeJuOpenIssue[]
 }

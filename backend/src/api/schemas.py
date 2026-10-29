@@ -186,3 +186,10 @@ class Dayun2Request(BirthInput):
 
     dayun_ganzhi: str | None = Field(
         default=None, description="只算该步（如 '辛亥'，须是该盘的合法步）；不给则返回全部大运步")
+
+
+class GeJuRequest(BirthInput):
+    """格局喜忌请求（015 期）——出生信息同 `BirthInput`，另可选指定某一步大运。"""
+
+    dayun_ganzhi: str | None = Field(
+        default=None, description="只算该步（如 '壬午'，须是该盘的合法步）；不给则返回全部大运步")

@@ -223,3 +223,18 @@ def record_dayun2(record_id: int, user: CurrentUser, db: DbDep,
         return chart_service.dayun2_conclusion(RecordCreate(**payload), dayun_ganzhi)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.get("/{record_id}/geju")
+def record_geju(record_id: int, user: CurrentUser, db: DbDep,
+                dayun_ganzhi: str | None = None):
+    """**从已保存记录进格局喜忌**（015 期）——按记录输入当场重推，不落库。"""
+    record = _get_owned(db, record_id, user.id)
+    _, payload = _load_result(record, db)
+    if not payload:
+        raise HTTPException(status_code=422,
+                            detail="该记录未保存完整入参，无法重推格局")
+    try:
+        return chart_service.geju_conclusion(RecordCreate(**payload), dayun_ganzhi)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc

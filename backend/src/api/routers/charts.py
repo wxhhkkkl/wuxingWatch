@@ -3,7 +3,8 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response
 
-from api.schemas import BirthInput, Dayun2Request, LiuShiLevel, LiuShiRequest
+from api.schemas import (BirthInput, Dayun2Request, GeJuRequest,
+                         LiuShiLevel, LiuShiRequest)
 from services import chart_service, share_service
 from services.bazi import liushi
 
@@ -56,5 +57,18 @@ def dayun2(payload: Dayun2Request):
     """
     try:
         return chart_service.dayun2_conclusion(payload, payload.dayun_ganzhi)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.post("/geju")
+def geju(payload: GeJuRequest):
+    """**子平格局喜忌**（015 期）——原局与逐步大运的取格/成破/喜忌。
+
+    旺度只提供身强弱（日主组动态，10 度）；规则以相也《格局真诠》为准。
+    **按需实时计算、不落库**。`dayun_ganzhi` 可选：不给则返回全部大运步。
+    """
+    try:
+        return chart_service.geju_conclusion(payload, payload.dayun_ganzhi)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc

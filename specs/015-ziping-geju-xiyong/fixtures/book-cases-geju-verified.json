@@ -1,0 +1,2110 @@
+{
+ "meta": {
+  "source": "相也《格局真诠》（2018）",
+  "note": "100 例人工核对版：逐例读原文，记录作者明确结论与逐字引文；原 103 条中 1 条重复（zhengguan-peiyin-1）、2 条未能在 PDF 正文定位的 curated 样本未计入。",
+  "reviewed_at": "2026-10-29",
+  "rules_version": "70bf2805bb55"
+ },
+ "cases": [
+  {
+   "id": "gold-001",
+   "source": {
+    "chapter": "正官配印格",
+    "section": "正官配印格",
+    "page": "PDF p.20"
+   },
+   "pillars": {
+    "year": "己卯",
+    "month": "辛未",
+    "day": "壬寅",
+    "time": "辛亥"
+   },
+   "book_ge": "正官配印格",
+   "book_verdict": "成格",
+   "book_quote": "金双印护身，正官配印格成。但是地支亥卯未会局，满地伤官，欲破格局。",
+   "book_confidence": "high",
+   "book_note": "亥卯未会局（伤官）为八字最大弊病，双透辛印伏伤为药；作者称“印星有作为，就是八字格高的标志”。",
+   "original_label": "正官配印格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-002",
+   "source": {
+    "chapter": "正官配印格",
+    "section": "正官配印格",
+    "page": "PDF p.20"
+   },
+   "pillars": {
+    "year": "丁丑",
+    "month": "壬寅",
+    "day": "己巳",
+    "time": "丙寅"
+   },
+   "book_ge": "正官配印格",
+   "book_verdict": "成格",
+   "book_quote": "正官配印格。但是，遇伤配印最忌财星，此造年月丁壬相合，财印互碍",
+   "book_confidence": "high",
+   "book_note": "巳丑拱金伤官克官为病，丁火坐丑伏伤；丁壬合虽使财印两失，作者断“不破”，反成清印去财之妙，故为大贵之格。",
+   "original_label": "正官配印格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-003",
+   "source": {
+    "chapter": "正官配印格",
+    "section": "正官配印格",
+    "page": "PDF p.21"
+   },
+   "pillars": {
+    "year": "壬申",
+    "month": "戊申",
+    "day": "乙未",
+    "time": "庚辰"
+   },
+   "book_ge": "正官配印格",
+   "book_verdict": "成格",
+   "book_quote": "月令申中庚壬戊财官星三星齐透，本为极贵之征，格成正官配印",
+   "book_confidence": "high",
+   "book_note": "作者称年干壬印被戊土财克坏、财印互碍为“本命之大忌”，然地支申辰拱合“才使格局未破”；又断其为凶兆、寿命不永。",
+   "original_label": "正官配印格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-005",
+   "source": {
+    "chapter": "正官配印格",
+    "section": "正官配印格",
+    "page": "PDF p.22"
+   },
+   "pillars": {
+    "year": "庚戌",
+    "month": "乙酉",
+    "day": "甲寅",
+    "time": "庚午"
+   },
+   "book_ge": "正官格",
+   "book_verdict": "降格",
+   "book_quote": "甲生酉月，为正官格，但天透两煞",
+   "book_confidence": "medium",
+   "book_note": "作者先言“为正官格”“格局已破”，继而乙庚合煞、寅午戌制煞，双煞皆去、官星清纯；因八字无印，“仍有孤官无辅的味道”（书中以孤官无辅为降格），喜印运方“成就正官配印格”。",
+   "original_label": "正官配印格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-006",
+   "source": {
+    "chapter": "正官配印格",
+    "section": "正官配印格",
+    "page": "PDF p.24"
+   },
+   "pillars": {
+    "year": "戊午",
+    "month": "甲子",
+    "day": "丁酉",
+    "time": "壬寅"
+   },
+   "book_ge": "正官配印格",
+   "book_verdict": "成格",
+   "book_quote": "官格得到完美救应，成正官配印格。",
+   "book_confidence": "high",
+   "book_note": "本为癸水七煞格，壬官独透“煞格变官格”；戊土伤官克官、子午冲本为破格，甲印紧克戊土、寅木遥合午火救应，故成正官配印格。",
+   "original_label": "正官配印格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-007",
+   "source": {
+    "chapter": "正官配印格",
+    "section": "正官配印格",
+    "page": "PDF p.24"
+   },
+   "pillars": {
+    "year": "丙子",
+    "month": "丁酉",
+    "day": "甲申",
+    "time": "丙寅"
+   },
+   "book_ge": "正官配印格",
+   "book_verdict": "成格",
+   "book_quote": "地支申子合印，有印伏伤化官，甲木坐申，能得印生，故为正官配印格。",
+   "book_confidence": "high",
+   "book_note": "天干三透丙丁伤官盖头克官，作者断“不破”：酉月火死、申子合印伏伤化官。后行壬寅、癸卯运破格属行运，不影响原局成格。",
+   "original_label": "正官配印格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-008",
+   "source": {
+    "chapter": "正官配印格",
+    "section": "正官配印格",
+    "page": "PDF p.25"
+   },
+   "pillars": {
+    "year": "乙巳",
+    "month": "甲申",
+    "day": "乙亥",
+    "time": "庚辰"
+   },
+   "book_ge": "正官配印格",
+   "book_verdict": "成格",
+   "book_quote": "格成正官配印。巳火伤官有合申破格之嫌，但有亥印冲巳护功，配印有功。",
+   "book_confidence": "high",
+   "book_note": "月令独官透干，日元自坐亥印、盘根于辰；巳火伤官有合申破格之嫌，亥印冲巳护功，故配印有功。",
+   "original_label": "正官配印格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-009",
+   "source": {
+    "chapter": "正官配印格",
+    "section": "正官配印格",
+    "page": "PDF p.26"
+   },
+   "pillars": {
+    "year": "甲辰",
+    "month": "丙寅",
+    "day": "己酉",
+    "time": "丙寅"
+   },
+   "book_ge": "正官配印格",
+   "book_verdict": "成格",
+   "book_quote": "两印夹之，印星丙火能去食神辛金。那么此命正官配印",
+   "book_confidence": "high",
+   "book_note": "作者引徐伟刚“官星配印，格正局清”并予认可；贵在甲己合、甲丙同根月令、丙印去酉食，且辰为财官、官坐财库暗生官。",
+   "original_label": "正官配印格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-010",
+   "source": {
+    "chapter": "正官配印格",
+    "section": "正官配印格",
+    "page": "PDF p.26"
+   },
+   "pillars": {
+    "year": "辛丑",
+    "month": "乙未",
+    "day": "戊午",
+    "time": "丙辰"
+   },
+   "book_ge": "正官配印格",
+   "book_verdict": "败中有成",
+   "book_quote": "妙在时上丙印合伤护官，格局败中有成，而成正官配印。",
+   "book_confidence": "high",
+   "book_note": "戊生未月透乙为杂气正官格；年柱辛金伤官破官为凶，时上丙印合辛护官，故“败中有成”。壬辰运财坏印则破，辛卯运丙印合辛复救。",
+   "original_label": "正官配印格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-012",
+   "source": {
+    "chapter": "官喜财印格",
+    "section": "官喜财印格",
+    "page": "PDF p.28"
+   },
+   "pillars": {
+    "year": "壬戌",
+    "month": "丁未",
+    "day": "戊申",
+    "time": "乙卯"
+   },
+   "book_ge": "杂气正官格",
+   "book_verdict": "降格",
+   "book_quote": "官星失去辅助，就成孤官无辅。加以卯申暗合，戌未相刑，官根被损",
+   "book_confidence": "high",
+   "book_note": "章节标题为官喜财印格，作者实断年月壬丁紧挨、财印互碍、两失其用，官星失辅而为孤官无辅，“格局层次大降”，沈氏谓“不上七品”。",
+   "original_label": "官喜财印格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-013",
+   "source": {
+    "chapter": "官喜财印格",
+    "section": "官喜财印格",
+    "page": "PDF p.29"
+   },
+   "pillars": {
+    "year": "乙卯",
+    "month": "丙戌",
+    "day": "癸酉",
+    "time": "丙辰"
+   },
+   "book_ge": "官喜财印格",
+   "book_verdict": "成格",
+   "book_quote": "格成官喜财印而贵。",
+   "book_confidence": "high",
+   "book_note": "干头两财坐官生官，无路线克酉金印星，财印互不相碍；辰戌冲、卯酉冲以卯戌合、辰酉合紧贴解之，作者谓“病重药重，不但不破，反再升了贵的层次”。",
+   "original_label": "官喜财印格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-014",
+   "source": {
+    "chapter": "官喜财印格",
+    "section": "官喜财印格",
+    "page": "PDF p.32"
+   },
+   "pillars": {
+    "year": "乙丑",
+    "month": "丁亥",
+    "day": "丁酉",
+    "time": "壬寅"
+   },
+   "book_ge": "官喜财印格",
+   "book_verdict": "成格",
+   "book_quote": "官格成立，丁壬合，为合来官星",
+   "book_confidence": "medium",
+   "book_note": "原文未直点“官喜财印格”之名，只称“有财印相辅”“财印不互碍，无损格局，官格成立”；所述即本节财印相辅之义，故按节名归格。",
+   "original_label": "官喜财印格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-015",
+   "source": {
+    "chapter": "官喜财印格",
+    "section": "官喜财印格",
+    "page": "PDF p.34"
+   },
+   "pillars": {
+    "year": "戊申",
+    "month": "丁巳",
+    "day": "癸酉",
+    "time": "甲寅"
+   },
+   "book_ge": "正官配印格",
+   "book_verdict": "成格",
+   "book_quote": "时柱甲寅，有丁相隔，不克官星，反成生官之具，格成正官配印。",
+   "book_confidence": "high",
+   "book_note": "章节标题为官喜财印格，作者却断“格成正官配印”（丁火财星生官、通关护格），与节名不同；申寅巳三刑以巳酉合解。",
+   "original_label": "官喜财印格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-016",
+   "source": {
+    "chapter": "官喜财生格",
+    "section": "官喜财生格",
+    "page": "PDF p.38"
+   },
+   "pillars": {
+    "year": "乙卯",
+    "month": "丁亥",
+    "day": "丁未",
+    "time": "庚戌"
+   },
+   "book_ge": "官喜财生格",
+   "book_verdict": "成格",
+   "book_quote": "没有伤官、七煞搅局，故最准确的格名叫官喜财生格",
+   "book_confidence": "high",
+   "book_note": "作者明言非正官配印格、亦非官喜财印格：亥卯未三合，印星太多，须庚财损其有余，“最准确的格名叫官喜财生格”；又云“贵就贵在财轻”。",
+   "original_label": "官喜财生格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-018",
+   "source": {
+    "chapter": "官喜财生格",
+    "section": "官喜财生格",
+    "page": "PDF p.41"
+   },
+   "pillars": {
+    "year": "庚辰",
+    "month": "戊子",
+    "day": "丙子",
+    "time": "庚寅"
+   },
+   "book_ge": "官喜财生格",
+   "book_verdict": "成格",
+   "book_quote": "这样，能成的格局就成了官喜财生。",
+   "book_confidence": "high",
+   "book_note": "时支寅木印星被庚财盖头，作者明言“构不成官印相生格”；两子官多，以戊食盖头、子辰合官取清，故成官喜财生格。",
+   "original_label": "官喜财生格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-019",
+   "source": {
+    "chapter": "弃官就食格",
+    "section": "弃官就食格",
+    "page": "PDF p.43"
+   },
+   "pillars": {
+    "year": "甲午",
+    "month": "辛未",
+    "day": "甲戌",
+    "time": "丙寅"
+   },
+   "book_ge": "弃官就食格",
+   "book_verdict": "成格",
+   "book_quote": "甲生未月透丙，月干辛金正官，地支寅午戌三合火局，食伤强旺，八字无印，格成弃官就食。",
+   "book_confidence": "high",
+   "book_note": "原文又云“格大而高，弃尽官星大贵”。",
+   "original_label": "弃官就食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-020",
+   "source": {
+    "chapter": "弃官就食格",
+    "section": "弃官就食格",
+    "page": "PDF p.43"
+   },
+   "pillars": {
+    "year": "癸亥",
+    "month": "己未",
+    "day": "壬寅",
+    "time": "乙巳"
+   },
+   "book_ge": "弃官就食格",
+   "book_verdict": "成格",
+   "book_quote": "地支亥卯合木，亦化官为伤，八字不见袅印，格成弃官就食格。",
+   "book_confidence": "high",
+   "book_note": "原文作“袅印”（枭印之误刻）。又云“弃不尽官星”。",
+   "original_label": "弃官就食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-021",
+   "source": {
+    "chapter": "弃官就食格",
+    "section": "弃官就食格",
+    "page": "PDF p.44"
+   },
+   "pillars": {
+    "year": "壬寅",
+    "month": "丙午",
+    "day": "辛卯",
+    "time": "壬辰"
+   },
+   "book_ge": "弃官就食格",
+   "book_verdict": "成格",
+   "book_quote": "辛生丙午，正官格，但壬水伤官两透，克了丙火官星，地支虽有辰印，但有坐下卯穿，印不生身，也构成了去官就食格",
+   "book_confidence": "high",
+   "book_note": "原文写作“去官就食格”（与章节名“弃官就食格”同格异称），此处归一到章节格名。",
+   "original_label": "弃官就食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-022",
+   "source": {
+    "chapter": "弃官就食格",
+    "section": "弃官就食格",
+    "page": "PDF p.44"
+   },
+   "pillars": {
+    "year": "丙寅",
+    "month": "癸巳",
+    "day": "辛酉",
+    "time": "癸巳"
+   },
+   "book_ge": "弃官就食格",
+   "book_verdict": "成格",
+   "book_quote": "用神太多，正好月时有两个癸水食神盖头克官，无印扰食，财不泄食，格成弃官就食。",
+   "book_confidence": "high",
+   "book_note": "作者明确排除“煞邀食制格”：“故仍以去官就食格论”。壬辰运有印生身时“破格”，属行运，不影响原局成格。",
+   "original_label": "弃官就食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-023",
+   "source": {
+    "chapter": "弃官就食格",
+    "section": "弃官就食格",
+    "page": "PDF p.45"
+   },
+   "pillars": {
+    "year": "甲午",
+    "month": "甲戌",
+    "day": "癸亥",
+    "time": "辛酉"
+   },
+   "book_ge": "弃官就食格",
+   "book_verdict": "成格",
+   "book_quote": "只因甲木伤官高透于官星之上，就有了弃官就食之意，格成弃官就食格。",
+   "book_confidence": "high",
+   "book_note": "作者随后补充“实质成了印绶喜食”，格名仍以弃官就食格为主。",
+   "original_label": "弃官就食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-024",
+   "source": {
+    "chapter": "弃官就食格",
+    "section": "弃官就食格",
+    "page": "PDF p.46"
+   },
+   "pillars": {
+    "year": "壬辰",
+    "month": "戊申",
+    "day": "乙未",
+    "time": "丁亥"
+   },
+   "book_ge": "弃官就食格",
+   "book_verdict": "成格",
+   "book_quote": "弃官就食格，弃不尽官星，更不能为官。好在月令透出戊财，还可与丁火食神成格",
+   "book_confidence": "medium",
+   "book_note": "原文未用“格成/破格”二字，只说“弃不尽官星”“印重食轻，格局就比较高了”；此案后可另接食神吐秀，格名归属略含糊。",
+   "original_label": "弃官就食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-026",
+   "source": {
+    "chapter": "弃官就食格",
+    "section": "弃官就食格",
+    "page": "PDF p.48"
+   },
+   "pillars": {
+    "year": "庚申",
+    "month": "庚辰",
+    "day": "戊辰",
+    "time": "戊午"
+   },
+   "book_ge": "弃官就食格",
+   "book_verdict": "成格",
+   "book_quote": "此命正官格，干透双庚，食神盖头，志在去官，乙庚合就去尽了官星，构成了弃官就食格。",
+   "book_confidence": "high",
+   "book_note": "作者先辨建禄/杂气正官，终定为弃官就食格；“去尽官星为贵”。",
+   "original_label": "弃官就食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-074",
+   "source": {
+    "chapter": "禄劫用官格",
+    "section": "禄劫用官格",
+    "page": "PDF p.372"
+   },
+   "pillars": {
+    "year": "丙戌",
+    "month": "丁酉",
+    "day": "辛酉",
+    "time": "乙未"
+   },
+   "book_ge": "官喜财生格",
+   "book_verdict": "成格",
+   "book_quote": "建禄用官，喜时支乙木财星坐未生官，格成官喜财生。",
+   "book_confidence": "high",
+   "book_note": "原局格成；壬寅运壬水合丁克丙，壬申年申寅冲、申酉戌会金，“财官尽破”而夭。属岁运破格，非原局破格。",
+   "original_label": "阳刃喜食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-004",
+   "source": {
+    "chapter": "正官配印格",
+    "section": "正官配印格",
+    "page": "PDF p.22"
+   },
+   "pillars": {
+    "year": "庚寅",
+    "month": "乙酉",
+    "day": "甲子",
+    "time": "戊辰"
+   },
+   "book_ge": "七煞格",
+   "book_verdict": "成格",
+   "book_quote": "而透庚煞。 “藏官露煞以煞论” ，格成七煞",
+   "book_confidence": "medium",
+   "book_note": "章节标题为正官配印格，作者却据“藏官露煞以煞论”明断“格成七煞”，不属本章标题格；继以乙庚合煞留官、子水化官、辰合酉官为去病之贵征。",
+   "original_label": "正官配印格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-027",
+   "source": {
+    "chapter": "官煞混杂论",
+    "section": "官煞混杂论",
+    "page": "PDF p.50"
+   },
+   "pillars": {
+    "year": "戊申",
+    "month": "己未",
+    "day": "壬子",
+    "time": "辛亥"
+   },
+   "book_ge": "煞印相生格",
+   "book_verdict": "成格",
+   "book_quote": "戊己官煞透于年月，《三命通会》就不按官煞混杂论，而是煞印相生格。",
+   "book_confidence": "high",
+   "book_note": "作者引《三命通会》并认同：官煞透年月两干只以煞论，“不但不破格，还是最贵之造化”。",
+   "original_label": "弃官就食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-029",
+   "source": {
+    "chapter": "官煞混杂论",
+    "section": "官煞混杂论",
+    "page": "PDF p.52"
+   },
+   "pillars": {
+    "year": "辛丑",
+    "month": "丙申",
+    "day": "甲戌",
+    "time": "己巳"
+   },
+   "book_ge": "七煞格",
+   "book_verdict": "成格",
+   "book_quote": "丙辛一合，仍回七煞格原状。煞为凶格。就是合官不贵而无情，正官格又变七煞格，所以贪合忘官，发贵不清。",
+   "book_confidence": "medium",
+   "book_note": "作者只说“破了官格”“仍回七煞格原状”“发贵不清”，未对七煞格下破格断语，故记成格但注明发贵不清。",
+   "original_label": "弃官就食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-033",
+   "source": {
+    "chapter": "官煞混杂论",
+    "section": "官煞混杂论",
+    "page": "PDF p.54"
+   },
+   "pillars": {
+    "year": "甲午",
+    "month": "己巳",
+    "day": "辛酉",
+    "time": "甲午"
+   },
+   "book_ge": "七煞格",
+   "book_verdict": "成格",
+   "book_quote": "其实，此命地支官煞多，但不透官煞，本身就不以混杂论，而只以七煞论。",
+   "book_confidence": "high",
+   "book_note": "作者同意《三命》“不可以混杂为贱论”的结论，但归因于“地支官煞不透，只以七煞论”。",
+   "original_label": "弃官就食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-035",
+   "source": {
+    "chapter": "官煞混杂论",
+    "section": "官煞混杂论",
+    "page": "PDF p.55"
+   },
+   "pillars": {
+    "year": "癸巳",
+    "month": "乙卯",
+    "day": "丙寅",
+    "time": "壬辰"
+   },
+   "book_ge": "煞印相生格",
+   "book_verdict": "成格",
+   "book_quote": "就因年柱癸巳，巳中戊土，戊癸一合，就合掉了癸水正官，去官留煞，就成煞印相生格了。",
+   "book_confidence": "high",
+   "book_note": "",
+   "original_label": "弃官就食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-036",
+   "source": {
+    "chapter": "七煞格总论",
+    "section": "七煞格总论",
+    "page": "PDF p.62"
+   },
+   "pillars": {
+    "year": "癸酉",
+    "month": "辛酉",
+    "day": "乙巳",
+    "time": "丁亥"
+   },
+   "book_ge": "煞邀食制格",
+   "book_verdict": "破格",
+   "book_quote": "海瑞命。仅就命局而言，也是七煞逢食制与印化的两立局面，是个破格。",
+   "book_confidence": "medium",
+   "book_note": "原文作“七煞逢食制与印化的两立局面，是个破格”；己未运“格破复成”，晚年“又得救应”，但原局断为破格。格名按“七煞逢食制”对应煞邀食制格。",
+   "original_label": "弃官就食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-037",
+   "source": {
+    "chapter": "煞印相生格",
+    "section": "煞印相生格",
+    "page": "PDF p.64"
+   },
+   "pillars": {
+    "year": "丙寅",
+    "month": "戊戌",
+    "day": "壬戌",
+    "time": "辛丑"
+   },
+   "book_ge": "煞印相生格",
+   "book_verdict": "成格",
+   "book_quote": "辛金印星通根两戌余气和丑土墓库根，力量不弱，自可一仁可化，构成煞印相生格。",
+   "book_confidence": "high",
+   "book_note": "原文并称“所以为大贵之格”，理由是财印远隔、煞印同根月令。",
+   "original_label": "煞印相生格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-038",
+   "source": {
+    "chapter": "煞印相生格",
+    "section": "煞印相生格",
+    "page": "PDF p.64"
+   },
+   "pillars": {
+    "year": "乙丑",
+    "month": "甲申",
+    "day": "甲辰",
+    "time": "己巳"
+   },
+   "book_ge": "煞印相生格",
+   "book_verdict": "成格",
+   "book_quote": "也属于这种“甲乙生在申，煞印暗相生”的煞印相生格。",
+   "book_confidence": "high",
+   "book_note": "作者并批任铁樵误将此命论为甲己化土格。",
+   "original_label": "煞印相生格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-039",
+   "source": {
+    "chapter": "煞印相生格",
+    "section": "煞印相生格",
+    "page": "PDF p.65"
+   },
+   "pillars": {
+    "year": "乙酉",
+    "month": "甲申",
+    "day": "甲戌",
+    "time": "甲戌"
+   },
+   "book_ge": "煞印相生格",
+   "book_verdict": "成格",
+   "book_quote": "而是“甲乙生在申，煞印暗相生”的煞印格，庚壬都不透，煞印反能生，壬水暗中通关，解了金木交战之势。",
+   "book_confidence": "high",
+   "book_note": "原文作“煞印格”，与章节格同。作者明言非从煞格、非以劫抗煞格；庚寅运寅申冲，“格局倒地”。",
+   "original_label": "煞印相生格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-041",
+   "source": {
+    "chapter": "煞印相生格",
+    "section": "煞印相生格",
+    "page": "PDF p.67"
+   },
+   "pillars": {
+    "year": "己卯",
+    "month": "丁丑",
+    "day": "甲寅",
+    "time": "壬申"
+   },
+   "book_ge": "煞印相生格",
+   "book_verdict": "成格",
+   "book_quote": "壬印自坐长生，煞印相生，有文武兼备之才。",
+   "book_confidence": "high",
+   "book_note": "原文兼取“时上一位独煞为贵”；财星己土截脚、坐阳刃无力坏印。",
+   "original_label": "煞印相生格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-042",
+   "source": {
+    "chapter": "煞印相生格",
+    "section": "煞印相生格",
+    "page": "PDF p.68"
+   },
+   "pillars": {
+    "year": "壬辰",
+    "month": "庚戌",
+    "day": "甲申",
+    "time": "甲戌"
+   },
+   "book_ge": "煞印相生格",
+   "book_verdict": "成格",
+   "book_quote": "全靠年干壬水化煞生身。壬水坐库，通申金长生，有能力化煞生身，格成煞印相生。",
+   "book_confidence": "high",
+   "book_note": "原文接着断“但格局不高”；原局辰戌冲、财坏印为隐患，乙卯运“煞印相生格破了”。",
+   "original_label": "煞印相生格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-044",
+   "source": {
+    "chapter": "煞印相生格",
+    "section": "煞印相生格",
+    "page": "PDF p.70"
+   },
+   "pillars": {
+    "year": "庚子",
+    "month": "庚辰",
+    "day": "甲午",
+    "time": "己巳"
+   },
+   "book_ge": "煞印相生格",
+   "book_verdict": "成格",
+   "book_quote": "印绶化煞，格局由财转印，层次立升，煞印相生。",
+   "book_confidence": "high",
+   "book_note": "原文并云“—化—制，食印不碍，制化得宜，格成而高”，即煞印与食制并存而不碍。",
+   "original_label": "煞印相生格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-045",
+   "source": {
+    "chapter": "煞印相生格",
+    "section": "煞印相生格",
+    "page": "PDF p.71"
+   },
+   "pillars": {
+    "year": "甲午",
+    "month": "壬申",
+    "day": "甲申",
+    "time": "乙丑"
+   },
+   "book_ge": "煞印相生格",
+   "book_verdict": "成格",
+   "book_quote": "壬坐长生，印星有力，格成煞印相生。",
+   "book_confidence": "high",
+   "book_note": "戊寅运财坏印、寅申冲提，“坏了格局”，属岁运层面。",
+   "original_label": "煞印相生格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-046",
+   "source": {
+    "chapter": "煞印相生格",
+    "section": "煞印相生格",
+    "page": "PDF p.72"
+   },
+   "pillars": {
+    "year": "癸酉",
+    "month": "丁巳",
+    "day": "甲子",
+    "time": "戊辰"
+   },
+   "book_ge": "煞印相生格",
+   "book_verdict": "成格",
+   "book_quote": "地支子辰合而透癸，癸水克丁，伤不制煞，子辰合而化煞，就构成了煞印相生格。",
+   "book_confidence": "high",
+   "book_note": "原局有戊癸遥合“财星坏印之患”；丙辰运“格格不成”，乙卯甲寅“制化两立”不成，入癸丑运后煞印得力，辛运“格正局清”，亥运“濒临破格”。",
+   "original_label": "煞印相生格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-047",
+   "source": {
+    "chapter": "煞邀食制格",
+    "section": "煞邀食制格",
+    "page": "PDF p.76"
+   },
+   "pillars": {
+    "year": "乙亥",
+    "month": "乙酉",
+    "day": "乙卯",
+    "time": "丁丑"
+   },
+   "book_ge": "煞邀食制格",
+   "book_verdict": "成格",
+   "book_quote": "大运自未后一路行南东，运助火旺，制煞的力量变强，三个条件都满足，当然形成了“丁火刚，秋木盛”的贵格。",
+   "book_confidence": "medium",
+   "book_note": "原文未直呼格名，只称“贵格”；“三个条件”即本节煞旺、食强、身健，故归煞邀食制（原文亦作煞用食制）。又云“原局中丁火并没直接制到月令七煞，显贵之机，必在煞透之时”。其后所列曾国藩等十二命造无独立 id，原文统称“煞用食制的武贵命格”。",
+   "original_label": "煞邀食制格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-048",
+   "source": {
+    "chapter": "煞邀食制格",
+    "section": "煞邀食制格",
+    "page": "PDF p.79"
+   },
+   "pillars": {
+    "year": "己酉",
+    "month": "丙子",
+    "day": "丙辰",
+    "time": "己亥"
+   },
+   "book_ge": "煞邀食制格",
+   "book_verdict": "破格",
+   "book_quote": "就因为酉金泄土生水破了格局，辰酉合金亦生官煞，原本依靠己土伤官去制煞",
+   "book_confidence": "high",
+   "book_note": "原文：七煞“基本上处在了无制的状态”，“八字不及格”。同段袁树珊造（辛巳丁酉乙巳戊寅）亦因财星泄食生煞破格，但无独立 id。",
+   "original_label": "煞邀食制格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-049",
+   "source": {
+    "chapter": "煞邀食制格",
+    "section": "煞邀食制格",
+    "page": "PDF p.79"
+   },
+   "pillars": {
+    "year": "丙戌",
+    "month": "壬辰",
+    "day": "丙申",
+    "time": "丙申"
+   },
+   "book_ge": "煞邀食制格",
+   "book_verdict": "成格",
+   "book_quote": "此造壬煞独旺，靠辰戌冲而制煞，属于煞邀食制格。土越冲越旺，故食制煞有力。",
+   "book_confidence": "high",
+   "book_note": "作者批徐乐吾自解取印为用；原局“病在申辰拱合，乙庚合金，财星滋煞”，制煞偏轻，戊戌运冲提纲、戊子年亡。",
+   "original_label": "煞邀食制格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-050",
+   "source": {
+    "chapter": "煞邀食制格",
+    "section": "煞邀食制格",
+    "page": "PDF p.81"
+   },
+   "pillars": {
+    "year": "丁巳",
+    "month": "己酉",
+    "day": "丙辰",
+    "time": "壬辰"
+   },
+   "book_ge": "煞邀食制格",
+   "book_verdict": "成格",
+   "book_quote": "时上一位独煞，月干有伤官制之，煞伤均有根，格成煞邀食制。",
+   "book_confidence": "high",
+   "book_note": "原局己土坐酉本应泄食生煞，因辰土间隔、巳酉不能合化，“这样就保住了格局”。",
+   "original_label": "煞邀食制格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-051",
+   "source": {
+    "chapter": "煞邀食制格",
+    "section": "煞邀食制格",
+    "page": "PDF p.81"
+   },
+   "pillars": {
+    "year": "壬辰",
+    "month": "甲辰",
+    "day": "丙戌",
+    "time": "戊戌"
+   },
+   "book_ge": "煞邀食制格",
+   "book_verdict": "成格",
+   "book_quote": "丙生辰月，壬煞透年，戊食神本气也透",
+   "book_confidence": "high",
+   "book_note": "原文作“煞用食制”，与本节目同格异名；又称此造“为弃食就煞印”，因食神五重、印星制食化煞。",
+   "original_label": "煞邀食制格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-052",
+   "source": {
+    "chapter": "煞邀食制格",
+    "section": "煞邀食制格",
+    "page": "PDF p.82"
+   },
+   "pillars": {
+    "year": "壬午",
+    "month": "癸卯",
+    "day": "己巳",
+    "time": "辛未"
+   },
+   "book_ge": "煞邀食制格",
+   "book_verdict": "败中有成",
+   "book_quote": "财先食后，先破后成，大贵之征也。",
+   "book_confidence": "high",
+   "book_note": "作者以“财先食后，先破后成”断其大贵，即财党煞在前、食制煞在后之救应。",
+   "original_label": "煞邀食制格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-053",
+   "source": {
+    "chapter": "煞邀食制格",
+    "section": "煞邀食制格",
+    "page": "PDF p.84"
+   },
+   "pillars": {
+    "year": "癸巳",
+    "month": "甲子",
+    "day": "丁酉",
+    "time": "甲辰"
+   },
+   "book_ge": "煞邀食制格",
+   "book_verdict": "成格",
+   "book_quote": "毛八字压根不是什么煞印格，而是煞邀食制格。",
+   "book_confidence": "high",
+   "book_note": "作者明确否定众家所论煞印格；又云“毛的八字是煞用食制加煞印相生”，原局以巳中戊土伤官合制子中癸煞。",
+   "original_label": "煞邀食制格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-054",
+   "source": {
+    "chapter": "煞邀食制格",
+    "section": "煞邀食制格",
+    "page": "PDF p.86"
+   },
+   "pillars": {
+    "year": "己未",
+    "month": "癸酉",
+    "day": "丁巳",
+    "time": "丁未"
+   },
+   "book_ge": "煞邀食制格",
+   "book_verdict": "成格",
+   "book_quote": "月令财星生煞，而邀食神制之，格成煞邀食制。",
+   "book_confidence": "high",
+   "book_note": "原文“病在七煞无根，大权不久”；卯运制化两立、卯未冲酉，“格局大破”。",
+   "original_label": "煞邀食制格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-055",
+   "source": {
+    "chapter": "煞邀食制格",
+    "section": "煞邀食制格",
+    "page": "PDF p.87"
+   },
+   "pillars": {
+    "year": "己丑",
+    "month": "癸酉",
+    "day": "丁卯",
+    "time": "辛丑"
+   },
+   "book_ge": "煞邀食制格",
+   "book_verdict": "破格",
+   "book_quote": "丑土变金，天干己土就无力制煞，而成生煞之金了，这就叫“食神党煞，破格了。",
+   "book_confidence": "high",
+   "book_note": "原文另云“坐下卯印被酉金冲伤……煞印格不成”；与袁世凯造只差年支丑/未。",
+   "original_label": "煞邀食制格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-056",
+   "source": {
+    "chapter": "以劫合煞格",
+    "section": "以劫合煞格",
+    "page": "PDF p.90"
+   },
+   "pillars": {
+    "year": "戊辰",
+    "month": "甲寅",
+    "day": "戊寅",
+    "time": "戊午"
+   },
+   "book_ge": "以劫合煞格",
+   "book_verdict": "成格",
+   "book_quote": "午中己土阳刃合寅中甲木，以劫合煞而格成。",
+   "book_confidence": "high",
+   "book_note": "赵员外命。原文先定“七煞格”，无食制，取时上午火阳刃抵煞，明言“以劫合煞而格成”。原文评“虽然不为完美大贵”，是对大运的评语，未言降格。",
+   "original_label": "以劫合煞格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-057",
+   "source": {
+    "chapter": "以劫合煞格",
+    "section": "以劫合煞格",
+    "page": "PDF p.95"
+   },
+   "pillars": {
+    "year": "丁未",
+    "month": "壬子",
+    "day": "丙辰",
+    "time": "庚寅"
+   },
+   "book_ge": "以劫合煞格",
+   "book_verdict": "成格",
+   "book_quote": "只能以年干丁火合煞，构成以劫合煞格。",
+   "book_confidence": "high",
+   "book_note": "甘为霖命。原文：寅木被庚盖头，印星己伤，煞印格不成，故以丁火合煞。又言“总体反成制重煞轻，喜西方财星滋煞……故格大而高”；丙午运天克地冲破提纲，属岁运破格，非原局破格。",
+   "original_label": "以劫合煞格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-058",
+   "source": {
+    "chapter": "以劫合煞格",
+    "section": "以劫合煞格",
+    "page": "PDF p.95"
+   },
+   "pillars": {
+    "year": "乙未",
+    "month": "庚辰",
+    "day": "甲戌",
+    "time": "庚午"
+   },
+   "book_ge": "以劫合煞格",
+   "book_verdict": "成格",
+   "book_quote": "甲便以乙妹妻庚，格成以劫合煞格。",
+   "book_confidence": "high",
+   "book_note": "余朝贵命。原文：“财旺生煞，逢煞看印而无印……格成以劫合煞格。八字财煞重而劫轻，则喜印比之运。”",
+   "original_label": "以劫合煞格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-059",
+   "source": {
+    "chapter": "财滋弱煞格",
+    "section": "财滋弱煞格",
+    "page": "PDF p.97"
+   },
+   "pillars": {
+    "year": "戊戌",
+    "month": "甲子",
+    "day": "丁未",
+    "time": "庚戌"
+   },
+   "book_ge": "煞邀食制格",
+   "book_verdict": "成格",
+   "book_quote": "使煞邀食制格重新成立。",
+   "book_confidence": "high",
+   "book_note": "周丞相命。原文先言“格成煞邀食制”，甲印制食坏格，庚财“去印存食”救应，故“亦叫财滋弱煞格”；但作者结论明确：“最终的格局仍然是煞用食制格”，且称“严格地说，七煞格中没有财滋弱煞格”。另原文“忌神是印星，用神是财星”。",
+   "original_label": "财滋弱煞格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-060",
+   "source": {
+    "chapter": "财滋弱煞格",
+    "section": "财滋弱煞格",
+    "page": "PDF p.98"
+   },
+   "pillars": {
+    "year": "甲申",
+    "month": "乙亥",
+    "day": "丙戌",
+    "time": "庚寅"
+   },
+   "book_ge": "煞印相生格",
+   "book_verdict": "成格",
+   "book_quote": "月令一位独煞，亥中甲印透干，格成煞印相生。",
+   "book_confidence": "low",
+   "book_note": "子平“身重煞轻，煞又化印，用神不清，借财以清格”之例。原文先定“格成煞印相生”，庚财因丙隔未坏印，用财损印清格，故列于财滋弱煞格；结语又称此类仍按煞邀食制或煞印相生格论。格名双属（煞印相生格/财滋弱煞格），故 confidence 记 low。",
+   "original_label": "财滋弱煞格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-082",
+   "source": {
+    "chapter": "劫禄用煞格",
+    "section": "劫禄用煞格",
+    "page": "PDF p.380"
+   },
+   "pillars": {
+    "year": "丁巳",
+    "month": "壬子",
+    "day": "癸卯",
+    "time": "己未"
+   },
+   "book_ge": "煞邀食制格",
+   "book_verdict": "成格",
+   "book_quote": "八字的弊病虽然很多，但是分两个阶段被一一克服，所以最后成了煞邀食制的贵格。",
+   "book_confidence": "high",
+   "book_note": "娄参政命。财星丁火党煞为病，丁壬合去财，卯未半合制煞，“釜底抽薪”，先病后药而格成。",
+   "original_label": "阳刃喜食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-096",
+   "source": {
+    "chapter": "禄劫用财格",
+    "section": "禄劫用财格",
+    "page": "PDF p.388"
+   },
+   "pillars": {
+    "year": "庚寅",
+    "month": "戊寅",
+    "day": "甲子",
+    "time": "丙寅"
+   },
+   "book_ge": "财喜食生格",
+   "book_verdict": "成格",
+   "book_quote": "就因为月令中还透出丙食戊财，这个禄劫格，就变成了财喜食生格。",
+   "book_confidence": "high",
+   "book_note": "陈济棠命。原文：“不以七煞破格论，反以用财喜煞论。但他的贵气不在七煞，而在于财星。”即月令透财，不以劫论。",
+   "original_label": "禄劫用财格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-097",
+   "source": {
+    "chapter": "禄劫用财格",
+    "section": "禄劫用财格",
+    "page": "PDF p.388"
+   },
+   "pillars": {
+    "year": "庚戌",
+    "month": "戊寅",
+    "day": "甲寅",
+    "time": "甲戌"
+   },
+   "book_ge": "财喜食生格",
+   "book_verdict": "破格",
+   "book_quote": "但时干甲木比劫克财，而庚煞又不制比劫，却因一个七煞破格了。",
+   "book_confidence": "high",
+   "book_note": "原文：“因为戊土从月令透出，也不能叫建禄格，而是财格……庚金坐的是戌土，反成了财星党煞……命主就成一个普通的农民。”",
+   "original_label": "禄劫用财格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-011",
+   "source": {
+    "chapter": "官喜财印格",
+    "section": "官喜财印格",
+    "page": "PDF p.27"
+   },
+   "pillars": {
+    "year": "甲申",
+    "month": "壬申",
+    "day": "乙巳",
+    "time": "戊寅"
+   },
+   "book_ge": "印赖官生格",
+   "book_verdict": "成格",
+   "book_quote": "印星壬水通源，便成印懒官生格。",
+   "book_confidence": "medium",
+   "book_note": "原文作“印懒官生格”（“赖”之讹，此处归一到“印赖官生格”）。作者不取沈氏正官立格，亦不同于章节的官喜财印，明言“就应以透干印星立格”；又云“官星不透，印格立格，贵气不足”，疑薛相公仅为秀才。",
+   "original_label": "官喜财印格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-025",
+   "source": {
+    "chapter": "弃官就食格",
+    "section": "弃官就食格",
+    "page": "PDF p.47"
+   },
+   "pillars": {
+    "year": "壬申",
+    "month": "丙午",
+    "day": "辛亥",
+    "time": "己丑"
+   },
+   "book_ge": "印绶喜食格",
+   "book_verdict": "成格",
+   "book_quote": "只能以月令己土立印格，取印绶喜食格。喻示命主只有秀气，没有贵气",
+   "book_confidence": "high",
+   "book_note": "关键差异：先立弃官就食格，但印星碍食护官、官弃不尽，作者最终改判“印绶喜食格”，非章节名之格。",
+   "original_label": "弃官就食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-034",
+   "source": {
+    "chapter": "官煞混杂论",
+    "section": "官煞混杂论",
+    "page": "PDF p.54"
+   },
+   "pillars": {
+    "year": "癸丑",
+    "month": "乙卯",
+    "day": "丙午",
+    "time": "壬辰"
+   },
+   "book_ge": "正印格",
+   "book_verdict": "破格",
+   "book_quote": "其命理原因只有一个，官煞混杂。正印格八字，年时癸壬官煞皆透，天干无食神合官，",
+   "book_confidence": "medium",
+   "book_note": "原文未用“破格”二字，结论是“就因为官煞混杂，去留不清”，与 gold-035 成煞印相生格相对照。",
+   "original_label": "弃官就食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-080",
+   "source": {
+    "chapter": "禄劫用官格",
+    "section": "禄劫用官格",
+    "page": "PDF p.377"
+   },
+   "pillars": {
+    "year": "壬申",
+    "month": "丁未",
+    "day": "丁亥",
+    "time": "甲辰"
+   },
+   "book_ge": "印赖官生格",
+   "book_verdict": "破格",
+   "book_quote": "不是。因为亥一合而透甲，劫格就变了印格，而成了印赖官生格。但是丁壬一合，官星就破了。",
+   "book_confidence": "high",
+   "book_note": "原文否定其为“禄劫用官的贵命”，判为印赖官生格而官星被合破；戊申运戊土克壬、申绝甲，“大破印绶用官”，早夭。",
+   "original_label": "阳刃喜食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-017",
+   "source": {
+    "chapter": "官喜财生格",
+    "section": "官喜财生格",
+    "page": "PDF p.39"
+   },
+   "pillars": {
+    "year": "壬申",
+    "month": "丁未",
+    "day": "丁未",
+    "time": "己酉"
+   },
+   "book_ge": "食神生财格（兼官喜财生，双格并存）",
+   "book_verdict": "成格",
+   "book_quote": "因丁生未月，丁己皆透，故以本气己土立格，时柱己酉无伤，食神生财格成",
+   "book_confidence": "high",
+   "book_note": "作者明言双格并存：年月按“有官先看官”为官喜财生格；按月令本气己土立格为食神生财格。主格取食神生财。",
+   "original_label": "官喜财生格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-068",
+   "source": {
+    "chapter": "阳刃喜食格",
+    "section": "阳刃喜食格",
+    "page": "PDF p.362"
+   },
+   "pillars": {
+    "year": "壬申",
+    "month": "辛亥",
+    "day": "壬午",
+    "time": "丙午"
+   },
+   "book_ge": "食神生财格",
+   "book_verdict": "成格",
+   "book_quote": "其八字月令亥中有甲木食神，就是食伤生财格",
+   "book_confidence": "high",
+   "book_note": "作者明确否定‘月劫用财格’，判为食伤生财格；又谓‘大运透清就成格，不透就不成格’，原局食神藏亥，故成格待运。章节标题为阳刃喜食，但作者结论是食神生财。",
+   "original_label": "阳刃喜食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-069",
+   "source": {
+    "chapter": "阳刃喜食格",
+    "section": "阳刃喜食格",
+    "page": "PDF p.362"
+   },
+   "pillars": {
+    "year": "丙寅",
+    "month": "甲午",
+    "day": "丁酉",
+    "time": "乙巳"
+   },
+   "book_ge": "食神生财格",
+   "book_verdict": "成格",
+   "book_quote": "月令午中有己土食神，就论食神生财格",
+   "book_confidence": "high",
+   "book_note": "作者明确判食神生财格，非阳刃喜食；张神峰云酉运发富数百万。",
+   "original_label": "阳刃喜食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-086",
+   "source": {
+    "chapter": "劫禄用煞格",
+    "section": "劫禄用煞格",
+    "page": "PDF p.383"
+   },
+   "pillars": {
+    "year": "戊戌",
+    "month": "甲寅",
+    "day": "甲申",
+    "time": "庚申"
+   },
+   "book_ge": "食伤制煞格",
+   "book_verdict": "成格",
+   "book_quote": "因为年月戌寅拱火，月令参与了合化，禄劫格就变成了食伤格，禄劫用煞就变成食伤制煞",
+   "book_confidence": "low",
+   "book_note": "女命。原文表面判“很好的禄劫用煞格，便是贵格”，随即否定，改为食伤制煞格；“煞重”“有财星党煞”“食伤无气，无力制煞”，命主为普通女工。原文未明言成或破，仅言平凡，故存疑。",
+   "original_label": "阳刃喜食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-087",
+   "source": {
+    "chapter": "劫禄用煞格",
+    "section": "劫禄用煞格",
+    "page": "PDF p.383"
+   },
+   "pillars": {
+    "year": "戊戌",
+    "month": "乙卯",
+    "day": "甲申",
+    "time": "庚申"
+   },
+   "book_ge": "伤官制煞格",
+   "book_verdict": "成格",
+   "book_quote": "也是因为年月戌卯合火，这叫“化刃为伤”，便成伤官制煞格了",
+   "book_confidence": "medium",
+   "book_note": "女命。原文否定阳刃用煞之美，判为“化刃为伤”的伤官制煞格，食伤制煞成技术而富贵不显（“走水运，食伤无气……所以不发财，更不会当官”），未言破格。",
+   "original_label": "阳刃喜食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-079",
+   "source": {
+    "chapter": "禄劫用官格",
+    "section": "禄劫用官格",
+    "page": "PDF p.377"
+   },
+   "pillars": {
+    "year": "壬子",
+    "month": "丁未",
+    "day": "丁巳",
+    "time": "戊申"
+   },
+   "book_ge": "伤官生财格",
+   "book_verdict": "破格",
+   "book_quote": "戊土伤官就会克官，破了官格，自然也就失去了贵气。只能取伤官生财格。",
+   "book_confidence": "medium",
+   "book_note": "原禄劫用官格被戊土伤官克破，改取伤官生财格；但“申子合，财又生官，弃官不尽，格局就很低了”，乙亥年印局合成，伤官生财亦破。",
+   "original_label": "阳刃喜食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-032",
+   "source": {
+    "chapter": "官煞混杂论",
+    "section": "官煞混杂论",
+    "page": "PDF p.54"
+   },
+   "pillars": {
+    "year": "壬辰",
+    "month": "丙午",
+    "day": "丙辰",
+    "time": "癸巳"
+   },
+   "book_ge": "阳刃用煞格",
+   "book_verdict": "成格",
+   "book_quote": "妙癸巳，巳中有戊，官从戊化，去官留煞，阳刃用煞格成，则德秀兼备。",
+   "book_confidence": "high",
+   "book_note": "",
+   "original_label": "弃官就食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-061",
+   "source": {
+    "chapter": "阳刃喜食格",
+    "section": "阳刃喜食格",
+    "page": "PDF p.357"
+   },
+   "pillars": {
+    "year": "甲申",
+    "month": "丙子",
+    "day": "壬寅",
+    "time": "辛亥"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_verdict": "成格",
+   "book_quote": "格成阳刃喜食格。食财皆为日支所藏，我宫之物，为我所得",
+   "book_confidence": "high",
+   "book_note": "壬生子月，子申会水；八字无官煞，寅木食神泄刃，丙财为相。",
+   "original_label": "阳刃喜食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-062",
+   "source": {
+    "chapter": "阳刃喜食格",
+    "section": "阳刃喜食格",
+    "page": "PDF p.357"
+   },
+   "pillars": {
+    "year": "丙寅",
+    "month": "庚子",
+    "day": "壬辰",
+    "time": "壬寅"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_verdict": "成格",
+   "book_quote": "只能取寅木食神为用神，年干丙火财星为相神",
+   "book_confidence": "medium",
+   "book_note": "作者未直书‘格成’，但明确取食神为用、财为相；辰土七煞被子辰合水化去，故不能取辰土为用。",
+   "original_label": "阳刃喜食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-063",
+   "source": {
+    "chapter": "阳刃喜食格",
+    "section": "阳刃喜食格",
+    "page": "PDF p.358"
+   },
+   "pillars": {
+    "year": "丁卯",
+    "month": "壬子",
+    "day": "壬申",
+    "time": "甲辰"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_verdict": "成格",
+   "book_quote": "构成了阳刃喜食格",
+   "book_confidence": "high",
+   "book_note": "申子辰三合水局化煞为刃，食神甲木透时，卯木泄刃。",
+   "original_label": "阳刃喜食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-064",
+   "source": {
+    "chapter": "阳刃喜食格",
+    "section": "阳刃喜食格",
+    "page": "PDF p.358"
+   },
+   "pillars": {
+    "year": "戊寅",
+    "month": "乙卯",
+    "day": "甲寅",
+    "time": "丁卯"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_verdict": "成格",
+   "book_quote": "食伤吐秀，格成阳刃喜食伤",
+   "book_confidence": "high",
+   "book_note": "甲生卯月，支全劫刃，不见官煞；丁火伤官吐秀。",
+   "original_label": "阳刃喜食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-065",
+   "source": {
+    "chapter": "阳刃喜食格",
+    "section": "阳刃喜食格",
+    "page": "PDF p.359"
+   },
+   "pillars": {
+    "year": "戊寅",
+    "month": "乙卯",
+    "day": "甲午",
+    "time": "甲戌"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_verdict": "成格",
+   "book_quote": "就可取阳刃喜食伤格。可惜，火旺木焚",
+   "book_confidence": "high",
+   "book_note": "顺治帝造。格成而火旺木焚，作者判为夭折之命，成格不等于吉。",
+   "original_label": "阳刃喜食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-066",
+   "source": {
+    "chapter": "阳刃喜食格",
+    "section": "阳刃喜食格",
+    "page": "PDF p.360"
+   },
+   "pillars": {
+    "year": "己卯",
+    "month": "丁卯",
+    "day": "甲寅",
+    "time": "丙寅"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_verdict": "降格",
+   "book_quote": "这样的食伤生财，就成了空架子，格很低",
+   "book_confidence": "medium",
+   "book_note": "作者先说‘阳刃喜食伤吐秀的八字’，随即因丁火生己土财星、卯月土死，判不能构成食伤吐秀格，格很低。",
+   "original_label": "阳刃喜食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-067",
+   "source": {
+    "chapter": "阳刃喜食格",
+    "section": "阳刃喜食格",
+    "page": "PDF p.360"
+   },
+   "pillars": {
+    "year": "丁未",
+    "month": "壬子",
+    "day": "壬寅",
+    "time": "壬寅"
+   },
+   "book_ge": "阳刃喜食格",
+   "book_verdict": "降格",
+   "book_quote": "食重刃轻，格局随之更低",
+   "book_confidence": "high",
+   "book_note": "道安法师。未中乙木伤官克官，不能用官；只能取阳刃喜食格，食重刃轻，格局低。",
+   "original_label": "阳刃喜食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-075",
+   "source": {
+    "chapter": "禄劫用官格",
+    "section": "禄劫用官格",
+    "page": "PDF p.372"
+   },
+   "pillars": {
+    "year": "甲寅",
+    "month": "庚午",
+    "day": "丙寅",
+    "time": "癸巳"
+   },
+   "book_ge": "阳刃用官格",
+   "book_verdict": "成格",
+   "book_quote": "丙生午月，劫禄用官格，时干一位独官，得庚金财星相生，构成阳刃用官格，格局未破。",
+   "book_confidence": "high",
+   "book_note": "允礽命。原文：“格局未破。但是官星失令又无根”；甲戌运甲庚冲损相神财星而再废。",
+   "original_label": "阳刃喜食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-031",
+   "source": {
+    "chapter": "官煞混杂论",
+    "section": "官煞混杂论",
+    "page": "PDF p.54"
+   },
+   "pillars": {
+    "year": "癸酉",
+    "month": "丁巳",
+    "day": "丙午",
+    "time": "壬辰"
+   },
+   "book_ge": "建禄用官格",
+   "book_verdict": "成格",
+   "book_quote": "丁火劫财亦透，丁壬相合，以劫合煞，“去煞留官”，格成建禄用官格。",
+   "book_confidence": "high",
+   "book_note": "作者批评任铁樵“身旺必要官煞混杂”之论，明言格局已成。",
+   "original_label": "弃官就食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-070",
+   "source": {
+    "chapter": "禄劫用官格",
+    "section": "禄劫用官格",
+    "page": "PDF p.370"
+   },
+   "pillars": {
+    "year": "庚戌",
+    "month": "戊子",
+    "day": "癸酉",
+    "time": "癸亥"
+   },
+   "book_ge": "建禄用官（官印相生）格",
+   "book_verdict": "成格",
+   "book_quote": "癸生子月，建禄格。逢劫看官，月干高透正官戊土，即为建禄用官格。逢官看印，庚印透于年干，官印齐透",
+   "book_confidence": "high",
+   "book_note": "金丞相命。原文又评“建禄格的正官配印格……所以为大贵之格”。",
+   "original_label": "阳刃喜食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-071",
+   "source": {
+    "chapter": "禄劫用官格",
+    "section": "禄劫用官格",
+    "page": "PDF p.370"
+   },
+   "pillars": {
+    "year": "乙巳",
+    "month": "丙戌",
+    "day": "戊申",
+    "time": "丁巳"
+   },
+   "book_ge": "禄劫用官（印护）格",
+   "book_verdict": "成格",
+   "book_quote": "戊土生在戌月，天干透乙丙，禄劫格用官印",
+   "book_confidence": "high",
+   "book_note": "原文：“只是官轻无根且印重，格局的层次很低，所以只做了个村里的支部书记。”格成而层次低，未言破格。",
+   "original_label": "阳刃喜食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-072",
+   "source": {
+    "chapter": "禄劫用官格",
+    "section": "禄劫用官格",
+    "page": "PDF p.370"
+   },
+   "pillars": {
+    "year": "庚申",
+    "month": "己卯",
+    "day": "乙巳",
+    "time": "癸未"
+   },
+   "book_ge": "建禄用官（正官配印）格",
+   "book_verdict": "成中有败",
+   "book_quote": "财官印三星皆伤而无力，格局似成而非成也",
+   "book_confidence": "medium",
+   "book_note": "原文先说“本是很好的正官配印格”，后因卯月土死、癸水无根被泄、巳合申，判“三星皆伤而无力，格局似成而非成”；午运巳午未会火“伤官破格”。原局介于成/不成之间，故填成中有败。",
+   "original_label": "阳刃喜食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-076",
+   "source": {
+    "chapter": "禄劫用官格",
+    "section": "禄劫用官格",
+    "page": "PDF p.373"
+   },
+   "pillars": {
+    "year": "庚午",
+    "month": "戊子",
+    "day": "癸卯",
+    "time": "丁巳"
+   },
+   "book_ge": "禄劫用官（三奇）格",
+   "book_verdict": "成格",
+   "book_quote": "官星戊土透月干，有巳午坐根，年干有印，时干有财，财印因官星隔之，互不相碍，身强而配三奇",
+   "book_confidence": "high",
+   "book_note": "原文：“三奇皆有气有根，财印不相碍，故贵。不过年月午子冲，月日子卯刑是为瑕疵，有损贵气。”仍判成格。",
+   "original_label": "阳刃喜食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-077",
+   "source": {
+    "chapter": "禄劫用官格",
+    "section": "禄劫用官格",
+    "page": "PDF p.374"
+   },
+   "pillars": {
+    "year": "丁丑",
+    "month": "癸卯",
+    "day": "乙巳",
+    "time": "丙子"
+   },
+   "book_ge": "禄劫用官格",
+   "book_verdict": "成格",
+   "book_quote": "格成禄劫用官，丑中己土财星生官，印星癸水护官，财印两不相碍，格成而高，大贵。",
+   "book_confidence": "high",
+   "book_note": "颜惠庆命。原文：“这个八字没有明官，喜地支巳丑拱金，拱出之官也能用”；丙申运“伤官克官，破格”属岁运。",
+   "original_label": "阳刃喜食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-078",
+   "source": {
+    "chapter": "禄劫用官格",
+    "section": "禄劫用官格",
+    "page": "PDF p.376"
+   },
+   "pillars": {
+    "year": "壬辰",
+    "month": "丁未",
+    "day": "丁未",
+    "time": "戊申"
+   },
+   "book_ge": "禄劫用官（官用财印）格",
+   "book_verdict": "成中有败",
+   "book_quote": "故不以破格论。破而未破，格局层次就比胡低了好多。",
+   "book_confidence": "medium",
+   "book_note": "石经阁命。原文先问“伤官克官，不破格吗？破”，终判“破而未破”，层次低于胡林翼，故填成中有败。",
+   "original_label": "阳刃喜食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-081",
+   "source": {
+    "chapter": "禄劫用官格",
+    "section": "禄劫用官格",
+    "page": "PDF p.378"
+   },
+   "pillars": {
+    "year": "己酉",
+    "month": "乙亥",
+    "day": "壬戌",
+    "time": "庚子"
+   },
+   "book_ge": "建禄用官（武贵）格",
+   "book_verdict": "成格",
+   "book_quote": "妙在时干庚金印星合住伤官乙木，解救了官星己土，印合伤而日元坐煞，所以为武贵格。",
+   "book_confidence": "high",
+   "book_note": "原文：“虽然成格，但就有了孤官无辅的味道，学业不就，只能当兵从武。”",
+   "original_label": "阳刃喜食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-083",
+   "source": {
+    "chapter": "劫禄用煞格",
+    "section": "劫禄用煞格",
+    "page": "PDF p.380"
+   },
+   "pillars": {
+    "year": "乙酉",
+    "month": "庚辰",
+    "day": "甲寅",
+    "time": "己巳"
+   },
+   "book_ge": "劫禄用煞（以劫合煞）格",
+   "book_verdict": "成格",
+   "book_quote": "月令透出乙木劫财，得庚金七煞合制，格成劫禄格用煞。",
+   "book_confidence": "high",
+   "book_note": "齐燮元命。原文：“乙为甲刃，煞刃双显，以劫合煞，以煞制劫……煞为用，劫为相，以财为喜，以破合争合之比劫为忌。”大运入甲庚甲冲“大破格局”属岁运。",
+   "original_label": "阳刃喜食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-084",
+   "source": {
+    "chapter": "劫禄用煞格",
+    "section": "劫禄用煞格",
+    "page": "PDF p.381"
+   },
+   "pillars": {
+    "year": "戊辰",
+    "month": "癸亥",
+    "day": "壬午",
+    "time": "丙午"
+   },
+   "book_ge": "禄劫用官（合煞存财）格",
+   "book_verdict": "成格",
+   "book_quote": "留下午中己土正官，变成禄劫用官，财星生官，格局变清，层次就高，所以为大贵之格，贵为宰相。",
+   "book_confidence": "high",
+   "book_note": "原文先判“党煞助煞而破格”，再因年月戊癸合去劫煞、留住官星而“格局变清”，即去煞存财存官之变格。",
+   "original_label": "阳刃喜食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-085",
+   "source": {
+    "chapter": "劫禄用煞格",
+    "section": "劫禄用煞格",
+    "page": "PDF p.382"
+   },
+   "pillars": {
+    "year": "辛卯",
+    "month": "庚寅",
+    "day": "甲子",
+    "time": "甲戌"
+   },
+   "book_ge": "劫刃用煞格",
+   "book_verdict": "成格",
+   "book_quote": "劫刃用煞格。寅卯双立，七煞盖头，劫刃得到很好的制服，故格高而贵。",
+   "book_confidence": "high",
+   "book_note": "陈有年命。原文：“原局刃重煞轻是为病，至西方官煞地，功名必至人生巅峰。”",
+   "original_label": "阳刃喜食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-088",
+   "source": {
+    "chapter": "禄劫用财格",
+    "section": "禄劫用财格",
+    "page": "PDF p.384"
+   },
+   "pillars": {
+    "year": "甲子",
+    "month": "丙子",
+    "day": "癸丑",
+    "time": "壬子"
+   },
+   "book_ge": "建禄用财格",
+   "book_verdict": "成格",
+   "book_quote": "只因年月透甲丙伤官财星，大运木进气，就构成了建禄用财格，喜食神生财。",
+   "book_confidence": "high",
+   "book_note": "张都统命。原文：原局丙火被壬水克灭，“先成了建禄喜食伤的格局。大运救起财星，则成建禄用财格”。",
+   "original_label": "禄劫用财格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-089",
+   "source": {
+    "chapter": "禄劫用财格",
+    "section": "禄劫用财格",
+    "page": "PDF p.384"
+   },
+   "pillars": {
+    "year": "壬寅",
+    "month": "辛亥",
+    "day": "壬寅",
+    "time": "辛亥"
+   },
+   "book_ge": "建禄用财（归禄）格",
+   "book_verdict": "成格",
+   "book_quote": "壬生亥月建禄，又归亥时得禄，八字无官星，喜坐下寅中有丙甲食财，格成建禄用财格。",
+   "book_confidence": "high",
+   "book_note": "《神峰通考》例，兼归禄格“日禄居时没官星”。",
+   "original_label": "禄劫用财格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-090",
+   "source": {
+    "chapter": "禄劫用财格",
+    "section": "禄劫用财格",
+    "page": "PDF p.385"
+   },
+   "pillars": {
+    "year": "丙午",
+    "month": "庚子",
+    "day": "癸亥",
+    "time": "甲寅"
+   },
+   "book_ge": "禄劫用财格",
+   "book_verdict": "成中有败",
+   "book_quote": "这个八字表面上看，成格了，而且格局不低。但是，八字存在着天然的缺陷",
+   "book_confidence": "medium",
+   "book_note": "李方洪命。原文：庚金克甲、子午冲坏财根为“埋在八字中的一个地雷”，乙巳运壬辰年“格局就全破了”，触电身亡。",
+   "original_label": "禄劫用财格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-091",
+   "source": {
+    "chapter": "禄劫用财格",
+    "section": "禄劫用财格",
+    "page": "PDF p.386"
+   },
+   "pillars": {
+    "year": "己未",
+    "month": "己巳",
+    "day": "丁未",
+    "time": "辛丑"
+   },
+   "book_ge": "禄劫用财（化劫为财）格",
+   "book_verdict": "成格",
+   "book_quote": "八字为禄劫格用财而逢食神，所以为贵格。",
+   "book_confidence": "high",
+   "book_note": "沈氏例。原文又判“月令巳火与丑土会成金局”，即“化劫为财”，格局更有情。",
+   "original_label": "禄劫用财格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-092",
+   "source": {
+    "chapter": "禄劫用财格",
+    "section": "禄劫用财格",
+    "page": "PDF p.387"
+   },
+   "pillars": {
+    "year": "庚子",
+    "month": "甲申",
+    "day": "庚子",
+    "time": "甲申"
+   },
+   "book_ge": "禄劫用财（化劫为生）格",
+   "book_verdict": "成格",
+   "book_quote": "于是禄劫格用财变成了食伤化劫生财，八字月令变化非常有情。这才构成了禄劫用财格。",
+   "book_confidence": "high",
+   "book_note": "高尚书命。原文先言“仅天干而言，这是要破格的”，因月令申金参与申子会局化劫生财而成格。",
+   "original_label": "禄劫用财格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-093",
+   "source": {
+    "chapter": "禄劫用财格",
+    "section": "禄劫用财格",
+    "page": "PDF p.387"
+   },
+   "pillars": {
+    "year": "戊寅",
+    "month": "甲寅",
+    "day": "甲戌",
+    "time": "甲子"
+   },
+   "book_ge": "禄劫用财（化劫为生）格",
+   "book_verdict": "成格",
+   "book_quote": "有食伤生财，取了禄劫直克财星之患。才构成了禄劫用财格。",
+   "book_confidence": "high",
+   "book_note": "李启后命。原文：“本来是甲生寅月，寅中有丙可取格，但不透”；寅戌拱火在月令参与下化出食伤，故格成。",
+   "original_label": "禄劫用财格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-094",
+   "source": {
+    "chapter": "禄劫用财格",
+    "section": "禄劫用财格",
+    "page": "PDF p.387"
+   },
+   "pillars": {
+    "year": "戊辰",
+    "month": "甲寅",
+    "day": "甲寅",
+    "time": "甲戌"
+   },
+   "book_ge": "禄劫用财格",
+   "book_verdict": "破格",
+   "book_quote": "土重木重，格局不成，克力就凶，命主成了个智力残疾的智障青年。",
+   "book_confidence": "high",
+   "book_note": "原文：寅中丙火不透，地支无“化劫为生”之食伤，日时寅戌拱合因月令寅未参与而不成秀气，“格局不成”。",
+   "original_label": "禄劫用财格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-095",
+   "source": {
+    "chapter": "禄劫用财格",
+    "section": "禄劫用财格",
+    "page": "PDF p.388"
+   },
+   "pillars": {
+    "year": "壬戌",
+    "month": "癸丑",
+    "day": "戊午",
+    "time": "丁巳"
+   },
+   "book_ge": "禄劫用财（化劫为生）格",
+   "book_verdict": "成格",
+   "book_quote": "癸水透用财，有食伤相随，格局已成",
+   "book_confidence": "high",
+   "book_note": "原文：“巳丑合金，'化劫为生，尤为秀气'……格局已成”；行金水运为佳。",
+   "original_label": "禄劫用财格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-099",
+   "source": {
+    "chapter": "禄劫喜食（伤）格",
+    "section": "禄劫喜食（伤）格",
+    "page": "PDF p.391"
+   },
+   "pillars": {
+    "year": "庚子",
+    "month": "乙酉",
+    "day": "辛亥",
+    "time": "壬辰"
+   },
+   "book_ge": "建禄用伤官（伤官吐秀）格",
+   "book_verdict": "成格",
+   "book_quote": "月食建禄，不见官煞，乙财合庚而化劫，只有壬水伤可用，故取建禄用伤官格，也即伤官吐秀格。",
+   "book_confidence": "high",
+   "book_note": "冰心命。原文：“格正局清，金水相涵”；己卯运卯运“劫禄见财，亥卯一合，财泄伤官则破格”，属岁运。",
+   "original_label": "禄劫喜食（伤）格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-100",
+   "source": {
+    "chapter": "禄劫喜食（伤）格",
+    "section": "禄劫喜食（伤）格",
+    "page": "PDF p.393"
+   },
+   "pillars": {
+    "year": "甲寅",
+    "month": "丙寅",
+    "day": "乙巳",
+    "time": "丙子"
+   },
+   "book_ge": "禄劫喜食伤（木火通明）格",
+   "book_verdict": "成格",
+   "book_quote": "乙木生寅月，天干两透丙火，伤官重，但也是木火通明，用之则贵。",
+   "book_confidence": "medium",
+   "book_note": "万花迎春供例。原文未出现“X格”“格成”字样，只以“木火通明，用之则贵”“伤官主武艺”论，格名依章节及沈氏语归纳，故置信度中等。",
+   "original_label": "禄劫喜食（伤）格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-028",
+   "source": {
+    "chapter": "官煞混杂论",
+    "section": "官煞混杂论",
+    "page": "PDF p.51"
+   },
+   "pillars": {
+    "year": "丁亥",
+    "month": "壬子",
+    "day": "丁未",
+    "time": "癸卯"
+   },
+   "book_ge": "从强格",
+   "book_verdict": "成格",
+   "book_quote": "但地支卯未三合木局，水从木化，官煞印相生，就构成了从强格，官煞成了印星不可损伤的源神，就不以官煞混杂论。",
+   "book_confidence": "high",
+   "book_note": "外格（从强），故不以官煞混杂论。",
+   "original_label": "弃官就食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-040",
+   "source": {
+    "chapter": "煞印相生格",
+    "section": "煞印相生格",
+    "page": "PDF p.66"
+   },
+   "pillars": {
+    "year": "丁酉",
+    "month": "戊申",
+    "day": "甲戌",
+    "time": "甲戌"
+   },
+   "book_ge": "弃命从煞格",
+   "book_verdict": "成格",
+   "book_quote": "因为月柱戊土财星盖头，克了暗印，伤官生财，财又生煞，甲木无根，难抵众煞，就成了弃命从煞格。",
+   "book_confidence": "high",
+   "book_note": "作者明确否定其为煞印格：“虽然煞印同源，但因财坏印无情，却构成了其它格局，没有破格，就依然有贵”。",
+   "original_label": "煞印相生格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-043",
+   "source": {
+    "chapter": "煞印相生格",
+    "section": "煞印相生格",
+    "page": "PDF p.69"
+   },
+   "pillars": {
+    "year": "壬辰",
+    "month": "庚戌",
+    "day": "甲辰",
+    "time": "甲戌"
+   },
+   "book_ge": "弃命从煞格",
+   "book_verdict": "成格",
+   "book_quote": "反成了从煞格。",
+   "book_confidence": "high",
+   "book_note": "作者明言煞印相生格不成、反成从煞；但“从煞不清”，甲寅运甲木栽根又破从格，转以劫抗煞。",
+   "original_label": "煞印相生格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-098",
+   "source": {
+    "chapter": "禄劫喜食（伤）格",
+    "section": "禄劫喜食（伤）格",
+    "page": "PDF p.390"
+   },
+   "pillars": {
+    "year": "癸卯",
+    "month": "庚申",
+    "day": "庚子",
+    "time": "庚辰"
+   },
+   "book_ge": "井栏叉格",
+   "book_verdict": "成格",
+   "book_quote": "这不是普通的建禄格，而是“井栏叉格”。庚子日，天干三庚，支全水局，无官煞，生于秋，为合格",
+   "book_confidence": "medium",
+   "book_note": "作者本人判为井栏叉格（“三合水局冲出三合火的官星为我所用”）；同段又引“沈前辈认为此命属于禄劫用食伤泄秀……不但贵，而且还富”。两说并存，取作者语。",
+   "original_label": "禄劫喜食（伤）格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-030",
+   "source": {
+    "chapter": "官煞混杂论",
+    "section": "官煞混杂论",
+    "page": "PDF p.52"
+   },
+   "pillars": {
+    "year": "庚申",
+    "month": "甲申",
+    "day": "甲子",
+    "time": "乙亥"
+   },
+   "book_ge": "未明说",
+   "book_verdict": "降格",
+   "book_quote": "七煞去不彻底，只能以印化煞，带病上岗，所以格不高，只为吏命。",
+   "book_confidence": "low",
+   "book_note": "原文只言“没有官煞混杂之病，只是七煞太多”“以印化煞”，未点格名；“格不高”按降格编码。",
+   "original_label": "弃官就食格",
+   "notes": "verified; quote 为原文逐字引文"
+  },
+  {
+   "id": "gold-073",
+   "source": {
+    "chapter": "禄劫用官格",
+    "section": "禄劫用官格",
+    "page": "PDF p.371"
+   },
+   "pillars": {
+    "year": "丁酉",
+    "month": "丙午",
+    "day": "丁巳",
+    "time": "壬寅"
+   },
+   "book_ge": "弃财就印格",
+   "book_verdict": "成格",
+   "book_quote": "就成用午破酉，丁壬化木，弃财就印格，才能解释知府的命运",
+   "book_confidence": "high",
+   "book_note": "李知府命。原文先按“劫禄用官格”述沈氏说，随即“相也认为……沈老人家对此造的解释有点问题”，改判为弃财就印格，故以作者改判为准。",
+   "original_label": "阳刃喜食格",
+   "notes": "verified; quote 为原文逐字引文"
+  }
+ ]
+}
