@@ -1,5 +1,7 @@
 # Feature Specification: 子平格局喜忌引擎（《格局真诠》）
 
+> **已废弃（2026-11-18）**：015 的 49 格引擎、回测脚本与测试已从代码库移除；产品已切换到 016《子平真诠》25 类引擎（见 `specs/016-ziping-zhenquan-geju/spec.md`）。以下内容仅作历史记录。
+
 **Feature Branch**: `015-ziping-geju-xiyong`
 **Created**: 2026-10-28
 **Status**: Draft

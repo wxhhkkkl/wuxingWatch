@@ -1,0 +1,1002 @@
+[
+  {
+    "id": "gold-001",
+    "review": "同意书",
+    "note": "地支亥卯未，成局，未土中己土透出成功,先定透支",
+    "book_ge": "正官配印格",
+    "engine_ge": "正官配印格",
+    "book_canon": "正官配印格",
+    "engine_canon": "正官配印格",
+    "diff": "同格·成破不同"
+  },
+  {
+    "id": "gold-002",
+    "review": "同意书",
+    "note": "寅中丙火透出为用，且有强根，首先成印格，其次丁壬合化木，偏印被合，去一寸一，清纯留存， 构成官印相生格局",
+    "book_ge": "正官配印格",
+    "engine_ge": "弃官就食格",
+    "book_canon": "正官配印格",
+    "engine_canon": "弃官就食格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-003",
+    "review": "同意书",
+    "note": "申中庚金主气透出，为正官格，又有壬水（中气）透出，兼透兼用，正官配印",
+    "book_ge": "正官配印格",
+    "engine_ge": "正官配印格",
+    "book_canon": "正官配印格",
+    "engine_canon": "正官配印格",
+    "diff": "同格·成破不同"
+  },
+  {
+    "id": "gold-005",
+    "review": "同意书",
+    "note": "乙庚合化受制，去一寸一，格局中存有食伤制杀，有破格嫌疑",
+    "book_ge": "正官格",
+    "engine_ge": "弃官就食格",
+    "book_canon": "正官格(大格)",
+    "engine_canon": "弃官就食格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-006",
+    "review": "同意书",
+    "note": "丁壬合而不化，正官格，有印护持，",
+    "book_ge": "正官配印格",
+    "engine_ge": "财滋弱煞格",
+    "book_canon": "正官配印格",
+    "engine_canon": "财滋弱煞格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-007",
+    "review": "两说",
+    "note": "天干丙丁火一片，是为食伤制杀",
+    "book_ge": "正官配印格",
+    "engine_ge": "正官配印格",
+    "book_canon": "正官配印格",
+    "engine_canon": "正官配印格",
+    "diff": "同格·成破不同"
+  },
+  {
+    "id": "gold-008",
+    "review": "两说",
+    "note": "正官格，日主合官，比劫乙木在年干，有来抢官争合之嫌",
+    "book_ge": "正官配印格",
+    "engine_ge": "正官配印格",
+    "book_canon": "正官配印格",
+    "engine_canon": "正官配印格",
+    "diff": "同格·成破不同"
+  },
+  {
+    "id": "gold-009",
+    "review": "同意书",
+    "note": "正官配印 格局有力",
+    "book_ge": "正官配印格",
+    "engine_ge": "正官配印格",
+    "book_canon": "正官配印格",
+    "engine_canon": "正官配印格",
+    "diff": "同格·成破不同"
+  },
+  {
+    "id": "gold-010",
+    "review": "同意书",
+    "note": "杂气正官格",
+    "book_ge": "正官配印格",
+    "engine_ge": "禄劫用官（煞）格",
+    "book_canon": "正官配印格",
+    "engine_canon": "禄劫用官(煞)格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-012",
+    "review": "存疑",
+    "note": "兼透兼用，官印相生，且丁壬合拌，乙木正官有力，偏向杂气正官格",
+    "book_ge": "杂气正官格",
+    "engine_ge": "禄劫用官（煞）格",
+    "book_canon": "正官格(大格)",
+    "engine_canon": "禄劫用官(煞)格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-013",
+    "review": "同意引擎",
+    "note": "戌土中藏戊辛丁，丙火透出，且多为忌，取财格",
+    "book_ge": "官喜财印格",
+    "engine_ge": "财星配印格",
+    "book_canon": "官喜财印格",
+    "engine_canon": "财星配印格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-014",
+    "review": "两说",
+    "note": "亥中木透出，偏印当令，",
+    "book_ge": "官喜财印格",
+    "engine_ge": "正官配印格",
+    "book_canon": "官喜财印格",
+    "engine_canon": "正官配印格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-015",
+    "review": "两说",
+    "note": "巳火中藏丙庚戊，月干丁火透出，巳酉不化，财印拌合，没有构成互不相碍",
+    "book_ge": "正官配印格",
+    "engine_ge": "财星配印格",
+    "book_canon": "正官配印格",
+    "engine_canon": "财星配印格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-016",
+    "review": "其他",
+    "note": "地支亥卯未三合化木，典型正印格",
+    "book_ge": "官喜财生格",
+    "engine_ge": "正官配印格",
+    "book_canon": "官喜财生格",
+    "engine_canon": "正官配印格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-018",
+    "review": "两说",
+    "note": "官杀不透，有戊土来制，庚金财来破坏",
+    "book_ge": "官喜财生格",
+    "engine_ge": "正官配印格",
+    "book_canon": "官喜财生格",
+    "engine_canon": "正官配印格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-019",
+    "review": "同意书",
+    "note": "未月丙火透出，地支寅午戌会城，食伤太旺，正官来合，得正官就应",
+    "book_ge": "弃官就食格",
+    "engine_ge": "用财喜官格",
+    "book_canon": "弃官就食格",
+    "engine_canon": "用财喜官格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-020",
+    "review": "两说",
+    "note": "官星有力，兼透兼用，乙木来制己土有破格嫌疑",
+    "book_ge": "弃官就食格",
+    "engine_ge": "正官配印格",
+    "book_canon": "弃官就食格",
+    "engine_canon": "正官配印格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-021",
+    "review": "两说",
+    "note": "丙午自坐刃位，且地支寅卯辰来资助，壬水无根力量不足，正官格有损伤但是能成",
+    "book_ge": "弃官就食格",
+    "engine_ge": "正官配印格",
+    "book_canon": "弃官就食格",
+    "engine_canon": "正官配印格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-022",
+    "review": "同意书",
+    "note": "巳火中丙火透出，癸水食伤来克制，",
+    "book_ge": "弃官就食格",
+    "engine_ge": "正官配印格",
+    "book_canon": "弃官就食格",
+    "engine_canon": "正官配印格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-023",
+    "review": "两说",
+    "note": "戌土中辛金透出，正印格，",
+    "book_ge": "弃官就食格",
+    "engine_ge": "正官配印格",
+    "book_canon": "弃官就食格",
+    "engine_canon": "正官配印格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-024",
+    "review": "两说",
+    "note": "申中壬水透干，官印相生，戊土来克制，戊土破格。",
+    "book_ge": "弃官就食格",
+    "engine_ge": "正官配印格",
+    "book_canon": "弃官就食格",
+    "engine_canon": "正官配印格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-026",
+    "review": "两说",
+    "note": "辰土中无藏干透出，且地支会局不成，不成格",
+    "book_ge": "弃官就食格",
+    "engine_ge": "禄劫用官（煞）格",
+    "book_canon": "弃官就食格",
+    "engine_canon": "禄劫用官(煞)格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-074",
+    "review": "同意引擎",
+    "note": "酉中辛金为劫财，火来制，劫用官（煞）格",
+    "book_ge": "官喜财生格",
+    "engine_ge": "禄劫用官（煞）格",
+    "book_canon": "官喜财生格",
+    "engine_canon": "禄劫用官(煞)格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-004",
+    "review": "同意书",
+    "note": "庚金透出，虽然有乙木来合化，但也成七杀格，，有子水来就应，杀印相生格",
+    "book_ge": "七煞格",
+    "engine_ge": "弃官就食格",
+    "book_canon": "七煞格(大格)",
+    "engine_canon": "弃官就食格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-027",
+    "review": "同意书",
+    "note": "未土中己土透出，得辛金救应，",
+    "book_ge": "煞印相生格",
+    "engine_ge": "弃官就食格",
+    "book_canon": "煞印相生格",
+    "engine_canon": "弃官就食格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-029",
+    "review": "同意书",
+    "note": "申中辛金透出，丙辛合水救应，构成七杀化印",
+    "book_ge": "七煞格",
+    "engine_ge": "财滋弱煞格",
+    "book_canon": "七煞格(大格)",
+    "engine_canon": "财滋弱煞格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-033",
+    "review": "同意引擎",
+    "note": "地支巳午火，有官印相生的格局走势",
+    "book_ge": "七煞格",
+    "engine_ge": "正官配印格",
+    "book_canon": "七煞格(大格)",
+    "engine_canon": "正官配印格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-035",
+    "review": "同意引擎",
+    "note": "地支三会，透干乙木 印太重",
+    "book_ge": "煞印相生格",
+    "engine_ge": "印绶化煞格",
+    "book_canon": "煞印相生格",
+    "engine_canon": "印绶化煞格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-036",
+    "review": "同意引擎",
+    "note": "酉中辛金透出，典型的七杀格，可做食伤制杀，印化杀",
+    "book_ge": "煞邀食制格",
+    "engine_ge": "煞印相生格",
+    "book_canon": "煞邀食制格",
+    "engine_canon": "煞印相生格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-037",
+    "review": "同意引擎",
+    "note": "戌中戊辛丁，丙火戊土辛金具透，财滋官，印化官",
+    "book_ge": "煞印相生格",
+    "engine_ge": "财滋弱煞格",
+    "book_canon": "煞印相生格",
+    "engine_canon": "财滋弱煞格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-038",
+    "review": "两说",
+    "note": "申中庚壬戊，己土透出，有比劫合财，勉强为比劫抗杀",
+    "book_ge": "煞印相生格",
+    "engine_ge": "以劫合煞格",
+    "book_canon": "煞印相生格",
+    "engine_canon": "以劫合煞格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-039",
+    "review": "两说",
+    "note": "地支申酉戌会局，哪有壬水？典型的 七杀格",
+    "book_ge": "煞印相生格",
+    "engine_ge": "煞印相生格",
+    "book_canon": "煞印相生格",
+    "engine_canon": "煞印相生格",
+    "diff": "同格·成破不同"
+  },
+  {
+    "id": "gold-041",
+    "review": "两说",
+    "note": "丑中己辛丁，具透，丁壬合拌，日主向财，正财格",
+    "book_ge": "煞印相生格",
+    "engine_ge": "财星配印格",
+    "book_canon": "煞印相生格",
+    "engine_canon": "财星配印格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-042",
+    "review": "同意书",
+    "note": "戌土中藏戊辛丁，庚金透出，七杀格，有壬水化杀，",
+    "book_ge": "煞印相生格",
+    "engine_ge": "用财喜官格",
+    "book_canon": "煞印相生格",
+    "engine_canon": "用财喜官格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-044",
+    "review": "两说",
+    "note": "辰土中戊乙癸，正财透出，日柱合财，",
+    "book_ge": "煞印相生格",
+    "engine_ge": "财星配印格",
+    "book_canon": "煞印相生格",
+    "engine_canon": "财星配印格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-045",
+    "review": "同意书",
+    "note": "申中庚壬戊，壬水透出，正印格",
+    "book_ge": "煞印相生格",
+    "engine_ge": "煞印相生格",
+    "book_canon": "煞印相生格",
+    "engine_canon": "煞印相生格",
+    "diff": "同格·成破不同"
+  },
+  {
+    "id": "gold-046",
+    "review": "同意引擎",
+    "note": "巳火中丙庚戊，丁戊透出，食伤生财",
+    "book_ge": "煞印相生格",
+    "engine_ge": "食神生财格",
+    "book_canon": "煞印相生格",
+    "engine_canon": "食神生财格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-047",
+    "review": "同意引擎",
+    "note": "酉月冲卯，破格",
+    "book_ge": "煞邀食制格",
+    "engine_ge": "煞印相生格",
+    "book_canon": "煞邀食制格",
+    "engine_canon": "煞印相生格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-048",
+    "review": "两说",
+    "note": "子水有辰土拌合，煞邀食制格，格局不完善",
+    "book_ge": "煞邀食制格",
+    "engine_ge": "正官配印格",
+    "book_canon": "煞邀食制格",
+    "engine_canon": "正官配印格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-049",
+    "review": "同意书",
+    "note": "辰土中戊乙癸，无透出且支不能会合，为食伤格，土重制杀",
+    "book_ge": "煞邀食制格",
+    "engine_ge": "食神制煞格",
+    "book_canon": "煞邀食制格",
+    "engine_canon": "食神制煞格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-050",
+    "review": "两说",
+    "note": "食伤生财格",
+    "book_ge": "煞邀食制格",
+    "engine_ge": "用财喜官格",
+    "book_canon": "煞邀食制格",
+    "engine_canon": "用财喜官格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-051",
+    "review": "两说",
+    "note": "辰土中透出甲木，枭神夺食",
+    "book_ge": "煞邀食制格",
+    "engine_ge": "食神喜比格",
+    "book_canon": "煞邀食制格",
+    "engine_canon": "食神喜比格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-052",
+    "review": "两说",
+    "note": "地支巳午未成局，印格",
+    "book_ge": "煞邀食制格",
+    "engine_ge": "财滋弱煞格",
+    "book_canon": "煞邀食制格",
+    "engine_canon": "财滋弱煞格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-053",
+    "review": "同意引擎",
+    "note": "子水中癸水透出 ，为杀印相生",
+    "book_ge": "煞邀食制格",
+    "engine_ge": "煞印相生格",
+    "book_canon": "煞邀食制格",
+    "engine_canon": "煞印相生格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-054",
+    "review": "两说",
+    "note": "财生官格，食伤克制",
+    "book_ge": "煞邀食制格",
+    "engine_ge": "用财喜官格",
+    "book_canon": "煞邀食制格",
+    "engine_canon": "用财喜官格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-055",
+    "review": "同意引擎",
+    "note": "酉金中辛金透出，偏财格",
+    "book_ge": "煞邀食制格",
+    "engine_ge": "财星配印格",
+    "book_canon": "煞邀食制格",
+    "engine_canon": "财星配印格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-056",
+    "review": "两说",
+    "note": "七杀格，比劫抗杀",
+    "book_ge": "以劫合煞格",
+    "engine_ge": "煞印相生格",
+    "book_canon": "以劫合煞格",
+    "engine_canon": "煞印相生格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-057",
+    "review": "同意引擎",
+    "note": "以劫合煞格",
+    "book_ge": "以劫合煞格",
+    "engine_ge": "以劫合煞格",
+    "book_canon": "以劫合煞格",
+    "engine_canon": "以劫合煞格",
+    "diff": "同格·成破不同"
+  },
+  {
+    "id": "gold-058",
+    "review": "同意书",
+    "note": "辰土中乙木透出，七杀格，以劫合煞格 去一留一，格局清纯",
+    "book_ge": "以劫合煞格",
+    "engine_ge": "用财喜官格",
+    "book_canon": "以劫合煞格",
+    "engine_canon": "用财喜官格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-059",
+    "review": "存疑",
+    "note": "官印相生",
+    "book_ge": "煞邀食制格",
+    "engine_ge": "财滋弱煞格",
+    "book_canon": "煞邀食制格",
+    "engine_canon": "财滋弱煞格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-060",
+    "review": "两说",
+    "note": "亥水中甲木透出，构成食伤制杀",
+    "book_ge": "煞印相生格",
+    "engine_ge": "财滋弱煞格",
+    "book_canon": "煞印相生格",
+    "engine_canon": "财滋弱煞格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-082",
+    "review": "同意引擎",
+    "note": "建禄劫财格",
+    "book_ge": "煞邀食制格",
+    "engine_ge": "禄劫用官（煞）格",
+    "book_canon": "煞邀食制格",
+    "engine_canon": "禄劫用官(煞)格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-096",
+    "review": "两说",
+    "note": "寅中丙火透出，食伤生财",
+    "book_ge": "财喜食生格",
+    "engine_ge": "财星配印格",
+    "book_canon": "财喜食生格",
+    "engine_canon": "财星配印格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-097",
+    "review": "同意引擎",
+    "note": "寅中甲戊透出，可取财生官",
+    "book_ge": "财喜食生格",
+    "engine_ge": "用财喜官格",
+    "book_canon": "财喜食生格",
+    "engine_canon": "用财喜官格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-011",
+    "review": "两说",
+    "note": "申中壬水透出，正印格",
+    "book_ge": "印赖官生格",
+    "engine_ge": "弃官就食格",
+    "book_canon": "印赖官生格",
+    "engine_canon": "弃官就食格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-025",
+    "review": "两说",
+    "note": "正官格，或者官印相生",
+    "book_ge": "印绶喜食格",
+    "engine_ge": "财滋弱煞格",
+    "book_canon": "印绶喜食格",
+    "engine_canon": "财滋弱煞格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-034",
+    "review": "同意引擎",
+    "note": "正印格，卯木中乙木透出，",
+    "book_ge": "正印格",
+    "engine_ge": "印绶化煞格",
+    "book_canon": "正印格(大格)",
+    "engine_canon": "印绶化煞格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-080",
+    "review": "两说",
+    "note": "未土重丁火透出，比肩格，丁壬合拌，",
+    "book_ge": "印赖官生格",
+    "engine_ge": "食神制煞格",
+    "book_canon": "印赖官生格",
+    "engine_canon": "食神制煞格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-017",
+    "review": "两说",
+    "note": "未土重丁火透出，比肩格，丁壬合拌，",
+    "book_ge": "食神生财格（兼官喜财生，双格并存）",
+    "engine_ge": "食神喜比格",
+    "book_canon": "食神生财格",
+    "engine_canon": "食神喜比格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-068",
+    "review": "两说",
+    "note": "亥水中壬水透出，",
+    "book_ge": "食神生财格",
+    "engine_ge": "禄劫用官（煞）格",
+    "book_canon": "食神生财格",
+    "engine_canon": "禄劫用官(煞)格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-069",
+    "review": "两说",
+    "note": "午火中丙火透出，劫财格",
+    "book_ge": "食神生财格",
+    "engine_ge": "炎上格",
+    "book_canon": "食神生财格",
+    "engine_canon": "炎上格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-086",
+    "review": "同意引擎",
+    "note": "寅中甲木透出，建禄有官有财",
+    "book_ge": "食伤制煞格",
+    "engine_ge": "用财喜官格",
+    "book_canon": "食神制煞格",
+    "engine_canon": "用财喜官格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-087",
+    "review": "同意引擎",
+    "note": "乙庚，比劫抗杀",
+    "book_ge": "伤官制煞格",
+    "engine_ge": "阳刃用官（煞）格",
+    "book_canon": "食神制煞格",
+    "engine_canon": "阳刃用官(煞)格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-079",
+    "review": "两说",
+    "note": "未土中己丁乙，丁火透出，丁壬合木，不成格局",
+    "book_ge": "伤官生财格",
+    "engine_ge": "食神制煞格",
+    "book_canon": "伤官生财格",
+    "engine_canon": "食神制煞格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-032",
+    "review": "同意书",
+    "note": "阳刃驾煞",
+    "book_ge": "阳刃用煞格",
+    "engine_ge": "阳刃用官（煞）格",
+    "book_canon": "阳刃用官(煞)格",
+    "engine_canon": "阳刃用官(煞)格",
+    "diff": "同格·成破不同"
+  },
+  {
+    "id": "gold-061",
+    "review": "同意书",
+    "note": "阳刃用食伤",
+    "book_ge": "阳刃喜食格",
+    "engine_ge": "阳刃用官（煞）格",
+    "book_canon": "阳刃喜食格",
+    "engine_canon": "阳刃用官(煞)格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-062",
+    "review": "同意书",
+    "note": "阳刃格",
+    "book_ge": "阳刃喜食格",
+    "engine_ge": "阳刃用官（煞）格",
+    "book_canon": "阳刃喜食格",
+    "engine_canon": "阳刃用官(煞)格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-063",
+    "review": "同意书",
+    "note": "阳刃喜食格 ",
+    "book_ge": "阳刃喜食格",
+    "engine_ge": "阳刃用官（煞）格",
+    "book_canon": "阳刃喜食格",
+    "engine_canon": "阳刃用官(煞)格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-064",
+    "review": "同意书",
+    "note": "阳刃喜食格",
+    "book_ge": "阳刃喜食格",
+    "engine_ge": "阳刃喜食格",
+    "book_canon": "阳刃喜食格",
+    "engine_canon": "阳刃喜食格",
+    "diff": "同格·成破不同"
+  },
+  {
+    "id": "gold-065",
+    "review": "同意书",
+    "note": "阳刃喜食格",
+    "book_ge": "阳刃喜食格",
+    "engine_ge": "阳刃用官（煞）格",
+    "book_canon": "阳刃喜食格",
+    "engine_canon": "阳刃用官(煞)格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-066",
+    "review": "同意书",
+    "note": "阳刃喜食格",
+    "book_ge": "阳刃喜食格",
+    "engine_ge": "阳刃喜食格",
+    "book_canon": "阳刃喜食格",
+    "engine_canon": "阳刃喜食格",
+    "diff": "同格·成破不同"
+  },
+  {
+    "id": "gold-067",
+    "review": "两说",
+    "note": "不成格",
+    "book_ge": "阳刃喜食格",
+    "engine_ge": "阳刃用官（煞）格",
+    "book_canon": "阳刃喜食格",
+    "engine_canon": "阳刃用官(煞)格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-075",
+    "review": "同意书",
+    "note": "阳刃驾杀",
+    "book_ge": "阳刃用官格",
+    "engine_ge": "阳刃用官（煞）格",
+    "book_canon": "阳刃用官(煞)格",
+    "engine_canon": "阳刃用官(煞)格",
+    "diff": "同格·成破不同"
+  },
+  {
+    "id": "gold-031",
+    "review": "同意书",
+    "note": "建禄用官格",
+    "book_ge": "建禄用官格",
+    "engine_ge": "禄劫用官（煞）格",
+    "book_canon": "禄劫用官(煞)格",
+    "engine_canon": "禄劫用官(煞)格",
+    "diff": "同格·成破不同"
+  },
+  {
+    "id": "gold-070",
+    "review": "同意书",
+    "note": "建禄用官格",
+    "book_ge": "建禄用官（官印相生）格",
+    "engine_ge": "禄劫用官（煞）格",
+    "book_canon": "禄劫用官(煞)格",
+    "engine_canon": "禄劫用官(煞)格",
+    "diff": "同格·成破不同"
+  },
+  {
+    "id": "gold-071",
+    "review": "两说",
+    "note": "戌中藏戊辛丁，正印格",
+    "book_ge": "禄劫用官（印护）格",
+    "engine_ge": "印赖官生格",
+    "book_canon": "禄劫用官(煞)格",
+    "engine_canon": "印赖官生格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-072",
+    "review": "同意书",
+    "note": "建禄用官格",
+    "book_ge": "建禄用官（正官配印）格",
+    "engine_ge": "禄劫用官（煞）格",
+    "book_canon": "禄劫用官(煞)格",
+    "engine_canon": "禄劫用官(煞)格",
+    "diff": "同格·成破不同"
+  },
+  {
+    "id": "gold-076",
+    "review": "同意书",
+    "note": "建禄用官格",
+    "book_ge": "禄劫用官（三奇）格",
+    "engine_ge": "禄劫用官（煞）格",
+    "book_canon": "禄劫用官(煞)格",
+    "engine_canon": "禄劫用官(煞)格",
+    "diff": "同格·成破不同"
+  },
+  {
+    "id": "gold-077",
+    "review": "两说",
+    "note": "食伤泄秀",
+    "book_ge": "禄劫用官格",
+    "engine_ge": "禄劫用官（煞）格",
+    "book_canon": "禄劫用官(煞)格",
+    "engine_canon": "禄劫用官(煞)格",
+    "diff": "同格·成破不同"
+  },
+  {
+    "id": "gold-078",
+    "review": "两说",
+    "note": "未土中戊土、丁火透出，食伤格",
+    "book_ge": "禄劫用官（官用财印）格",
+    "engine_ge": "食神制煞格",
+    "book_canon": "禄劫用财格",
+    "engine_canon": "食神制煞格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-081",
+    "review": "同意书",
+    "note": "亥中乙木透出，食伤合印",
+    "book_ge": "建禄用官（武贵）格",
+    "engine_ge": "禄劫用官（煞）格",
+    "book_canon": "禄劫用官(煞)格",
+    "engine_canon": "禄劫用官(煞)格",
+    "diff": "同格·成破不同"
+  },
+  {
+    "id": "gold-083",
+    "review": "同意书",
+    "note": "劫财合官",
+    "book_ge": "劫禄用煞（以劫合煞）格",
+    "engine_ge": "用财喜官格",
+    "book_canon": "禄劫用官(煞)格",
+    "engine_canon": "用财喜官格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-084",
+    "review": "同意书",
+    "note": "合煞存财",
+    "book_ge": "禄劫用官（合煞存财）格",
+    "engine_ge": "禄劫用官（煞）格",
+    "book_canon": "禄劫用官(煞)格",
+    "engine_canon": "禄劫用官(煞)格",
+    "diff": "同格·成破不同"
+  },
+  {
+    "id": "gold-085",
+    "review": "同意书",
+    "note": "劫刃用煞",
+    "book_ge": "劫刃用煞格",
+    "engine_ge": "禄劫用官（煞）格",
+    "book_canon": "禄劫用官(煞)格",
+    "engine_canon": "禄劫用官(煞)格",
+    "diff": "同格·成破不同"
+  },
+  {
+    "id": "gold-088",
+    "review": "两说",
+    "note": "建禄",
+    "book_ge": "建禄用财格",
+    "engine_ge": "禄劫用官（煞）格",
+    "book_canon": "禄劫用财格",
+    "engine_canon": "禄劫用官(煞)格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-089",
+    "review": "同意书",
+    "note": "建禄格",
+    "book_ge": "建禄用财（归禄）格",
+    "engine_ge": "禄劫用官（煞）格",
+    "book_canon": "禄劫用财格",
+    "engine_canon": "禄劫用官(煞)格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-090",
+    "review": "两说",
+    "note": "食伤生财",
+    "book_ge": "禄劫用财格",
+    "engine_ge": "禄劫用官（煞）格",
+    "book_canon": "禄劫用财格",
+    "engine_canon": "禄劫用官(煞)格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-091",
+    "review": "同意书",
+    "note": "巳火中 丙庚戊，食伤生财",
+    "book_ge": "禄劫用财（化劫为财）格",
+    "engine_ge": "禄劫用官（煞）格",
+    "book_canon": "禄劫用财格",
+    "engine_canon": "禄劫用官(煞)格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-092",
+    "review": "同意书",
+    "note": "食伤生财",
+    "book_ge": "禄劫用财（化劫为生）格",
+    "engine_ge": "禄劫用财格",
+    "book_canon": "禄劫用财格",
+    "engine_canon": "禄劫用财格",
+    "diff": "同格·成破不同"
+  },
+  {
+    "id": "gold-093",
+    "review": "同意书",
+    "note": "食伤生财",
+    "book_ge": "禄劫用财（化劫为生）格",
+    "engine_ge": "用财喜官格",
+    "book_canon": "禄劫用财格",
+    "engine_canon": "用财喜官格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-094",
+    "review": "两说",
+    "note": "比劫克财",
+    "book_ge": "禄劫用财格",
+    "engine_ge": "用财喜官格",
+    "book_canon": "禄劫用财格",
+    "engine_canon": "用财喜官格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-095",
+    "review": "同意书",
+    "note": "丑土中藏己癸辛，正财格",
+    "book_ge": "禄劫用财（化劫为生）格",
+    "engine_ge": "财星配印格",
+    "book_canon": "禄劫用财格",
+    "engine_canon": "财星配印格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-099",
+    "review": "同意引擎",
+    "note": "禄劫用财格",
+    "book_ge": "建禄用伤官（伤官吐秀）格",
+    "engine_ge": "禄劫用财格",
+    "book_canon": "禄劫喜食(伤)格",
+    "engine_canon": "禄劫用财格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-100",
+    "review": "同意书",
+    "note": "食伤泄秀",
+    "book_ge": "禄劫喜食伤（木火通明）格",
+    "engine_ge": "伤官配印格",
+    "book_canon": "禄劫喜食(伤)格",
+    "engine_canon": "伤官配印格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-028",
+    "review": "两说",
+    "note": "亥卯未和局，官印相生",
+    "book_ge": "从强格",
+    "engine_ge": "煞邀食制格",
+    "book_canon": "从强格",
+    "engine_canon": "煞邀食制格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-040",
+    "review": "同意书",
+    "note": "申酉戌 根气全无，从杀",
+    "book_ge": "弃命从煞格",
+    "engine_ge": "财滋弱煞格",
+    "book_canon": "弃命从煞格",
+    "engine_canon": "财滋弱煞格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-043",
+    "review": "两说",
+    "note": "辰戌冲，财滋官 官生印",
+    "book_ge": "弃命从煞格",
+    "engine_ge": "用财喜官格",
+    "book_canon": "弃命从煞格",
+    "engine_canon": "用财喜官格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-098",
+    "review": "同意引擎",
+    "note": "申子辰和局，伤官生财",
+    "book_ge": "井栏叉格",
+    "engine_ge": "伤官配印格",
+    "book_canon": "井栏叉格",
+    "engine_canon": "伤官配印格",
+    "diff": "格名不同"
+  },
+  {
+    "id": "gold-030",
+    "review": "两说",
+    "note": "申中庚金透出，比劫合七杀",
+    "book_ge": "未明说",
+    "engine_ge": "煞印相生格",
+    "book_canon": "未明说",
+    "engine_canon": "煞印相生格",
+    "diff": "书未明说"
+  },
+  {
+    "id": "gold-073",
+    "review": "同意引擎",
+    "note": "午火中丁火透出，禄劫用官",
+    "book_ge": "弃财就印格",
+    "engine_ge": "禄劫用官（煞）格",
+    "book_canon": "弃财就印格",
+    "engine_canon": "禄劫用官(煞)格",
+    "diff": "格名不同"
+  }
+]

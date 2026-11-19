@@ -4,6 +4,7 @@ export const GEJU_STATUS_LABEL: Record<string, string> = {
   cheng: '成格',
   po: '破格',
   fu_cheng: '破而复成',
+  determined: '已判格',
   undetermined: '未定',
 }
 

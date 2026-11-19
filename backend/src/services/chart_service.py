@@ -157,21 +157,128 @@ def dayun2_conclusion(payload, dayun_ganzhi: str | None = None) -> dict:
     }
 
 
-def geju_conclusion(payload, dayun_ganzhi: str | None = None) -> dict:
-    """**子平格局喜忌**（015 期）——按需实时计算、不落库。
+def _zq_cite(c: dict) -> dict:
+    """《子平真诠》书证 → 现有 API 的 GeJuCitation 形状。"""
+    return {
+        "chapter": c.get("chapter") or "",
+        "section": "原文",
+        "condition_no": None,
+        "page": f"文本库 #{c.get('source_id')}",
+    }
 
-    旺度只提供身强弱；取格/成破/喜忌走 `services.bazi.ziping`。`compute()` 只用来
-    拿四柱与原局旺度（这是本引擎的输入）。
+
+def _zq_ref(mg: dict) -> dict:
+    group = mg.get("group") or ""
+    return {
+        "id": mg.get("name") or "未定",
+        "name": mg.get("name") or "未定",
+        "aliases": [],
+        "category": "inner" if group == "正八格" else "outer",
+        "big_ge": group,
+        "sub_ge": None,
+    }
+
+
+def _zq_yuanju(judgement: dict, wan_du: dict | None) -> dict:
+    """016 判定 → 015 API 形状（只判 25 类格名，成破/喜忌置空）。"""
+    mg = judgement["main_ge"]
+    cite = _zq_cite(mg["citation"])
+    determined = judgement.get("status") == "determined"
+    reason = mg.get("reason") or ""
+    quote = mg["citation"].get("quote") or ""
+    return {
+        "engine": "zhenquan-geju",
+        "rules_version": judgement.get("rules_version", ""),
+        "input_scope": judgement.get("input_scope", "four_pillars"),
+        "degradations": list(judgement.get("degradations") or []),
+        "main_ge": _zq_ref(mg),
+        "main_ge_basis": {
+            "text": f"{reason}：{quote}" if quote else reason,
+            "citation": cite,
+        },
+        "concurrent_ge": [],
+        "status": "determined" if determined else "undetermined",
+        "missing_conditions": [] if determined else ["月令无可用之神，规则源未覆盖"],
+        "shen_qiang_ruo": {
+            "value": judgement["shen_qiang_ruo"]["value"],
+            "score": judgement["shen_qiang_ruo"]["score"],
+            "source": "yuanju" if wan_du else "unknown",
+        },
+        "yong_shen": None,
+        "xiang_shen": [],
+        "xi_shen": [],
+        "ji_shen": [],
+        "disease": [],
+        "remedy": None,
+        "gao_di": {
+            "value": "未定",
+            "reasons": ["016 期只判 25 类格局；成破/用神/喜忌未覆盖"],
+            "citations": [cite],
+        },
+        "conditions": [{
+            "id": "zhenquan-basis",
+            "text": reason,
+            "result": True,
+            "branch": None,
+            "citation": cite,
+            "note": quote,
+        }],
+        "citations": [cite],
+        "open_issues": [],
+    }
+
+
+def _zq_dayun(yuanju_api: dict, pillars: dict, steps: list[dict],
+              only_ganzhi: str | None) -> list[dict]:
+    """大运步：格名同原局；身强弱取该步引擎2 旺度；喜忌/成破置空。"""
+    from services.bazi.v2 import dayun2
+
+    base = (yuanju_api.get("shen_qiang_ruo") or {}).get("value", "unknown")
+    ge = yuanju_api.get("main_ge")
+    out: list[dict] = []
+    for s in steps:
+        gz = s.get("ganzhi")
+        if not gz or (only_ganzhi and gz != only_ganzhi):
+            continue
+        try:
+            step = dayun2.analyze_step(pillars, gz, dayun_meta=s)
+        except Exception:                       # noqa: BLE001  单步失败不拖垮整盘
+            continue
+        dm = step.get("day_master") or {}
+        score = float(dm.get("dynamic") or 0.0)
+        value = "strong" if score >= 10.0 else "weak"
+        out.append({
+            "ganzhi": gz,
+            "start_year": s.get("start_year"),
+            "start_age_xu": s.get("start_age_xu"),
+            "shen_qiang_ruo": {"value": value, "score": score,
+                               "source": "dayun"},
+            "ge": ge,
+            "change": {"type": None, "reason": "", "citation": None},
+            "diff": {"strength": f"{base}→{value}", "xi_ji": "016 期未覆盖",
+                     "cheng_po": "016 期未覆盖", "ge": "同原局"},
+            "yun_xi_ji": {"xi": [], "ji": [], "citation": None},
+            "conditions": [],
+            "open_issues": [],
+        })
+    return out
+
+
+def geju_conclusion(payload, dayun_ganzhi: str | None = None) -> dict:
+    """**子平格局**（016 期）：按《子平真诠》判 25 类主格，按需实时计算、不落库。
+
+    旺度只提供身强弱；取格走 `services.bazi.zhenquan`。成破/用神/喜忌不在本期，
+    API 保留旧字段但置空，前端按「016 期未覆盖」展示。
     """
-    from services.bazi.ziping import (judge_dayun, judge_yuanju,
-                                      rules_version)
+    from services.bazi.zhenquan import judge_yuanju, rules_version
 
     result, _ = compute(payload)
     pillars = result.get("pillars") or {}
     if not pillars or not pillars.get("day"):
         raise ValueError("该盘无可用的四柱，无法进行格局判定")
     wan_du = result.get("wan_du")
-    yuanju = judge_yuanju(pillars, wan_du)
+    judgement = judge_yuanju(pillars, wan_du)
+    yuanju_api = _zq_yuanju(judgement, wan_du)
 
     steps = (result.get("da_yun") or {}).get("steps") or []
     legal = [s for s in steps if s.get("ganzhi")]
@@ -179,17 +286,14 @@ def geju_conclusion(payload, dayun_ganzhi: str | None = None) -> dict:
         raise ValueError("所选大运 %r 不在该盘的大运步内（合法步：%s）"
                          % (dayun_ganzhi,
                             "、".join(sorted({s["ganzhi"] for s in legal})) or "无"))
-    dayun_steps = judge_dayun(yuanju, pillars, wan_du, legal, dayun_ganzhi)
+    dayun_steps = _zq_dayun(yuanju_api, pillars, legal, dayun_ganzhi)
 
-    open_issues = list(yuanju.get("open_issues") or [])
-    for d in dayun_steps:
-        open_issues.extend(d.get("open_issues") or [])
     return {
-        "engine": "ziping-geju",
+        "engine": "zhenquan-geju",
         "rules_version": rules_version(),
-        "input_scope": yuanju.get("input_scope", "four_pillars"),
-        "degradations": list(yuanju.get("degradations") or []),
-        "yuanju": yuanju,
+        "input_scope": yuanju_api.get("input_scope", "four_pillars"),
+        "degradations": list(yuanju_api.get("degradations") or []),
+        "yuanju": yuanju_api,
         "dayun_steps": dayun_steps,
-        "open_issues": open_issues,
+        "open_issues": [],
     }

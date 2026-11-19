@@ -1,5 +1,5 @@
 <script setup lang="ts">
-/** 015：原局格局喜忌详情（正官格垂直切片起步）。 */
+/** 016：原局格局判定（《子平真诠》25 类）。 */
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getRecord } from '../api/records'
@@ -49,7 +49,7 @@ onMounted(async () => {
 
 <template>
   <div class="detail-page">
-    <van-nav-bar title="格局喜忌 · 原局" left-text="返回" left-arrow @click-left="router.back()" />
+    <van-nav-bar title="格局判定 · 原局" left-text="返回" left-arrow @click-left="router.back()" />
 
     <van-loading v-if="loading" class="loading" />
     <p v-else-if="error" class="warn-line">{{ error }}</p>
@@ -81,7 +81,7 @@ onMounted(async () => {
       </section>
 
       <section class="wx-card" data-testid="geju-chengpo">
-        <p class="wx-card-title">成破 · 病药 · 高低</p>
+        <p class="wx-card-title">判定说明</p>
         <p class="yong-line">状态：{{ statusLabel }} · 层次 {{ resp.yuanju.gao_di.value }}</p>
         <p v-if="resp.yuanju.disease.length" class="muted">
           病：{{ resp.yuanju.disease.map((d) => d.text).join('；') }}

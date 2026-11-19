@@ -1,5 +1,5 @@
 <script setup lang="ts">
-/** 015：格局喜忌摘要卡（结果页原局 / 当前大运各一张）。 */
+/** 016：格局摘要卡（结果页原局 / 当前大运各一张）。 */
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import type { GeJuRef, GeJuStrength } from '../types'

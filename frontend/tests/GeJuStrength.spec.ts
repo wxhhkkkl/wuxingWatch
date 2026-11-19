@@ -15,7 +15,7 @@ const GE = {
 function mountWith(value: 'strong' | 'weak' | 'unknown', score: number) {
   return mount(GeJuSummaryCard, {
     props: {
-      title: '原局格局喜忌', ge: GE as never, status: 'cheng',
+      title: '原局格局', ge: GE as never, status: 'cheng',
       strength: { value, score, source: 'yuanju' } as never, to: '/geju',
     },
   })

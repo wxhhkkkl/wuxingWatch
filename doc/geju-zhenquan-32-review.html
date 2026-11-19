@@ -1,0 +1,1261 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>《子平真诠》32 例格局待确认</title>
+<style>
+:root{
+  --ink:#1f2933;--muted:#6b7280;--line:#e5e7eb;--paper:#fbfaf7;--card:#fff;
+  --accent:#8b5e3c;--teacher:#b91c1c;--text:#1d4ed8;--soft:#f3f4f6;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"Noto Serif SC","Source Han Serif SC","Songti SC",SimSun,serif;
+  line-height:1.65;font-size:15px}
+.hero{background:#fff;border-bottom:1px solid var(--line);padding:34px 22px 26px}
+.hero-inner{max-width:1120px;margin:0 auto}
+.eyebrow{font-family:ui-sans-serif,system-ui,"Microsoft YaHei",sans-serif;
+  font-size:12px;letter-spacing:.16em;color:var(--accent);font-weight:700}
+h1{font-size:30px;line-height:1.3;margin:8px 0 10px;letter-spacing:.02em}
+.lede{max-width:900px;color:#374151;margin:0 0 14px}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;color:var(--muted);font-size:12.5px;
+  font-family:ui-sans-serif,system-ui,"Microsoft YaHei",sans-serif}
+main{max-width:1120px;margin:0 auto;padding:24px 22px 60px}
+.intro{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:16px}
+.intro h2{font-size:18px;margin:0 0 8px}
+.intro ol{margin:8px 0 12px;padding-left:22px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.chip{font-family:ui-sans-serif,system-ui,"Microsoft YaHei",sans-serif;font-size:12px;
+  background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:3px 10px;color:#374151}
+.chip b{color:var(--accent)}
+.toolbar{position:sticky;top:0;z-index:10;display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+  background:rgba(251,250,247,.95);backdrop-filter:blur(6px);border:1px solid var(--line);
+  border-radius:12px;padding:10px 12px;margin:0 0 16px;
+  font-family:ui-sans-serif,system-ui,"Microsoft YaHei",sans-serif;font-size:13px}
+.toolbar input[type=text]{border:1px solid var(--line);border-radius:8px;padding:6px 9px;min-width:150px}
+.toolbar button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 11px;
+  cursor:pointer;font-size:13px;color:var(--ink)}
+.toolbar button:hover{border-color:var(--accent);color:var(--accent)}
+#progress{margin-left:auto;color:var(--muted)}
+.cards{display:grid;gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+  padding:16px 18px 14px;break-inside:avoid;page-break-inside:avoid}
+.card-head{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin-bottom:12px}
+.id{font-family:ui-sans-serif,system-ui,monospace;font-weight:700;font-size:13px;
+  background:#111827;color:#fff;border-radius:6px;padding:2px 7px;letter-spacing:.04em}
+.tag{font-family:ui-sans-serif,system-ui,"Microsoft YaHei",sans-serif;font-size:12px;
+  color:var(--accent);background:#f6efe8;border:1px solid #eadfd3;border-radius:999px;padding:2px 9px}
+.pillars{font-size:16px;letter-spacing:.12em}
+.decision{margin-left:auto;font-size:12px;color:var(--muted);
+  font-family:ui-sans-serif,system-ui,"Microsoft YaHei",sans-serif}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.side{border-radius:10px;padding:12px 14px;background:#fcfcfd;border:1px solid var(--line)}
+.side.teacher{border-left:4px solid var(--teacher)}
+.side.text{border-left:4px solid var(--text)}
+.side h3{margin:0 0 4px;font-size:12px;letter-spacing:.12em;color:var(--muted);
+  font-family:ui-sans-serif,system-ui,"Microsoft YaHei",sans-serif;font-weight:600}
+.cls{font-size:21px;font-weight:700;letter-spacing:.04em;margin:2px 0 6px}
+.teacher .cls{color:var(--teacher)}
+.text .cls{color:var(--text)}
+.note,.reason{margin:0;font-size:13.5px;color:#374151}
+blockquote{margin:10px 0 0;padding:9px 12px;background:#fff;border:1px solid var(--line);
+  border-radius:8px;font-size:12.5px;color:#4b5563}
+blockquote b{color:var(--accent)}
+.meta-row{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:10px;color:var(--muted);font-size:12px;
+  font-family:ui-sans-serif,system-ui,"Microsoft YaHei",sans-serif}
+.decide{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin-top:12px;
+  padding-top:11px;border-top:1px dashed var(--line);
+  font-family:ui-sans-serif,system-ui,"Microsoft YaHei",sans-serif;font-size:13px}
+.decide-label{color:var(--muted)}
+.decide label{display:flex;gap:5px;align-items:center;cursor:pointer}
+.decide input[type=radio]{accent-color:var(--accent)}
+.third{flex:1;min-width:240px;border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:13px}
+footer{max-width:1120px;margin:0 auto;padding:0 22px 40px;color:var(--muted);font-size:12px;
+  font-family:ui-sans-serif,system-ui,"Microsoft YaHei",sans-serif}
+@media (max-width:760px){
+  .compare{grid-template-columns:1fr}
+  h1{font-size:24px}
+  .pillars{font-size:15px}
+  .decision{margin-left:0;width:100%}
+}
+@media print{
+  body{background:#fff;font-size:12px}
+  .toolbar{display:none}
+  .intro{break-inside:avoid}
+  .card{box-shadow:none}
+  .hero{padding:16px 0}
+  main{padding-top:10px}
+  .decide{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<header class="hero"><div class="hero-inner">
+  <div class="eyebrow">016 · 子平真诠格局引擎 · 待确认表</div>
+  <h1>32 例：老师判 vs 文本判</h1>
+  <p class="lede">这 32 例是 100 例反馈中老师 note 与《子平真诠》文本判不一致的案例。请逐条确认：以文本为准、以老师为准，还是给第三方案。未列出的 68 例两边一致或老师未明确，不在本表。</p>
+  <div class="meta">
+    <span>规则源：文本库《子平真诠》（沈孝瞻，51 章）</span>
+    <span>输出：图上 25 类</span>
+    <span>已确认口径：G2 非月令透干不改格 · G3 阳刃 · G4 从杀须无根 · G6 官煞取清</span>
+  </div>
+</div></header>
+<main>
+  <section class="intro">
+    <h2>怎么用</h2>
+    <ol>
+      <li>每张卡左边是老师 note 的判法，右边是按《子平真诠》的文本判法与书证原文。</li>
+      <li>在“请确认”里选一个；若选“第三方案”，请在右侧输入格名或理由。</li>
+      <li>填好审核人后点“导出确认 JSON”，把下载的文件发回即可；也可以直接打印手写。</li>
+    </ol>
+    <div class="chips"><span class="chip">官煞取清 <b>2</b></span><span class="chip">月令官杀 vs 透干 <b>2</b></span><span class="chip">杂气官/印 <b>1</b></span><span class="chip">财格正偏 <b>4</b></span><span class="chip">官化为印 <b>1</b></span><span class="chip">杂气透比劫 <b>3</b></span><span class="chip">月令财 vs 外会食伤 <b>1</b></span><span class="chip">印格正偏 <b>1</b></span><span class="chip">七杀用印 <b>1</b></span><span class="chip">杂气官 vs 煞印 <b>1</b></span><span class="chip">化格 <b>1</b></span><span class="chip">非月令印透 <b>1</b></span><span class="chip">月令七杀 vs 透财 <b>1</b></span><span class="chip">月令财 vs 透煞印 <b>1</b></span><span class="chip">月令财 vs 透煞 <b>1</b></span><span class="chip">月令食神 vs 透杀 <b>1</b></span><span class="chip">月令七杀 vs 外会印局 <b>1</b></span><span class="chip">月令官星 vs 透杀 <b>1</b></span><span class="chip">阳刃 vs 禄劫 <b>4</b></span><span class="chip">月令比劫 <b>3</b></span></div>
+  </section>
+  <div class="toolbar">
+    <label>审核人 <input id="reviewer" type="text" placeholder="姓名"></label>
+    <button onclick="setAll('按文本')">全部按文本</button>
+    <button onclick="setAll('按老师')">全部按老师</button>
+    <button onclick="exportJSON()">导出确认 JSON</button>
+    <button onclick="window.print()">打印</button>
+    <span id="progress">已确认 0 / 32</span>
+  </div>
+  <section class="cards">
+
+<article class="card" data-id="gold-004">
+  <div class="card-head">
+    <span class="id">gold-004</span>
+    <span class="tag">官煞取清</span>
+    <span class="pillars">庚寅 乙酉 甲子 戊辰</span>
+    <span class="decision">原裁定：共识</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">七杀格</div>
+      <p class="note"></p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">正官格</div>
+      <p class="reason">月令本气正官为纲</p>
+      <blockquote><b>《论正官》</b><br>甲用酉官，庚金混杂，乙以合之，合煞留官，是杂煞而取清也。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：七煞格(大格)</span>
+    <span>旧引擎：弃官就食格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-004" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-004" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-004" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-004" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-005">
+  <div class="card-head">
+    <span class="id">gold-005</span>
+    <span class="tag">官煞取清</span>
+    <span class="pillars">庚戌 乙酉 甲寅 庚午</span>
+    <span class="decision">原裁定：第三方案</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">七杀格</div>
+      <p class="note">七杀格，酉金庚金透出，身弱，乙庚合化金，喜火水，忌土金</p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">正官格</div>
+      <p class="reason">月令本气正官为纲</p>
+      <blockquote><b>《论正官》</b><br>遇伤在于佩印，混煞贵乎取清。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：正官格(大格)</span>
+    <span>旧引擎：弃官就食格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-005" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-005" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-005" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-005" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-006">
+  <div class="card-head">
+    <span class="id">gold-006</span>
+    <span class="tag">月令官杀 vs 透干</span>
+    <span class="pillars">戊午 甲子 丁酉 壬寅</span>
+    <span class="decision">原裁定：共识</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">正官格</div>
+      <p class="note"></p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">七杀格</div>
+      <p class="reason">月令本气七杀为纲</p>
+      <blockquote><b>《论偏官》</b><br>煞以攻身，似非美物，而大贵之格，多存七煞。盖控制得宜，煞为我用。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：正官配印格</span>
+    <span>旧引擎：财滋弱煞格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-006" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-006" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-006" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-006" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-012">
+  <div class="card-head">
+    <span class="id">gold-012</span>
+    <span class="tag">杂气官/印</span>
+    <span class="pillars">壬戌 丁未 戊申 乙卯</span>
+    <span class="decision">原裁定：按明达</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">正印格</div>
+      <p class="note">正印格，未月丁火透出，身旺，兼透兼用，官印相生，喜木金，忌水、火土</p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">正官格</div>
+      <p class="reason">杂气透乙正官</p>
+      <blockquote><b>《论正官》</b><br>杂气正官，透干会支，最为贵格。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：正官格(大格)</span>
+    <span>旧引擎：禄劫用官（煞）格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-012" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-012" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-012" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-012" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-013">
+  <div class="card-head">
+    <span class="id">gold-013</span>
+    <span class="tag">财格正偏</span>
+    <span class="pillars">乙卯 丙戌 癸酉 丙辰</span>
+    <span class="decision">原裁定：共识</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">财格（未分正偏）</div>
+      <p class="note"></p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">正财格</div>
+      <p class="reason">月令化火为财，取正财</p>
+      <blockquote><b>《论财》</b><br>财为我克，使用之物也，以能生官，所以为美。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：官喜财印格</span>
+    <span>旧引擎：财星配印格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-013" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-013" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-013" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-013" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-014">
+  <div class="card-head">
+    <span class="id">gold-014</span>
+    <span class="tag">官化为印</span>
+    <span class="pillars">乙丑 丁亥 丁酉 壬寅</span>
+    <span class="decision">原裁定：按明达</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">正官格</div>
+      <p class="note">正官格，亥月壬水透出，身弱，喜木</p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">偏印格</div>
+      <p class="reason">月令化木为印，取偏印</p>
+      <blockquote><b>《论正官》</b><br>若化官为印而透财，则又为甚秀，大贵之格也。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：官喜财印格</span>
+    <span>旧引擎：正官配印格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-014" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-014" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-014" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-014" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-017">
+  <div class="card-head">
+    <span class="id">gold-017</span>
+    <span class="tag">杂气透比劫</span>
+    <span class="pillars">壬申 丁未 丁未 己酉</span>
+    <span class="decision">原裁定：按书</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">食神格</div>
+      <p class="note">食神格，未土己土透出，身旺，喜土金水</p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">建禄格</div>
+      <p class="reason">杂气透丁比肩，作月劫</p>
+      <blockquote><b>《论杂气如何取用》</b><br>甲生辰月，透戊则用偏财，透癸则用正印，透乙则用月劫是也。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：食神生财格</span>
+    <span>旧引擎：食神喜比格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-017" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-017" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-017" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-017" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-019">
+  <div class="card-head">
+    <span class="id">gold-019</span>
+    <span class="tag">月令财 vs 外会食伤</span>
+    <span class="pillars">甲午 辛未 甲戌 丙寅</span>
+    <span class="decision">原裁定：按保强</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">食神格</div>
+      <p class="note">食神格，未月丙甲透出，地支寅午戌三会，喜水</p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">正财格</div>
+      <p class="reason">月令本气正财为纲</p>
+      <blockquote><b>《论财》</b><br>财为我克，使用之物也，以能生官，所以为美。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：弃官就食格</span>
+    <span>旧引擎：用财喜官格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-019" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-019" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-019" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-019" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-021">
+  <div class="card-head">
+    <span class="id">gold-021</span>
+    <span class="tag">月令官杀 vs 透干</span>
+    <span class="pillars">壬寅 丙午 辛卯 壬辰</span>
+    <span class="decision">原裁定：按明达</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">正官格</div>
+      <p class="note">正官格，身弱，午月丙火透出，破格，喜土金，忌水木火</p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">七杀格</div>
+      <p class="reason">月令本气七杀为纲</p>
+      <blockquote><b>《论偏官》</b><br>煞以攻身，似非美物，而大贵之格，多存七煞。盖控制得宜，煞为我用。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：弃官就食格</span>
+    <span>旧引擎：正官配印格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-021" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-021" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-021" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-021" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-023">
+  <div class="card-head">
+    <span class="id">gold-023</span>
+    <span class="tag">印格正偏</span>
+    <span class="pillars">甲午 甲戌 癸亥 辛酉</span>
+    <span class="decision">原裁定：按保强</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">正印格</div>
+      <p class="note">正印格，戌中辛金透出，身强，喜木，忌火， </p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">偏印格</div>
+      <p class="reason">杂气透辛偏印</p>
+      <blockquote><b>《论印绶》</b><br>印绶喜其生身，正偏同为美格，故财与印不分偏正，同为一格而论之。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：弃官就食格</span>
+    <span>旧引擎：正官配印格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-023" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-023" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-023" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-023" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-025">
+  <div class="card-head">
+    <span class="id">gold-025</span>
+    <span class="tag">七杀用印</span>
+    <span class="pillars">壬申 丙午 辛亥 己丑</span>
+    <span class="decision">原裁定：按明达</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">偏印格</div>
+      <p class="note">偏印格，午月己土透出，身弱，喜土</p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">七杀格</div>
+      <p class="reason">月令本气七杀为纲</p>
+      <blockquote><b>《论偏官》</b><br>有七煞用印者，印能护煞，本非所宜，而印有情，便为贵格。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：印绶喜食格</span>
+    <span>旧引擎：财滋弱煞格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-025" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-025" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-025" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-025" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-027">
+  <div class="card-head">
+    <span class="id">gold-027</span>
+    <span class="tag">杂气官 vs 煞印</span>
+    <span class="pillars">戊申 己未 壬子 辛亥</span>
+    <span class="decision">原裁定：共识</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">七杀格</div>
+      <p class="note"></p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">正官格</div>
+      <p class="reason">杂气透己正官</p>
+      <blockquote><b>《论正官》</b><br>遇伤在于佩印，混煞贵乎取清。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：煞印相生格</span>
+    <span>旧引擎：弃官就食格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-027" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-027" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-027" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-027" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-028">
+  <div class="card-head">
+    <span class="id">gold-028</span>
+    <span class="tag">化格</span>
+    <span class="pillars">丁亥 壬子 丁未 癸卯</span>
+    <span class="decision">原裁定：按保强</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">七杀格</div>
+      <p class="note">七杀格，子月癸水透出，地支亥卯未三会木，身弱，官印相生，喜木，</p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">化木格</div>
+      <p class="reason">日主与月/时干五合，化神木得时乘令</p>
+      <blockquote><b>《论杂格》</b><br>有从化取格者，要化出之物，得时乘令，四支局全。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：从强格</span>
+    <span>旧引擎：煞邀食制格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-028" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-028" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-028" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-028" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-033">
+  <div class="card-head">
+    <span class="id">gold-033</span>
+    <span class="tag">非月令印透</span>
+    <span class="pillars">甲午 己巳 辛酉 甲午</span>
+    <span class="decision">原裁定：按明达</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">偏印格</div>
+      <p class="note">偏印格，巳月己土透出，喜土金</p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">正官格</div>
+      <p class="reason">月令本气正官为纲</p>
+      <blockquote><b>《论正官》</b><br>遇伤在于佩印，混煞贵乎取清。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：七煞格(大格)</span>
+    <span>旧引擎：正官配印格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-033" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-033" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-033" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-033" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-038">
+  <div class="card-head">
+    <span class="id">gold-038</span>
+    <span class="tag">月令七杀 vs 透财</span>
+    <span class="pillars">乙丑 甲申 甲辰 己巳</span>
+    <span class="decision">原裁定：按明达</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">正财格</div>
+      <p class="note">正财格，申月己土透出，身弱，喜水木，忌火土金</p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">七杀格</div>
+      <p class="reason">月令本气七杀为纲</p>
+      <blockquote><b>《论偏官》</b><br>有煞而用财者，财以党煞，本非所喜，而或食被制，不能伏煞，而财以去印存食，便为贵格。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：煞印相生格</span>
+    <span>旧引擎：以劫合煞格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-038" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-038" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-038" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-038" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-042">
+  <div class="card-head">
+    <span class="id">gold-042</span>
+    <span class="tag">月令财 vs 透煞印</span>
+    <span class="pillars">壬辰 庚戌 甲申 甲戌</span>
+    <span class="decision">原裁定：共识</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">七杀格</div>
+      <p class="note"></p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">偏财格</div>
+      <p class="reason">月令本气偏财为纲</p>
+      <blockquote><b>《论财》</b><br>有财带七煞者，或合煞存财，或制煞生财，皆贵格也。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：煞印相生格</span>
+    <span>旧引擎：用财喜官格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-042" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-042" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-042" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-042" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-043">
+  <div class="card-head">
+    <span class="id">gold-043</span>
+    <span class="tag">月令财 vs 透煞</span>
+    <span class="pillars">壬辰 庚戌 甲辰 甲戌</span>
+    <span class="decision">原裁定：第三方案</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">七杀格</div>
+      <p class="note">七杀格，戌月金透出，身弱，喜水木，</p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">偏财格</div>
+      <p class="reason">月令本气偏财为纲</p>
+      <blockquote><b>《论财》</b><br>有财带七煞者，或合煞存财，或制煞生财，皆贵格也。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：弃命从煞格</span>
+    <span>旧引擎：用财喜官格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-043" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-043" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-043" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-043" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-044">
+  <div class="card-head">
+    <span class="id">gold-044</span>
+    <span class="tag">财格正偏</span>
+    <span class="pillars">庚子 庚辰 甲午 己巳</span>
+    <span class="decision">原裁定：按明达</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">正财格</div>
+      <p class="note">正财格，辰月己土透出，身弱，喜木水</p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">偏财格</div>
+      <p class="reason">月令本气偏财为纲</p>
+      <blockquote><b>《论财》</b><br>财为我克，使用之物也，以能生官，所以为美。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：煞印相生格</span>
+    <span>旧引擎：财星配印格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-044" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-044" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-044" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-044" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-049">
+  <div class="card-head">
+    <span class="id">gold-049</span>
+    <span class="tag">月令食神 vs 透杀</span>
+    <span class="pillars">丙戌 壬辰 丙申 丙申</span>
+    <span class="decision">原裁定：按明达</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">七杀格</div>
+      <p class="note">七杀格，辰月壬水透出，身弱，喜火木</p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">食神格</div>
+      <p class="reason">月令本气食神为纲</p>
+      <blockquote><b>《论食神》</b><br>食神本属泄气，以其能生正财，所以喜之。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：煞邀食制格</span>
+    <span>旧引擎：食神制煞格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-049" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-049" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-049" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-049" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-052">
+  <div class="card-head">
+    <span class="id">gold-052</span>
+    <span class="tag">月令七杀 vs 外会印局</span>
+    <span class="pillars">壬午 癸卯 己巳 辛未</span>
+    <span class="decision">原裁定：按保强</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">正印格</div>
+      <p class="note">正印格，地支巳午未三会，身强，喜金水，忌火土</p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">七杀格</div>
+      <p class="reason">月令本气七杀为纲</p>
+      <blockquote><b>《论偏官》</b><br>煞以攻身，似非美物，而大贵之格，多存七煞。盖控制得宜，煞为我用。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：煞邀食制格</span>
+    <span>旧引擎：财滋弱煞格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-052" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-052" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-052" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-052" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-054">
+  <div class="card-head">
+    <span class="id">gold-054</span>
+    <span class="tag">财格正偏</span>
+    <span class="pillars">己未 癸酉 丁巳 丁未</span>
+    <span class="decision">原裁定：按明达</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">正财格</div>
+      <p class="note">正财格，酉月无透出，身强，食伤制杀，喜土</p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">偏财格</div>
+      <p class="reason">月令本气偏财为纲</p>
+      <blockquote><b>《论财》</b><br>财为我克，使用之物也，以能生官，所以为美。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：煞邀食制格</span>
+    <span>旧引擎：用财喜官格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-054" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-054" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-054" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-054" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-055">
+  <div class="card-head">
+    <span class="id">gold-055</span>
+    <span class="tag">财格正偏</span>
+    <span class="pillars">己丑 癸酉 丁卯 辛丑</span>
+    <span class="decision">原裁定：共识</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">财格（未分正偏）</div>
+      <p class="note"></p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">偏财格</div>
+      <p class="reason">月令本气辛偏财透干</p>
+      <blockquote><b>《论财》</b><br>财为我克，使用之物也，以能生官，所以为美。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：煞邀食制格</span>
+    <span>旧引擎：财星配印格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-055" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-055" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-055" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-055" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-057">
+  <div class="card-head">
+    <span class="id">gold-057</span>
+    <span class="tag">月令官星 vs 透杀</span>
+    <span class="pillars">丁未 壬子 丙辰 庚寅</span>
+    <span class="decision">原裁定：按保强</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">七杀格</div>
+      <p class="note">七杀格，子月壬水透出，身弱，喜木火</p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">正官格</div>
+      <p class="reason">月令本气正官为纲</p>
+      <blockquote><b>《论正官》</b><br>遇伤在于佩印，混煞贵乎取清。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：以劫合煞格</span>
+    <span>旧引擎：以劫合煞格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-057" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-057" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-057" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-057" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-062">
+  <div class="card-head">
+    <span class="id">gold-062</span>
+    <span class="tag">阳刃 vs 禄劫</span>
+    <span class="pillars">丙寅 庚子 壬辰 壬寅</span>
+    <span class="decision">原裁定：按明达</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">建禄格</div>
+      <p class="note">禄劫格，子月壬水透出，身旺，喜木火</p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">阳刃格</div>
+      <p class="reason">月令为阳干帝旺之刃</p>
+      <blockquote><b>《论阳刃》</b><br>阳刃者，劫我正财之神，乃正财之七煞也。禄前一位，惟五阳有之，故为阳刃。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：阳刃喜食格</span>
+    <span>旧引擎：阳刃用官（煞）格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-062" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-062" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-062" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-062" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-066">
+  <div class="card-head">
+    <span class="id">gold-066</span>
+    <span class="tag">阳刃 vs 禄劫</span>
+    <span class="pillars">己卯 丁卯 甲寅 丙寅</span>
+    <span class="decision">原裁定：按明达</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">建禄格</div>
+      <p class="note">禄劫格，卯月主气当令，身旺，喜火土</p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">阳刃格</div>
+      <p class="reason">月令为阳干帝旺之刃</p>
+      <blockquote><b>《论阳刃》</b><br>阳刃者，劫我正财之神，乃正财之七煞也。禄前一位，惟五阳有之，故为阳刃。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：阳刃喜食格</span>
+    <span>旧引擎：阳刃喜食格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-066" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-066" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-066" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-066" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-067">
+  <div class="card-head">
+    <span class="id">gold-067</span>
+    <span class="tag">阳刃 vs 禄劫</span>
+    <span class="pillars">丁未 壬子 壬寅 壬寅</span>
+    <span class="decision">原裁定：按明达</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">建禄格</div>
+      <p class="note">禄劫格，子月水透出，身强，喜木火</p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">阳刃格</div>
+      <p class="reason">月令为阳干帝旺之刃</p>
+      <blockquote><b>《论阳刃》</b><br>阳刃者，劫我正财之神，乃正财之七煞也。禄前一位，惟五阳有之，故为阳刃。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：阳刃喜食格</span>
+    <span>旧引擎：阳刃用官（煞）格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-067" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-067" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-067" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-067" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-075">
+  <div class="card-head">
+    <span class="id">gold-075</span>
+    <span class="tag">阳刃 vs 禄劫</span>
+    <span class="pillars">甲寅 庚午 丙寅 癸巳</span>
+    <span class="decision">原裁定：第三方案</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">建禄格</div>
+      <p class="note">禄劫格，午月主气火当令，身旺，喜土金 忌木火</p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">阳刃格</div>
+      <p class="reason">月令为阳干帝旺之刃</p>
+      <blockquote><b>《论阳刃》</b><br>阳刃者，劫我正财之神，乃正财之七煞也。禄前一位，惟五阳有之，故为阳刃。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：阳刃用官(煞)格</span>
+    <span>旧引擎：阳刃用官（煞）格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-075" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-075" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-075" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-075" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-078">
+  <div class="card-head">
+    <span class="id">gold-078</span>
+    <span class="tag">杂气透比劫</span>
+    <span class="pillars">壬辰 丁未 丁未 戊申</span>
+    <span class="decision">原裁定：第三方案</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">伤官格</div>
+      <p class="note">伤官格，未月戊土透出，身弱，喜木火</p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">建禄格</div>
+      <p class="reason">杂气透丁比肩，作月劫</p>
+      <blockquote><b>《论杂气如何取用》</b><br>甲生辰月，透戊则用偏财，透癸则用正印，透乙则用月劫是也。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：禄劫用财格</span>
+    <span>旧引擎：食神制煞格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-078" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-078" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-078" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-078" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-079">
+  <div class="card-head">
+    <span class="id">gold-079</span>
+    <span class="tag">杂气透比劫</span>
+    <span class="pillars">壬子 丁未 丁巳 戊申</span>
+    <span class="decision">原裁定：按明达</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">伤官格</div>
+      <p class="note">伤官格，未土中土透出，身强，喜土金</p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">建禄格</div>
+      <p class="reason">杂气透丁比肩，作月劫</p>
+      <blockquote><b>《论杂气如何取用》</b><br>甲生辰月，透戊则用偏财，透癸则用正印，透乙则用月劫是也。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：伤官生财格</span>
+    <span>旧引擎：食神制煞格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-079" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-079" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-079" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-079" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-086">
+  <div class="card-head">
+    <span class="id">gold-086</span>
+    <span class="tag">月令比劫</span>
+    <span class="pillars">戊戌 甲寅 甲申 庚申</span>
+    <span class="decision">原裁定：共识</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">财格（未分正偏）</div>
+      <p class="note"></p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">建禄格</div>
+      <p class="reason">月令建禄/月劫，财官煞食为用</p>
+      <blockquote><b>《论建禄月劫》</b><br>建禄与月劫，可同一格，不必加分，皆以透干支，别取财官煞食为用。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：食神制煞格</span>
+    <span>旧引擎：用财喜官格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-086" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-086" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-086" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-086" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-091">
+  <div class="card-head">
+    <span class="id">gold-091</span>
+    <span class="tag">月令比劫</span>
+    <span class="pillars">己未 己巳 丁未 辛丑</span>
+    <span class="decision">原裁定：第三方案</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">食神格</div>
+      <p class="note">食神格，巳月己土透出，身弱，喜木火</p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">建禄格</div>
+      <p class="reason">月令建禄/月劫，财官煞食为用</p>
+      <blockquote><b>《论建禄月劫》</b><br>建禄与月劫，可同一格，不必加分，皆以透干支，别取财官煞食为用。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：禄劫用财格</span>
+    <span>旧引擎：禄劫用官（煞）格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-091" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-091" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-091" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-091" placeholder="第三方案 / 理由">
+  </div>
+</article>
+
+<article class="card" data-id="gold-096">
+  <div class="card-head">
+    <span class="id">gold-096</span>
+    <span class="tag">月令比劫</span>
+    <span class="pillars">庚寅 戊寅 甲子 丙寅</span>
+    <span class="decision">原裁定：按书</span>
+  </div>
+  <div class="compare">
+    <section class="side teacher">
+      <h3>老师判</h3>
+      <div class="cls">食神格</div>
+      <p class="note">食神格，寅月丙火透出，身旺，喜火，土。忌木</p>
+    </section>
+    <section class="side text">
+      <h3>文本判</h3>
+      <div class="cls">建禄格</div>
+      <p class="reason">月令建禄/月劫，财官煞食为用</p>
+      <blockquote><b>《论建禄月劫》</b><br>建禄与月劫，可同一格，不必加分，皆以透干支，别取财官煞食为用。</blockquote>
+    </section>
+  </div>
+  <div class="meta-row">
+    <span>书判：财喜食生格</span>
+    <span>旧引擎：财星配印格</span>
+  </div>
+  <div class="decide">
+    <span class="decide-label">请确认：</span>
+    <label><input type="radio" name="d-gold-096" value="按文本"> 按文本</label>
+    <label><input type="radio" name="d-gold-096" value="按老师"> 按老师</label>
+    <label><input type="radio" name="d-gold-096" value="第三方案"> 第三方案</label>
+    <input class="third" data-id="gold-096" placeholder="第三方案 / 理由">
+  </div>
+</article>
+  </section>
+</main>
+<footer>
+  文本判依据：月令为纲；杂气透干会支（《论杂气如何取用》）；用神变化（《论用神变化》）；阳刃（《论阳刃》）；建禄月劫（《论建禄月劫》）；从/专旺/化（《论杂格》）。<br>
+  文本库：books.id=32；书证按篇名 + chapters.id + 原文引用，不标页码。
+</footer>
+<script>
+const DATA=[{"id": "gold-004", "teacher": "七杀格", "text": "正官格", "tag": "官煞取清"}, {"id": "gold-005", "teacher": "七杀格", "text": "正官格", "tag": "官煞取清"}, {"id": "gold-006", "teacher": "正官格", "text": "七杀格", "tag": "月令官杀 vs 透干"}, {"id": "gold-012", "teacher": "正印格", "text": "正官格", "tag": "杂气官/印"}, {"id": "gold-013", "teacher": "财格（未分正偏）", "text": "正财格", "tag": "财格正偏"}, {"id": "gold-014", "teacher": "正官格", "text": "偏印格", "tag": "官化为印"}, {"id": "gold-017", "teacher": "食神格", "text": "建禄格", "tag": "杂气透比劫"}, {"id": "gold-019", "teacher": "食神格", "text": "正财格", "tag": "月令财 vs 外会食伤"}, {"id": "gold-021", "teacher": "正官格", "text": "七杀格", "tag": "月令官杀 vs 透干"}, {"id": "gold-023", "teacher": "正印格", "text": "偏印格", "tag": "印格正偏"}, {"id": "gold-025", "teacher": "偏印格", "text": "七杀格", "tag": "七杀用印"}, {"id": "gold-027", "teacher": "七杀格", "text": "正官格", "tag": "杂气官 vs 煞印"}, {"id": "gold-028", "teacher": "七杀格", "text": "化木格", "tag": "化格"}, {"id": "gold-033", "teacher": "偏印格", "text": "正官格", "tag": "非月令印透"}, {"id": "gold-038", "teacher": "正财格", "text": "七杀格", "tag": "月令七杀 vs 透财"}, {"id": "gold-042", "teacher": "七杀格", "text": "偏财格", "tag": "月令财 vs 透煞印"}, {"id": "gold-043", "teacher": "七杀格", "text": "偏财格", "tag": "月令财 vs 透煞"}, {"id": "gold-044", "teacher": "正财格", "text": "偏财格", "tag": "财格正偏"}, {"id": "gold-049", "teacher": "七杀格", "text": "食神格", "tag": "月令食神 vs 透杀"}, {"id": "gold-052", "teacher": "正印格", "text": "七杀格", "tag": "月令七杀 vs 外会印局"}, {"id": "gold-054", "teacher": "正财格", "text": "偏财格", "tag": "财格正偏"}, {"id": "gold-055", "teacher": "财格（未分正偏）", "text": "偏财格", "tag": "财格正偏"}, {"id": "gold-057", "teacher": "七杀格", "text": "正官格", "tag": "月令官星 vs 透杀"}, {"id": "gold-062", "teacher": "建禄格", "text": "阳刃格", "tag": "阳刃 vs 禄劫"}, {"id": "gold-066", "teacher": "建禄格", "text": "阳刃格", "tag": "阳刃 vs 禄劫"}, {"id": "gold-067", "teacher": "建禄格", "text": "阳刃格", "tag": "阳刃 vs 禄劫"}, {"id": "gold-075", "teacher": "建禄格", "text": "阳刃格", "tag": "阳刃 vs 禄劫"}, {"id": "gold-078", "teacher": "伤官格", "text": "建禄格", "tag": "杂气透比劫"}, {"id": "gold-079", "teacher": "伤官格", "text": "建禄格", "tag": "杂气透比劫"}, {"id": "gold-086", "teacher": "财格（未分正偏）", "text": "建禄格", "tag": "月令比劫"}, {"id": "gold-091", "teacher": "食神格", "text": "建禄格", "tag": "月令比劫"}, {"id": "gold-096", "teacher": "食神格", "text": "建禄格", "tag": "月令比劫"}];
+const KEY='zhenquan32-review-v1';
+let state={};
+try { state=JSON.parse(localStorage.getItem(KEY)||'{}'); } catch(e) { state={}; }
+function load(){
+  DATA.forEach(d=>{
+    const s=state[d.id]||{};
+    if(s.decision){
+      const el=document.querySelector(`input[name="d-${d.id}"][value="${s.decision}"]`);
+      if(el) el.checked=true;
+    }
+    const third=document.querySelector(`input.third[data-id="${d.id}"]`);
+    if(third && s.note) third.value=s.note;
+  });
+  const r=document.getElementById('reviewer');
+  if(r && state.__reviewer) r.value=state.__reviewer;
+  update();
+}
+function save(){
+  state.__reviewer=document.getElementById('reviewer').value;
+  try { localStorage.setItem(KEY,JSON.stringify(state)); } catch(e) {}
+  update();
+}
+function update(){
+  let n=0;
+  DATA.forEach(d=>{ if(state[d.id] && state[d.id].decision) n++; });
+  document.getElementById('progress').textContent=`已确认 ${n} / ${DATA.length}`;
+}
+document.querySelectorAll('input[type=radio]').forEach(el=>{
+  el.addEventListener('change',()=>{
+    const id=el.name.slice(2);
+    state[id]=state[id]||{};
+    state[id].decision=el.value;
+    save();
+  });
+});
+document.querySelectorAll('input.third').forEach(el=>{
+  el.addEventListener('input',()=>{
+    const id=el.dataset.id;
+    state[id]=state[id]||{};
+    state[id].note=el.value;
+    const radio=document.querySelector(`input[name="d-${id}"][value="第三方案"]`);
+    if(radio){ radio.checked=true; state[id].decision='第三方案'; }
+    save();
+  });
+});
+document.getElementById('reviewer').addEventListener('input',save);
+function setAll(v){
+  DATA.forEach(d=>{
+    state[d.id]=state[d.id]||{};
+    state[d.id].decision=v;
+    const el=document.querySelector(`input[name="d-${d.id}"][value="${v}"]`);
+    if(el) el.checked=true;
+  });
+  save();
+}
+function exportJSON(){
+  const reviewer=document.getElementById('reviewer').value||'';
+  const items=DATA.map(d=>{
+    const s=state[d.id]||{};
+    const third=document.querySelector(`input.third[data-id="${d.id}"]`);
+    return {id:d.id,tag:d.tag,teacher:d.teacher,text:d.text,
+      decision:s.decision||'',third:third?third.value:''};
+  });
+  const out={reviewer,generated_at:new Date().toISOString(),items};
+  const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='zhenquan-32-review.json';
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+}
+load();
+</script>
+</body>
+</html>

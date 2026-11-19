@@ -70,7 +70,7 @@ describe('GeJu summary cards', () => {
     await flushPromises()
     expect(w.find('[data-testid="geju-yuanju-card"]').text()).toContain('正官配印格')
     expect(w.find('[data-testid="geju-yuanju-card"]').text()).toContain('未定')
-    expect(w.find('[data-testid="geju-dayun-card"]').text()).toContain('当前大运格局喜忌')
+    expect(w.find('[data-testid="geju-dayun-card"]').text()).toContain('当前大运格局')
   })
 
   it('opens the detail page from the original-chart card', async () => {

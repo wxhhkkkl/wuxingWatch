@@ -501,7 +501,7 @@ export interface Dayun2Response {
 }
 
 
-// ---------- 子平格局喜忌（015-ziping-geju-xiyong）----------
+// ---------- 子平格局（016-ziping-zhenquan-geju）----------
 
 export interface GeJuCitation {
   chapter: string
@@ -574,7 +574,7 @@ export interface GeJuJudgement {
   main_ge: GeJuRef | null
   main_ge_basis: { text: string; citation: GeJuCitation } | null
   concurrent_ge: GeJuRef[]
-  status: 'cheng' | 'po' | 'fu_cheng' | 'undetermined'
+  status: 'cheng' | 'po' | 'fu_cheng' | 'determined' | 'undetermined'
   missing_conditions: string[]
   shen_qiang_ruo: GeJuStrength
   yong_shen: GeJuYongShen | null
@@ -603,7 +603,7 @@ export interface GeJuDayunStep {
 }
 
 export interface GeJuResponse {
-  engine: 'ziping-geju'
+  engine: 'ziping-geju' | 'zhenquan-geju'
   rules_version: string
   input_scope: string
   degradations: string[]

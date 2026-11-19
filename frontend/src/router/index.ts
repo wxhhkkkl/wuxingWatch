@@ -31,7 +31,7 @@ const router = createRouter({
       name: 'dayun2-detail',
       component: () => import('../pages/Dayun2Detail.vue'),
     },
-    // ---------- 子平格局喜忌（015-ziping-geju-xiyong）----------
+    // ---------- 子平格局（016-ziping-zhenquan-geju）----------
     {
       path: '/geju',
       name: 'geju-detail',

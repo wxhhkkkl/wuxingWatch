@@ -180,7 +180,7 @@ const dayun2Rows = computed(() =>
   WUXING.map((wx) => ({ wx, value: dayun2Current.value?.elements[wx]?.dynamic ?? 0 })),
 )
 
-// ---- 格局喜忌（015）：原局 + 当前大运 ----
+// ---- 子平格局（016）：原局 + 当前大运 ----
 const geju = ref<GeJuResponse | null>(null)
 const gejuError = ref('')
 const currentGeju = computed(() => geju.value?.yuanju ?? null)
@@ -378,9 +378,9 @@ function fmtDateTime(s: string): string {
       <p v-else class="muted">{{ dayun2Error || '大运旺度暂无数据' }}</p>
     </section>
 
-    <!-- 格局喜忌（015）：原局 / 当前大运各一张摘要卡 -->
+    <!-- 子平格局（016）：原局 / 当前大运各一张摘要卡 -->
     <GeJuSummaryCard
-      title="原局格局喜忌"
+      title="原局格局"
       :ge="currentGeju?.main_ge ?? null"
       :status="currentGeju?.status ?? 'undetermined'"
       :strength="currentGeju?.shen_qiang_ruo ?? null"
@@ -389,7 +389,7 @@ function fmtDateTime(s: string): string {
       testid="geju-yuanju-card"
     />
     <GeJuSummaryCard
-      title="当前大运格局喜忌"
+      title="当前大运格局"
       :ge="currentDayunGeju?.ge ?? null"
       :status="currentGeju?.status ?? 'undetermined'"
       :strength="currentDayunGeju?.shen_qiang_ruo ?? null"
@@ -397,7 +397,7 @@ function fmtDateTime(s: string): string {
       :to="gejuTo('/geju-dayun')"
       testid="geju-dayun-card"
     />
-    <p v-if="gejuError" class="muted">格局喜忌：{{ gejuError }}</p>
+    <p v-if="gejuError" class="muted">格局判定：{{ gejuError }}</p>
 
     <!-- 人元司令与宫位 -->
     <section class="wx-card">

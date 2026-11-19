@@ -1,10 +1,11 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan:
-`specs/015-ziping-geju-xiyong/plan.md`
-本期以相也《格局真诠》（2018，49 格）为**唯一规则源**，重建格局与喜忌；
+`specs/016-ziping-zhenquan-geju/spec.md`
+本期以**《子平真诠》（沈孝瞻，文本库 `books.id=32`）为唯一规则源**，输出图上 25 类主格；
+015 期 49 格引擎保留为历史/对照，API/前端已切到 016。
 现有旺度引擎只提供**身强弱**（日主组动态旺度，10 度分界），其输出逐位不变是硬门。
-上期（精简为原局旺度与大运引擎2；格局/喜忌/用神/调候/岁运推导已从产品移除）见 `e248961`。
+上期（015 49 格/成破/喜忌）见 `specs/015-ziping-geju-xiyong/`；旧引擎不再被 API 调用。
 旺度领域口径见 `specs/012-rebuild-wangdu-xiyong/research.md` 的 C26-*（仅旺度）。
 (Backend: Python FastAPI · Frontend: Vue 3 (mobile) + admin · Tencent MySQL + pwdlib password auth + admin RBAC · TDD with pytest / Vitest)
 <!-- SPECKIT END -->

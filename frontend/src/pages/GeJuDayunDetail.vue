@@ -1,5 +1,5 @@
 <script setup lang="ts">
-/** 015：大运逐步格局喜忌（格名以原局为基准，允许变格）。 */
+/** 016：大运逐步格局判定（格名同原局）。 */
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getRecord } from '../api/records'
@@ -47,7 +47,7 @@ onMounted(async () => {
 
 <template>
   <div class="detail-page">
-    <van-nav-bar title="格局喜忌 · 大运" left-text="返回" left-arrow @click-left="router.back()" />
+    <van-nav-bar title="格局判定 · 大运" left-text="返回" left-arrow @click-left="router.back()" />
 
     <van-loading v-if="loading" class="loading" />
     <p v-else-if="error" class="warn-line">{{ error }}</p>
